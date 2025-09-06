@@ -9,6 +9,7 @@ smalltalk:
   - Pharo64-7.0
   - Pharo64-stable
   - Pharo64-alpha
+  
 matrix:
   allow_failures:
   - smalltalk: Pharo64-alpha
