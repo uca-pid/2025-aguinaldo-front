@@ -96,7 +96,7 @@
   border-radius: 8;
   font-family:  "Roboto", sans-serif;;
   font-weight:700;
-  font-size :25;
+  font-size :20px;
   cursor: pointer;
   transition: transform 0.2s ease, background-color 0.2s ease; 
 }
@@ -130,3 +130,45 @@
 .shake {
   animation: shake 0.4s;
 }
+
+.forgot-password-text{
+  padding:15px;
+  color:whitesmoke;
+  font-family:  "Roboto", sans-serif;;
+  font-weight:400;
+  font-size :15px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease; 
+  text-decoration: underline;
+}
+
+.forgot-password-text:hover {
+  transform: scale(1.1); 
+}
+
+.forgot-password-text:active {
+  transform: scale(0.95); 
+} 
+
+.register-text{
+  padding:15px;
+  color:whitesmoke;
+  font-family:  "Roboto", sans-serif;;
+  font-weight:600;
+  font-size :15px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease; 
+
+}
+.register-text:hover {
+  font-weight:800;
+  color:#38A3A5;
+  transform: scale(1.1); 
+}
+
+.register-text:active {
+  font-weight:800;
+  color:#38a3a550;
+  transform: scale(0.95); 
+} 
+

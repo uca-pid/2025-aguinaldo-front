@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-
+//import { useNavigate } from "react-router-dom";
 import Logo from "../img/MediBook-Logo.png";
 import "../style/Login.css";
 
@@ -9,6 +9,7 @@ const Login: React.FC = () => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [shake, setShake] = useState(false);
+    //const navigate = useNavigate();
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
@@ -26,6 +27,14 @@ const Login: React.FC = () => {
             setShake(true);
             setTimeout(() => setShake(false), 400);
         }
+    };
+
+    const handleRegister = () => {
+        //navigate("/Register");
+    };
+    const handleForgotPassword = () => {
+     
+        //navigate("/ForgotPassword");
     };
 
     return (
@@ -49,8 +58,12 @@ const Login: React.FC = () => {
                 type="password"
             />
             {error && <div style={{ color: "red", margin: "10px 0" }}>{error}</div>}
+            <span onClick={handleForgotPassword} className="forgot-password-text" >Olvidé mi contraseña 😔</span>
             <button onClick={handleLogin} className="animated-button">Iniciar Sesion</button>  
+            <span className="register-text" onClick={handleRegister}>Registrar usuario</span>
         </div>
+
+        
     </div>
   );
 };
