@@ -20,10 +20,19 @@ function Register() {
     return minDate.toISOString().split('T')[0]
   }
 
-  const handleSwitch = (form: 'doctor' | 'patient') => {
+   const handleSwitch = (form: 'doctor' | 'patient') => {
     if (form !== activeForm) {
       setFade('out')
       setPendingForm(form)
+      // Clear all form data
+      setInvalidFields(new Set())
+      setPasswords({})
+      setValidationMessages({})
+      // Clear all input values
+      const inputs = document.querySelectorAll('input')
+      inputs.forEach((input: HTMLInputElement) => {
+        input.value = ''
+      })
     }
   }
 
