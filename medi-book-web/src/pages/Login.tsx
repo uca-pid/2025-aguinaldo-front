@@ -1,34 +1,55 @@
-import React  from "react";
+import React, {useState} from "react";
+
 import Logo from "../img/MediBook-Logo.png";
 import "../style/Login.css";
 
-
 const Login: React.FC = () => {
+
+    const [user, setUser] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [shake, setShake] = useState(false);
+
+    const handleLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+      
+        const validUser = "admin@demo.com";
+        const validPass = "123456";
+
+        if (!user || !password) {
+            setError("Por favor, complete ambos campos.");
+        } else if (user === validUser && password === validPass) {
+            setError("");
+            alert("¡Login exitoso!");
+        } else {
+            setError("Usuario o contraseña incorrectos.");
+            setShake(true);
+            setTimeout(() => setShake(false), 400);
+        }
+    };
+
     return (
-
-    <div style={{width:"100vw",height:"100vh", boxSizing:"border-box", display:"flex",justifyContent:"center", alignItems:"center"}}> 
-        <div style={{ width:"100%",height:"100%", boxSizing:"border-box", display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center"}}>
-            <img style={{maxWidth:"100%", maxHeight:"100%"}}src={Logo}></img>
-
+    <div className="login-box"> 
+        <div className="login-logo">
+            <img className="img-login-logo" src={Logo} alt="Logo" />
         </div>
-        <div style={{backgroundColor:"#1f4f6fff", width:"100%",height:"100%",maxWidth:"100%", maxHeight:"100%", boxSizing:"border-box", display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", borderTopLeftRadius:25,borderBottomLeftRadius:25}}>
-            <text style={{
-                    color: "#fff",
-                    margin: 5,
-                    fontWeight:"bold",
-                    fontSize:20,
-                   }}>Usuario</text>
-            <input className="input-user" type="email"  />
-            <text   style={{
-                    color: "#fff",
-                    margin: 5,
-                    fontWeight:"bold",
-                    fontSize:20,
-                   }}>Contraseña</text>
-            <input className="input-password" type="password" />
-            <button className="animated-button"
-                   
-                >Iniciar Sesion</button>  
+        <div className="input-login-block">
+            <span className="login-input-text">Usuario</span>
+            <input
+                value={user}
+                onChange={e => setUser(e.target.value)}
+                className={`input-user${shake ? " shake" : ""}`}
+                type="email"
+            />
+            <span className="login-input-text">Contraseña</span>
+            <input
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className={`input-password${shake ? " shake" : ""}`}
+                type="password"
+            />
+            {error && <div style={{ color: "red", margin: "10px 0" }}>{error}</div>}
+            <button onClick={handleLogin} className="animated-button">Iniciar Sesion</button>  
         </div>
     </div>
   );
