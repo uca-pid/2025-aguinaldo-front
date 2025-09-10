@@ -1,27 +1,13 @@
 import React from "react";
 import { useMachine } from "@xstate/react";
 import { Box, Button, Typography, Paper, TextField, Stack } from "@mui/material";
-import { registerMachine } from "./machines/registerMachine";
+import { uiMachine } from "../../machines/uiMachine";
 
-export const Register: React.FC = () => {
-  const [state, send] = useMachine(registerMachine);
-
-  // Función para cambiar de formulario con fade
-  const handleSwitch = (formType: "patient" | "doctor") => {
-  // Si ya estamos en ese formulario, no hacer nada
-  if (state.context.formType === formType) return;
-
-  // Fade out
-  send({ type: "SWITCH_FORM", formType });
-
-  // Después de la animación, cambiar el formulario
-  setTimeout(() => {
-    send({ type: "FADE_OUT_DONE" });
-  }, 300); // Duración del fade en ms
-};
-
-
-  const isPatient = state.context.formType === "patient";
+const Register: React.FC = () => {
+  const [uiState, uiSend] = useMachine(uiMachine);
+  const fromContext = uiState.context.toggleStates || {};
+  const isPatient = fromContext["patient"] ?? true;
+  const isIn = fromContext["fade"] ?? true;
 
   return (
     <Box
@@ -38,7 +24,7 @@ export const Register: React.FC = () => {
           width: 400,
           textAlign: "center",
           borderRadius: 3,
-          opacity: state.context.fade === "in" ? 1 : 0,
+          opacity: isIn ? 1 : 0,
           transition: "opacity 0.3s",
         }}
       >
@@ -49,14 +35,14 @@ export const Register: React.FC = () => {
         <Stack direction="row" spacing={2} justifyContent="center" mb={4}>
           <Button
             variant={isPatient ? "contained" : "outlined"}
-            onClick={() => handleSwitch("patient")}
+            onClick={() => uiSend({ type: "TOGGLE", key: "patient" })}
             fullWidth
           >
             Patient
           </Button>
           <Button
             variant={!isPatient ? "contained" : "outlined"}
-            onClick={() => handleSwitch("doctor")}
+            onClick={() => uiSend({ type: "TOGGLE", key: "patient" })}
             fullWidth
           >
             Doctor
@@ -90,3 +76,5 @@ export const Register: React.FC = () => {
     </Box>
   );
 };
+
+export default Register
