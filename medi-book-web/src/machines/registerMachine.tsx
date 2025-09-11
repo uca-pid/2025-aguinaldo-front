@@ -12,57 +12,45 @@ export type RegisterMachineEvent =
   | { type: "SUBMIT" }
 
 const validateField = (key: string, value: any, context: RegisterMachineContext) => {
-    switch (key) {
-        // -------------------- Paciente --------------------
-        case "patientNombre": return value ? "" : "Nombre requerido";
-        case "patientApellido": return value ? "" : "Apellido requerido";
-        case "patientDni": return /^[0-9]{7,8}$/.test(value) ? "" : "DNI inválido (7 u 8 dígitos)";
-        case "patientGenero": return value ? "" : "Género requerido";
-        case "patientEmail": return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? "" : "Email inválido";
-        case "patientTelefono":
-            if (!value) return "Teléfono requerido";
-            return /^\+?[0-9]{8,15}$/.test(value)
-                ? ""
-                : "Número de teléfono inválido (solo números, 8-15 dígitos, opcional +)";
-        case "patientPassword": return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(value)
-        ? "" : "Mínimo 8 caracteres, mayúscula, minúscula y número";
-        case "patientFechaNacimiento":
-            if (value === null || value === undefined || value === "") return "Campo requerido";
-            return dayjs(value).isValid() ? "" : "Fecha inválida";
-        case "patientPasswordConfirm":
-            if (!value) return "Campo requerido"; 
-            return value === context.formValues?.patientPassword
-                ? "" 
-                : "Las contraseñas no coinciden";
+  if (!value || value === null || value === undefined || value === "") {
+    return "Campo requerido";
+  }
 
-        // -------------------- Doctor --------------------
-        case "doctorNombre": return value ? "" : "Nombre requerido";
-        case "doctorApellido": return value ? "" : "Apellido requerido";
-        case "doctorEspecialidad": return value ? "" : "Especialidad requerida";
-        case "doctorMatricula": return /^[0-9]{4,10}$/.test(value) ? "" : "Matrícula inválida";
-        case "doctorGenero": return value ? "" : "Género requerido";
-        case "doctorEmail": return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? "" : "Email inválido";
-        case "doctorTelefono":
-            if (!value) return "Teléfono requerido";
-            return /^\+?[0-9]{8,15}$/.test(value)
-                ? ""
-                : "Número de teléfono inválido (solo números, 8-15 dígitos, opcional +)";
-        case "doctorPassword": return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(value)
-        ? "" : "Mínimo 8 caracteres, mayúscula, minúscula y número";
-        case "doctorFechaNacimiento":
-            if (value === null || value === undefined || value === "") return "Campo requerido";
-            return dayjs(value).isValid() ? "" : "Fecha inválida";
-        case "doctorPasswordConfirm":
-            if (!value) return "Campo requerido";
-            return value === context.formValues?.doctorPassword
-                ? "" 
-                : "Las contraseñas no coinciden";
+  if (key.includes("Email")) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? "" : "Email inválido";
+  }
 
-        default: return "";
-    }
+  if (key.includes("Dni")) {
+    return /^[0-9]{7,8}$/.test(value) ? "" : "DNI inválido (7 u 8 dígitos)";
+  }
+
+  if (key.includes("Matricula")) {
+    return /^[0-9]{4,10}$/.test(value) ? "" : "Matrícula inválida";
+  }
+
+  if (key.includes("Telefono")) {
+    return /^\+?[0-9]{8,15}$/.test(value)
+      ? ""
+      : "Número de teléfono inválido (solo números, 8-15 dígitos, opcional +)";
+  }
+
+  if (key.includes("Password") && !key.includes("Confirm")) {
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(value)
+      ? ""
+      : "Mínimo 8 caracteres, mayúscula, minúscula y número";
+  }
+
+  if (key.includes("PasswordConfirm")) {
+    const passwordKey = key.includes("patient") ? "patientPassword" : "doctorPassword";
+    return value === context.formValues?.[passwordKey] ? "" : "Las contraseñas no coinciden";
+  }
+
+  if (key.includes("FechaNacimiento")) {
+    return dayjs(value).isValid() ? "" : "Fecha inválida";
+  }
+
+  return "";
 };
-
-
 
 export const registerMachine = createMachine({
   id: "register",
