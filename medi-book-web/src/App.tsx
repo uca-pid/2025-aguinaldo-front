@@ -1,11 +1,11 @@
 import './App.css'
-import Register from './components/register/register'
+import RegisterScreen from './pages/RegisterScreen'
 
 function App() {
   return (
     <>
       <div>
-        <Register />
+        <RegisterScreen />
       </div>
     </>
   )
