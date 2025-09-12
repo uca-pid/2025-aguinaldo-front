@@ -1,12 +1,10 @@
 import { createMachine, assign } from "xstate";
 
-export interface UiMachineContext {
-  toggleStates?: Record<string, boolean>;
+export interface HomeHeaderMachineContext {
   anchorEls?: Record<string, HTMLElement | null>;
 }
 
-export type UiMachineEvent =
-  | { type: "TOGGLE"; key: string }
+export type HomeHeaderMachineEvent =
   | { type: "OPEN_MENU"; key: string; anchorEl: HTMLElement }
   | { type: "CLOSE_MENU"; key: string };
 
@@ -15,8 +13,8 @@ export const homeHeaderMachine = createMachine({
   initial: "idle",
   context: {  },
   types: {
-    context: {} as UiMachineContext,
-    events: {} as UiMachineEvent,
+    context: {} as HomeHeaderMachineContext,
+    events: {} as HomeHeaderMachineEvent,
   },
   states: {
     idle: {
@@ -41,4 +39,4 @@ export const homeHeaderMachine = createMachine({
     },
   }
 
-} as const);
+});

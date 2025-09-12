@@ -3,10 +3,10 @@ import React from "react";
 import { Box, Typography, Paper, Grid, Avatar, Menu, MenuItem, Divider, ListItemIcon } from "@mui/material";
 import { Logout, Person } from "@mui/icons-material";
 import { useMachine } from "@xstate/react";
-import { homeHeaderMachine } from "../machines/homeHeaderMachine";
-import PatientDashboard from "../components/HomeScreen/PatientDashboard";
-import DoctorDashboard from "../components/HomeScreen/DoctorDashboard";
-import AdminDashboard from "../components/HomeScreen/AdminDashboard";
+import { homeHeaderMachine } from "../../machines/homeHeaderMachine";
+import PatientDashboard from "./userDashboards/PatientDashboard";
+import DoctorDashboard from "./userDashboards/DoctorDashboard";
+import AdminDashboard from "./userDashboards/AdminDashboard";
 
 const HomeScreen: React.FC = () => {
   const TEST_ROLE = "DOCTOR"; // "PATIENT" | "DOCTOR" | "ADMIN"

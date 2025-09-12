@@ -1,13 +1,16 @@
 import './App.css'
-import HomeScreen from './pages/HomeScreen'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import HomeScreen from './components/HomeScreen/HomeScreen'
+import RegisterScreen from './components/register/RegisterScreen'
 
 function App() {
   return (
-    <>
-      <div>
-        <HomeScreen />
-      </div>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomeScreen />} />
+        <Route path="/register" element={<RegisterScreen />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
