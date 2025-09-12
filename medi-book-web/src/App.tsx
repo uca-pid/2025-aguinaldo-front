@@ -1,5 +1,5 @@
 import './App.css'
-import RegisterScreen from './pages/RegisterScreen'
+import RegisterScreen from './components/register/RegisterScreen'
 
 function App() {
   return (

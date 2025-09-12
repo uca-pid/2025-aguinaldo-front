@@ -1,10 +1,10 @@
 import React from "react";
 import { useMachine } from "@xstate/react";
 import { Box, Button, Typography, Paper, Stack } from "@mui/material";
-import { uiMachine } from "../machines/uiMachine";
-import { registerMachine } from "../machines/registerMachine";
-import PatientRegisterForm from "../components/register/PatientRegisterForm";
-import DoctorRegisterForm from "../components/register/DoctorRegisterForm";
+import { uiMachine } from "../../machines/uiMachine";
+import { registerMachine } from "../../machines/registerMachine";
+import PatientRegisterForm from "./userForms/PatientRegisterForm";
+import DoctorRegisterForm from "./userForms/DoctorRegisterForm";
 
 const RegisterScreen: React.FC = () => {
   const [uiState, uiSend] = useMachine(uiMachine);

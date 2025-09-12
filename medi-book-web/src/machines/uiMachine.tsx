@@ -29,4 +29,4 @@ export const uiMachine = createMachine({
       },
     },
   },
-} as const);
+});
