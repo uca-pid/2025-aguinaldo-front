@@ -1,19 +1,18 @@
 import React from "react";
-import { useMachine } from "@xstate/react";
 import { Box, Button, Typography, Paper, Stack } from "@mui/material";
-import { uiMachine } from "../../machines/uiMachine";
-import { registerMachine } from "../../machines/registerMachine";
 import PatientRegisterForm from "./userForms/PatientRegisterForm";
 import DoctorRegisterForm from "./userForms/DoctorRegisterForm";
+import { useMachines } from "../../providers/MachineProvider";
 
 const RegisterScreen: React.FC = () => {
-  const [uiState, uiSend] = useMachine(uiMachine);
-  const [registerState, registerSend] = useMachine(registerMachine);
+  const {ui, register} = useMachines();
+  const { context: uiContext, send: uiSend } = ui;
+  const { context: registerContext } = register;
 
-  const formContext = uiState.context.toggleStates || {};
+  const formContext = uiContext.toggleStates || {};
   const isPatient = formContext["patient"] ?? true;
   const isIn = formContext["fade"] ?? true;
-  const isSuccess = (registerState.context.apiResponse && !registerState.context.apiResponse.error) ?? false;
+  const isSuccess = (registerContext.apiResponse && !registerContext.apiResponse.error) ?? false;
 
   return (
     <Box
@@ -61,9 +60,9 @@ const RegisterScreen: React.FC = () => {
             </Stack>
 
             {isPatient ? (
-              <PatientRegisterForm registerState={registerState} registerSend={registerSend} />
+              <PatientRegisterForm />
             ) : (
-              <DoctorRegisterForm registerState={registerState} registerSend={registerSend} />
+              <DoctorRegisterForm />
             )}
           </>
         )}

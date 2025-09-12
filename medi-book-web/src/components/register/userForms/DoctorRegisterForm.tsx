@@ -1,4 +1,3 @@
-import React from "react";
 import { useDebouncedCallback } from "use-debounce";
 import {
   TextField,
@@ -10,23 +9,23 @@ import {
   FormHelperText,
   Button,
 } from "@mui/material";
+
+import { useMachines } from "../../../providers/MachineProvider";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import "dayjs/locale/es";
 
-interface Props {
-  registerState: any;
-  registerSend: any;
-}
+const DoctorRegisterForm = () => {
+  const {register} = useMachines();
+  const { context: registerContext, send: registerSend } = register;
 
-const DoctorRegisterForm: React.FC<Props> = ({ registerState, registerSend }) => {
   const debouncedUpdate = useDebouncedCallback((key: string, value: any) => {
     registerSend({ type: "UPDATE_FORM", key, value });
   }, 250);
 
   const hasErrorsOrEmpty = () => {
-    const values = registerState.context.formValues || {};
-    const errors = registerState.context.formErrors || {};
+    const values = registerContext.formValues || {};
+    const errors = registerContext.formErrors || {};
     const keys = [
       "doctorNombre",
       "doctorApellido",
@@ -51,8 +50,8 @@ const DoctorRegisterForm: React.FC<Props> = ({ registerState, registerSend }) =>
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerState.context.formErrors?.doctorNombre}
-          helperText={registerState.context.formErrors?.doctorNombre || ""}
+          error={!!registerContext.formErrors?.doctorNombre}
+          helperText={registerContext.formErrors?.doctorNombre || ""}
         />
         <TextField
           label="Apellido"
@@ -60,8 +59,8 @@ const DoctorRegisterForm: React.FC<Props> = ({ registerState, registerSend }) =>
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerState.context.formErrors?.doctorApellido}
-          helperText={registerState.context.formErrors?.doctorApellido || ""}
+          error={!!registerContext.formErrors?.doctorApellido}
+          helperText={registerContext.formErrors?.doctorApellido || ""}
         />
         <TextField
           label="Especialidad"
@@ -69,8 +68,8 @@ const DoctorRegisterForm: React.FC<Props> = ({ registerState, registerSend }) =>
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerState.context.formErrors?.doctorEspecialidad}
-          helperText={registerState.context.formErrors?.doctorEspecialidad || ""}
+          error={!!registerContext.formErrors?.doctorEspecialidad}
+          helperText={registerContext.formErrors?.doctorEspecialidad || ""}
         />
         <TextField
           label="Matrícula"
@@ -79,13 +78,13 @@ const DoctorRegisterForm: React.FC<Props> = ({ registerState, registerSend }) =>
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerState.context.formErrors?.doctorMatricula}
-          helperText={registerState.context.formErrors?.doctorMatricula || ""}
+          error={!!registerContext.formErrors?.doctorMatricula}
+          helperText={registerContext.formErrors?.doctorMatricula || ""}
         />
         <FormControl
           fullWidth
           required
-          error={!!registerState.context.formErrors?.doctorGenero}
+          error={!!registerContext.formErrors?.doctorGenero}
         >
           <InputLabel id="genero-doctor-label">Género</InputLabel>
           <Select
@@ -100,7 +99,7 @@ const DoctorRegisterForm: React.FC<Props> = ({ registerState, registerSend }) =>
             <MenuItem value={"Femenino"}>Femenino</MenuItem>
           </Select>
           <FormHelperText>
-            {registerState.context.formErrors?.doctorGenero}
+            {registerContext.formErrors?.doctorGenero}
           </FormHelperText>
         </FormControl>
         <FormControl fullWidth required>
@@ -128,8 +127,8 @@ const DoctorRegisterForm: React.FC<Props> = ({ registerState, registerSend }) =>
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerState.context.formErrors?.doctorTelefono}
-          helperText={registerState.context.formErrors?.doctorTelefono || ""}
+          error={!!registerContext.formErrors?.doctorTelefono}
+          helperText={registerContext.formErrors?.doctorTelefono || ""}
         />
         <TextField
           label="Email"
@@ -138,8 +137,8 @@ const DoctorRegisterForm: React.FC<Props> = ({ registerState, registerSend }) =>
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerState.context.formErrors?.doctorEmail}
-          helperText={registerState.context.formErrors?.doctorEmail || ""}
+          error={!!registerContext.formErrors?.doctorEmail}
+          helperText={registerContext.formErrors?.doctorEmail || ""}
         />
         <TextField
           label="Contraseña"
@@ -148,8 +147,8 @@ const DoctorRegisterForm: React.FC<Props> = ({ registerState, registerSend }) =>
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerState.context.formErrors?.doctorPassword}
-          helperText={registerState.context.formErrors?.doctorPassword || ""}
+          error={!!registerContext.formErrors?.doctorPassword}
+          helperText={registerContext.formErrors?.doctorPassword || ""}
         />
         <TextField
           label="Confirmar Contraseña"
@@ -158,9 +157,9 @@ const DoctorRegisterForm: React.FC<Props> = ({ registerState, registerSend }) =>
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerState.context.formErrors?.doctorPasswordConfirm}
+          error={!!registerContext.formErrors?.doctorPasswordConfirm}
           helperText={
-            registerState.context.formErrors?.doctorPasswordConfirm || ""
+            registerContext.formErrors?.doctorPasswordConfirm || ""
           }
         />
       </Stack>
