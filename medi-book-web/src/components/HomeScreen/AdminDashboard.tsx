@@ -3,13 +3,11 @@ import { Box, Grid, Card, CardActionArea, CardContent, Typography, List, ListIte
 import PeopleIcon from "@mui/icons-material/People";
 import { styled } from "@mui/material/styles";
 
-// Simulación de datos
 const pendingDoctors = [
   { name: "Dr. Juan Pérez", specialty: "Cardiología" },
   { name: "Dra. Ana Gómez", specialty: "Pediatría" }
 ];
 
-// Card estilizada para hover
 const HoverCard = styled(Card)(({ theme }) => ({
   transition: "transform 0.2s, box-shadow 0.2s",
   height: "100%",
@@ -27,8 +25,7 @@ const AdminDashboard: React.FC = () => {
   return (
     <Box width="100%" display="flex" flexDirection="column" gap={3} alignItems="center">
       <Grid container spacing={3} justifyContent="center" alignItems="stretch">
-        {/* Card: Pacientes */}
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid>
           <HoverCard>
             <CardActionArea onClick={handlePatients} sx={{ height: "100%" }}>
               <CardContent sx={{ textAlign: "center", py: 6 }}>
@@ -44,8 +41,7 @@ const AdminDashboard: React.FC = () => {
           </HoverCard>
         </Grid>
 
-        {/* Card: Médicos */}
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid>
           <HoverCard>
             <CardActionArea onClick={handleDoctors} sx={{ height: "100%" }}>
               <CardContent sx={{ textAlign: "center", py: 6 }}>
@@ -61,8 +57,7 @@ const AdminDashboard: React.FC = () => {
           </HoverCard>
         </Grid>
 
-        {/* Card: Médicos Pendientes de Aprobación */}
-        <Grid item xs={12} sm={12} md={4}>
+        <Grid>
           <Badge badgeContent={pendingDoctors.length} color="primary" sx={{ width: "100%" }}>
             <Card sx={{ height: "100%" }}>
               <CardContent>
@@ -71,7 +66,7 @@ const AdminDashboard: React.FC = () => {
                 </Typography>
                 <List>
                   {pendingDoctors.map((doc, index) => (
-                    <ListItem key={index} divider button onClick={handlePendingDoctors}>
+                    <ListItem key={index} divider onClick={handlePendingDoctors}>
                       <ListItemText
                         primary={doc.name}
                         secondary={doc.specialty}

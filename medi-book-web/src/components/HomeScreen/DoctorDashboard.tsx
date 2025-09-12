@@ -1,18 +1,16 @@
 import React from "react";
-import { Box, Grid, Card, CardActionArea, CardContent, Typography, List, ListItem, ListItemText, Badge } from "@mui/material";
+import { Box, Grid, Card, CardActionArea, CardContent, Typography, List, ListItem, ListItemText} from "@mui/material";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import { styled } from "@mui/material/styles";
 
-// Simulación de datos
 const upcomingAppointments = [
   { date: "15/09/2025", time: "10:30", patient: "María López" },
   { date: "15/09/2025", time: "11:30", patient: "Juan Pérez" },
   { date: "16/09/2025", time: "09:00", patient: "Ana Gómez" }
 ];
 
-// Card estilizada para hover
 const HoverCard = styled(Card)(({ theme }) => ({
   transition: "transform 0.2s, box-shadow 0.2s",
   height: "100%",
@@ -30,8 +28,7 @@ const DoctorDashboard: React.FC = () => {
   return (
     <Box width="100%" display="flex" flexDirection="column" gap={3} alignItems="center">
       <Grid container spacing={3} justifyContent="center" alignItems="stretch">
-        {/* Card: Ver turnos */}
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid>
           <HoverCard>
             <CardActionArea onClick={handleViewAppointments} sx={{ height: "100%" }}>
               <CardContent sx={{ textAlign: "center", py: 6 }}>
@@ -47,8 +44,7 @@ const DoctorDashboard: React.FC = () => {
           </HoverCard>
         </Grid>
 
-        {/* Card: Configurar disponibilidad */}
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid>
           <HoverCard>
             <CardActionArea onClick={handleSetAvailability} sx={{ height: "100%" }}>
               <CardContent sx={{ textAlign: "center", py: 6 }}>
@@ -64,8 +60,7 @@ const DoctorDashboard: React.FC = () => {
           </HoverCard>
         </Grid>
 
-        {/* Card: Lista de pacientes */}
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid>
           <HoverCard>
             <CardActionArea onClick={handlePatientList} sx={{ height: "100%" }}>
               <CardContent sx={{ textAlign: "center", py: 6 }}>
@@ -81,11 +76,10 @@ const DoctorDashboard: React.FC = () => {
           </HoverCard>
         </Grid>
 
-        {/* Card: Próximos turnos */}
-        <Grid item xs={12} sm={12} md={4}>
+        <Grid>
           <Card sx={{ height: "100%" }}>
             <CardContent>
-              <Typography variant="h6" mb={2} borderBottom="1px solid #eee" pb={1}>
+              <Typography variant="h6" borderBottom="1px solid #eee">
                 Próximos Turnos
               </Typography>
               <List>
