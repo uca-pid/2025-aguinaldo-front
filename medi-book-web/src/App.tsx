@@ -1,11 +1,12 @@
 import './App.css'
-import Register from './components/register/register'
+import HomeScreen from './pages/HomeScreen'
+import Register from './pages/register'
 
 function App() {
   return (
     <>
       <div>
-        <Register />
+        <HomeScreen />
       </div>
     </>
   )

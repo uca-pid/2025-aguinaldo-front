@@ -6,8 +6,8 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/es';
-import { uiMachine } from "../../machines/uiMachine";
-import { registerMachine } from "../../machines/registerMachine";
+import { uiMachine } from "../machines/uiMachine";
+import { registerMachine } from "../machines/registerMachine";
 
 const Register: React.FC = () => {
   const [uiState, uiSend] = useMachine(uiMachine);
