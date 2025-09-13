@@ -26,17 +26,18 @@ const DoctorRegisterForm = () => {
   const hasErrorsOrEmpty = () => {
     const values = registerContext.formValues || {};
     const errors = registerContext.formErrors || {};
-    const keys = [
-      "doctorNombre",
-      "doctorApellido",
-      "doctorEspecialidad",
-      "doctorMatricula",
-      "doctorGenero",
-      "doctorFechaNacimiento",
-      "doctorEmail",
-      "doctorPassword",
-      "doctorPasswordConfirm",
-      "doctorTelefono",
+    
+    const keys: (keyof typeof values)[] = [
+      "doctor_name",
+      "doctor_surname",
+      "doctor_specialty",
+      "doctor_medical_license",
+      "doctor_gender",
+      "doctor_birthdate",
+      "doctor_email",
+      "doctor_password",
+      "doctor_password_confirm",
+      "doctor_phone",
     ];
     return keys.some((key) => !values[key] || errors[key]);
   };
@@ -46,51 +47,51 @@ const DoctorRegisterForm = () => {
       <Stack spacing={2}>
         <TextField
           label="Nombre"
-          name="doctorNombre"
+          name="doctor_name"
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerContext.formErrors?.doctorNombre}
-          helperText={registerContext.formErrors?.doctorNombre || ""}
+          error={!!registerContext.formErrors?.doctor_name}
+          helperText={registerContext.formErrors?.doctor_name || ""}
         />
         <TextField
           label="Apellido"
-          name="doctorApellido"
+          name="doctor_surname"
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerContext.formErrors?.doctorApellido}
-          helperText={registerContext.formErrors?.doctorApellido || ""}
+          error={!!registerContext.formErrors?.doctor_surname}
+          helperText={registerContext.formErrors?.doctor_surname || ""}
         />
         <TextField
           label="Especialidad"
-          name="doctorEspecialidad"
+          name="doctor_specialty"
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerContext.formErrors?.doctorEspecialidad}
-          helperText={registerContext.formErrors?.doctorEspecialidad || ""}
+          error={!!registerContext.formErrors?.doctor_specialty}
+          helperText={registerContext.formErrors?.doctor_specialty || ""}
         />
         <TextField
           label="Matrícula"
-          name="doctorMatricula"
+          name="doctor_medical_license"
           type="number"
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerContext.formErrors?.doctorMatricula}
-          helperText={registerContext.formErrors?.doctorMatricula || ""}
+          error={!!registerContext.formErrors?.doctor_medical_license}
+          helperText={registerContext.formErrors?.doctor_medical_license || ""}
         />
         <FormControl
           fullWidth
           required
-          error={!!registerContext.formErrors?.doctorGenero}
+          error={!!registerContext.formErrors?.doctor_gender}
         >
-          <InputLabel id="genero-doctor-label">Género</InputLabel>
+          <InputLabel id="doctor_gender_label">Género</InputLabel>
           <Select
-            labelId="genero-doctor-label"
-            id="genero-doctor"
-            name="doctorGenero"
+            labelId="doctor_gender_label"
+            id="doctor_gender"
+            name="doctor_gender"
             defaultValue=""
             fullWidth
             onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
@@ -99,7 +100,7 @@ const DoctorRegisterForm = () => {
             <MenuItem value={"Femenino"}>Femenino</MenuItem>
           </Select>
           <FormHelperText>
-            {registerContext.formErrors?.doctorGenero}
+            {registerContext.formErrors?.doctor_gender}
           </FormHelperText>
         </FormControl>
         <FormControl fullWidth required>
@@ -111,55 +112,55 @@ const DoctorRegisterForm = () => {
                 textField: {
                   required: true,
                   fullWidth: true,
-                  name: "doctorFechaNacimiento",
+                  name: "doctor_birthdate",
                 },
               }}
               onChange={(date) =>
-                debouncedUpdate("doctorFechaNacimiento", date)
+                debouncedUpdate("doctor_birthdate", date)
               }
             />
           </LocalizationProvider>
         </FormControl>
         <TextField
           label="Número de Teléfono"
-          name="doctorTelefono"
+          name="doctor_phone"
           type="number"
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerContext.formErrors?.doctorTelefono}
-          helperText={registerContext.formErrors?.doctorTelefono || ""}
+          error={!!registerContext.formErrors?.doctor_phone}
+          helperText={registerContext.formErrors?.doctor_phone || ""}
         />
         <TextField
           label="Email"
-          name="doctorEmail"
+          name="doctor_email"
           type="email"
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerContext.formErrors?.doctorEmail}
-          helperText={registerContext.formErrors?.doctorEmail || ""}
+          error={!!registerContext.formErrors?.doctor_email}
+          helperText={registerContext.formErrors?.doctor_email || ""}
         />
         <TextField
           label="Contraseña"
-          name="doctorPassword"
+          name="doctor_password"
           type="password"
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerContext.formErrors?.doctorPassword}
-          helperText={registerContext.formErrors?.doctorPassword || ""}
+          error={!!registerContext.formErrors?.doctor_password}
+          helperText={registerContext.formErrors?.doctor_password || ""}
         />
         <TextField
           label="Confirmar Contraseña"
-          name="doctorPasswordConfirm"
+          name="doctor_password_confirm"
           type="password"
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerContext.formErrors?.doctorPasswordConfirm}
+          error={!!registerContext.formErrors?.doctor_password_confirm}
           helperText={
-            registerContext.formErrors?.doctorPasswordConfirm || ""
+            registerContext.formErrors?.doctor_password_confirm || ""
           }
         />
       </Stack>
