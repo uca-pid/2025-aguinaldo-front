@@ -1,22 +1,24 @@
-# changes file
-*.changes
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# system image
-*.image
+node_modules
+dist
+dist-ssr
+*.local
 
-# Pharo Smalltalk Debug log file
-PharoDebug.log
-
-# Squeak Smalltalk Debug log file
-SqueakDebug.log
-
-# Monticello package cache
-/package-cache
-
-# playground cache
-/play-cache
-/play-stash
-
-# Metacello-github cache
-/github-cache
-github-*.zip
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
