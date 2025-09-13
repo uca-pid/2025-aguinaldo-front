@@ -14,7 +14,7 @@ export const validateField = (key: string, value: any, context: RegisterMachineC
     return /^[0-9]{7,8}$/.test(value) ? "" : "DNI inválido (7 u 8 dígitos)";
   }
 
-  if (key.includes("medical_license")) {
+  if (key.includes("medicalLicense")) {
     return /^[0-9]{4,10}$/.test(value) ? "" : "Matrícula inválida";
   }
 
@@ -31,8 +31,7 @@ export const validateField = (key: string, value: any, context: RegisterMachineC
   }
 
   if (key.includes("password_confirm")) {
-    const passwordKey = key.includes("patient") ? "patient_password" : "doctor_password";
-    return value === context.formValues?.[passwordKey] ? "" : "Las contraseñas no coinciden";
+    return value === context.formValues?.["password"] ? "" : "Las contraseñas no coinciden";
   }
 
   if (key.includes("birthdate")) {
@@ -40,4 +39,21 @@ export const validateField = (key: string, value: any, context: RegisterMachineC
   }
 
   return "";
+};
+
+export const checkFormValidation = (context: RegisterMachineContext): boolean => {
+  const { formErrors = {}, formValues, isPatient } = context;
+  
+  const hasErrors = Object.values(formErrors).some(error => error && error.length > 0);
+
+  const requiredFields = isPatient
+    ? ['name', 'surname', 'dni', 'gender', 'birthdate', 'phone', 'email', 'password', 'password_confirm']
+    : ['name', 'surname', 'dni', 'gender', 'birthdate', 'phone', 'email', 'password', 'password_confirm', 'specialty', 'medical_license'];
+
+  const hasEmptyFields = requiredFields.some(field => {
+    const value = formValues[field as keyof typeof formValues];
+    return !value || (typeof value === 'string' && value.trim() === '');
+  });
+
+  return hasErrors || hasEmptyFields;
 };

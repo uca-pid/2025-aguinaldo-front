@@ -8,18 +8,25 @@ import {
   useMediaQuery,
   useTheme,
   Divider,
+  Grid,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
 } from "@mui/material";
-import PatientRegisterForm from "./userForms/PatientRegisterForm";
-import DoctorRegisterForm from "./userForms/DoctorRegisterForm";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useMachines } from "../../providers/MachineProvider";
 
 const RegisterScreen: React.FC = () => {
   const { ui, register } = useMachines();
-  const { context: uiContext, send: uiSend } = ui;
-  const { context: registerContext } = register;
+  const { context: uiContext } = ui;
+  const { context: registerContext, send: registerSend } = register;
 
   const formContext = uiContext.toggleStates || {};
-  const isPatient = formContext["patient"] ?? true;
+  const isPatient = registerContext.isPatient;
   const isIn = formContext["fade"] ?? true;
   const isSuccess =
     (registerContext.apiResponse && !registerContext.apiResponse.error) ?? false;
@@ -90,25 +97,186 @@ const RegisterScreen: React.FC = () => {
               >
                 <Button
                   variant={isPatient ? "contained" : "outlined"}
-                  onClick={() => uiSend({ type: "TOGGLE", key: "patient" })}
+                  onClick={() => registerSend({ type: "TOGGLE_USER_TYPE", isPatient: true})}
                   fullWidth
                 >
                   Paciente
                 </Button>
                 <Button
                   variant={!isPatient ? "contained" : "outlined"}
-                  onClick={() => uiSend({ type: "TOGGLE", key: "patient" })}
+                  onClick={() => registerSend({ type: "TOGGLE_USER_TYPE", isPatient: false})}
                   fullWidth
                 >
                   Doctor
                 </Button>
               </Stack>
 
-              {isPatient ? (
-                <PatientRegisterForm />
-              ) : (
-                <DoctorRegisterForm />
-              )}
+              <Grid>
+                <Stack spacing={2}>
+                  <TextField
+                    label="Nombre"
+                    name="name"
+                    fullWidth
+                    required
+                    value={registerContext.formValues.name || ""}
+                    onChange={(e) => registerSend({ type: "UPDATE_FORM", key: "name", value: e.target.value })}
+                    error={!!registerContext.formErrors?.name}
+                    helperText={registerContext.formErrors?.name || ""}
+                  />
+                  <TextField
+                    label="Apellido"
+                    name="surname"
+                    fullWidth
+                    required
+                    value={registerContext.formValues.surname || ""}
+                    onChange={(e) => registerSend({ type: "UPDATE_FORM", key: "surname", value: e.target.value })}
+                    error={!!registerContext.formErrors?.surname}
+                    helperText={registerContext.formErrors?.surname || ""}
+                  />
+                  <TextField
+                    label="DNI"
+                    name="dni"
+                    type="number"
+                    fullWidth
+                    required
+                    value={registerContext.formValues.dni || ""}
+                    onChange={(e) => registerSend({ type: "UPDATE_FORM", key: "dni", value: e.target.value })}
+                    error={!!registerContext.formErrors?.dni}
+                    helperText={registerContext.formErrors?.dni || ""}
+                  />
+                  <FormControl
+                    fullWidth
+                    required
+                    error={!!registerContext.formErrors?.gender}
+                  >
+                    <InputLabel id="genero-label">Género</InputLabel>
+                    <Select
+                      labelId="genero-label"
+                      id="genero"
+                      name="gender"
+                      value={registerContext.formValues.gender || ""}
+                      label="Género"
+                      fullWidth
+                      onChange={(e) => registerSend({ type: "UPDATE_FORM", key: "gender", value: e.target.value })}
+                    >
+                      <MenuItem value={"Masculino"}>Masculino</MenuItem>
+                      <MenuItem value={"Femenino"}>Femenino</MenuItem>
+                    </Select>
+                    <FormHelperText>
+                      {registerContext.formErrors?.gender}
+                    </FormHelperText>
+                  </FormControl>
+                  <FormControl fullWidth required>
+                    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+                      <DatePicker
+                        label="Fecha de Nacimiento"
+                        format="DD/MM/YYYY"
+                        slotProps={{
+                          textField: {
+                            required: true,
+                            fullWidth: true,
+                            name: "birthdate",
+                          },
+                        }}
+                        onChange={(date) => registerSend({ type: "UPDATE_FORM", key: "birthdate", value: date ? date.toISOString() : null })}
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                  <TextField
+                    label="Número de Teléfono"
+                    name="phone"
+                    type="tel"
+                    fullWidth
+                    required
+                    value={registerContext.formValues.phone || ""}
+                    onChange={(e) => registerSend({ type: "UPDATE_FORM", key: "phone", value: e.target.value })}
+                    error={!!registerContext.formErrors?.phone}
+                    helperText={registerContext.formErrors?.phone || ""}
+                  />
+                  <TextField
+                    label="Email"
+                    name="email"
+                    type="email"
+                    fullWidth
+                    required
+                    value={registerContext.formValues.email || ""}
+                    onChange={(e) => registerSend({ type: "UPDATE_FORM", key: "email", value: e.target.value })}
+                    error={!!registerContext.formErrors?.email}
+                    helperText={registerContext.formErrors?.email || ""}
+                  />
+                  <TextField
+                    label="Contraseña"
+                    name="password"
+                    type="password"
+                    fullWidth
+                    required
+                    value={registerContext.formValues.password || ""}
+                    onChange={(e) => registerSend({ type: "UPDATE_FORM", key: "password", value: e.target.value })}
+                    error={!!registerContext.formErrors?.password}
+                    helperText={registerContext.formErrors?.password || ""}
+                  />
+                  <TextField
+                    label="Confirmar Contraseña"
+                    name="password_confirm"
+                    type="password"
+                    fullWidth
+                    required
+                    value={registerContext.formValues.password_confirm || ""}
+                    onChange={(e) => registerSend({ type: "UPDATE_FORM", key: "password_confirm", value: e.target.value })}
+                    error={!!registerContext.formErrors?.password_confirm}
+                    helperText={
+                      registerContext.formErrors?.password_confirm || ""
+                    }
+                  />
+
+                  {/* Doctor-specific fields */}
+                  {!isPatient && (
+                    <>
+                      <TextField
+                        label="Especialidad"
+                        name="specialty"
+                        fullWidth
+                        required
+                        value={registerContext.formValues.specialty || ""}
+                        onChange={(e) => registerSend({ type: "UPDATE_FORM", key: "specialty", value: e.target.value })}
+                        error={!!registerContext.formErrors?.specialty}
+                        helperText={registerContext.formErrors?.specialty || ""}
+                      />
+                      <TextField
+                        label="Matrícula Médica"
+                        name="medicalLicense"
+                        fullWidth
+                        required
+                        value={registerContext.formValues.medicalLicense || ""}
+                        onChange={(e) => registerSend({ type: "UPDATE_FORM", key: "medicalLicense", value: e.target.value })}
+                        error={!!registerContext.formErrors?.medicalLicense}
+                        helperText={registerContext.formErrors?.medicalLicense || ""}
+                      />
+                      <TextField
+                        label="Duración de turno (minutos)"
+                        name="slotDurationMin"
+                        type="number"
+                        fullWidth
+                        value={registerContext.formValues.slotDurationMin || ""}
+                        onChange={(e) => registerSend({ type: "UPDATE_FORM", key: "slotDurationMin", value: parseInt(e.target.value) })}
+                        error={!!registerContext.formErrors?.slotDurationMin}
+                        helperText={registerContext.formErrors?.slotDurationMin || ""}
+                      />
+                    </>
+                  )}
+                </Stack>
+
+                <Button
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  sx={{ mt: 4 }}
+                  onClick={() => registerSend({ type: "SUBMIT" })}
+                  disabled={registerContext.apiResponse?.loading || registerContext.hasErrorsOrEmpty}
+                >
+                  {registerContext.apiResponse?.loading ? "Enviando..." : "Enviar"}
+                </Button>
+              </Grid>
             </>
           )}
         </Box>
