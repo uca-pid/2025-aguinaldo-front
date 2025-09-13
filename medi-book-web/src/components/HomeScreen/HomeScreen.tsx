@@ -9,7 +9,7 @@ import DoctorDashboard from "./userDashboards/DoctorDashboard";
 import AdminDashboard from "./userDashboards/AdminDashboard";
 
 const HomeScreen: React.FC = () => {
-  const TEST_ROLE = "DOCTOR"; // "PATIENT" | "DOCTOR" | "ADMIN"
+  const TEST_ROLE = "PATIENT"; // "PATIENT" | "DOCTOR" | "ADMIN"
   const userName = "Nombre Usuario";
 
   const dashboards = {
