@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Box, Typography, Grid, Card, CardActionArea, CardContent, List, ListItem, ListItemText, Paper, Modal, TextField, Button,
   FormControl, InputLabel, Select, MenuItem, FormHelperText, SelectChangeEvent
@@ -51,13 +51,10 @@ const PatientDashboard: React.FC = () => {
   const reserveTurns = formContext["showReservedTurns"] ?? false;
   const [state, send] = useMachine(takeTurnPacientMachine);
   const formValues = state.context.formValues;
-
-
-  const [step, setStep] = useState(0);
-
   
   const isProfessionSelected = !!state.context.formValues.professionSelected;
 
+  const currentStep=state.value;
  
   const filteredProfessionals = isProfessionSelected
     ? professionals.filter((p) => p.profession === formValues.professionSelected)
@@ -88,8 +85,8 @@ const PatientDashboard: React.FC = () => {
  
   const handleClose = () => {
     uiSend({ type: "TOGGLE", key: "showReservedTurns" });
-    setStep(0);
     send({ type: "UPDATE_FORM", key: "reason", value: "" });
+    send({ type: "UPDATE_FORM", key: "professionSelected", value: "" });
     send({ type: "UPDATE_FORM", key: "profesionalSelected", value: "" });
     send({ type: "UPDATE_FORM", key: "dateSelected", value: null });
     send({ type: "UPDATE_FORM", key: "timeSelected", value: null });
@@ -97,11 +94,7 @@ const PatientDashboard: React.FC = () => {
 
   const handleReserve = () => {
     uiSend({ type: "TOGGLE", key: "showReservedTurns" });
-    setStep(0);
-    send({ type: "UPDATE_FORM", key: "reason", value: "" });
-    send({ type: "UPDATE_FORM", key: "profesionalSelected", value: "" });
-    send({ type: "UPDATE_FORM", key: "dateSelected", value: null });
-    send({ type: "UPDATE_FORM", key: "timeSelected", value: null });
+    send({ type: "RESET" });
   };
 
   return (
@@ -180,7 +173,7 @@ const PatientDashboard: React.FC = () => {
               overflowY: "auto",
             }}
           >
-            {step === 0 && (
+            {currentStep==="step1" && (
               <>
                 <Typography variant="h6" mb={1}>
                   Reservar Turno
@@ -250,7 +243,7 @@ const PatientDashboard: React.FC = () => {
                     Cancelar
                   </Button>
                   <Button
-                    onClick={() => setStep(1)}
+                    onClick={() => send({ type: "NEXT" })}
                     variant="contained"
                     color="primary"
                     disabled={
@@ -264,7 +257,7 @@ const PatientDashboard: React.FC = () => {
                 </Box>
               </>
             )}
-            {step === 1 && (
+            {currentStep==="step2" && (
               <>
                 <Typography variant="h6" mb={1}>
                   Seleccioná la hora
@@ -278,7 +271,7 @@ const PatientDashboard: React.FC = () => {
                   </DemoItem>
                 </Box>
                 <Box display="flex" justifyContent="flex-end">
-                  <Button onClick={() => setStep(0)} color="inherit">
+                  <Button onClick={() => send({ type: "BACK" })} color="inherit">
                     Atrás
                   </Button>
                   <Button

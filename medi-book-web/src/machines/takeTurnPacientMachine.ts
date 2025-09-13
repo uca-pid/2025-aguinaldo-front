@@ -12,11 +12,13 @@ export interface TakeTurnPacientMachineContext {
 
 export type TakeTurnPacientMachineEvent =
   | { type: "UPDATE_FORM"; key: string; value: any }
-  
+  | { type: "NEXT" }
+  | { type: "BACK" }
+  | { type: "RESET" };
 
 export const takeTurnPacientMachine = createMachine({
   id: "takeTurnPacient",
-  initial: "idle",
+  initial: "step1",
   context: {  
     formValues:{
       professionSelected:"",profesionalSelected:"", dateSelected: null, timeSelected: null, reason:""
@@ -27,7 +29,7 @@ export const takeTurnPacientMachine = createMachine({
     events: {} as TakeTurnPacientMachineEvent,
   },
   states: {
-    idle: {
+    step1: {
       on: {
         UPDATE_FORM: {
           actions: assign({
@@ -36,10 +38,49 @@ export const takeTurnPacientMachine = createMachine({
               [event.key]: event.value
             }),
           })
-        }
+        },
+        NEXT: "step2",
+        RESET: {
+          target: "step1",
+          actions: assign({
+            formValues: {
+              professionSelected: "",
+              profesionalSelected: "",
+              dateSelected: null,
+              timeSelected: null,
+              reason: ""
+            }
+          })
       },
       
     },
+    },
+    step2:{
+      on: {
+      UPDATE_FORM: {
+        actions: assign({
+          formValues: ({ context, event }) => ({
+            ...context.formValues,
+            [event.key]: event.value
+          }),
+        })
+      },
+      BACK: "step1",
+      RESET:{
+        target: "step1",
+        actions:assign({
+          formValues: {
+            professionSelected: "",
+            profesionalSelected: "",
+            dateSelected: null,
+            timeSelected: null,
+            reason: ""
+          }
+        })
+      }
+            
+      }   
+    }
   },
   
 });
