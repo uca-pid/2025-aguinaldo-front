@@ -26,17 +26,19 @@ const PatientRegisterForm: React.FC = () => {
   const hasErrorsOrEmpty = () => {
     const values = registerContext.formValues || {};
     const errors = registerContext.formErrors || {};
-    const keys = [
-      "patientNombre",
-      "patientApellido",
-      "patientDni",
-      "patientGenero",
-      "patientFechaNacimiento",
-      "patientEmail",
-      "patientPassword",
-      "patientPasswordConfirm",
-      "patientTelefono",
+
+    const keys: (keyof typeof values)[] = [
+      "patient_name",
+      "patient_surname",
+      "patient_dni",
+      "patient_gender",
+      "patient_birthdate",
+      "patient_email",
+      "patient_password",
+      "patient_password_confirm",
+      "patient_phone",
     ];
+
     return keys.some((key) => !values[key] || errors[key]);
   };
 
@@ -45,42 +47,42 @@ const PatientRegisterForm: React.FC = () => {
       <Stack spacing={2}>
         <TextField
           label="Nombre"
-          name="patientNombre"
+          name="patient_name"
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerContext.formErrors?.patientNombre}
-          helperText={registerContext.formErrors?.patientNombre || ""}
+          error={!!registerContext.formErrors?.patient_name}
+          helperText={registerContext.formErrors?.patient_name || ""}
         />
         <TextField
           label="Apellido"
-          name="patientApellido"
+          name="patient_surname"
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerContext.formErrors?.patientApellido}
-          helperText={registerContext.formErrors?.patientApellido || ""}
+          error={!!registerContext.formErrors?.patient_surname}
+          helperText={registerContext.formErrors?.patient_surname || ""}
         />
         <TextField
           label="DNI"
-          name="patientDni"
+          name="patient_dni"
           type="number"
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerContext.formErrors?.patientDni}
-          helperText={registerContext.formErrors?.patientDni || ""}
+          error={!!registerContext.formErrors?.patient_dni}
+          helperText={registerContext.formErrors?.patient_dni || ""}
         />
         <FormControl
           fullWidth
           required
-          error={!!registerContext.formErrors?.patientGenero}
+          error={!!registerContext.formErrors?.patient_gender}
         >
           <InputLabel id="genero-patient-label">Género</InputLabel>
           <Select
             labelId="genero-patient-label"
             id="genero-patient"
-            name="patientGenero"
+            name="patient_gender"
             defaultValue=""
             fullWidth
             onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
@@ -89,7 +91,7 @@ const PatientRegisterForm: React.FC = () => {
             <MenuItem value={"Femenino"}>Femenino</MenuItem>
           </Select>
           <FormHelperText>
-            {registerContext.formErrors?.patientGenero}
+            {registerContext.formErrors?.patient_gender}
           </FormHelperText>
         </FormControl>
         <FormControl fullWidth required>
@@ -101,55 +103,55 @@ const PatientRegisterForm: React.FC = () => {
                 textField: {
                   required: true,
                   fullWidth: true,
-                  name: "patientFechaNacimiento",
+                  name: "patient_birthdate",
                 },
               }}
               onChange={(date) =>
-                debouncedUpdate("patientFechaNacimiento", date)
+                debouncedUpdate("patient_birthdate", date)
               }
             />
           </LocalizationProvider>
         </FormControl>
         <TextField
           label="Número de Teléfono"
-          name="patientTelefono"
+          name="patient_phone"
           type="number"
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerContext.formErrors?.patientTelefono}
-          helperText={registerContext.formErrors?.patientTelefono || ""}
+          error={!!registerContext.formErrors?.patient_phone}
+          helperText={registerContext.formErrors?.patient_phone || ""}
         />
         <TextField
           label="Email"
-          name="patientEmail"
+          name="patient_email"
           type="email"
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerContext.formErrors?.patientEmail}
-          helperText={registerContext.formErrors?.patientEmail || ""}
+          error={!!registerContext.formErrors?.patient_email}
+          helperText={registerContext.formErrors?.patient_email || ""}
         />
         <TextField
           label="Contraseña"
-          name="patientPassword"
+          name="patient_password"
           type="password"
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerContext.formErrors?.patientPassword}
-          helperText={registerContext.formErrors?.patientPassword || ""}
+          error={!!registerContext.formErrors?.patient_password}
+          helperText={registerContext.formErrors?.patient_password || ""}
         />
         <TextField
           label="Confirmar Contraseña"
-          name="patientPasswordConfirm"
+          name="patient_password_confirm"
           type="password"
           fullWidth
           required
           onChange={(e) => debouncedUpdate(e.target.name, e.target.value)}
-          error={!!registerContext.formErrors?.patientPasswordConfirm}
+          error={!!registerContext.formErrors?.patient_password_confirm}
           helperText={
-            registerContext.formErrors?.patientPasswordConfirm || ""
+            registerContext.formErrors?.patient_password_confirm || ""
           }
         />
       </Stack>
