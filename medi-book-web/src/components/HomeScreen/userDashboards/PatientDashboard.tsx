@@ -1,18 +1,26 @@
 import React from "react";
-import { Box, Typography, Grid, Card, CardActionArea, CardContent, List, ListItem, ListItemText, Paper, Modal, TextField, Button } from "@mui/material";
+import { Box, Typography, Grid, Card, CardActionArea, CardContent, List, ListItem, ListItemText, Paper, Modal, TextField, Button, FormControl, InputLabel, Select, MenuItem, FormHelperText, SelectChangeEvent } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import { styled } from "@mui/material/styles";
 import { useMachines } from "../../../providers/MachineProvider";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { DigitalClock, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
+import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
+import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 
 const upcomingAppointments = [
   { date: "15/09/2025", time: "10:30", doctor: "Dr. Pérez" },
   { date: "20/09/2025", time: "14:00", doctor: "Dra. Gómez" },
   { date: "25/09/2025", time: "09:00", doctor: "Dr. Ruiz" }
 ];
+
+const options = [
+    { value: 1, label: "Fernandez, Victoria" },
+    { value: 2, label: "Lopez, Matías" },
+    { value: 3, label: "García, Sol" },
+  ];
 
 const HoverCard = styled(Card)(({ theme }) => ({
   transition: "transform 0.2s, box-shadow 0.2s",
@@ -28,12 +36,20 @@ const PatientDashboard: React.FC = () => {
   const { context: uiContext, send: uiSend } = ui;
   const formContext = uiContext.toggleStates || {};
   const reserveTurns = formContext["showReservedTurns"] ?? false;
+  const choseDateTime = formContext["choseDateTime"] ?? false;
 
   const [reason, setReason] = React.useState("");
-  const [date, setDate] = React.useState<Dayjs | null>(null);
+  
+  const [age, setAge] = React.useState('');
+
+  const [value, setValue] = React.useState<Dayjs | null>(null);
+
 
   const handleMyAppointmentsClick = () => alert("Ir a Mis Turnos");
 
+  const handleChange = (event: SelectChangeEvent) => {
+    setAge(event.target.value);
+  };
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box
@@ -115,14 +131,39 @@ const PatientDashboard: React.FC = () => {
               onChange={(e) => setReason(e.target.value)}
               fullWidth
             />
-            <DatePicker
-              label="Fecha"
-              value={date}
-              onChange={setDate}
-              format="DD/MM/YYYY"
-              slotProps={{ textField: { fullWidth: true } }}
-              minDate={dayjs()}
-            />
+             <FormControl required sx={{ }}>
+              <InputLabel id="demo-simple-select-required-label">Age</InputLabel>
+              <Select
+                labelId="demo-simple-select-required-label"
+                id="demo-simple-select-required"
+                value={age}
+                label="Age *"
+                onChange={handleChange}
+                fullWidth
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                {options.map((opt) => (
+                  <MenuItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>Required</FormHelperText>
+            </FormControl>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DemoContainer components={['DateCalendar', 'DateCalendar']}>
+              
+                <DemoItem label="Controlled calendar">
+                  <DateCalendar value={value} onChange={(newValue) => {setValue(newValue);uiSend({ type: "TOGGLE", key: "choseDateTime" })}} />
+                </DemoItem>
+              </DemoContainer>
+            </LocalizationProvider>
+            <DemoItem label="Digital clock" visibility={ choseDateTime ? 'visible' : 'hidden' } >
+              <DigitalClock />
+            </DemoItem>
+
             <Box display="flex" gap={2} justifyContent="flex-end" mt={2}>
               <Button onClick={() => uiSend({ type: "TOGGLE", key: "showReservedTurns" })} color="inherit">
                 Cancelar
@@ -131,7 +172,7 @@ const PatientDashboard: React.FC = () => {
                 onClick={() => uiSend({ type: "TOGGLE", key: "showReservedTurns" })}
                 variant="contained"
                 color="primary"
-                disabled={!reason || !date}
+                disabled={!reason || !value}
               >
                 Reservar
               </Button>
