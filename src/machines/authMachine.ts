@@ -2,17 +2,20 @@ import { createMachine, assign } from "xstate";
 import {validateField, checkFormValidation} from "../utils/registerValidation";
 import { AuthService } from "../service/auth-service.service";
 
-export interface RegisterMachineContext {
+export interface AuthMachineContext {
+  mode: "login" | "register";
   isPatient: boolean;
   hasErrorsOrEmpty: boolean;
   formValues: {
+    // Login fields
+    email: string;
+    password: string;
+    // Register fields
     name: string;
     surname: string;
     dni: string;
     gender: string;
     birthdate: string | null;
-    email: string;
-    password: string;
     password_confirm: string;
     phone: string;
     specialty: string | null;
@@ -25,26 +28,30 @@ export interface RegisterMachineContext {
   apiResponse?: any;
 }
 
-export type RegisterMachineEvent =
+export type AuthMachineEvent =
   | { type: "UPDATE_FORM"; key: string; value: any }
   | { type: "TOGGLE_USER_TYPE"; isPatient: boolean }
+  | { type: "TOGGLE_MODE"; mode: "login" | "register" }
   | { type: "SUBMIT" }
   | { type: "API_DONE"; data: any };
 
-export const registerMachine = createMachine({
-  id: "register",
+export const authMachine = createMachine({
+  id: "auth",
   initial: "idle",
   context: {
+    mode: "login",
     isPatient: true,
     hasErrorsOrEmpty: true,
     formValues: {
+      // Login fields
+      email: "",
+      password: "",
+      // Register fields
       name: "", 
       surname: "", 
       dni: "", 
       gender: "", 
       birthdate: null, 
-      email: "", 
-      password: "", 
       password_confirm: "", 
       phone: "", 
       specialty: null, 
@@ -55,8 +62,8 @@ export const registerMachine = createMachine({
     apiResponse: null
   },
   types: {
-    context: {} as RegisterMachineContext,
-    events: {} as RegisterMachineEvent,
+    context: {} as AuthMachineContext,
+    events: {} as AuthMachineEvent,
   },
   states: {
     idle: {
@@ -100,6 +107,16 @@ export const registerMachine = createMachine({
             return {
               isPatient: event.isPatient,
               hasErrorsOrEmpty
+            };
+          })
+        },
+        TOGGLE_MODE: {
+          actions: assign(({ event }) => {
+            return {
+              mode: event.mode,
+              hasErrorsOrEmpty: true,
+              formErrors: {},
+              apiResponse: null
             };
           })
         },
@@ -166,16 +183,24 @@ export const registerMachine = createMachine({
     submitting: {
       entry: async ({ context }) => {
         try {
-
-          const response = context.isPatient
-            ? await AuthService.registerPatient(context.formValues)
-            : await AuthService.registerDoctor(context.formValues);
+          let response;
+          
+          if (context.mode === "login") {
+            response = await AuthService.signIn({
+              email: context.formValues.email,
+              password: context.formValues.password
+            });
+          } else {
+            response = context.isPatient
+              ? await AuthService.registerPatient(context.formValues)
+              : await AuthService.registerDoctor(context.formValues);
+          }
           
           console.log("API Response:", response);
           context.apiResponse = response;
         } catch (error) {
           console.error("API Error:", error);
-          context.apiResponse = { error: error instanceof Error ? error.message : 'Registration failed' };
+          context.apiResponse = { error: error instanceof Error ? error.message : 'Authentication failed' };
         }
       },
       on: {

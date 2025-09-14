@@ -1,16 +1,14 @@
 import './App.css'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import HomeScreen from './components/HomeScreen/HomeScreen'
-import RegisterScreen from './components/register/RegisterScreen'
-import LoginScreen from './components/LoginScreen/LoginScreen'
+import AuthScreen from './components/AuthScreen/AuthScreen'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomeScreen />} />
-        <Route path="/register" element={<RegisterScreen />} />
-        <Route path="/login" element={<LoginScreen />} />
+        <Route path="/login" element={<AuthScreen />} />
       </Routes>
     </BrowserRouter>
   )

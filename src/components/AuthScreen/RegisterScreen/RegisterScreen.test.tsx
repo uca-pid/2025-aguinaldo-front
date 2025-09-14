@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
-import { MachineProvider } from '../../providers/MachineProvider'
+import { MachineProvider } from '../../../providers/MachineProvider'
 import RegisterScreen from './RegisterScreen'
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
