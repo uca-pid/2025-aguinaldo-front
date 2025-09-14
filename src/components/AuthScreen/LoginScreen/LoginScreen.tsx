@@ -48,40 +48,40 @@ function LoginScreen() {
   };
 
   return (
-      <Box className="login-container">
+      <Box className="auth-container">
         <Paper
           elevation={12}
-          className={`login-paper ${isMobile ? 'login-paper--mobile' : ''}`}
+          className={`auth-paper ${isMobile ? 'auth-paper--mobile' : ''}`}
         >
           {!isMobile && (
-            <Box className="login-left-section">
-              <Box className="login-logo-container">
+            <Box className="auth-left-section">
+              <Box className="auth-logo-container">
                 <Avatar
                   src={Logo}
                   alt="MediBook Logo"
-                  className="login-logo"
+                  className="auth-logo"
                 />
               </Box>
-              <Typography variant="h3" className="login-title">
+              <Typography variant="h3" className="auth-title">
                 MediBook
               </Typography>
-              <Typography variant="h6" color="text.secondary" className="login-subtitle">
+              <Typography variant="h6" color="text.secondary" className="auth-subtitle">
                 Sistema de Gestión de Turnos Médicos
               </Typography>
-              <Typography variant="body1" color="text.secondary" className="login-description">
+              <Typography variant="body1" color="text.secondary" className="auth-description">
                 Inicia sesión para acceder a tu cuenta y gestionar tus citas médicas de manera eficiente.
               </Typography>
               
-              <Box className="login-cards-container">
-                <Card className="login-role-card">
-                  <LocalHospital className="login-role-icon login-role-icon--doctor" />
-                  <Typography variant="caption" display="block" className="login-role-text--doctor">
+              <Box className="auth-cards-container">
+                <Card className="auth-role-card">
+                  <LocalHospital className="auth-role-icon auth-role-icon--doctor" />
+                  <Typography variant="caption" display="block" className="auth-role-text--doctor">
                     Para Médicos
                   </Typography>
                 </Card>
-                <Card className="login-role-card">
-                  <Person className="login-role-icon login-role-icon--patient" />
-                  <Typography variant="caption" display="block" className="login-role-text--patient">
+                <Card className="auth-role-card">
+                  <Person className="auth-role-icon auth-role-icon--patient" />
+                  <Typography variant="caption" display="block" className="auth-role-text--patient">
                     Para Pacientes
                   </Typography>
                 </Card>
@@ -89,26 +89,26 @@ function LoginScreen() {
             </Box>
           )}
 
-          {!isMobile && <Divider orientation="vertical" flexItem className="login-divider" />}
+          {!isMobile && <Divider orientation="vertical" flexItem className="auth-divider" />}
 
-        <Box className="login-right-section">
+        <Box className="auth-right-section">
           {isMobile && (
-            <Box className="login-mobile-header">
+            <Box className="auth-mobile-header">
               <Avatar
                 src={Logo}
                 alt="MediBook Logo"
-                className="login-mobile-logo"
+                className="auth-mobile-logo"
               />
-              <Typography variant="h4" className="login-mobile-title">
+              <Typography variant="h4" className="auth-mobile-title">
                 MediBook
               </Typography>
             </Box>
           )}
           
           {isSuccess ? (
-            <Box className="login-success-container">
-              <Typography variant="h4" className="login-success-emoji">🎉</Typography>
-              <Typography variant="h5" color="success.main" className="login-success-title">
+            <Box className="auth-success-container">
+              <Typography variant="h4" className="auth-success-emoji">🎉</Typography>
+              <Typography variant="h5" color="success.main" className="auth-success-title">
                 ¡Bienvenido de vuelta!
               </Typography>
               <Typography variant="body1" color="text.secondary">
@@ -120,20 +120,20 @@ function LoginScreen() {
               <CardContent sx={{ p: 0 }}>
                 <Typography
                   variant="h4"
-                  className="login-form-title"
+                  className="auth-form-title"
                 >
                   Iniciar Sesión
                 </Typography>
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  className="login-form-subtitle"
+                  className="auth-form-subtitle"
                 >
                   Accede a tu cuenta para gestionar turnos médicos
                 </Typography>
 
                 <Box component="form" onSubmit={handleSubmit}>
-                  <Stack className="login-form-stack">
+                  <Stack className="auth-form-stack">
                   <TextField
                     label="Correo Electrónico"
                     name="email"
@@ -144,7 +144,7 @@ function LoginScreen() {
                     onChange={(e) => authSend({ type: "UPDATE_FORM", key: "email", value: e.target.value })}
                     error={!!authContext.formErrors?.email}
                     helperText={authContext.formErrors?.email || ""}
-                    className="login-email-field"
+                    className="auth-field"
                   />
 
                   <FormControl variant="outlined" fullWidth required>
@@ -155,7 +155,7 @@ function LoginScreen() {
                       value={authContext.formValues.password || ""}
                       onChange={(e) => authSend({ type: "UPDATE_FORM", key: "password", value: e.target.value })}
                       error={!!authContext.formErrors?.password}
-                      className="login-password-field"
+                      className="auth-password-field"
                       endAdornment={
                         <InputAdornment position="end">
                           <IconButton
@@ -171,7 +171,7 @@ function LoginScreen() {
                       label="Contraseña"
                     />
                     {authContext.formErrors?.password && (
-                      <Typography variant="caption" color="error" className="login-password-error">
+                      <Typography variant="caption" color="error" className="auth-password-error">
                         {authContext.formErrors.password}
                       </Typography>
                     )}
@@ -183,18 +183,18 @@ function LoginScreen() {
                     fullWidth
                     size="large"
                     disabled={authContext.hasErrorsOrEmpty || authContext.loading}
-                    className="login-submit-button"
+                    className="auth-submit-button"
                   >
                     {authContext.loading ? "Iniciando sesión..." : "Iniciar Sesión"}
                   </Button>
 
-                  <Box className="login-register-container">
+                  <Box className="auth-toggle-container">
                     <Typography variant="body2" color="text.secondary">
                       ¿No tienes cuenta?{" "}
                       <Button
                         variant="text"
                         onClick={() => authSend({ type: "TOGGLE_MODE", mode: "register" })}
-                        className="login-register-button"
+                        className="auth-toggle-button"
                       >
                         Regístrate aquí
                       </Button>
@@ -202,16 +202,16 @@ function LoginScreen() {
                   </Box>
 
                   {authResponse && 'error' in authResponse && (
-                    <Box className="login-error-box">
-                      <Typography variant="body2" color="error" className="login-message-text">
+                    <Box className="auth-error-box">
+                      <Typography variant="body2" color="error" className="auth-message-text">
                         {authResponse.error || authResponse.message || 'Error en el inicio de sesión'}
                       </Typography>
                     </Box>
                   )}
 
                   {authResponse && 'message' in authResponse && !('error' in authResponse) && (
-                    <Box className="login-success-box">
-                      <Typography variant="body2" color="success.main" className="login-message-text">
+                    <Box className="auth-success-box">
+                      <Typography variant="body2" color="success.main" className="auth-message-text">
                         {authResponse.message}
                       </Typography>
                     </Box>
