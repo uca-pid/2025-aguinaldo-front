@@ -1,0 +1,44 @@
+export interface RegisterRequestData {
+    name: string;
+    surname: string;
+    dni: string;
+    gender: string;
+    birthdate: string | null;
+    email: string;
+    password: string;
+    password_confirm: string;
+    phone: string;
+    specialty: string | null;
+    medicalLicense: string | null;
+    slotDurationMin?: number | null;
+  }
+
+export interface RegisterResponse {
+  id: string;
+  email: string;
+  name: string;
+  surname: string;
+  role: string;
+  message: string;
+}
+
+export interface SignInRequestData {
+  email: string;
+  password: string;
+}
+
+export interface SignInResponse {
+  id: string;
+  email: string;
+  name: string;
+  surname: string;
+  role: string;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface ApiErrorResponse {
+  message?: string;
+  error?: string;
+  status?: number;
+}
