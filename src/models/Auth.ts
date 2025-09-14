@@ -19,6 +19,7 @@ export interface RegisterResponse {
   name: string;
   surname: string;
   role: string;
+  status: string;
   message: string;
 }
 
@@ -33,6 +34,7 @@ export interface SignInResponse {
   name: string;
   surname: string;
   role: string;
+  status: string;
   accessToken: string;
   refreshToken: string;
 }
