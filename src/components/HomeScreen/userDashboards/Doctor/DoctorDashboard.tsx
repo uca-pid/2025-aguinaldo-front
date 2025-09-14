@@ -6,6 +6,9 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import { styled } from "@mui/material/styles";
 import { useMachines } from "../../../../providers/MachineProvider";
 import ViewTurns from "./ViewTurns";
+import EnableHours from "./EnableHours";
+import ViewPatients from "./ViewPatients";
+
 const upcomingAppointments = [
   {
     id: 1,
@@ -54,14 +57,9 @@ const HoverCard = styled(Card)(({ theme }) => ({
 }));
 
 const DoctorDashboard: React.FC = () => {
-  const handleSetAvailability = () => alert("Configurar disponibilidad");
-  const handlePatientList = () => alert("Ver lista de pacientes");
-
 
   const { ui } = useMachines();
-  const {  send: uiSend } = ui;
-
-
+  const { send: uiSend } = ui;
 
   return (
     <Box width="100%" display="flex" flexDirection="column" gap={3} alignItems="center">
@@ -84,7 +82,7 @@ const DoctorDashboard: React.FC = () => {
 
         <Grid>
           <HoverCard>
-            <CardActionArea onClick={handleSetAvailability} sx={{ height: "100%" }}>
+            <CardActionArea onClick={()=>uiSend({ type: "TOGGLE", key: "enableDoctorReservations" })} sx={{ height: "100%" }}>
               <CardContent sx={{ textAlign: "center", py: 6 }}>
                 <EventAvailableIcon fontSize="large" color="secondary" />
                 <Typography variant="h6" mt={2}>
@@ -100,7 +98,7 @@ const DoctorDashboard: React.FC = () => {
 
         <Grid>
           <HoverCard>
-            <CardActionArea onClick={handlePatientList} sx={{ height: "100%" }}>
+            <CardActionArea onClick={()=>uiSend({ type: "TOGGLE", key: "showPatients" })} sx={{ height: "100%" }}>
               <CardContent sx={{ textAlign: "center", py: 6 }}>
                 <PeopleAltIcon fontSize="large" color="success" />
                 <Typography variant="h6" mt={2}>
@@ -150,6 +148,10 @@ const DoctorDashboard: React.FC = () => {
       </Grid>
 
       <ViewTurns/>
+
+      <EnableHours/>
+      
+      <ViewPatients/>
 
     </Box>
   );
