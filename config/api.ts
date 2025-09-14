@@ -8,6 +8,15 @@ export const API_CONFIG = {
     SIGNIN: '/api/auth/signin',
     SIGNOUT: '/api/auth/signout',
     REFRESH_TOKEN: '/api/auth/refresh-token',
+    
+    CREATE_TURN: '/api/turns',
+    RESERVE_TURN: '/api/turns/reserve',
+    GET_AVAILABLE_TURNS: '/api/turns/available',
+    GET_MY_TURNS: '/api/turns/my-turns',
+    GET_DOCTOR_TURNS: '/api/turns/doctor',
+    GET_PATIENT_TURNS: '/api/turns/patient',
+    
+    GET_DOCTORS: '/api/doctors',
   },
   
   DEFAULT_HEADERS: {
@@ -27,5 +36,22 @@ export const buildApiUrl = (endpoint: string): string => {
 
 export const getDefaultFetchOptions = (): RequestInit => ({
   headers: API_CONFIG.DEFAULT_HEADERS,
+  signal: AbortSignal.timeout(API_CONFIG.TIMEOUT),
+});
+
+export const getAuthenticatedFetchOptions = (accessToken: string): RequestInit => ({
+  headers: {
+    ...API_CONFIG.DEFAULT_HEADERS,
+    'Authorization': `Bearer ${accessToken}`,
+  },
+  signal: AbortSignal.timeout(API_CONFIG.TIMEOUT),
+});
+
+export const getAuthenticatedFetchOptionsWithRefreshToken = (accessToken: string, refreshToken: string): RequestInit => ({
+  headers: {
+    ...API_CONFIG.DEFAULT_HEADERS,
+    'Authorization': `Bearer ${accessToken}`,
+    'Refresh-Token': refreshToken,
+  },
   signal: AbortSignal.timeout(API_CONFIG.TIMEOUT),
 });

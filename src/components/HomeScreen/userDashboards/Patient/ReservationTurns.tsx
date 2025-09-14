@@ -1,52 +1,66 @@
-import { Box, Button, FormControl, FormHelperText, InputLabel, MenuItem, Modal, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
-import React from "react";
+import { 
+  Box, Button, FormControl, FormHelperText, InputLabel, MenuItem, Modal, Select, SelectChangeEvent, 
+  TextField, Typography, CircularProgress, Alert, List, ListItem, ListItemButton, ListItemText 
+} from "@mui/material";
+import React, { useEffect } from "react";
 import { useMachines } from "../../../../providers/MachineProvider";
+import { useAuthMachine } from "../../../../providers/AuthProvider";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
-import { DateCalendar, DigitalClock } from "@mui/x-date-pickers";
+import { DateCalendar } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
-
+import dayjs from "dayjs";
 
 const ReservationTurns: React.FC = () => {
-  const { ui } = useMachines();
+  const { ui, turn } = useMachines();
+  const { auth } = useAuthMachine();
   const { context: uiContext, send: uiSend } = ui;
+  const authContext = auth.context;
+  const { state: turnState, send: turnSend } = turn;
+  
   const formContext = uiContext.toggleStates || {}
   const reserveTurns = formContext["showDoAReservationTurn"] ?? false;
-    
-  const {turn}= useMachines();
-  const{state: turnState, send: turnSend}= turn;
-  const turnContext=turnState.context;
-  const formValues= turnContext.takeTurn;
+  const turnContext = turnState.context;
+  const formValues = turnContext.takeTurn;
+
+  const currentStep = turnState.value.takeTurn;
+
+  useEffect(() => {
+    if (reserveTurns && authContext.isAuthenticated && authContext.accessToken) {
+      turnSend({
+        type: "SET_AUTH",
+        accessToken: authContext.accessToken,
+        userId: authContext.user?.id || ""
+      });
+      turnSend({ type: "LOAD_DOCTORS" });
+    }
+  }, [reserveTurns, authContext.isAuthenticated, authContext.accessToken, turnSend]);
+
+  useEffect(() => {
+    if (formValues.doctorId && formValues.dateSelected && authContext.accessToken) {
+      const dateString = formValues.dateSelected.format('YYYY-MM-DD');
+      turnSend({
+        type: "LOAD_AVAILABLE_TURNS",
+        doctorId: formValues.doctorId,
+        date: dateString
+      });
+    }
+  }, [formValues.doctorId, formValues.dateSelected, authContext.accessToken, turnSend]);
 
   const isProfessionSelected = !!formValues.professionSelected;
+  const isDoctorSelected = !!formValues.doctorId;
 
-  const currentStep=turnState.value.takeTurn;
+  const specialties = Array.from(new Set(turnContext.doctors.map((doctor: any) => doctor.specialty))).map((specialty: unknown) => ({
+    value: specialty as string,
+    label: (specialty as string).charAt(0).toUpperCase() + (specialty as string).slice(1)
+  }));
 
-  const professions = [
-    { value: "medico", label: "Médico" },
-    { value: "psicologo", label: "Psicólogo" },
-    { value: "nutricionista", label: "Nutricionista" },
-  ];
-
-  const professionals = [
-    { value: 1, label: "Fernandez, Victoria", profession: "medico" },
-    { value: 2, label: "Lopez, Matías", profession: "psicologo" },
-    { value: 3, label: "García, Sol", profession: "nutricionista" },
-    { value: 4, label: "Martínez, Juan", profession: "medico" },
-    { value: 5, label: "Pérez, Ana", profession: "psicologo" },
-  ];
-
-  const filteredProfessionals = isProfessionSelected
-    ? professionals.filter((p) => p.profession === formValues.professionSelected)
+  const filteredDoctors = isProfessionSelected
+    ? turnContext.doctors.filter((doctor: any) => doctor.specialty.toLowerCase() === formValues.professionSelected.toLowerCase())
     : [];
-
 
   const handleClose = () => {
     uiSend({ type: "TOGGLE", key: "showDoAReservationTurn" });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "reason", value: "" });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "professionSelected", value: "" });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "profesionalSelected", value: "" });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "dateSelected", value: null });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "timeSelected", value: null });
+    turnSend({ type: "RESET_TAKE_TURN" });
   };
 
   const handleReasonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,28 +69,47 @@ const ReservationTurns: React.FC = () => {
 
   const handleProfessionChange = (event: SelectChangeEvent) => {
     turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "professionSelected", value: event.target.value });
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "doctorId", value: "" });
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "profesionalSelected", value: "" });
   };
   
-  const handleProfessionalChange = (event: SelectChangeEvent) => {
-      turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "profesionalSelected", value: event.target.value });
+  const handleDoctorChange = (event: SelectChangeEvent) => {
+    const selectedDoctor = turnContext.doctors.find((doctor: any) => doctor.id === event.target.value);
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "doctorId", value: event.target.value });
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "profesionalSelected", value: selectedDoctor ? `${selectedDoctor.name} ${selectedDoctor.surname}` : "" });
   };
 
   const handleDateChange = (newValue: Dayjs | null) => {
-      turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "dateSelected", value: newValue });
-      turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "timeSelected", value: null });
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "dateSelected", value: newValue });
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "timeSelected", value: null });
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "scheduledAt", value: null });
   };
 
-  const handleTimeChange = (newTime: any) => {
-     turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "timeSelected", value: newTime });
+  const handleTimeSelect = (timeSlot: string) => {
+    const selectedDateTime = dayjs(timeSlot);
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "timeSelected", value: selectedDateTime });
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "scheduledAt", value: timeSlot });
   };
 
-  const handleReserve = () => {
-    uiSend({ type: "TOGGLE", key: "showDoAReservationTurn" });
-     turnSend({ type: "RESET_TAKE_TURN" });
+  const handleReserve = async () => {
+    if (!formValues.scheduledAt) return;
+    try {
+      turnSend({ type: "CREATE_TURN" });
+      
+      setTimeout(() => {
+        if (!turnContext.error) {
+          uiSend({ type: "TOGGLE", key: "showDoAReservationTurn" });
+          turnSend({ type: "RESET_TAKE_TURN" });
+          turnSend({ type: "LOAD_MY_TURNS" });
+        }
+      }, 1000);
+    } catch (error) {
+      console.error('Error creating turn:', error);
+    }
   };
 
   return(
-      <>
+    <>
       <Modal open={reserveTurns} onClose={handleClose}>
         <Box
           sx={{
@@ -98,7 +131,25 @@ const ReservationTurns: React.FC = () => {
             overflowY: "auto",
           }}
         >
-          {currentStep==="step1" && (
+          {turnContext.doctorsError && (
+            <Alert severity="error">
+              Error al cargar doctores: {turnContext.doctorsError}
+            </Alert>
+          )}
+          
+          {turnContext.availableError && (
+            <Alert severity="error">
+              Error al cargar turnos disponibles: {turnContext.availableError}
+            </Alert>
+          )}
+          
+          {turnContext.error && (
+            <Alert severity="error">
+              Error al crear turno: {turnContext.error}
+            </Alert>
+          )}
+
+          {currentStep === "step1" && (
             <>
               <Typography variant="h6" mb={1}>
                 Reservar Turno
@@ -111,53 +162,59 @@ const ReservationTurns: React.FC = () => {
                   fullWidth
                   size="small"
                 />
+                
                 <FormControl required size="small" fullWidth>
-                  <InputLabel id="profesion-select-label">Profesión</InputLabel>
+                  <InputLabel id="profession-select-label">Especialidad</InputLabel>
                   <Select
-                    labelId="profesion-select-label"
-                    id="profesion-select"
+                    labelId="profession-select-label"
+                    id="profession-select"
                     value={formValues.professionSelected}
-                    label="Profesión *"
+                    label="Especialidad *"
                     onChange={handleProfessionChange}
+                    disabled={turnContext.isLoadingDoctors}
                   >
                     <MenuItem value="">
-                      <em>Seleccione una profesión</em>
+                      <em>Seleccione una especialidad</em>
                     </MenuItem>
-                    {professions.map((prof) => (
-                      <MenuItem key={prof.value} value={prof.value}>
-                        {prof.label}
+                    {specialties.map((specialty) => (
+                      <MenuItem key={specialty.value} value={specialty.value}>
+                        {specialty.label}
                       </MenuItem>
                     ))}
                   </Select>
-                  <FormHelperText>Required</FormHelperText>
+                  {turnContext.isLoadingDoctors && <FormHelperText>Cargando especialidades...</FormHelperText>}
                 </FormControl>
+                
                 <FormControl required size="small" fullWidth>
-                  <InputLabel id="profesional-select-label">Profesional</InputLabel>
+                  <InputLabel id="doctor-select-label">Doctor</InputLabel>
                   <Select
-                    labelId="profesional-select-label"
-                    id="profesional-select"
-                    value={formValues.profesionalSelected}
-                    label="Profesional *"
-                    onChange={handleProfessionalChange}
-                    disabled={!isProfessionSelected}
+                    labelId="doctor-select-label"
+                    id="doctor-select"
+                    value={formValues.doctorId}
+                    label="Doctor *"
+                    onChange={handleDoctorChange}
+                    disabled={!isProfessionSelected || turnContext.isLoadingDoctors}
                   >
                     <MenuItem value="">
-                      <em>Seleccione un profesional</em>
+                      <em>Seleccione un doctor</em>
                     </MenuItem>
-                    {filteredProfessionals.map((opt) => (
-                      <MenuItem key={opt.value} value={opt.value}>
-                        {opt.label}
+                    {filteredDoctors.map((doctor: any) => (
+                      <MenuItem key={doctor.id} value={doctor.id}>
+                        {doctor.name} {doctor.surname} - {doctor.medicalLicense}
                       </MenuItem>
                     ))}
                   </Select>
                   <FormHelperText>Required</FormHelperText>
                 </FormControl>
+                
                 <Box>
                   <DemoContainer components={['DateCalendar']}>
                     <DemoItem label="Fecha">
                       <DateCalendar
                         value={formValues.dateSelected}
                         onChange={handleDateChange}
+                        minDate={dayjs()}
+                        disabled={!isDoctorSelected}
                       />
                     </DemoItem>
                   </DemoContainer>
@@ -168,12 +225,12 @@ const ReservationTurns: React.FC = () => {
                   Cancelar
                 </Button>
                 <Button
-                  onClick={() =>  turnSend({ type: "NEXT" })}
+                  onClick={() => turnSend({ type: "NEXT" })}
                   variant="contained"
                   color="primary"
                   disabled={
                     !isProfessionSelected ||
-                    !formValues.profesionalSelected ||
+                    !isDoctorSelected ||
                     !formValues.dateSelected
                   }
                 >
@@ -182,38 +239,80 @@ const ReservationTurns: React.FC = () => {
               </Box>
             </>
           )}
-          {currentStep==="step2" && (
+          
+          {currentStep === "step2" && (
             <>
               <Typography variant="h6" mb={1}>
                 Seleccioná la hora
               </Typography>
-              <Box mb={2}>
-                <DemoItem label="Hora">
-                  <DigitalClock
-                    value={formValues.timeSelected ?? null}
-                    onChange={handleTimeChange}
-                  />
-                </DemoItem>
-              </Box>
-              <Box display="flex" justifyContent="flex-end">
-                <Button onClick={() =>  turnSend({ type: "BACK" })} color="inherit">
+              
+              {turnContext.isLoadingAvailableTurns ? (
+                <Box display="flex" justifyContent="center" p={2}>
+                  <CircularProgress />
+                  <Typography ml={2}>Cargando horarios disponibles...</Typography>
+                </Box>
+              ) : turnContext.availableTurns.length > 0 ? (
+                <List sx={{ maxHeight: 300, overflowY: 'auto' }}>
+                  {turnContext.availableTurns
+                    .filter((timeSlot: string) => {
+                      const slotDateTime = dayjs(timeSlot);
+                      const now = dayjs();
+                      
+                      if (slotDateTime.isSame(now, 'day')) {
+                        return slotDateTime.isAfter(now);
+                      }
+                      
+                      return slotDateTime.isAfter(now, 'day');
+                    })
+                    .map((timeSlot: string, index: number) => (
+                    <ListItem key={index} disablePadding>
+                      <ListItemButton
+                        selected={formValues.scheduledAt === timeSlot}
+                        onClick={() => handleTimeSelect(timeSlot)}
+                      >
+                        <ListItemText 
+                          primary={dayjs(timeSlot).format('HH:mm')}
+                          secondary={dayjs(timeSlot).format('DD/MM/YYYY')}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              ) : (
+                <Typography color="text.secondary">
+                  {turnContext.availableTurns.length === 0 
+                    ? "No hay horarios disponibles para la fecha seleccionada."
+                    : "No hay horarios disponibles (los horarios de hoy ya han pasado)."
+                  }
+                </Typography>
+              )}
+              
+              <Box display="flex" justifyContent="flex-end" mt={2}>
+                <Button onClick={() => turnSend({ type: "BACK" })} color="inherit">
                   Atrás
                 </Button>
                 <Button
                   onClick={handleReserve}
                   variant="contained"
                   color="primary"
-                  disabled={!formValues.timeSelected}
+                  disabled={!formValues.scheduledAt || turnContext.isCreatingTurn}
                 >
-                  Reservar
+                  {turnContext.isCreatingTurn ? (
+                    <>
+                      <CircularProgress size={20} sx={{ mr: 1 }} />
+                      Reservando...
+                    </>
+                  ) : (
+                    'Reservar'
+                  )}
                 </Button>
               </Box>
             </>
           )}
         </Box>
       </Modal>
-
-      </>
+    </>
   );
 }
+
 export default ReservationTurns;
