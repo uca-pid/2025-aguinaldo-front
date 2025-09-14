@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import { useMachine } from '@xstate/react';
 import { authMachine } from '../machines/authMachine';
 import type { AuthMachineContext, AuthMachineEvent } from '../machines/authMachine';
+import { SignInResponse } from '../models/Auth';
+import { RegisterResponse } from '../models/Auth';
 
 interface AuthMachineInstance {
   auth: {
@@ -10,7 +12,7 @@ interface AuthMachineInstance {
     send: (event: AuthMachineEvent) => void;
     context: AuthMachineContext;
     isAuthenticated: boolean;
-    isLoading: boolean;
+    authResponse?: RegisterResponse | SignInResponse | { error: string | null } | null;
   };
 }
 
@@ -29,7 +31,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       send: authSend,
       context: authState.context,
       isAuthenticated: authState.context.isAuthenticated,
-      isLoading: authState.matches('checkingAuth') || authState.matches('submitting')
+      authResponse: authState.context.authResponse
     },
   };
 

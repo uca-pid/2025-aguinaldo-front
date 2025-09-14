@@ -33,7 +33,7 @@ export interface SignInResponse {
   email: string;
   name: string;
   surname: string;
-  role: string;
+  role: "PATIENT" | "DOCTOR" | "ADMIN";
   status: string;
   accessToken: string;
   refreshToken: string;

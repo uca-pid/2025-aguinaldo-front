@@ -80,11 +80,10 @@ export const authMachine = createMachine({
   states: {
     checkingAuth: {
       entry: assign(() => {
-        const { accessToken, refreshToken } = AuthService.getStoredTokens();
+        const authData = AuthService.getStoredAuthData();
         return {
-          accessToken,
-          refreshToken,
-          isAuthenticated: !!(accessToken && refreshToken)
+          authResponse: authData,
+          isAuthenticated: !!(authData?.accessToken && authData?.refreshToken)
         };
       }),
       always: [
@@ -106,16 +105,17 @@ export const authMachine = createMachine({
     },
     loggingOut: {
       invoke: {
-        src: fromPromise(async ({ input }: { input: AuthMachineContext }) => {
+        src: fromPromise(async () => {
           try {
-            if (input.authResponse && 'refreshToken' in input.authResponse && input.authResponse.refreshToken) {
-              await AuthService.signOut(input.authResponse.refreshToken);
+            const authData = AuthService.getStoredAuthData();
+            if (authData?.refreshToken) {
+              await AuthService.signOut(authData.refreshToken);
             }
-            AuthService.clearTokens();
+            AuthService.clearAuthData();
             return true;
           } catch (error) {
-            console.warn('Logout API call failed, but clearing local tokens:', error);
-            AuthService.clearTokens();
+            console.warn('Logout API call failed, but clearing local data:', error);
+            AuthService.clearAuthData();
             return true;
           }
         }),
@@ -124,20 +124,14 @@ export const authMachine = createMachine({
           target: "idle",
           actions: assign(() => ({
             isAuthenticated: false,
-            accessToken: null,
-            refreshToken: null,
-            user: null,
-            apiResponse: null
+            authResponse: null
           }))
         },
         onError: {
           target: "idle",
           actions: assign(() => ({
             isAuthenticated: false,
-            accessToken: null,
-            refreshToken: null,
-            user: null,
-            apiResponse: null
+            authResponse: null
           }))
         }
       }
@@ -287,12 +281,13 @@ export const authMachine = createMachine({
               const response = event.output;
               
               if (response.accessToken && response.refreshToken) {
-                AuthService.saveTokens(response.accessToken, response.refreshToken);
+                AuthService.saveAuthData(response);
               }
               
               return {
                 isAuthenticated: true,
                 authResponse: response,
+                formValues: { ...AuthMachineDefaultContext.formValues },
                 formErrors: {},
                 hasErrorsOrEmpty: true
               };
