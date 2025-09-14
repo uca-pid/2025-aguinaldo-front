@@ -1,6 +1,6 @@
 import { createMachine, assign } from "xstate";
 import { Dayjs } from "dayjs";
-export interface TakeTurnPacientMachineContext {
+export interface TakeTurnPatientMachineContext {
   formValues:{
     professionSelected:string;
     profesionalSelected:string; 
@@ -10,7 +10,7 @@ export interface TakeTurnPacientMachineContext {
   }
 }
 
-export type TakeTurnPacientMachineEvent =
+export type TakeTurnPatientMachineEvent =
   | { type: "UPDATE_FORM"; key: string; value: any }
   | { type: "NEXT" }
   | { type: "BACK" }
@@ -25,8 +25,8 @@ export const takeTurnPacientMachine = createMachine({
     }
   },
   types: {
-    context: {} as TakeTurnPacientMachineContext,
-    events: {} as TakeTurnPacientMachineEvent,
+    context: {} as TakeTurnPatientMachineContext,
+    events: {} as TakeTurnPatientMachineEvent,
   },
   states: {
     step1: {

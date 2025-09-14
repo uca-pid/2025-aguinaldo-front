@@ -4,7 +4,7 @@ import { Box, Typography, Paper, Grid, Avatar, Menu, MenuItem, Divider, ListItem
 import { Logout, Person } from "@mui/icons-material";
 import { useMachine } from "@xstate/react";
 import { homeHeaderMachine } from "../../machines/homeHeaderMachine";
-import PatientDashboard from "./userDashboards/PatientDashboard";
+import PatientDashboard from "./userDashboards/Patient/PatientDashboard";
 import DoctorDashboard from "./userDashboards/DoctorDashboard";
 import AdminDashboard from "./userDashboards/AdminDashboard";
 

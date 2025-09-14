@@ -7,6 +7,9 @@ import { registerMachine } from '../machines/registerMachine';
 import type { RegisterMachineContext, RegisterMachineEvent } from '../machines/registerMachine';
 import { uiMachine} from '../machines/uiMachine';
 import type { UiMachineContext, UiMachineEvent } from '../machines/uiMachine';
+import { showTurnReservationMachine } from '../machines/showTurnsReservationsMachine';
+import type { ShowTurnsReservationsMachineContext,ShowTurnsReservationsMachineEvent } from '../machines/showTurnsReservationsMachine';
+import { takeTurnPacientMachine, type TakeTurnPatientMachineContext, type TakeTurnPatientMachineEvent } from '../machines/takeTurnPatientMachine';
 
 interface MachineInstances {
   homeHeader: {
@@ -24,6 +27,16 @@ interface MachineInstances {
     send: (event: UiMachineEvent) => void;
     context: UiMachineContext;
   };
+  takeTurnsReservation:{
+    state:any;
+    send: (event: TakeTurnPatientMachineEvent) => void;
+    context: TakeTurnPatientMachineContext;
+  };
+  showTurnsReservation:{
+    state:any;
+    send: (event: ShowTurnsReservationsMachineEvent) => void;
+    context: ShowTurnsReservationsMachineContext;
+  };
 }
 
 const MachineContext = createContext<MachineInstances | null>(null);
@@ -36,6 +49,8 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
   const [homeHeaderState, homeHeaderSend] = useMachine(homeHeaderMachine);
   const [registerState, registerSend] = useMachine(registerMachine);
   const [uiState, uiSend] = useMachine(uiMachine);
+  const [turnsReservationState, turnsReservationSend] = useMachine(takeTurnPacientMachine);
+  const[showTurnsReservationState, showTurnsReservationSend]= useMachine(showTurnReservationMachine);
 
   const machines: MachineInstances = {
     homeHeader: {
@@ -52,7 +67,19 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       state: uiState,
       send: uiSend,
       context: uiState.context
+    },
+    takeTurnsReservation:{
+      state:turnsReservationState,
+      send: turnsReservationSend,
+      context: turnsReservationState.context
+    },
+    showTurnsReservation:{
+      state:showTurnsReservationState,
+      send: showTurnsReservationSend,
+      context: showTurnsReservationState.context
     }
+    
+    
   };
 
   return (
