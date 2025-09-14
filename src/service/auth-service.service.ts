@@ -29,7 +29,6 @@ export class AuthService {
       }
 
       const result: RegisterResponse = await response.json();
-      console.log('Patient registration successful:', result);
       return result;
     } catch (error) {
       console.error('Patient registration failed:', error);
@@ -57,7 +56,6 @@ export class AuthService {
       }
 
       const result: RegisterResponse = await response.json();
-      console.log('Doctor registration successful:', result);
       return result;
     } catch (error) {
       console.error('Doctor registration failed:', error);
@@ -85,7 +83,6 @@ export class AuthService {
       }
 
       const result: SignInResponse = await response.json();
-      console.log('Sign in successful:', result);
       
       return result;
     } catch (error) {
@@ -115,8 +112,6 @@ export class AuthService {
           `Sign out failed! Status: ${response.status}`
         );
       }
-
-      console.log('Sign out successful');
       
     } catch (error) {
       console.error('Sign out failed:', error);
@@ -147,7 +142,6 @@ export class AuthService {
       }
 
       const result: SignInResponse = await response.json();
-      console.log('Token refresh successful:', result);
       
       return result;
     } catch (error) {
