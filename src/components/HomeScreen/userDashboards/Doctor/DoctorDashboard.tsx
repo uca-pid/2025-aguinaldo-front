@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Grid, Card, CardActionArea, CardContent, Typography, List, ListItem, ListItemText, Modal, Button} from "@mui/material";
+import { Box, Grid, Card, CardActionArea, CardContent, Typography, List, ListItem, ListItemText} from "@mui/material";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
@@ -150,7 +150,7 @@ const DoctorDashboard: React.FC = () => {
       <ViewTurns/>
 
       <EnableHours/>
-      
+
       <ViewPatients/>
 
     </Box>
