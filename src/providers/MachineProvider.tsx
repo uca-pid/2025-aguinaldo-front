@@ -7,6 +7,7 @@ import { registerMachine } from '../machines/registerMachine';
 import type { RegisterMachineContext, RegisterMachineEvent } from '../machines/registerMachine';
 import { uiMachine} from '../machines/uiMachine';
 import type { UiMachineContext, UiMachineEvent } from '../machines/uiMachine';
+import { turnMachine, type TurnMachineContext, type TurnMachineEvent } from '../machines/turnMachine';
 
 interface MachineInstances {
   homeHeader: {
@@ -24,6 +25,11 @@ interface MachineInstances {
     send: (event: UiMachineEvent) => void;
     context: UiMachineContext;
   };
+  turn:{
+    state:any;
+    send: (event: TurnMachineEvent) => void;
+    context: TurnMachineContext;
+  };
 }
 
 const MachineContext = createContext<MachineInstances | null>(null);
@@ -36,6 +42,7 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
   const [homeHeaderState, homeHeaderSend] = useMachine(homeHeaderMachine);
   const [registerState, registerSend] = useMachine(registerMachine);
   const [uiState, uiSend] = useMachine(uiMachine);
+  const [turnState, turnSend] = useMachine(turnMachine);
 
   const machines: MachineInstances = {
     homeHeader: {
@@ -52,7 +59,13 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       state: uiState,
       send: uiSend,
       context: uiState.context
+    },
+    turn:{
+      state:turnState,
+      send: turnSend,
+      context: turnState.context
     }
+    
   };
 
   return (
