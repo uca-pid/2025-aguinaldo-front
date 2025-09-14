@@ -2,8 +2,31 @@ import { createMachine, assign } from "xstate";
 import {validateField} from "../utils/registerValidation";
 
 export interface RegisterMachineContext {
-  formValues: Record<string, any>;
-  formErrors?: Record<string, string>;
+  formValues: {
+    patient_name: string;
+    patient_surname: string;
+    patient_dni: string;
+    patient_gender: string;
+    patient_birthdate: string | null;
+    patient_email: string;
+    patient_password: string;
+    patient_password_confirm: string;
+    patient_phone: string;
+    doctor_name: string;
+    doctor_surname: string;
+    doctor_specialty: string;
+    doctor_medical_license: string;
+    doctor_gender: string;
+    doctor_birthdate: string | null;
+    doctor_email: string;
+    doctor_password: string;
+    doctor_password_confirm: string;
+    doctor_phone: string;
+    doctor_slot_duration_min?: number;
+  };
+  formErrors?: {
+    [key: string]: string;
+  };
   apiResponse?: any;
 }
 
@@ -17,11 +40,11 @@ export const registerMachine = createMachine({
   initial: "idle",
   context: {
     formValues: {
-        patientNombre: "", patientApellido: "", patientDni: "", patientGenero: "", patientFechaNacimiento: null,
-        patientEmail: "",  patientPassword: "", patientPasswordConfirm: "", patientTelefono: "",
+        patient_name: "", patient_surname: "", patient_dni: "", patient_gender: "", patient_birthdate: null,
+        patient_email: "",  patient_password: "", patient_password_confirm: "", patient_phone: "",
         
-        doctorNombre: "", doctorApellido: "", doctorEspecialidad: "", doctorMatricula: "", doctorGenero: "", 
-        doctorFechaNacimiento: null, doctorEmail: "", doctorPassword: "", doctorPasswordConfirm: "", doctorTelefono: ""
+        doctor_name: "", doctor_surname: "", doctor_specialty: "", doctor_medical_license: "", doctor_gender: "", 
+        doctor_birthdate: null, doctor_email: "", doctor_password: "", doctor_password_confirm: "", doctor_phone: ""
     },
     formErrors: {},
     apiResponse: null
@@ -53,7 +76,7 @@ export const registerMachine = createMachine({
         {
           target: "submitting",
           actions: ({ context }) => {
-            const formPrefix = context.formValues?.patientNombre ? "patient" : "doctor";
+            const formPrefix = context.formValues?.patient_name ? "patient" : "doctor";
             const errors: Record<string, string> = {};
             for (const [key, value] of Object.entries(context.formValues || {})) {
               if (key.startsWith(formPrefix)) {
@@ -70,30 +93,30 @@ export const registerMachine = createMachine({
     },
     submitting: {
       entry: ({ context }) => {
-        const isPatient = context.formValues?.patientNombre ? true : false;
+        const isPatient = context.formValues?.patient_name ? true : false;
 
         const payload = isPatient ? {
-          name: context.formValues.patientNombre,
-          surname: context.formValues.patientApellido,
-          email: context.formValues.patientEmail,
-          password: context.formValues.patientPassword,
-          phone: context.formValues.patientTelefono || "",
-          birthdate: context.formValues.patientFechaNacimiento || "",
-          gender: context.formValues.patientGenero || "",
+          name: context.formValues.patient_name,
+          surname: context.formValues.patient_surname,
+          email: context.formValues.patient_email,
+          password: context.formValues.patient_password,
+          phone: context.formValues.patient_phone || "",
+          birthdate: context.formValues.patient_birthdate || "",
+          gender: context.formValues.patient_gender || "",
           medicalLicense: null,
           specialty: null,
           slotDurationMin: null
         } : {
-          name: context.formValues.doctorNombre,
-          surname: context.formValues.doctorApellido,
-          email: context.formValues.doctorEmail,
-          password: context.formValues.doctorPassword,
-          phone: context.formValues.doctorTelefono || "",
-          birthdate: context.formValues.doctorFechaNacimiento || "",
-          gender: context.formValues.doctorGenero || "",
-          medicalLicense: context.formValues.doctorMatricula,
-          specialty: context.formValues.doctorEspecialidad,
-          slotDurationMin: context.formValues.doctorSlotDurationMin || 30
+          name: context.formValues.doctor_name,
+          surname: context.formValues.doctor_surname,
+          email: context.formValues.doctor_email,
+          password: context.formValues.doctor_password,
+          phone: context.formValues.doctor_phone || "",
+          birthdate: context.formValues.doctor_birthdate || "",
+          gender: context.formValues.doctor_gender || "",
+          medicalLicense: context.formValues.doctor_medical_license,
+          specialty: context.formValues.doctor_specialty,
+          slotDurationMin: context.formValues.doctor_slot_duration_min || 30
         };
 
         fetch(isPatient
