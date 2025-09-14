@@ -23,8 +23,9 @@ const ViewTurns: React.FC = () => {
     const formContext = uiContext.toggleStates || {};
     const reservations= formContext["reservations"] ?? false;
 
-    const {showTurnsReservation}= useMachines();
-    const{ context: showTurnsReservationContext, send: showTurnsReservationSend}= showTurnsReservation;
+    const {turn}= useMachines();
+    const{ state: turnState, send: turnSend}= turn;
+    const showTurnsReservationContext= turnState.context
     
 
     return(
@@ -62,8 +63,8 @@ const ViewTurns: React.FC = () => {
                     <DemoItem label="Fecha">
                       <DateCalendar
                         
-                        value= {showTurnsReservationContext.formValues.dateSelected}
-                        onChange={(e)=>{showTurnsReservationSend({ type: "UPDATE_FORM", key: "dateSelected",value:e});}}
+                        value= {showTurnsReservationContext.showTurns.dateSelected}
+                        onChange={(e)=>{turnSend({ type: "UPDATE_FORM_SHOW_TURNS", key: "dateSelected",value:e});}}
                       
                       />
                     </DemoItem>
@@ -71,20 +72,20 @@ const ViewTurns: React.FC = () => {
                 </Box>
               </Box>
               <Box display="flex" justifyContent="flex-end" mt={1}>
-                <Button onClick={()=>{showTurnsReservationSend({type:"RESET"}); uiSend({ type: "TOGGLE", key: "reservations" })}} color="inherit">
+                <Button onClick={()=>{turnSend({type:"RESET_SHOW_TURNS"}); uiSend({ type: "TOGGLE", key: "reservations" })}} color="inherit">
                   Cancelar
                 </Button>
               </Box>
        
-            {showTurnsReservationContext.formValues.dateSelected && (
+            {showTurnsReservationContext.showTurns.dateSelected && (
               <>
                  <Typography variant="h6" mb={1}>
-                   Turnos del {showTurnsReservationContext.formValues.dateSelected.format("DD/MM/YYYY")}
+                   Turnos del {showTurnsReservationContext.showTurns.dateSelected.format("DD/MM/YYYY")}
                 </Typography>
                 {upcomingAppointments
                   .filter(
                     (appt) =>
-                      appt.date === showTurnsReservationContext.formValues.dateSelected?.format("DD/MM/YYYY")
+                      appt.date === showTurnsReservationContext.showTurns.dateSelected?.format("DD/MM/YYYY")
                   )
                   .map((appt, index) => (
                     <ListItem key={index} divider>
@@ -98,7 +99,7 @@ const ViewTurns: React.FC = () => {
 
                 {upcomingAppointments.filter(
                   (appt) =>
-                    appt.date === showTurnsReservationContext.formValues.dateSelected?.format("DD/MM/YYYY")
+                    appt.date === showTurnsReservationContext.showTurns.dateSelected?.format("DD/MM/YYYY")
                 ).length === 0 && (
                   <Typography variant="body2">No tenés turnos en esta fecha</Typography>
                 )}

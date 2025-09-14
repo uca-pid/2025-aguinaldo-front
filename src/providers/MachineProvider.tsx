@@ -7,9 +7,7 @@ import { registerMachine } from '../machines/registerMachine';
 import type { RegisterMachineContext, RegisterMachineEvent } from '../machines/registerMachine';
 import { uiMachine} from '../machines/uiMachine';
 import type { UiMachineContext, UiMachineEvent } from '../machines/uiMachine';
-import { showTurnReservationMachine } from '../machines/showTurnsReservationsMachine';
-import type { ShowTurnsReservationsMachineContext,ShowTurnsReservationsMachineEvent } from '../machines/showTurnsReservationsMachine';
-import { takeTurnPacientMachine, type TakeTurnPatientMachineContext, type TakeTurnPatientMachineEvent } from '../machines/takeTurnPatientMachine';
+import { turnMachine, type TurnMachineContext, type TurnMachineEvent } from '../machines/turnMachine';
 
 interface MachineInstances {
   homeHeader: {
@@ -27,15 +25,10 @@ interface MachineInstances {
     send: (event: UiMachineEvent) => void;
     context: UiMachineContext;
   };
-  takeTurnsReservation:{
+  turn:{
     state:any;
-    send: (event: TakeTurnPatientMachineEvent) => void;
-    context: TakeTurnPatientMachineContext;
-  };
-  showTurnsReservation:{
-    state:any;
-    send: (event: ShowTurnsReservationsMachineEvent) => void;
-    context: ShowTurnsReservationsMachineContext;
+    send: (event: TurnMachineEvent) => void;
+    context: TurnMachineContext;
   };
 }
 
@@ -49,8 +42,7 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
   const [homeHeaderState, homeHeaderSend] = useMachine(homeHeaderMachine);
   const [registerState, registerSend] = useMachine(registerMachine);
   const [uiState, uiSend] = useMachine(uiMachine);
-  const [turnsReservationState, turnsReservationSend] = useMachine(takeTurnPacientMachine);
-  const[showTurnsReservationState, showTurnsReservationSend]= useMachine(showTurnReservationMachine);
+  const [turnState, turnSend] = useMachine(turnMachine);
 
   const machines: MachineInstances = {
     homeHeader: {
@@ -68,17 +60,11 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       send: uiSend,
       context: uiState.context
     },
-    takeTurnsReservation:{
-      state:turnsReservationState,
-      send: turnsReservationSend,
-      context: turnsReservationState.context
-    },
-    showTurnsReservation:{
-      state:showTurnsReservationState,
-      send: showTurnsReservationSend,
-      context: showTurnsReservationState.context
+    turn:{
+      state:turnState,
+      send: turnSend,
+      context: turnState.context
     }
-    
     
   };
 

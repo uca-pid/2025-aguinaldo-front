@@ -12,12 +12,14 @@ const ReservationTurns: React.FC = () => {
   const formContext = uiContext.toggleStates || {}
   const reserveTurns = formContext["showDoAReservationTurn"] ?? false;
     
-  const {takeTurnsReservation}= useMachines();
-  const{context: formContextTurns, send: turnsReservationSend}= takeTurnsReservation;
-  const formValues= formContextTurns.formValues;
+  const {turn}= useMachines();
+  const{state: turnState, send: turnSend}= turn;
+  const turnContext=turnState.context;
+  const formValues= turnContext.takeTurn;
 
-  const isProfessionSelected = !!formContextTurns.formValues.professionSelected;
-  const currentStep=takeTurnsReservation.state.value
+  const isProfessionSelected = !!formValues.professionSelected;
+
+  const currentStep=turnState.value.takeTurn;
 
   const professions = [
     { value: "medico", label: "Médico" },
@@ -40,37 +42,37 @@ const ReservationTurns: React.FC = () => {
 
   const handleClose = () => {
     uiSend({ type: "TOGGLE", key: "showDoAReservationTurn" });
-    turnsReservationSend({ type: "UPDATE_FORM", key: "reason", value: "" });
-    turnsReservationSend({ type: "UPDATE_FORM", key: "professionSelected", value: "" });
-    turnsReservationSend({ type: "UPDATE_FORM", key: "profesionalSelected", value: "" });
-    turnsReservationSend({ type: "UPDATE_FORM", key: "dateSelected", value: null });
-    turnsReservationSend({ type: "UPDATE_FORM", key: "timeSelected", value: null });
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "reason", value: "" });
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "professionSelected", value: "" });
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "profesionalSelected", value: "" });
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "dateSelected", value: null });
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "timeSelected", value: null });
   };
 
   const handleReasonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    turnsReservationSend({ type: "UPDATE_FORM", key: "reason", value: e.target.value });
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "reason", value: e.target.value });
   };    
 
   const handleProfessionChange = (event: SelectChangeEvent) => {
-    turnsReservationSend({ type: "UPDATE_FORM", key: "professionSelected", value: event.target.value });
+    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "professionSelected", value: event.target.value });
   };
   
   const handleProfessionalChange = (event: SelectChangeEvent) => {
-      turnsReservationSend({ type: "UPDATE_FORM", key: "profesionalSelected", value: event.target.value });
+      turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "profesionalSelected", value: event.target.value });
   };
 
   const handleDateChange = (newValue: Dayjs | null) => {
-      turnsReservationSend({ type: "UPDATE_FORM", key: "dateSelected", value: newValue });
-      turnsReservationSend({ type: "UPDATE_FORM", key: "timeSelected", value: null });
+      turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "dateSelected", value: newValue });
+      turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "timeSelected", value: null });
   };
 
   const handleTimeChange = (newTime: any) => {
-     turnsReservationSend({ type: "UPDATE_FORM", key: "timeSelected", value: newTime });
+     turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "timeSelected", value: newTime });
   };
 
   const handleReserve = () => {
     uiSend({ type: "TOGGLE", key: "showDoAReservationTurn" });
-     turnsReservationSend({ type: "RESET" });
+     turnSend({ type: "RESET_TAKE_TURN" });
   };
 
   return(
@@ -166,7 +168,7 @@ const ReservationTurns: React.FC = () => {
                   Cancelar
                 </Button>
                 <Button
-                  onClick={() =>  turnsReservationSend({ type: "NEXT" })}
+                  onClick={() =>  turnSend({ type: "NEXT" })}
                   variant="contained"
                   color="primary"
                   disabled={
@@ -194,7 +196,7 @@ const ReservationTurns: React.FC = () => {
                 </DemoItem>
               </Box>
               <Box display="flex" justifyContent="flex-end">
-                <Button onClick={() =>  turnsReservationSend({ type: "BACK" })} color="inherit">
+                <Button onClick={() =>  turnSend({ type: "BACK" })} color="inherit">
                   Atrás
                 </Button>
                 <Button
