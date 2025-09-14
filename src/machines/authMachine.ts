@@ -1,13 +1,14 @@
 import { createMachine, assign, fromPromise } from "xstate";
 import {validateField, checkFormValidation} from "../utils/authFormValidation";
 import { AuthService } from "../service/auth-service.service";
-import { RegisterResponse, SignInResponse } from "../models/Auth";
+import { RegisterResponse, SignInResponse, ApiErrorResponse } from "../models/Auth";
 
 export interface AuthMachineContext {
   mode: "login" | "register";
   isPatient: boolean;
   hasErrorsOrEmpty: boolean;
   isAuthenticated: boolean;
+  loading: boolean;
   formValues: {
     // Login fields
     email: string;
@@ -27,7 +28,7 @@ export interface AuthMachineContext {
   formErrors?: {
     [key: string]: string;
   };
-  authResponse?: RegisterResponse | SignInResponse | { error: string | null } | null;
+  authResponse?: RegisterResponse | SignInResponse | ApiErrorResponse | null;
 }
 
 export const AuthMachineDefaultContext = {
@@ -35,9 +36,7 @@ export const AuthMachineDefaultContext = {
     isPatient: true,
     hasErrorsOrEmpty: true,
     isAuthenticated: false,
-    accessToken: null,
-    refreshToken: null,
-    user: null,
+    loading: false,
     formValues: {
       // Login fields
       email: "",
@@ -55,7 +54,7 @@ export const AuthMachineDefaultContext = {
       slotDurationMin: null
     },
     formErrors: {},
-    apiResponse: null
+    authResponse: null
   } as AuthMachineContext;
 
 export type AuthMachineEvent =
@@ -186,7 +185,8 @@ export const authMachine = createMachine({
               mode: event.mode,
               hasErrorsOrEmpty: true,
               formErrors: {},
-              apiResponse: null
+              authResponse: null,
+              loading: false
             };
           })
         },
@@ -251,6 +251,9 @@ export const authMachine = createMachine({
       ]
     },
     submitting: {
+      entry: assign(() => ({
+        loading: true
+      })),
       invoke: {
         src: fromPromise(async ({ input }: { input: AuthMachineContext }) => {
           try {
@@ -289,7 +292,8 @@ export const authMachine = createMachine({
                 authResponse: response,
                 formValues: { ...AuthMachineDefaultContext.formValues },
                 formErrors: {},
-                hasErrorsOrEmpty: true
+                hasErrorsOrEmpty: true,
+                loading: false
               };
             })
           },
@@ -312,7 +316,8 @@ export const authMachine = createMachine({
                 },
                 formErrors: {},
                 hasErrorsOrEmpty: false,
-                isAuthenticated: false
+                isAuthenticated: false,
+                loading: false
               };
             })
           }
@@ -323,7 +328,8 @@ export const authMachine = createMachine({
             return {
               authResponse: { 
                 error: event.error instanceof Error ? event.error.message : 'Authentication failed' 
-              }
+              },
+              loading: false
             };
           })
         }

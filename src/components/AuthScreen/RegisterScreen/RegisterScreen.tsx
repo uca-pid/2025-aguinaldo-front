@@ -27,7 +27,6 @@ import Logo from "../../../assets/MediBook-Logo.png";
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 
-// Set Spanish locale for dayjs
 dayjs.locale('es');
 
 function RegisterScreen() {
@@ -39,8 +38,8 @@ function RegisterScreen() {
   const formContext = uiContext.toggleStates || {};
   const isPatient = authContext.isPatient;
   const isIn = formContext["fade"] ?? true;
-  const isSuccess =
-    (authContext.apiResponse && !authContext.apiResponse.error) ?? false;
+  
+  const isSuccess = authContext.authResponse && 'message' in authContext.authResponse && !('error' in authContext.authResponse);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -503,7 +502,7 @@ function RegisterScreen() {
                     variant="contained"
                     fullWidth
                     size="large"
-                    disabled={authContext.apiResponse?.loading || authContext.hasErrorsOrEmpty}
+                    disabled={authContext.loading || authContext.hasErrorsOrEmpty}
                     sx={{ 
                       mt: 4, 
                       py: 2,
@@ -522,7 +521,7 @@ function RegisterScreen() {
                       }
                     }}
                   >
-                    {authContext.apiResponse?.loading ? "Creando cuenta..." : "Crear Cuenta"}
+                    {authContext.loading ? "Creando cuenta..." : "Crear Cuenta"}
                   </Button>
 
                   <Box textAlign="center" mt={3}>
@@ -548,7 +547,7 @@ function RegisterScreen() {
                     </Typography>
                   </Box>
 
-                  {authContext.apiResponse?.error && (
+                  {authContext.authResponse && 'error' in authContext.authResponse && (
                     <Box 
                       sx={{ 
                         p: 2, 
@@ -559,7 +558,23 @@ function RegisterScreen() {
                       }}
                     >
                       <Typography variant="body2" color="error" textAlign="center">
-                        {authContext.apiResponse.error}
+                        {authContext.authResponse.error || authContext.authResponse.message || 'Error en el registro'}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {authContext.authResponse && 'message' in authContext.authResponse && !('error' in authContext.authResponse) && (
+                    <Box 
+                      sx={{ 
+                        p: 2, 
+                        borderRadius: 2, 
+                        backgroundColor: '#dcfce7', 
+                        border: '1px solid #bbf7d0',
+                        mt: 2 
+                      }}
+                    >
+                      <Typography variant="body2" color="success.main" textAlign="center">
+                        {authContext.authResponse.message}
                       </Typography>
                     </Box>
                   )}
