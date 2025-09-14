@@ -155,4 +155,21 @@ export class AuthService {
       throw error;
     }
   }
+
+  static saveTokens(accessToken: string, refreshToken: string) {
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+  }
+
+  static getStoredTokens() {
+    return {
+      accessToken: localStorage.getItem('accessToken'),
+      refreshToken: localStorage.getItem('refreshToken')
+    };
+  }
+
+  static clearTokens() {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+  }
 }

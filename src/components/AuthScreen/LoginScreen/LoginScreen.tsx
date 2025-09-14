@@ -42,6 +42,11 @@ function LoginScreen() {
     event.preventDefault();
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    authSend({ type: "SUBMIT" });
+  };
+
   return (
       <Box
         display="flex"
@@ -49,7 +54,7 @@ function LoginScreen() {
         alignItems="center"
         minHeight="100vh"
         sx={{
-          background: 'linear-gradient(135deg, #0d2230 0%, #22577a 25%, #38a3a5 75%, #57cc99 100%)',
+          background: 'linear-gradient(135deg, #1f4f6f 0%, #22577a 50%, #2d7d90 100%)',
           p: { xs: 1, sm: 2 }
         }}
       >
@@ -67,8 +72,8 @@ function LoginScreen() {
             borderRadius: 4,
             opacity: isIn ? 1 : 0,
             transition: "all 0.3s ease-in-out",
-            background: 'linear-gradient(145deg, #c7f9cc 0%, #ccfad1 100%)',
-            boxShadow: '0 20px 40px rgba(13, 34, 48, 0.15)',
+            background: 'white',
+            boxShadow: '0 20px 40px rgba(31, 79, 111, 0.15)',
             mx: { xs: 1, sm: 2 },
           }}
         >
@@ -88,10 +93,7 @@ function LoginScreen() {
               </Box>
               <Typography variant="h3" fontWeight={800} mb={2} sx={{ 
                 fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' },
-                background: 'linear-gradient(45deg, #0d2230, #22577a, #38a3a5)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                color: '#0d2230',
               }}>
                 MediBook
               </Typography>
@@ -109,15 +111,15 @@ function LoginScreen() {
               </Typography>
               
               <Box display="flex" justifyContent="center" gap={2} mt={4}>
-                <Card sx={{ p: 2, textAlign: 'center', minWidth: 120, backgroundColor: '#c7f9cc' }}>
+                <Card sx={{ p: 2, textAlign: 'center', minWidth: 120, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
                   <LocalHospital sx={{ fontSize: 32, color: '#22577a', mb: 1 }} />
-                  <Typography variant="caption" display="block" fontWeight={600}>
+                  <Typography variant="caption" display="block" fontWeight={600} color="#22577a">
                     Para Médicos
                   </Typography>
                 </Card>
-                <Card sx={{ p: 2, textAlign: 'center', minWidth: 120, backgroundColor: '#c7f9cc' }}>
-                  <Person sx={{ fontSize: 32, color: '#38a3a5', mb: 1 }} />
-                  <Typography variant="caption" display="block" fontWeight={600}>
+                <Card sx={{ p: 2, textAlign: 'center', minWidth: 120, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                  <Person sx={{ fontSize: 32, color: '#2d7d90', mb: 1 }} />
+                  <Typography variant="caption" display="block" fontWeight={600} color="#2d7d90">
                     Para Pacientes
                   </Typography>
                 </Card>
@@ -143,10 +145,7 @@ function LoginScreen() {
               />
               <Typography variant="h4" fontWeight={700} sx={{ 
                 fontSize: { xs: '1.5rem', sm: '2rem' },
-                background: 'linear-gradient(45deg, #0d2230, #22577a, #38a3a5)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                color: '#0d2230',
               }}>
                 MediBook
               </Typography>
@@ -184,7 +183,8 @@ function LoginScreen() {
                   Accede a tu cuenta para gestionar turnos médicos
                 </Typography>
 
-                <Stack spacing={3}>
+                <Box component="form" onSubmit={handleSubmit}>
+                  <Stack spacing={3}>
                   <TextField
                     label="Correo Electrónico"
                     name="email"
@@ -247,20 +247,20 @@ function LoginScreen() {
                   </FormControl>
 
                   <Button
+                    type="submit"
                     variant="contained"
                     fullWidth
                     size="large"
-                    onClick={() => authSend({ type: "SUBMIT" })}
                     disabled={authContext.apiResponse?.loading || authContext.hasErrorsOrEmpty}
                     sx={{ 
                       mt: 4, 
                       py: 1.8,
                       borderRadius: 2,
-                      background: 'linear-gradient(45deg, #22577a, #38a3a5)',
-                      boxShadow: '0 4px 15px rgba(34, 87, 122, 0.4)',
+                      background: '#22577a',
+                      boxShadow: '0 4px 15px rgba(34, 87, 122, 0.3)',
                       '&:hover': {
-                        background: 'linear-gradient(45deg, #1f4f6f, #2d7d90)',
-                        boxShadow: '0 6px 20px rgba(34, 87, 122, 0.6)',
+                        background: '#1f4f6f',
+                        boxShadow: '0 6px 20px rgba(34, 87, 122, 0.4)',
                       },
                       '&:disabled': {
                         background: '#e2e8f0',
@@ -310,6 +310,7 @@ function LoginScreen() {
                     </Box>
                   )}
                 </Stack>
+                </Box>
               </CardContent>
             </Card>
           )}

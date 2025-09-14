@@ -1,11 +1,21 @@
-import { createMachine, assign } from "xstate";
-import {validateField, checkFormValidation} from "../utils/registerValidation";
+import { createMachine, assign, fromPromise } from "xstate";
+import {validateField, checkFormValidation} from "../utils/authFormValidation";
 import { AuthService } from "../service/auth-service.service";
 
 export interface AuthMachineContext {
   mode: "login" | "register";
   isPatient: boolean;
   hasErrorsOrEmpty: boolean;
+  isAuthenticated: boolean;
+  accessToken: string | null;
+  refreshToken: string | null;
+  user: {
+    id: string | null;
+    email: string | null;
+    name: string | null;
+    surname: string | null;
+    role: string | null;
+  } | null;
   formValues: {
     // Login fields
     email: string;
@@ -28,20 +38,14 @@ export interface AuthMachineContext {
   apiResponse?: any;
 }
 
-export type AuthMachineEvent =
-  | { type: "UPDATE_FORM"; key: string; value: any }
-  | { type: "TOGGLE_USER_TYPE"; isPatient: boolean }
-  | { type: "TOGGLE_MODE"; mode: "login" | "register" }
-  | { type: "SUBMIT" }
-  | { type: "API_DONE"; data: any };
-
-export const authMachine = createMachine({
-  id: "auth",
-  initial: "idle",
-  context: {
+export const AuthMachineDefaultContext = {
     mode: "login",
     isPatient: true,
     hasErrorsOrEmpty: true,
+    isAuthenticated: false,
+    accessToken: null,
+    refreshToken: null,
+    user: null,
     formValues: {
       // Login fields
       email: "",
@@ -60,12 +64,58 @@ export const authMachine = createMachine({
     },
     formErrors: {},
     apiResponse: null
-  },
+  } as AuthMachineContext;
+
+export type AuthMachineEvent =
+  | { type: "UPDATE_FORM"; key: string; value: any }
+  | { type: "TOGGLE_USER_TYPE"; isPatient: boolean }
+  | { type: "TOGGLE_MODE"; mode: "login" | "register" }
+  | { type: "SUBMIT" }
+  | { type: "API_SUCCESS"; data: any }
+  | { type: "API_ERROR"; error: any }
+  | { type: "LOGOUT" }
+  | { type: "CHECK_AUTH" };
+
+
+export const authMachine = createMachine({
+  id: "auth",
+  initial: "checkingAuth",
+  context: AuthMachineDefaultContext,
   types: {
     context: {} as AuthMachineContext,
     events: {} as AuthMachineEvent,
   },
   states: {
+    checkingAuth: {
+      entry: assign(() => {
+        const { accessToken, refreshToken } = AuthService.getStoredTokens();
+        return {
+          accessToken,
+          refreshToken,
+          isAuthenticated: !!(accessToken && refreshToken)
+        };
+      }),
+      always: [
+        {
+          target: "authenticated",
+          guard: ({ context }) => context.isAuthenticated
+        },
+        {
+          target: "idle"
+        }
+      ]
+    },
+    authenticated: {
+      on: {
+        LOGOUT: {
+          target: "idle",
+          actions: assign((): AuthMachineContext => {
+            AuthService.clearTokens();
+            return AuthMachineDefaultContext;
+          })
+        }
+      }
+    },
     idle: {
       on: {
         UPDATE_FORM: {
@@ -181,33 +231,62 @@ export const authMachine = createMachine({
       ]
     },
     submitting: {
-      entry: async ({ context }) => {
-        try {
-          let response;
-          
-          if (context.mode === "login") {
-            response = await AuthService.signIn({
-              email: context.formValues.email,
-              password: context.formValues.password
-            });
-          } else {
-            response = context.isPatient
-              ? await AuthService.registerPatient(context.formValues)
-              : await AuthService.registerDoctor(context.formValues);
+      invoke: {
+        src: fromPromise(async ({ input }: { input: AuthMachineContext }) => {
+          try {
+            let response;
+            
+            if (input.mode === "login") {
+              response = await AuthService.signIn({
+                email: input.formValues.email,
+                password: input.formValues.password
+              });
+            } else {
+              response = input.isPatient
+                ? await AuthService.registerPatient(input.formValues)
+                : await AuthService.registerDoctor(input.formValues);
+            }
+            
+            return response;
+          } catch (error) {
+            throw error;
           }
-          
-          console.log("API Response:", response);
-          context.apiResponse = response;
-        } catch (error) {
-          console.error("API Error:", error);
-          context.apiResponse = { error: error instanceof Error ? error.message : 'Authentication failed' };
-        }
-      },
-      on: {
-        API_DONE: {
+        }),
+        input: ({context}) => context,
+        onDone: {
+          target: "authenticated",
+          actions: assign(({ event }) => {
+            const response = event.output;
+            
+            if (response.accessToken && response.refreshToken) {
+              AuthService.saveTokens(response.accessToken, response.refreshToken);
+            }
+            
+            return {
+              isAuthenticated: true,
+              accessToken: response.accessToken || null,
+              refreshToken: response.refreshToken || null,
+              user: {
+                id: response.id || null,
+                email: response.email || null,
+                name: response.name || null,
+                surname: response.surname || null,
+                role: response.role || null
+              },
+              apiResponse: response,
+              formErrors: {},
+              hasErrorsOrEmpty: true
+            };
+          })
+        },
+        onError: {
           target: "idle",
-          actions: assign({
-            apiResponse: (_, event: any) => event.data
+          actions: assign(({ event }) => {
+            return {
+              apiResponse: { 
+                error: event.error instanceof Error ? event.error.message : 'Authentication failed' 
+              }
+            };
           })
         }
       }

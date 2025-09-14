@@ -1,7 +1,11 @@
 import dayjs from "dayjs";
-import type { RegisterMachineContext } from "../machines/registerMachine";
+import type { AuthMachineContext } from "../machines/authMachine";
 
-export const validateField = (key: string, value: any, context: RegisterMachineContext) => {
+export const validateField = (key: string, value: any, context: AuthMachineContext) => {
+  if (context.mode === "login" && !["email", "password"].includes(key)) {
+    return "";
+  }
+
   if (!value || value === null || value === undefined || value === "") {
     return "Campo requerido";
   }
@@ -41,14 +45,20 @@ export const validateField = (key: string, value: any, context: RegisterMachineC
   return "";
 };
 
-export const checkFormValidation = (context: RegisterMachineContext): boolean => {
-  const { formErrors = {}, formValues, isPatient } = context;
+export const checkFormValidation = (context: AuthMachineContext): boolean => {
+  const { formErrors = {}, formValues, isPatient, mode } = context;
   
   const hasErrors = Object.values(formErrors).some(error => error && error.length > 0);
 
-  const requiredFields = isPatient
-    ? ['name', 'surname', 'dni', 'gender', 'birthdate', 'phone', 'email', 'password', 'password_confirm']
-    : ['name', 'surname', 'dni', 'gender', 'birthdate', 'phone', 'email', 'password', 'password_confirm', 'specialty', 'medical_license'];
+  let requiredFields: string[] = [];
+
+  if (mode === "login") {
+    requiredFields = ['email', 'password'];
+  } else {
+    requiredFields = isPatient
+      ? ['name', 'surname', 'dni', 'gender', 'birthdate', 'phone', 'email', 'password', 'password_confirm']
+      : ['name', 'surname', 'dni', 'gender', 'birthdate', 'phone', 'email', 'password', 'password_confirm', 'specialty', 'medicalLicense'];
+  }
 
   const hasEmptyFields = requiredFields.some(field => {
     const value = formValues[field as keyof typeof formValues];

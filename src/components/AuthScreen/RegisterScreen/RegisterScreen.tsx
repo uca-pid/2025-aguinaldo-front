@@ -24,6 +24,11 @@ import { LocalHospital, Person } from "@mui/icons-material";
 import { useMachines } from "../../../providers/MachineProvider";
 import { useAuthMachine } from "../../../providers/AuthProvider";
 import Logo from "../../../assets/MediBook-Logo.png";
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
+
+// Set Spanish locale for dayjs
+dayjs.locale('es');
 
 function RegisterScreen() {
   const { auth } = useAuthMachine();
@@ -40,6 +45,11 @@ function RegisterScreen() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    authSend({ type: "SUBMIT" });
+  };
+
   return (
     <Box
       display="flex"
@@ -47,7 +57,7 @@ function RegisterScreen() {
       alignItems="center"
       minHeight="100vh"
       sx={{
-        background: 'linear-gradient(135deg, #0d2230 0%, #22577a 25%, #38a3a5 75%, #57cc99 100%)',
+        background: 'linear-gradient(135deg, #1f4f6f 0%, #22577a 50%, #2d7d90 100%)',
         p: { xs: 1, sm: 2 }
       }}
     >
@@ -65,7 +75,7 @@ function RegisterScreen() {
           borderRadius: 4,
           opacity: isIn ? 1 : 0,
           transition: "all 0.3s ease-in-out",
-          background: 'linear-gradient(145deg, #c7f9cc 0%, #ccfad1 100%)',
+          background: 'white',
           boxShadow: '0 20px 40px rgba(13, 34, 48, 0.15)',
           mx: { xs: 1, sm: 2 },
         }}
@@ -85,10 +95,7 @@ function RegisterScreen() {
               />
             </Box>
             <Typography variant="h3" fontWeight={800} mb={2} sx={{ 
-              background: 'linear-gradient(45deg, #0d2230, #22577a, #38a3a5)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              color: '#0d2230',
             }}>
               MediBook
             </Typography>
@@ -100,7 +107,7 @@ function RegisterScreen() {
             </Typography>
             
             <Stack spacing={2}>
-              <Card sx={{ p: 3, backgroundColor: '#c7f9cc', border: '2px solid #80ed99' }}>
+              <Card sx={{ p: 3, backgroundColor: '#f8fafc', border: '2px solid #e2e8f0' }}>
                 <Box display="flex" alignItems="center" gap={2} mb={2}>
                   <Person sx={{ fontSize: 32, color: '#22577a' }} />
                   <Typography variant="h6" fontWeight={600}>Para Pacientes</Typography>
@@ -110,7 +117,7 @@ function RegisterScreen() {
                 </Typography>
               </Card>
               
-              <Card sx={{ p: 3, backgroundColor: '#c7f9cc', border: '2px solid #80ed99' }}>
+              <Card sx={{ p: 3, backgroundColor: '#f8fafc', border: '2px solid #e2e8f0' }}>
                 <Box display="flex" alignItems="center" gap={2} mb={2}>
                   <LocalHospital sx={{ fontSize: 32, color: '#38a3a5' }} />
                   <Typography variant="h6" fontWeight={600}>Para Médicos</Typography>
@@ -140,10 +147,7 @@ function RegisterScreen() {
                 }}
               />
               <Typography variant="h4" fontWeight={700} sx={{ 
-                background: 'linear-gradient(45deg, #0d2230, #22577a, #38a3a5)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                color: '#0d2230',
               }}>
                 MediBook
               </Typography>
@@ -199,10 +203,12 @@ function RegisterScreen() {
                       fontWeight: 600,
                       cursor: 'pointer',
                       ...(isPatient && {
-                        background: 'linear-gradient(45deg, #22577a, #38a3a5)',
+                        background: '#22577a',
                         color: 'white',
+                        boxShadow: '0 4px 15px rgba(34, 87, 122, 0.3)',
                         '&:hover': {
-                          background: 'linear-gradient(45deg, #1f4f6f, #2d7d90)',
+                          background: '#1f4f6f',
+                          boxShadow: '0 6px 20px rgba(34, 87, 122, 0.4)',
                         }
                       })
                     }}
@@ -219,17 +225,20 @@ function RegisterScreen() {
                       fontWeight: 600,
                       cursor: 'pointer',
                       ...(!isPatient && {
-                        background: 'linear-gradient(45deg, #38a3a5, #57cc99)',
+                        background: '#2d7d90',
                         color: 'white',
+                        boxShadow: '0 4px 15px rgba(45, 125, 144, 0.3)',
                         '&:hover': {
-                          background: 'linear-gradient(45deg, #2d7d90, #57cc99)',
+                          background: '#22577a',
+                          boxShadow: '0 6px 20px rgba(45, 125, 144, 0.4)',
                         }
                       })
                     }}
                   />
                 </Stack>
 
-                <Stack spacing={3}>
+                <Box component="form" onSubmit={handleSubmit}>
+                  <Stack spacing={3}>
                   <Stack direction={isMobile ? "column" : "row"} spacing={2}>
                     <TextField
                       label="Nombre"
@@ -490,22 +499,22 @@ function RegisterScreen() {
                   )}
 
                   <Button
+                    type="submit"
                     variant="contained"
                     fullWidth
                     size="large"
-                    onClick={() => authSend({ type: "SUBMIT" })}
                     disabled={authContext.apiResponse?.loading || authContext.hasErrorsOrEmpty}
                     sx={{ 
                       mt: 4, 
                       py: 2,
                       borderRadius: 2,
-                      background: 'linear-gradient(45deg, #22577a, #38a3a5)',
-                      boxShadow: '0 4px 15px rgba(34, 87, 122, 0.4)',
+                      background: '#22577a',
+                      boxShadow: '0 4px 15px rgba(34, 87, 122, 0.3)',
                       fontSize: '1.1rem',
                       fontWeight: 600,
                       '&:hover': {
-                        background: 'linear-gradient(45deg, #1f4f6f, #2d7d90)',
-                        boxShadow: '0 6px 20px rgba(34, 87, 122, 0.6)',
+                        background: '#1f4f6f',
+                        boxShadow: '0 6px 20px rgba(34, 87, 122, 0.4)',
                       },
                       '&:disabled': {
                         background: '#e2e8f0',
@@ -555,6 +564,7 @@ function RegisterScreen() {
                     </Box>
                   )}
                 </Stack>
+                </Box>
               </CardContent>
             </Card>
           )}

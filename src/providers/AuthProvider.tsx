@@ -4,12 +4,13 @@ import { useMachine } from '@xstate/react';
 import { authMachine } from '../machines/authMachine';
 import type { AuthMachineContext, AuthMachineEvent } from '../machines/authMachine';
 
-
 interface AuthMachineInstance {
   auth: {
     state: any;
     send: (event: AuthMachineEvent) => void;
     context: AuthMachineContext;
+    isAuthenticated: boolean;
+    isLoading: boolean;
   };
 }
 
@@ -26,7 +27,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     auth: {
       state: authState,
       send: authSend,
-      context: authState.context
+      context: authState.context,
+      isAuthenticated: authState.context.isAuthenticated,
+      isLoading: authState.matches('checkingAuth') || authState.matches('submitting')
     },
   };
 
