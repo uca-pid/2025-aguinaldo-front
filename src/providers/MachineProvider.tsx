@@ -3,8 +3,6 @@ import type { ReactNode } from 'react';
 import { useMachine } from '@xstate/react';
 import { homeHeaderMachine,} from '../machines/homeHeaderMachine';
 import type {HomeHeaderMachineContext, HomeHeaderMachineEvent} from '../machines/homeHeaderMachine';
-import { registerMachine } from '../machines/registerMachine';
-import type { RegisterMachineContext, RegisterMachineEvent } from '../machines/registerMachine';
 import { uiMachine} from '../machines/uiMachine';
 import type { UiMachineContext, UiMachineEvent } from '../machines/uiMachine';
 import { turnMachine, type TurnMachineContext, type TurnMachineEvent } from '../machines/turnMachine';
@@ -14,11 +12,6 @@ interface MachineInstances {
     state: any;
     send: (event: HomeHeaderMachineEvent) => void;
     context: HomeHeaderMachineContext;
-  };
-  register: {
-    state: any;
-    send: (event: RegisterMachineEvent) => void;
-    context: RegisterMachineContext;
   };
   ui: {
     state: any;
@@ -40,7 +33,6 @@ interface MachineProviderProps {
 
 export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) => {
   const [homeHeaderState, homeHeaderSend] = useMachine(homeHeaderMachine);
-  const [registerState, registerSend] = useMachine(registerMachine);
   const [uiState, uiSend] = useMachine(uiMachine);
   const [turnState, turnSend] = useMachine(turnMachine);
 
@@ -49,11 +41,6 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       state: homeHeaderState,
       send: homeHeaderSend,
       context: homeHeaderState.context
-    },
-    register: {
-      state: registerState,
-      send: registerSend,
-      context: registerState.context
     },
     ui: {
       state: uiState,
