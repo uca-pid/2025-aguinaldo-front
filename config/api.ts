@@ -3,14 +3,12 @@ export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
   
   ENDPOINTS: {
-    // Auth endpoints
     REGISTER_PATIENT: '/api/auth/register/patient',
     REGISTER_DOCTOR: '/api/auth/register/doctor',
     SIGNIN: '/api/auth/signin',
     SIGNOUT: '/api/auth/signout',
     REFRESH_TOKEN: '/api/auth/refresh-token',
     
-    // Turn endpoints
     CREATE_TURN: '/api/turns',
     RESERVE_TURN: '/api/turns/reserve',
     GET_AVAILABLE_TURNS: '/api/turns/available',
@@ -18,7 +16,6 @@ export const API_CONFIG = {
     GET_DOCTOR_TURNS: '/api/turns/doctor',
     GET_PATIENT_TURNS: '/api/turns/patient',
     
-    // Doctor endpoints
     GET_DOCTORS: '/api/doctors',
   },
   
