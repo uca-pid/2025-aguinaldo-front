@@ -18,7 +18,6 @@ const HomeScreen: React.FC = () => {
     <Box
       sx={{
         bgcolor: "#ffffffff",
-        p: 3,
       }}
     >
 
@@ -30,7 +29,7 @@ const HomeScreen: React.FC = () => {
         alignItems="stretch"
       >
         <Grid width="100%">
-          <Paper elevation={6} sx={{ p: 4, borderRadius: 3 }}>
+          <Paper>
             {USER_ROLE === "PATIENT" && <PatientDashboard />}
             {USER_ROLE === "DOCTOR" && <DoctorDashboard />}
             {USER_ROLE === "ADMIN" && <AdminDashboard />}
@@ -38,7 +37,7 @@ const HomeScreen: React.FC = () => {
         </Grid>
       </Grid>
 
-      <Box mt={5} textAlign="center">
+      <Box  textAlign="center">
         <Typography variant="caption" color="text.secondary">
           &copy; 2025 MediBook. Todos los derechos reservados.
         </Typography>
