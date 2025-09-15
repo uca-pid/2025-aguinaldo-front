@@ -2,18 +2,20 @@ import {
   Box, Button, ListItem, ListItemText, Modal, Typography, CircularProgress, 
   Alert, Chip, FormControl, InputLabel, Select, MenuItem 
 } from "@mui/material";
-import { useMachines } from "../../../../providers/MachineProvider";
-import { useAuthMachine } from "../../../../providers/AuthProvider";
+import { useMachines } from "#/providers/MachineProvider";
+import { useAuthMachine } from "#/providers/AuthProvider";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { DateCalendar } from "@mui/x-date-pickers";
 import { useEffect } from "react";
 import dayjs from "dayjs";
+import { SignInResponse } from "#/models/Auth";
 
 const ViewTurns: React.FC = () => {
   const { ui, turn } = useMachines();
   const { auth } = useAuthMachine();
   const { context: uiContext, send: uiSend } = ui;
-  const authContext = auth.context;
+  const { context: authContext, authResponse: authResponse } = auth;
+  const user = authResponse as SignInResponse
   const { state: turnState, send: turnSend } = turn;
   
   const formContext = uiContext.toggleStates || {};
@@ -22,15 +24,15 @@ const ViewTurns: React.FC = () => {
   const showTurnsContext = turnContext.showTurns;
 
   useEffect(() => {
-    if (reservations && authContext.isAuthenticated && authContext.accessToken) {
+    if (reservations && authContext.isAuthenticated && user.accessToken) {
       turnSend({
         type: "SET_AUTH",
-        accessToken: authContext.accessToken,
-        userId: authContext.user?.id || ""
+        accessToken: user.accessToken,
+        userId: user.id || ""
       });
       turnSend({ type: "LOAD_MY_TURNS" });
     }
-  }, [reservations, authContext.isAuthenticated, authContext.accessToken, turnSend]);
+  }, [reservations, authContext.isAuthenticated, user.accessToken, turnSend]);
 
   const filteredTurns = turnContext.myTurns.filter((turn: any) => {
     let matchesDate = true;

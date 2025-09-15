@@ -13,7 +13,6 @@ import {
   Select,
   MenuItem,
   FormHelperText,
-  Avatar,
   Card,
   CardContent,
   Chip,
@@ -21,8 +20,8 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalHospital, Person } from "@mui/icons-material";
-import { useAuthMachine } from "../../../providers/AuthProvider";
-import Logo from "../../../assets/MediBook-Logo.png";
+import { useAuthMachine } from "#/providers/AuthProvider";
+import Logo from "#/assets/favicon.svg";
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import "./RegisterScreen.css";
@@ -53,16 +52,16 @@ function RegisterScreen() {
       >
         {!isMobile && (
           <Box className="auth-left-section">
-            <Box className="auth-logo-container">
-              <Avatar
+            <Box display="flex" alignItems="center" justifyContent="center" mb={3}>
+              <img
                 src={Logo}
                 alt="MediBook Logo"
-                className="auth-logo"
+                style={{ width: '40px', height: '40px', marginRight: '12px' }}
               />
+              <Typography variant="h3" className="auth-title" style={{ margin: 0 }}>
+                MediBook
+              </Typography>
             </Box>
-            <Typography variant="h3" className="auth-title">
-              MediBook
-            </Typography>
             <Typography variant="h6" color="text.secondary" className="auth-subtitle">
               Sistema de Gestión de Turnos Médicos
             </Typography>
@@ -99,14 +98,16 @@ function RegisterScreen() {
         <Box className="auth-right-section register-right-section">
           {isMobile && (
             <Box className="auth-mobile-header">
-              <Avatar
-                src={Logo}
-                alt="MediBook Logo"
-                className="auth-mobile-logo"
-              />
-              <Typography variant="h4" className="auth-mobile-title">
-                MediBook
-              </Typography>
+              <Box display="flex" alignItems="center" justifyContent="center" mb={2}>
+                <img
+                  src={Logo}
+                  alt="MediBook Logo"
+                  style={{ width: '30px', height: '30px', marginRight: '8px' }}
+                />
+                <Typography variant="h4" className="auth-mobile-title" style={{ margin: 0 }}>
+                  MediBook
+                </Typography>
+              </Box>
             </Box>
           )}
           

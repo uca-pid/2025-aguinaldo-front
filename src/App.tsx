@@ -1,60 +1,121 @@
 import './App.css'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import HomeScreen from './components/HomeScreen/HomeScreen'
 import { useAuthMachine } from './providers/AuthProvider'
-import { Box, Button } from '@mui/material'
+import { Avatar, Box, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material'
 import { SignInResponse } from './models/Auth'
+import { useMachines } from './providers/MachineProvider'
+import { Logout, Person } from '@mui/icons-material'
+import PendingScreen from './components/Admin/PendingScreen/PendingScreen'
+import { useEffect } from 'react'
 
-function App() {
+function AppContent() {
+  const navigate = useNavigate();
   const { auth } = useAuthMachine();
   const { authResponse } = auth;
+  const {ui} = useMachines();
+  const { context: uiContext, send: uiSend } = ui;
   const user = authResponse as SignInResponse;
+  const userName = user.name;
+
+  const open = Boolean(uiContext.toggleStates?.["userMenu"]);
+
+  useEffect(() => {
+    if (uiContext.navigationRequested) {
+      navigate(uiContext.navigationRequested);
+      uiSend({ type: "NAVIGATE", to: null });
+    }
+  }, [uiContext.navigationRequested, navigate, uiSend]);
 
   const handleLogout = () => {
     auth.send({ type: 'LOGOUT' });
   };
 
+  const handleNavigateToProfile = () => {
+    uiSend({ type: "TOGGLE", key: "userMenu" });
+    uiSend({ type: "NAVIGATE", to: "/profile" });
+  };
+
   return (
-    <BrowserRouter>
       <Box>
-        <Box 
-          sx={{ 
-            p: 2, 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            background: '#22577a',
-            color: 'white',
-            boxShadow: '0 2px 8px rgba(34, 87, 122, 0.2)'
-          }}
-        >
+        <Box className="app-header">
           <Box>
             <h2>MediBook - Welcome {user.name} {user.surname}!</h2>
           </Box>
-          <Button 
-            onClick={handleLogout}
-            variant="contained"
-            sx={{
-              background: 'white',
-              color: '#22577a',
-              fontWeight: 'bold',
-              boxShadow: '0 2px 8px rgba(255, 255, 255, 0.2)',
-              '&:hover': {
-                background: '#f8f9fa',
-                boxShadow: '0 4px 12px rgba(255, 255, 255, 0.3)',
-              }
-            }}
+          <Box className="app-user-section">
+          <Avatar
+            className="app-avatar"
+            onClick={() =>
+              uiSend({
+                type: "TOGGLE",
+                key: "userMenu",
+              })
+            }
           >
-            Logout
-          </Button>
+            {userName.charAt(0)}
+          </Avatar>
+          <Typography
+            variant="subtitle1"
+            className="app-username"
+            onClick={() =>
+              uiSend({
+                type: "TOGGLE",
+                key: "userMenu",
+              })
+            }
+          >
+            {userName}
+          </Typography>
+        </Box>
+
+        <Menu
+          open={open}
+          onClose={() => uiSend({ type: "TOGGLE", key: "userMenu" })}
+          anchorOrigin={{ horizontal: "right", vertical: "top" }}
+          transformOrigin={{ horizontal: "right", vertical: "top" }}
+          PaperProps={{
+            elevation: 4,
+            className: "app-menu"
+          }}
+        >
+          <MenuItem onClick={handleNavigateToProfile}>
+            <ListItemIcon>
+              <Person fontSize="small" />
+            </ListItemIcon>
+            Mi perfil
+          </MenuItem>
+
+          <Divider />
+
+          <MenuItem
+            onClick={() => {
+              uiSend({ type: "TOGGLE", key: "userMenu" });
+              handleLogout();
+            }}
+            className="app-menu-item-error"
+          >
+            <ListItemIcon>
+              <Logout fontSize="small" color="error" />
+            </ListItemIcon>
+            Cerrar sesión
+          </MenuItem>
+        </Menu>
         </Box>
 
         <Routes>
           <Route path="/" element={<HomeScreen />} />
+          <Route path="/admin/pending" element={<PendingScreen />} />
         </Routes>
       </Box>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
-  )
+  );
 }
 
 export default App
