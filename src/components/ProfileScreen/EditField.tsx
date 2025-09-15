@@ -9,26 +9,30 @@ type EditFieldProps={
     label:string;
     value:any;
     isEditing:boolean;
-    toggleKey:string
+    toggleKey:string;
+    onChange: (val: string) => void 
 }
 
-const EditField :React.FC<EditFieldProps>= ({label, value,isEditing, toggleKey})=>{
+const EditField :React.FC<EditFieldProps>= ({label, value,isEditing, toggleKey, onChange})=>{
     const {ui}= useMachines()
     const { send: uiSend } = ui;
+    
+    
     return(
         <>
         <ListItem
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          px: 2,
+        }}
         >
           {isEditing ? (
             <TextField
               label={label}
               value={value}
-              onChange={()=> uiSend({type: "TOGGLE", key: toggleKey })}
+              onChange={(e)=> {uiSend({type: "TOGGLE", key: toggleKey }); onChange(e.target.value)}}
               size="small"
               fullWidth
             />
@@ -39,7 +43,7 @@ const EditField :React.FC<EditFieldProps>= ({label, value,isEditing, toggleKey})
           <Box>
             {isEditing ? (
               <>
-                <IconButton onClick={()=>uiSend({type: "TOGGLE", key:toggleKey})}>
+                <IconButton onClick={()=>uiSend({type: "TOGGLE", key: toggleKey})}>
                   <CheckIcon color="success" />
                 </IconButton>
                 <IconButton onClick={()=>uiSend({type: "TOGGLE", key: toggleKey})}>
