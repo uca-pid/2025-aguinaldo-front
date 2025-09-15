@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import LoginScreen from "./LoginScreen/LoginScreen";
 import RegisterScreen from "./RegisterScreen/RegisterScreen";
-import { useAuthMachine } from "../../providers/AuthProvider";
+import { useAuthMachine } from "#/providers/AuthProvider";
 
 function AuthScreen() {
     const { auth } = useAuthMachine();

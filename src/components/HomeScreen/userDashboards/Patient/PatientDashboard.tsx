@@ -5,9 +5,9 @@ import {
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import { styled } from "@mui/material/styles";
-import { useMachines } from "../../../../providers/MachineProvider";
-import { useAuthMachine } from "../../../../providers/AuthProvider";
-import { SignInResponse } from "../../../../models/Auth";
+import { useMachines } from "#/providers/MachineProvider";
+import { useAuthMachine } from "#/providers/AuthProvider";
+import { SignInResponse } from "#/models/Auth";
 import {LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import ReservationTurns from "./ReservationTurns";

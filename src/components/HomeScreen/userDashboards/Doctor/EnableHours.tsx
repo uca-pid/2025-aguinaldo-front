@@ -3,7 +3,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers"
 import { MultiInputDateRangeField } from "@mui/x-date-pickers-pro/MultiInputDateRangeField"
 import { MultiInputTimeRangeField } from "@mui/x-date-pickers-pro/MultiInputTimeRangeField"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
-import { useMachines } from "../../../../providers/MachineProvider"
+import { useMachines } from "#/providers/MachineProvider"
 
 const EnableHours:React.FC=()=>{
     const { ui } = useMachines();

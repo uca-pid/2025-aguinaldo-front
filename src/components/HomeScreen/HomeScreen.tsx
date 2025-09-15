@@ -5,9 +5,9 @@ import { Logout, Person } from "@mui/icons-material";
 import PatientDashboard from "./userDashboards/Patient/PatientDashboard";
 import DoctorDashboard from "./userDashboards/Doctor/DoctorDashboard";
 import AdminDashboard from "./userDashboards/AdminDashboard";
-import { useMachines } from "../../providers/MachineProvider";
-import { useAuthMachine } from "../../providers/AuthProvider";
-import { SignInResponse } from "../../models/Auth";
+import { useMachines } from "#/providers/MachineProvider";
+import { useAuthMachine } from "#/providers/AuthProvider";
+import { SignInResponse } from "#/models/Auth";
 
 const HomeScreen: React.FC = () => {
   const { auth } = useAuthMachine();

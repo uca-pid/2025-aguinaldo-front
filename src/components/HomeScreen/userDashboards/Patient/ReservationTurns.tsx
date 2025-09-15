@@ -3,18 +3,20 @@ import {
   TextField, Typography, CircularProgress, Alert, List, ListItem, ListItemButton, ListItemText 
 } from "@mui/material";
 import React, { useEffect } from "react";
-import { useMachines } from "../../../../providers/MachineProvider";
-import { useAuthMachine } from "../../../../providers/AuthProvider";
+import { useMachines } from "#/providers/MachineProvider";
+import { useAuthMachine } from "#/providers/AuthProvider";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { DateCalendar } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
 import dayjs from "dayjs";
+import { SignInResponse } from "#/models/Auth";
 
 const ReservationTurns: React.FC = () => {
   const { ui, turn } = useMachines();
   const { auth } = useAuthMachine();
   const { context: uiContext, send: uiSend } = ui;
-  const authContext = auth.context;
+  const { context: authContext, authResponse: authResponse } = auth;
+  const user = authResponse as SignInResponse
   const { state: turnState, send: turnSend } = turn;
   
   const formContext = uiContext.toggleStates || {}
@@ -25,18 +27,18 @@ const ReservationTurns: React.FC = () => {
   const currentStep = turnState.value.takeTurn;
 
   useEffect(() => {
-    if (reserveTurns && authContext.isAuthenticated && authContext.accessToken) {
+    if (reserveTurns && authContext.isAuthenticated && user.accessToken) {
       turnSend({
         type: "SET_AUTH",
-        accessToken: authContext.accessToken,
-        userId: authContext.user?.id || ""
+        accessToken: user.accessToken,
+        userId: user.id || ""
       });
       turnSend({ type: "LOAD_DOCTORS" });
     }
-  }, [reserveTurns, authContext.isAuthenticated, authContext.accessToken, turnSend]);
+  }, [reserveTurns, authContext.isAuthenticated, user.accessToken, turnSend]);
 
   useEffect(() => {
-    if (formValues.doctorId && formValues.dateSelected && authContext.accessToken) {
+    if (formValues.doctorId && formValues.dateSelected && user.accessToken) {
       const dateString = formValues.dateSelected.format('YYYY-MM-DD');
       turnSend({
         type: "LOAD_AVAILABLE_TURNS",
@@ -44,7 +46,7 @@ const ReservationTurns: React.FC = () => {
         date: dateString
       });
     }
-  }, [formValues.doctorId, formValues.dateSelected, authContext.accessToken, turnSend]);
+  }, [formValues.doctorId, formValues.dateSelected, user.accessToken, turnSend]);
 
   const isProfessionSelected = !!formValues.professionSelected;
   const isDoctorSelected = !!formValues.doctorId;

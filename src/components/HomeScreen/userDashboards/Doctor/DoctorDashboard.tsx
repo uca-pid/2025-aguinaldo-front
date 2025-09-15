@@ -4,7 +4,7 @@ import ScheduleIcon from "@mui/icons-material/Schedule";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import { styled } from "@mui/material/styles";
-import { useMachines } from "../../../../providers/MachineProvider";
+import { useMachines } from "#/providers/MachineProvider";
 import ViewTurns from "./ViewTurns";
 import EnableHours from "./EnableHours";
 import ViewPatients from "./ViewPatients";

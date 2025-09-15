@@ -1,7 +1,7 @@
 import { Box, Button, List, ListItem, ListItemText, Modal, Typography } from "@mui/material"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
-import { useMachines } from "../../../../providers/MachineProvider";
+import { useMachines } from "#/providers/MachineProvider";
 
 const dummyPatients = [
   { id: 1, name: "Juan Pérez", age: 34, dni: "12345678" },

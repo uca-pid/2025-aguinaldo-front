@@ -1,6 +1,6 @@
 import { Box, Button, ListItem, ListItemText, Modal, Typography } from "@mui/material";
 import { DateCalendar, LocalizationProvider } from "@mui/x-date-pickers";
-import { useMachines } from "../../../../providers/MachineProvider";
+import { useMachines } from "#/providers/MachineProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 
