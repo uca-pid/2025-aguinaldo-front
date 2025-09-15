@@ -1,14 +1,16 @@
 import { 
-  Box, Button, ListItem, ListItemText, Modal, Typography, CircularProgress, 
-  Alert, Chip, FormControl, InputLabel, Select, MenuItem 
+  Box, Button, Modal, Typography, CircularProgress, 
+  Alert, Chip, FormControl, InputLabel, Select, MenuItem, Avatar 
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { DateCalendar } from "@mui/x-date-pickers";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { SignInResponse } from "#/models/Auth";
+import ListAltIcon from "@mui/icons-material/ListAlt";
+import "./ViewTurns.css";
 
 const ViewTurns: React.FC = () => {
   const { ui, turn } = useMachines();
@@ -17,6 +19,8 @@ const ViewTurns: React.FC = () => {
   const { context: authContext, authResponse: authResponse } = auth;
   const user = authResponse as SignInResponse
   const { state: turnState, send: turnSend } = turn;
+  const [cancellingTurnId, setCancellingTurnId] = useState<string | null>(null);
+  const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
   
   const formContext = uiContext.toggleStates || {};
   const reservations = formContext["reservations"] ?? false;
@@ -51,7 +55,35 @@ const ViewTurns: React.FC = () => {
     return matchesDate && matchesStatus;
   });
 
-  const getStatusColor = (status: string) => {
+  const handleCancelTurn = async (turnId: string) => {
+    if (!user.accessToken) return;
+    
+    setCancellingTurnId(turnId);
+    try {
+      const response = await fetch(`http://localhost:8080/api/turns/${turnId}/cancel`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${user.accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setCancelSuccess('Turno cancelado exitosamente');
+        turnSend({ type: "LOAD_MY_TURNS" });
+        setTimeout(() => setCancelSuccess(null), 3000);
+      } else {
+        const errorData = await response.text();
+        console.error('Error cancelling turn:', errorData);
+      }
+    } catch (error) {
+      console.error('Error cancelling turn:', error);
+    } finally {
+      setCancellingTurnId(null);
+    }
+  };
+
+  const getStatusColor = (status: string): string => {
     switch (status) {
       case 'RESERVED':
         return 'primary';
@@ -84,44 +116,47 @@ const ViewTurns: React.FC = () => {
   const handleClose = () => {
     uiSend({ type: "TOGGLE", key: "reservations" });
     turnSend({ type: "RESET_SHOW_TURNS" });
+    setCancelSuccess(null);
   };
 
   return (
     <>
       <Modal open={reservations} onClose={handleClose}>
-        <Box
-          sx={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 8,
-            p: { xs: 1.5, sm: 3 },
-            minWidth: { xs: "90vw", sm: 400 },
-            width: { xs: "95vw", sm: 500 },
-            maxWidth: "98vw",
-            maxHeight: { xs: "95vh", sm: "90vh" },
-            display: "flex",
-            flexDirection: "column",
-            gap: 1.5,
-            overflowY: "auto",
-          }}
-        >
-          <Typography variant="h6" mb={1}>
-            Mis Turnos
-          </Typography>
+        <Box className="viewturns-modal-container">
+          {/* Header */}
+          <Box className="viewturns-header">
+            <Avatar className="viewturns-header-icon">
+              <ListAltIcon sx={{ fontSize: 32, color: 'white' }} />
+            </Avatar>
+            <Typography variant="h4" className="viewturns-header-title">
+              Mis Turnos
+            </Typography>
+            <Typography variant="body1" className="viewturns-header-subtitle">
+              Consulta y gestiona tus citas médicas
+            </Typography>
+          </Box>
 
+          {/* Alerts */}
           {turnContext.myTurnsError && (
-            <Alert severity="error">
+            <Alert severity="error" className="viewturns-alert">
               Error al cargar turnos: {turnContext.myTurnsError}
             </Alert>
           )}
 
-          <Box display="flex" flexDirection="column" gap={2}>
-            <Box display="flex" gap={2} flexWrap="wrap">
-              <FormControl size="small" sx={{ minWidth: 120 }}>
+          {cancelSuccess && (
+            <Alert severity="success" className="viewturns-alert">
+              {cancelSuccess}
+            </Alert>
+          )}
+
+          {/* Filters */}
+          <Box className="viewturns-filters-container">
+            <Typography variant="h6" className="viewturns-filters-title">
+              Filtros de búsqueda
+            </Typography>
+            
+            <Box className="viewturns-filters-row">
+              <FormControl size="small" className="viewturns-filter-select">
                 <InputLabel>Estado</InputLabel>
                 <Select
                   value={showTurnsContext.statusFilter}
@@ -134,13 +169,14 @@ const ViewTurns: React.FC = () => {
                 >
                   <MenuItem value="">Todos</MenuItem>
                   <MenuItem value="RESERVED">Reservados</MenuItem>
+                  <MenuItem value="SCHEDULED">Programados</MenuItem>
                   <MenuItem value="COMPLETED">Completados</MenuItem>
                   <MenuItem value="CANCELLED">Cancelados</MenuItem>
                 </Select>
               </FormControl>
             </Box>
 
-            <Box>
+            <Box className="viewturns-calendar-container">
               <DemoContainer components={['DateCalendar']}>
                 <DemoItem label="Filtrar por fecha (opcional)">
                   <DateCalendar
@@ -162,21 +198,16 @@ const ViewTurns: React.FC = () => {
                 variant="outlined"
                 size="small"
                 onClick={() => turnSend({ type: "RESET_SHOW_TURNS" })}
-                sx={{ alignSelf: 'flex-start' }}
+                className="viewturns-clear-filters"
               >
                 Limpiar filtros
               </Button>
             )}
           </Box>
 
-          <Box display="flex" justifyContent="flex-end" mt={1}>
-            <Button onClick={handleClose} color="inherit">
-              Cerrar
-            </Button>
-          </Box>
-
-          <Box mt={2}>
-            <Typography variant="h6" mb={1}>
+          {/* Turns List */}
+          <Box className="viewturns-list-container">
+            <Typography variant="h6" className="viewturns-list-header">
               {showTurnsContext.dateSelected 
                 ? `Turnos del ${showTurnsContext.dateSelected.format("DD/MM/YYYY")}`
                 : 'Todos mis turnos'
@@ -184,68 +215,84 @@ const ViewTurns: React.FC = () => {
               {showTurnsContext.statusFilter && ` - ${getStatusLabel(showTurnsContext.statusFilter)}`}
             </Typography>
 
-            {turnContext.isLoadingMyTurns ? (
-              <Box display="flex" justifyContent="center" alignItems="center" p={4}>
-                <CircularProgress size={24} />
-                <Typography ml={2}>Cargando turnos...</Typography>
-              </Box>
-            ) : filteredTurns.length > 0 ? (
-              <Box>
-                {filteredTurns.map((turn: any, index: number) => (
-                  <ListItem key={turn.id || index} divider sx={{ px: 0 }}>
-                    <ListItemText
-                      primary={
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <Typography variant="body1" component="span">
-                            {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
-                          </Typography>
-                          <Chip
-                            label={getStatusLabel(turn.status)}
-                            color={getStatusColor(turn.status) as any}
+            <Box className="viewturns-list-content">
+              {turnContext.isLoadingMyTurns ? (
+                <Box className="viewturns-loading-container">
+                  <CircularProgress size={24} />
+                  <Typography className="viewturns-loading-text">
+                    Cargando turnos...
+                  </Typography>
+                </Box>
+              ) : filteredTurns.length > 0 ? (
+                filteredTurns.map((turn: any, index: number) => (
+                  <Box key={turn.id || index} className="viewturns-turn-item">
+                    <Box className="viewturns-turn-content">
+                      <Box className="viewturns-turn-info">
+                        <Typography variant="h6" className="viewturns-turn-datetime">
+                          {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
+                        </Typography>
+                        <Typography variant="body1" className="viewturns-turn-doctor">
+                          Dr. {turn.doctorName}
+                        </Typography>
+                        <Typography variant="body2" className="viewturns-turn-specialty">
+                          {turn.doctorSpecialty}
+                        </Typography>
+                      </Box>
+                      <Box className="viewturns-turn-actions">
+                        <Chip
+                          label={getStatusLabel(turn.status)}
+                          className={`viewturns-status-chip status-${turn.status.toLowerCase()}`}
+                          size="small"
+                        />
+                        {(turn.status === 'RESERVED' || turn.status === 'SCHEDULED') && (
+                          <Button 
+                            variant="contained" 
                             size="small"
-                          />
-                        </Box>
-                      }
-                      secondary={
-                        <Box>
-                          <Typography variant="body2" color="text.secondary" component="span" display="block">
-                            Dr. {turn.doctorName}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" component="span" display="block">
-                            {turn.doctorSpecialty}
-                          </Typography>
-                        </Box>
-                      }
-                    />
-                    {turn.status === 'RESERVED' && (
-                      <Button 
-                        variant="outlined" 
-                        color="error" 
-                        size="small"
-                        sx={{ ml: 1 }}
-                        onClick={() => {
-                          // TODO: Implement cancel turn functionality
-                        }}
-                      >
-                        Cancelar
-                      </Button>
-                    )}
-                  </ListItem>
-                ))}
-              </Box>
-            ) : (
-              <Typography variant="body2" color="text.secondary" textAlign="center" p={2}>
-                {showTurnsContext.dateSelected || showTurnsContext.statusFilter
-                  ? 'No hay turnos que coincidan con los filtros seleccionados'
-                  : 'No tenés turnos registrados'
-                }
-              </Typography>
-            )}
+                            className="viewturns-cancel-btn"
+                            onClick={() => handleCancelTurn(turn.id)}
+                            disabled={cancellingTurnId === turn.id}
+                          >
+                            {cancellingTurnId === turn.id ? (
+                              <>
+                                <CircularProgress size={16} sx={{ mr: 1 }} />
+                                Cancelando...
+                              </>
+                            ) : (
+                              'Cancelar'
+                            )}
+                          </Button>
+                        )}
+                      </Box>
+                    </Box>
+                  </Box>
+                ))
+              ) : (
+                <Box className="viewturns-empty-state">
+                  <Typography>
+                    {showTurnsContext.dateSelected || showTurnsContext.statusFilter
+                      ? 'No hay turnos que coincidan con los filtros seleccionados'
+                      : 'No tenés turnos registrados'
+                    }
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </Box>
+
+          {/* Actions */}
+          <Box className="viewturns-actions">
+            <Button 
+              onClick={handleClose} 
+              className="viewturns-btn-close"
+              variant="outlined"
+            >
+              Cerrar
+            </Button>
           </Box>
         </Box>
       </Modal>
     </>
   );
-}
+};
 
 export default ViewTurns;

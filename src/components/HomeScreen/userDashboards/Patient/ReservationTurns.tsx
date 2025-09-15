@@ -1,6 +1,7 @@
 import { 
   Box, Button, FormControl, FormHelperText, InputLabel, MenuItem, Modal, Select, SelectChangeEvent, 
-  TextField, Typography, CircularProgress, Alert, List, ListItem, ListItemButton, ListItemText 
+  TextField, Typography, CircularProgress, Alert, List, ListItem, ListItemButton, ListItemText,
+  Avatar 
 } from "@mui/material";
 import React, { useEffect } from "react";
 import { useMachines } from "#/providers/MachineProvider";
@@ -10,6 +11,8 @@ import { DateCalendar } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import { SignInResponse } from "#/models/Auth";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import "./ReservationTurns.css";
 
 const ReservationTurns: React.FC = () => {
   const { ui, turn } = useMachines();
@@ -113,59 +116,58 @@ const ReservationTurns: React.FC = () => {
   return(
     <>
       <Modal open={reserveTurns} onClose={handleClose}>
-        <Box
-          sx={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 8,
-            p: { xs: 1.5, sm: 3 },
-            minWidth: { xs: "90vw", sm: 320 },
-            width: { xs: "95vw", sm: 370 },
-            maxWidth: "98vw",
-            maxHeight: { xs: "95vh", sm: "90vh" },
-            display: "flex",
-            flexDirection: "column",
-            gap: 1.5,
-            overflowY: "auto",
-          }}
-        >
+        <Box className="reservation-modal-container">
+          {/* Header */}
+          <Box className="reservation-header">
+            <Avatar className="reservation-header-icon">
+              <CalendarTodayIcon sx={{ fontSize: 32, color: 'white' }} />
+            </Avatar>
+            <Typography variant="h4" className="reservation-header-title">
+              Reservar Turno
+            </Typography>
+            <Typography variant="body1" className="reservation-header-subtitle">
+              Agenda tu cita médica en simples pasos
+            </Typography>
+          </Box>
+
+          {/* Alerts */}
           {turnContext.doctorsError && (
-            <Alert severity="error">
+            <Alert severity="error" className="reservation-alert">
               Error al cargar doctores: {turnContext.doctorsError}
             </Alert>
           )}
           
           {turnContext.availableError && (
-            <Alert severity="error">
+            <Alert severity="error" className="reservation-alert">
               Error al cargar turnos disponibles: {turnContext.availableError}
             </Alert>
           )}
           
           {turnContext.error && (
-            <Alert severity="error">
+            <Alert severity="error" className="reservation-alert">
               Error al crear turno: {turnContext.error}
             </Alert>
           )}
 
           {currentStep === "step1" && (
-            <>
-              <Typography variant="h6" mb={1}>
-                Reservar Turno
-              </Typography>
-              <Box display="flex" flexDirection="column" gap={1}>
+            <Box className="reservation-step1-container">
+              <Box className="reservation-form-section">
+                <Typography variant="h6" className="reservation-form-title">
+                  Información de la consulta
+                </Typography>
+                
                 <TextField
                   label="Motivo de la consulta"
                   value={formValues.reason}
                   onChange={handleReasonChange}
                   fullWidth
                   size="small"
+                  className="reservation-input"
+                  multiline
+                  rows={2}
                 />
                 
-                <FormControl required size="small" fullWidth>
+                <FormControl required size="small" fullWidth className="reservation-select">
                   <InputLabel id="profession-select-label">Especialidad</InputLabel>
                   <Select
                     labelId="profession-select-label"
@@ -187,7 +189,7 @@ const ReservationTurns: React.FC = () => {
                   {turnContext.isLoadingDoctors && <FormHelperText>Cargando especialidades...</FormHelperText>}
                 </FormControl>
                 
-                <FormControl required size="small" fullWidth>
+                <FormControl required size="small" fullWidth className="reservation-select">
                   <InputLabel id="doctor-select-label">Doctor</InputLabel>
                   <Select
                     labelId="doctor-select-label"
@@ -206,12 +208,17 @@ const ReservationTurns: React.FC = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                  <FormHelperText>Required</FormHelperText>
+                  <FormHelperText>Requerido</FormHelperText>
                 </FormControl>
-                
-                <Box>
+              </Box>
+
+              <Box className="reservation-form-section">
+                <Typography variant="h6" className="reservation-form-title">
+                  Selecciona una fecha
+                </Typography>
+                <Box className="reservation-calendar-container">
                   <DemoContainer components={['DateCalendar']}>
-                    <DemoItem label="Fecha">
+                    <DemoItem>
                       <DateCalendar
                         value={formValues.dateSelected}
                         onChange={handleDateChange}
@@ -222,14 +229,19 @@ const ReservationTurns: React.FC = () => {
                   </DemoContainer>
                 </Box>
               </Box>
-              <Box display="flex" justifyContent="flex-end" mt={1}>
-                <Button onClick={handleClose} color="inherit">
+
+              <Box className="reservation-actions">
+                <Button 
+                  onClick={handleClose} 
+                  className="reservation-btn-secondary"
+                  variant="outlined"
+                >
                   Cancelar
                 </Button>
                 <Button
                   onClick={() => turnSend({ type: "NEXT" })}
                   variant="contained"
-                  color="primary"
+                  className="reservation-btn-primary"
                   disabled={
                     !isProfessionSelected ||
                     !isDoctorSelected ||
@@ -239,64 +251,80 @@ const ReservationTurns: React.FC = () => {
                   Siguiente
                 </Button>
               </Box>
-            </>
+            </Box>
           )}
           
           {currentStep === "step2" && (
-            <>
-              <Typography variant="h6" mb={1}>
-                Seleccioná la hora
-              </Typography>
+            <Box className="reservation-step2-container">
+              <Box className="reservation-time-header">
+                <Typography variant="h5" className="reservation-time-title">
+                  Selecciona la hora
+                </Typography>
+                <Typography variant="body1" className="reservation-time-subtitle">
+                  {formValues.dateSelected?.format("DD/MM/YYYY")} - Dr. {filteredDoctors.find((d: any) => d.id === formValues.doctorId)?.name}
+                </Typography>
+              </Box>
               
               {turnContext.isLoadingAvailableTurns ? (
-                <Box display="flex" justifyContent="center" p={2}>
+                <Box className="reservation-loading-container">
                   <CircularProgress />
-                  <Typography ml={2}>Cargando horarios disponibles...</Typography>
+                  <Typography className="reservation-loading-text">
+                    Cargando horarios disponibles...
+                  </Typography>
                 </Box>
               ) : turnContext.availableTurns.length > 0 ? (
-                <List sx={{ maxHeight: 300, overflowY: 'auto' }}>
-                  {turnContext.availableTurns
-                    .filter((timeSlot: string) => {
-                      const slotDateTime = dayjs(timeSlot);
-                      const now = dayjs();
-                      
-                      if (slotDateTime.isSame(now, 'day')) {
-                        return slotDateTime.isAfter(now);
-                      }
-                      
-                      return slotDateTime.isAfter(now, 'day');
-                    })
-                    .map((timeSlot: string, index: number) => (
-                    <ListItem key={index} disablePadding>
-                      <ListItemButton
-                        selected={formValues.scheduledAt === timeSlot}
-                        onClick={() => handleTimeSelect(timeSlot)}
-                      >
-                        <ListItemText 
-                          primary={dayjs(timeSlot).format('HH:mm')}
-                          secondary={dayjs(timeSlot).format('DD/MM/YYYY')}
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                  ))}
-                </List>
+                <Box className="reservation-time-slots">
+                  <List>
+                    {turnContext.availableTurns
+                      .filter((timeSlot: string) => {
+                        const slotDateTime = dayjs(timeSlot);
+                        const now = dayjs();
+                        
+                        if (slotDateTime.isSame(now, 'day')) {
+                          return slotDateTime.isAfter(now);
+                        }
+                        
+                        return slotDateTime.isAfter(now, 'day');
+                      })
+                      .map((timeSlot: string, index: number) => (
+                      <ListItem key={index} disablePadding>
+                        <ListItemButton
+                          className={`reservation-time-slot ${formValues.scheduledAt === timeSlot ? 'Mui-selected' : ''}`}
+                          selected={formValues.scheduledAt === timeSlot}
+                          onClick={() => handleTimeSelect(timeSlot)}
+                        >
+                          <ListItemText 
+                            primary={`${dayjs(timeSlot).format('HH:mm')} hs`}
+                            secondary={dayjs(timeSlot).format('DD/MM/YYYY')}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
               ) : (
-                <Typography color="text.secondary">
-                  {turnContext.availableTurns.length === 0 
-                    ? "No hay horarios disponibles para la fecha seleccionada."
-                    : "No hay horarios disponibles (los horarios de hoy ya han pasado)."
-                  }
-                </Typography>
+                <Box className="reservation-empty-state">
+                  <Typography>
+                    {turnContext.availableTurns.length === 0 
+                      ? "No hay horarios disponibles para la fecha seleccionada."
+                      : "No hay horarios disponibles (los horarios de hoy ya han pasado)."
+                    }
+                  </Typography>
+                </Box>
               )}
               
-              <Box display="flex" justifyContent="flex-end" mt={2}>
-                <Button onClick={() => turnSend({ type: "BACK" })} color="inherit">
+              <Box className="reservation-actions">
+                <Button 
+                  onClick={() => turnSend({ type: "BACK" })} 
+                  className="reservation-btn-secondary"
+                  variant="outlined"
+                >
                   Atrás
                 </Button>
                 <Button
                   onClick={handleReserve}
                   variant="contained"
-                  color="primary"
+                  className="reservation-btn-primary"
                   disabled={!formValues.scheduledAt || turnContext.isCreatingTurn}
                 >
                   {turnContext.isCreatingTurn ? (
@@ -305,11 +333,11 @@ const ReservationTurns: React.FC = () => {
                       Reservando...
                     </>
                   ) : (
-                    'Reservar'
+                    'Confirmar Reserva'
                   )}
                 </Button>
               </Box>
-            </>
+            </Box>
           )}
         </Box>
       </Modal>
