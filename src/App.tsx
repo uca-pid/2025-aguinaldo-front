@@ -7,6 +7,7 @@ import { SignInResponse } from './models/Auth'
 import { useMachines } from './providers/MachineProvider'
 import { Logout, Person } from '@mui/icons-material'
 import PendingScreen from './components/Admin/PendingScreen/PendingScreen'
+import ProfileScreen from './components/ProfileScreen/ProfileScreen'
 import { useEffect } from 'react'
 
 function AppContent() {
@@ -105,6 +106,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<HomeScreen />} />
           <Route path="/admin/pending" element={<PendingScreen />} />
+          <Route path="/profile" element={<ProfileScreen />} />
         </Routes>
       </Box>
   );
