@@ -38,28 +38,31 @@ export default function PendingScreen() {
       {/* Header Section */}
       <Paper elevation={2} className="pending-header-section">
         <Container maxWidth="lg" className="pending-header-container">
-          <Box className="pending-back-button-container">
-            <Button
-              variant="outlined"
-              startIcon={<ArrowBackIcon />}
-              onClick={() => uiSend({ type: 'NAVIGATE', to: '/' })}
-              className="pending-back-button"
-            >
-              Volver al Dashboard
-            </Button>
-          </Box>
-          <Box className="pending-header-content">
-            <Avatar className="pending-header-avatar">
-              <PendingActionsIcon sx={{ fontSize: 28 }} />
-            </Avatar>
-            <Box>
-              <Typography variant="h4" component="h1" className="pending-header-title">
-                Solicitudes Pendientes
-              </Typography>
-              <Typography variant="h6" className="pending-header-subtitle">
-                Gestionar solicitudes de registro de médicos
-              </Typography>
+          <Box className="pending-header-layout">
+            <Box className="pending-back-button-container">
+              <Button
+                variant="outlined"
+                startIcon={<ArrowBackIcon />}
+                onClick={() => uiSend({ type: 'NAVIGATE', to: '/' })}
+                className="pending-back-button"
+              >
+                Volver al Dashboard
+              </Button>
             </Box>
+            <Box className="pending-header-content">
+              <Avatar className="pending-header-avatar">
+                <PendingActionsIcon sx={{ fontSize: 28 }} />
+              </Avatar>
+              <Box>
+                <Typography variant="h4" component="h1" className="pending-header-title">
+                  Solicitudes Pendientes
+                </Typography>
+                <Typography variant="h6" className="pending-header-subtitle">
+                  Gestionar solicitudes de registro de médicos
+                </Typography>
+              </Box>
+            </Box>
+            <Box className="pending-header-spacer"></Box>
           </Box>
         </Container>
       </Paper>
