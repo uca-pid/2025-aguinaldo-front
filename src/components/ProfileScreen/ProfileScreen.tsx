@@ -1,9 +1,14 @@
 
-import { Box, Divider, Grid, List, ListItem, ListItemText } from "@mui/material";
+import { Box, Divider, Grid, IconButton, List, ListItem, ListItemText, TextField, ToggleButton } from "@mui/material";
 
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import EditIcon from '@mui/icons-material/Edit';
+import { useMachines } from "#/providers/MachineProvider";
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import EditField from "./EditField";
 
 const style = {
   py: 0,
@@ -13,6 +18,7 @@ const style = {
   border: '1px solid',
   borderColor: 'divider',
   backgroundColor: 'background.paper',
+  
 };
 
 const ProfileScreen: React.FC = () => {
@@ -20,6 +26,20 @@ const ProfileScreen: React.FC = () => {
 
     const { auth } = useAuthMachine();
     const user = auth.authResponse as SignInResponse;
+    
+    const {ui}= useMachines()
+    const { context: uiContext, send: uiSend } = ui;
+    const formContext = uiContext.toggleStates || {};
+    const name= formContext["editName"] ?? false;
+    const surname= formContext["editSurname"] ?? false;
+    const email= formContext["editEmail"] ?? false;
+    const phone= formContext["editNumberPhone"] ?? false;
+
+    const numberDoctor= formContext["editNumberDoctor"] ?? false;
+    const speciality= formContext["editSpeciality"]??false;
+    const minutes= formContext["editMinutes"] ?? false;
+    
+
 
  
     return (
@@ -47,21 +67,11 @@ const ProfileScreen: React.FC = () => {
   <AccountCircleIcon sx={{ fontSize: 80, color: 'primary.main', mb: 2 }} />
 
   <List sx={style}>
-    <ListItem>
-      <ListItemText primary={`Nombre: ${user.name}`} />
-    </ListItem>
-    <Divider component="li" />
-    <ListItem>
-      <ListItemText primary={`Apellido: ${user.surname}`} />
-    </ListItem>
-    <Divider component="li" />
-    <ListItem>
-      <ListItemText primary={`Email: ${user.email}`} />
-    </ListItem>
-    <Divider component="li" />
-    <ListItem>
-      <ListItemText primary={`Teléfono:`} />
-    </ListItem>
+    <EditField label="Nombre" value={user.name} isEditing={name} toggleKey="editName"/>
+    <EditField label="Apellido" value={user.surname} isEditing={surname} toggleKey="editSurname"/>
+    <EditField label="Email" value={user.email} isEditing={email} toggleKey="editEmail"/>
+    <EditField label="Telefono" value={12345} isEditing={phone} toggleKey="editNumberPhone"/>
+   
 
     {user.role === 'DOCTOR' && (
       <>
@@ -70,13 +80,10 @@ const ProfileScreen: React.FC = () => {
           <ListItemText primary={`Matrícula Nacional: `} />
         </ListItem>
         <Divider component="li" />
-        <ListItem>
-          <ListItemText primary={`Especialidad: `} />
-        </ListItem>
-        <Divider component="li" />
-        <ListItem>
-          <ListItemText primary={`Minutos por turno: `} />
-        </ListItem>
+        <EditField label="Especialidad" value={"Psicologia"} isEditing={speciality} toggleKey="editSpeciality"/>
+        <EditField label="Minutos por turno" value={12} isEditing={minutes} toggleKey="editMinutes"/>
+   
+        
       </>
     )}
   </List>
