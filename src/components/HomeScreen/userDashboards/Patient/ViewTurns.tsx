@@ -51,7 +51,7 @@ const ViewTurns: React.FC = () => {
     
     setCancellingTurnId(turnId);
     try {
-      const response = await fetch(`http://localhost:8080/api/turns/${turnId}/cancel`, {
+      const response = await fetch(`/api/turns/${turnId}/cancel`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${user.accessToken}`,
@@ -80,13 +80,21 @@ const ViewTurns: React.FC = () => {
         return 'Programado';
       case 'COMPLETED':
         return 'Completado';
-      case 'CANCELLED':
+      case 'CANCELED':
         return 'Cancelado';
       case 'AVAILABLE':
         return 'Disponible';
       default:
         return status;
     }
+  };
+
+  const isTurnPast = (scheduledAt: string) => {
+    return dayjs(scheduledAt).isBefore(dayjs());
+  };
+
+  const canCancelTurn = (turn: any) => {
+    return turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt);
   };
 
   const handleClose = () => {
@@ -150,7 +158,7 @@ const ViewTurns: React.FC = () => {
                       <MenuItem value="">Todos los estados</MenuItem>
                       <MenuItem value="SCHEDULED">Programados</MenuItem>
                       <MenuItem value="COMPLETED">Completados</MenuItem>
-                      <MenuItem value="CANCELLED">Cancelados</MenuItem>
+                      <MenuItem value="CANCELED">Cancelados</MenuItem>
                     </Select>
                   </FormControl>
 
@@ -188,6 +196,18 @@ const ViewTurns: React.FC = () => {
                       <Box className="viewturns-turn-info">
                         <Typography variant="h6" className="viewturns-turn-datetime">
                           {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
+                          {turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt) && (
+                            <Chip 
+                              label="Vencido" 
+                              size="small" 
+                              sx={{ 
+                                ml: 1, 
+                                backgroundColor: '#fbbf24', 
+                                color: '#92400e',
+                                fontSize: '0.75rem'
+                              }} 
+                            />
+                          )}
                         </Typography>
                         <Typography variant="body1" className="viewturns-turn-doctor">
                           Dr. {turn.doctorName}
@@ -202,7 +222,7 @@ const ViewTurns: React.FC = () => {
                           className={`viewturns-status-chip status-${turn.status.toLowerCase()}`}
                           size="small"
                         />
-                        {turn.status === 'SCHEDULED' && (
+                        {canCancelTurn(turn) && (
                           <Button 
                             variant="contained" 
                             size="small"
@@ -216,7 +236,7 @@ const ViewTurns: React.FC = () => {
                                 Cancelando...
                               </>
                             ) : (
-                              'Cancelar'
+                              'Cancelar turno'
                             )}
                           </Button>
                         )}

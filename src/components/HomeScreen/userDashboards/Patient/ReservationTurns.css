@@ -9,8 +9,8 @@
   border-radius: 20px !important;
   box-shadow: 0 20px 60px rgba(59, 130, 246, 0.2) !important;
   padding: 24px !important;
-  min-width: 600px !important;
-  width: 95vw !important;
+  min-width: 400px !important;
+  width: 90vw !important;
   max-width: 1200px !important;
   max-height: 90vh !important;
   overflow-y: auto !important;
@@ -380,18 +380,27 @@
 @media (max-width: 1024px) {
   .reservation-modal-container {
     max-width: 900px !important;
+    width: 90vw !important;
   }
 
   .reservation-step2-content {
     gap: 20px;
+    grid-template-columns: 1fr 1.2fr;
+  }
+
+  .reservation-form-section {
+    max-width: 650px;
   }
 }
 
 @media (max-width: 768px) {
   .reservation-modal-container {
-    padding: 20px !important;
+    padding: 16px !important;
     width: 95vw !important;
     max-width: none !important;
+    min-width: 320px !important;
+    border-radius: 16px !important;
+    max-height: 95vh !important;
   }
 
   .reservation-header {
@@ -409,6 +418,10 @@
   .reservation-header-icon {
     width: 48px !important;
     height: 48px !important;
+  }
+
+  .reservation-header-title {
+    font-size: 1.5rem !important;
   }
 
   .reservation-step1-content,
@@ -446,6 +459,8 @@
   .reservation-btn-secondary,
   .reservation-btn-primary {
     width: 100%;
+    padding: 12px !important;
+    font-size: 0.9rem !important;
   }
 
   .reservation-time-slots {
@@ -471,5 +486,92 @@
   .reservation-progress-step {
     width: 100%;
     justify-content: center;
+    padding: 8px 12px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .reservation-alert {
+    margin-bottom: 12px !important;
+    font-size: 0.875rem !important;
+  }
+
+  /* Calendar responsive improvements */
+  .reservation-calendar-container {
+    padding: 12px !important;
+  }
+
+  .reservation-calendar-container .MuiDateCalendar-root {
+    max-width: 100% !important;
+  }
+
+  .reservation-calendar-container .MuiPickersCalendarHeader-root {
+    padding: 8px !important;
+  }
+
+  .reservation-calendar-container .MuiDayCalendar-weekContainer {
+    margin: 2px 0 !important;
+  }
+
+  .reservation-calendar-container .MuiPickersDay-root {
+    font-size: 0.8rem !important;
+    width: 32px !important;
+    height: 32px !important;
+  }
+}
+
+/* Extra small devices (phones in portrait mode) */
+@media (max-width: 480px) {
+  .reservation-modal-container {
+    padding: 12px !important;
+    width: 98vw !important;
+    max-height: 98vh !important;
+    border-radius: 12px !important;
+  }
+
+  .reservation-header {
+    padding: 8px;
+    margin-bottom: 12px;
+  }
+
+  .reservation-header-title {
+    font-size: 1.25rem !important;
+  }
+
+  .reservation-header-subtitle {
+    font-size: 0.875rem !important;
+  }
+
+  .reservation-form-section,
+  .reservation-calendar-section,
+  .reservation-time-section {
+    padding: 12px !important;
+  }
+
+  .reservation-time-grid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .reservation-time-slot-button {
+    padding: 6px 4px !important;
+    min-height: 36px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .reservation-progress-step {
+    padding: 6px 8px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .reservation-calendar-container .MuiPickersDay-root {
+    font-size: 0.75rem !important;
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .reservation-btn-secondary,
+  .reservation-btn-primary {
+    padding: 10px !important;
+    font-size: 0.85rem !important;
   }
 }

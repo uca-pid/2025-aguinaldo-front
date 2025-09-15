@@ -197,6 +197,7 @@
   color: #047857 !important;
 }
 
+.viewturns-status-chip.status-canceled,
 .viewturns-status-chip.status-cancelled {
   background: #fee2e2 !important;
   color: #dc2626 !important;

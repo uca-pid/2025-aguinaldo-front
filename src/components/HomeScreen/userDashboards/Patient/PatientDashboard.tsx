@@ -7,8 +7,7 @@ import {
   CircularProgress,
   Container,
   Avatar,
-  Button,
-  Alert
+  Button
 } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ListAltIcon from "@mui/icons-material/ListAlt";
@@ -65,8 +64,8 @@ const PatientDashboard: React.FC = () => {
                 <PersonIcon className="patient-header-icon" />
               </Avatar>
               <Box>
-                <Typography variant="h3" component="h1" className="patient-header-title">
-                  Mi Panel de Paciente
+                <Typography variant="h4" component="h1" className="patient-header-title">
+                  Hola, {user.name || 'Paciente'}!
                 </Typography>
                 <Typography variant="h6" className="patient-header-subtitle">
                   Gestiona tus turnos médicos y citas
@@ -124,7 +123,7 @@ const PatientDashboard: React.FC = () => {
             <Box className="patient-action-item">
               <Card className="patient-upcoming-card">
                 <Typography variant="h6" className="patient-upcoming-header">
-                  Próximos Turnos
+                  Próximos
                 </Typography>
                 
                 <Box className="patient-upcoming-content">

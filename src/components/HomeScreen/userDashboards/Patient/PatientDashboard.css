@@ -8,7 +8,7 @@
 
 .patient-header-section {
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: 32px;
 }
 
 .patient-header-content {
@@ -45,9 +45,9 @@
 .patient-actions-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 32px;
+  gap: 24px;
   justify-content: center;
-  margin-bottom: 48px;
+  margin-bottom: 32px;
 }
 
 .patient-action-item {
@@ -72,14 +72,14 @@
 }
 
 .patient-action-content {
-  padding: 32px !important;
+  padding: 24px !important;
   text-align: center !important;
 }
 
 .patient-action-avatar {
-  margin: 0 auto 24px !important;
-  width: 72px !important;
-  height: 72px !important;
+  margin: 0 auto 16px !important;
+  width: 64px !important;
+  height: 64px !important;
 }
 
 .patient-action-avatar-reservation {
@@ -97,13 +97,13 @@
 
 .patient-action-title {
   font-weight: 600 !important;
-  margin-bottom: 16px !important;
+  margin-bottom: 12px !important;
   color: #1e3a8a !important;
 }
 
 .patient-action-description {
   color: #64748b !important;
-  margin-bottom: 24px !important;
+  margin-bottom: 16px !important;
 }
 
 .patient-action-button {
