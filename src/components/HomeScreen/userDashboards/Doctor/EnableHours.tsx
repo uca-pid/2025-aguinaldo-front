@@ -23,7 +23,6 @@ const EnableHours:React.FC=()=>{
         <Modal open={reservations} onClose={()=> uiSend({ type: "TOGGLE", key: "enableDoctorReservations" })}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <Box className="enablehours-modal-container">
-                    {/* Header with Avatar and Title */}
                     <Box className="enablehours-header">
                         <Avatar className="enablehours-header-icon">
                             <CalendarMonthOutlined />
@@ -38,10 +37,8 @@ const EnableHours:React.FC=()=>{
                         </Box>
                     </Box>
 
-                    {/* Content */}
                     <Box className="enablehours-content">
                         <Box className="enablehours-form-section">
-                            {/* Date Range Section */}
                             <Box className="enablehours-field-group">
                                 <Typography variant="h6" className="enablehours-field-title">
                                     <CalendarMonthOutlined />
@@ -61,7 +58,6 @@ const EnableHours:React.FC=()=>{
                                 />
                             </Box>
 
-                            {/* Time Range Section */}
                             <Box className="enablehours-field-group">
                                 <Typography variant="h6" className="enablehours-field-title">
                                     <AccessTimeOutlined />
@@ -82,7 +78,6 @@ const EnableHours:React.FC=()=>{
                             </Box>
                         </Box>
 
-                        {/* Help Text */}
                         <Box className="enablehours-help-text">
                             <Typography variant="body2">
                                 💡 Los turnos se generarán automáticamente en intervalos de 30 minutos dentro del horario configurado
@@ -90,7 +85,6 @@ const EnableHours:React.FC=()=>{
                         </Box>
                     </Box>
 
-                    {/* Actions */}
                     <Box className="enablehours-actions">
                         <Button 
                             onClick={()=> uiSend({ type: "TOGGLE", key: "enableDoctorReservations" })} 

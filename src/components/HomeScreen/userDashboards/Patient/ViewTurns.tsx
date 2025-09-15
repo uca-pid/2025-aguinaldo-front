@@ -122,7 +122,6 @@ const ViewTurns: React.FC = () => {
             </Box>
           </Box>
 
-          {/* Alerts */}
           {turnContext.myTurnsError && (
             <Alert severity="error" className="viewturns-alert">
               Error al cargar turnos: {turnContext.myTurnsError}
@@ -135,9 +134,7 @@ const ViewTurns: React.FC = () => {
             </Alert>
           )}
 
-          {/* Main Content */}
           <Box className="viewturns-content">
-            {/* Filters Section */}
             <Box className="viewturns-filters-section">
               <Box className="viewturns-filters-header">
                 <Typography variant="h6" className="viewturns-section-title">
@@ -179,7 +176,6 @@ const ViewTurns: React.FC = () => {
               </Box>
             </Box>
 
-            {/* Turns List Section */}
             <Box className="viewturns-list-section">
               <Box className="viewturns-list-content">
               {turnContext.isLoadingMyTurns ? (
@@ -258,7 +254,6 @@ const ViewTurns: React.FC = () => {
             </Box>
           </Box>
 
-          {/* Actions */}
           <Box className="viewturns-actions">
             <Button 
               onClick={handleClose} 

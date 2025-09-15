@@ -114,7 +114,6 @@ const ReservationTurns: React.FC = () => {
   };
 
   const handleNext = () => {
-    // Limpiar fecha y horario cuando vamos del Step 1 al Step 2
     turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "dateSelected", value: null });
     turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "scheduledAt", value: null });
     
@@ -125,7 +124,6 @@ const ReservationTurns: React.FC = () => {
     <>
       <Modal open={reserveTurns} onClose={handleClose}>
         <Box className="reservation-modal-container">
-          {/* Header */}
           <Box className="reservation-header">
             <Avatar className="reservation-header-icon">
               <CalendarTodayIcon sx={{ fontSize: 32, color: 'white' }} />
@@ -140,7 +138,6 @@ const ReservationTurns: React.FC = () => {
             </Box>
           </Box>
 
-          {/* Alerts */}
           {turnContext.doctorsError && (
             <Alert severity="error" className="reservation-alert">
               Error al cargar doctores: {turnContext.doctorsError}
@@ -161,7 +158,6 @@ const ReservationTurns: React.FC = () => {
 
           {currentStep === "step1" && (
             <Box className="reservation-step1-container">
-              {/* Progress Indicator */}
               <Box className="reservation-progress-indicator">
                 <Box className="reservation-progress-step active">
                   1. Información de la consulta
@@ -171,7 +167,6 @@ const ReservationTurns: React.FC = () => {
                 </Box>
               </Box>
 
-              {/* Form Information */}
               <Box className="reservation-form-section">
                 <TextField
                   label="Motivo de la consulta"
@@ -270,9 +265,7 @@ const ReservationTurns: React.FC = () => {
                 </Box>
               </Box>
 
-              {/* Main Content Grid */}
               <Box className="reservation-step2-content">
-                {/* Left Column - Calendar */}
                 <Box className="reservation-calendar-section">
                   <Box className="reservation-calendar-container">
                     <DemoContainer components={['DateCalendar']}>
@@ -290,7 +283,6 @@ const ReservationTurns: React.FC = () => {
                   </Typography>
                 </Box>
 
-                {/* Right Column - Time Selection */}
                 <Box className="reservation-time-section">
                   {!formValues.dateSelected ? (
                     <Box className="reservation-empty-state">

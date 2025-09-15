@@ -188,7 +188,6 @@ const ViewTurns: React.FC = () => {
       <Modal open={reservations} onClose={handleClose}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Box className="doctor-viewturns-modal-container">
-            {/* Header */}
             <Box className="doctor-viewturns-header">
               <Avatar className="doctor-viewturns-header-icon">
                 <ScheduleIcon sx={{ fontSize: 40, color: 'white' }} />
@@ -203,7 +202,6 @@ const ViewTurns: React.FC = () => {
               </Box>
             </Box>
 
-            {/* Alerts */}
             {turnContext.myTurnsError && (
               <Alert severity="error" className="doctor-viewturns-alert">
                 Error al cargar turnos: {turnContext.myTurnsError}
@@ -228,9 +226,7 @@ const ViewTurns: React.FC = () => {
               </Alert>
             )}
 
-            {/* Main Content */}
             <Box className="doctor-viewturns-content">
-              {/* Filters Section */}
               <Box className="doctor-viewturns-filters-section">
                 <Box className="doctor-viewturns-filters-header">
                   <Typography variant="h6" className="doctor-viewturns-section-title">
@@ -273,7 +269,6 @@ const ViewTurns: React.FC = () => {
                 </Box>
               </Box>
 
-              {/* Turns List Section */}
               <Box className="doctor-viewturns-list-section">
                 <Box className="doctor-viewturns-list-content">
                 {turnContext.isLoadingMyTurns ? (
@@ -402,7 +397,6 @@ const ViewTurns: React.FC = () => {
               </Box>
             </Box>
 
-            {/* Actions */}
             <Box className="doctor-viewturns-actions">
               <Button 
                 onClick={handleClose} 

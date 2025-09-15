@@ -52,7 +52,6 @@ const DoctorDashboard: React.FC = () => {
       const now = dayjs();
       const isUpcoming = turnDate.isAfter(now);
       
-      // Incluir turnos programados Y cancelados que sean futuros
       return isUpcoming && (turn.status === 'SCHEDULED' || turn.status === 'CANCELED');
     })
     .slice(0, 10)
@@ -78,7 +77,6 @@ const DoctorDashboard: React.FC = () => {
             </Box>
           </Box>
 
-          {/* Action Cards */}
           <Box className="doctor-actions-container">
             <Box className="doctor-action-item">
               <Card className="doctor-action-card" onClick={() => uiSend({ type: "TOGGLE", key: "showDoctorReservations" })}>

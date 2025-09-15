@@ -74,7 +74,6 @@ const PatientDashboard: React.FC = () => {
             </Box>
           </Box>
 
-          {/* Action Cards */}
           <Box className="patient-actions-container">
             <Box className="patient-action-item">
               <Card className="patient-action-card" onClick={() => uiSend({ type: "TOGGLE", key: "showDoAReservationTurn" })}>

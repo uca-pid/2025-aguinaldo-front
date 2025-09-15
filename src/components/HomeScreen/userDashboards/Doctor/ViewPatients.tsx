@@ -47,7 +47,6 @@ const ViewPatients: React.FC=()=>{
         <Modal open={patients} onClose={()=> uiSend({ type: "TOGGLE", key: "showPatients" })}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <Box className="viewpatients-modal-container">
-                    {/* Header with Avatar and Title */}
                     <Box className="viewpatients-header">
                         <Avatar className="viewpatients-header-icon">
                             <PeopleOutlined />
@@ -62,9 +61,7 @@ const ViewPatients: React.FC=()=>{
                         </Box>
                     </Box>
 
-                    {/* Content */}
                     <Box className="viewpatients-content">
-                        {/* Search Bar */}
                         <Box className="viewpatients-search-container">
                             <TextField
                                 className="viewpatients-search-field"
@@ -81,7 +78,6 @@ const ViewPatients: React.FC=()=>{
                             />
                         </Box>
 
-                        {/* Patients Count */}
                         <Box className="viewpatients-patients-count">
                             <Typography variant="body2">
                                 {filteredPatients.length} de {dummyPatients.length} paciente{dummyPatients.length !== 1 ? 's' : ''}
@@ -89,7 +85,6 @@ const ViewPatients: React.FC=()=>{
                             </Typography>
                         </Box>
 
-                        {/* Patients List */}
                         {filteredPatients.length > 0 ? (
                             <Box className="viewpatients-list-container">
                                 <List>
@@ -137,7 +132,6 @@ const ViewPatients: React.FC=()=>{
                         )}
                     </Box>
 
-                    {/* Actions */}
                     <Box className="viewpatients-actions">
                         <Button 
                             onClick={()=> uiSend({ type: "TOGGLE", key: "showPatients" })} 
