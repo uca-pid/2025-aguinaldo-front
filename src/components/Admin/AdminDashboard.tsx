@@ -64,7 +64,7 @@ export default function AdminDashboard() {
                 Panel de Administración
               </Typography>
               <Typography variant="h6" className="admin-header-subtitle">
-                Gestiona pacientes, doctores y solicitudes pendientes
+                Gestiona solicitudes pendientes y analiza estadísticas
               </Typography>
             </Box>
           </Box>
@@ -160,10 +160,10 @@ export default function AdminDashboard() {
                   <PersonIcon className="admin-action-icon" />
                 </Avatar>
                 <Typography variant="h5" component="h2" className="admin-action-title">
-                  Gestionar Pacientes
+                  Pacientes
                 </Typography>
                 <Typography variant="body1" className="admin-action-description">
-                  Ver lista completa de pacientes registrados y su información
+                  Ver mas estadísticas de los pacientes
                 </Typography>
                 <Button 
                   variant="contained" 
@@ -182,10 +182,10 @@ export default function AdminDashboard() {
                   <LocalHospitalIcon className="admin-action-icon" />
                 </Avatar>
                 <Typography variant="h5" component="h2" className="admin-action-title">
-                  Gestionar Doctores
+                  Doctores
                 </Typography>
                 <Typography variant="body1" className="admin-action-description">
-                  Administrar doctores activos y sus especialidades
+                  Ver mas estadísticas de los doctores
                 </Typography>
                 <Button 
                   variant="contained" 
