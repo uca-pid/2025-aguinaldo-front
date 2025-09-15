@@ -13,45 +13,7 @@ import {
 import PersonIcon from "@mui/icons-material/Person";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import PendingActionsIcon from "@mui/icons-material/PendingActions";
-import { styled } from "@mui/material/styles";
-
-const HoverCard = styled(Card)(() => ({
-  transition: "all 0.3s ease-in-out",
-  height: "100%",
-  background: 'white',
-  borderRadius: 16,
-  boxShadow: '0 4px 15px rgba(34, 87, 122, 0.1)',
-  border: '1px solid #e2e8f0',
-  cursor: 'pointer',
-  "&:hover": {
-    transform: "translateY(-8px)",
-    boxShadow: '0 12px 30px rgba(34, 87, 122, 0.2)',
-    borderColor: '#22577a',
-  },
-}));
-
-const DashboardContainer = styled(Box)({
-  minHeight: '100vh',
-  background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-  padding: '32px 16px',
-});
-
-const HeaderSection = styled(Box)({
-  textAlign: 'center',
-  marginBottom: '48px',
-});
-
-const StatsCard = styled(Card)(() => ({
-  background: 'linear-gradient(135deg, #22577a 0%, #2d7d90 100%)',
-  color: 'white',
-  borderRadius: 16,
-  boxShadow: '0 8px 25px rgba(34, 87, 122, 0.3)',
-  transition: 'all 0.3s ease-in-out',
-  "&:hover": {
-    transform: "translateY(-4px)",
-    boxShadow: '0 12px 35px rgba(34, 87, 122, 0.4)',
-  },
-}));
+import "./AdminDashboard.css";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ patients: 0, doctors: 0, pending: 0 });
@@ -75,227 +37,164 @@ export default function AdminDashboard() {
   }, []);
 
   return (
-    <DashboardContainer>
+    <Box className="admin-dashboard-container">
       <Container maxWidth="lg">
-        <HeaderSection>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-            <Avatar sx={{ mr: 2, width: 56, height: 56, background: 'linear-gradient(135deg, #22577a 0%, #2d7d90 100%)' }}>
+        <Box className="admin-header-section">
+          <Box className="admin-header-content">
+            <Avatar className="admin-header-avatar">
               <LocalHospitalIcon sx={{ fontSize: 32, color: 'white' }} />
             </Avatar>
             <Box>
-              <Typography variant="h3" component="h1" sx={{ 
-                fontWeight: 700, 
-                color: '#1a365d',
-                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif'
-              }}>
+              <Typography variant="h3" component="h1" className="admin-header-title">
                 Panel de Administración
               </Typography>
-              <Typography variant="h6" sx={{ color: '#64748b', fontWeight: 400 }}>
+              <Typography variant="h6" className="admin-header-subtitle">
                 Gestiona pacientes, doctores y solicitudes pendientes
               </Typography>
             </Box>
           </Box>
-        </HeaderSection>
+        </Box>
 
         {/* Stats Section */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4, mb: 6, justifyContent: 'center' }}>
-          <Box sx={{ flex: '1 1 300px', maxWidth: 400 }}>
-            <StatsCard>
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box className="admin-stats-container">
+          <Box className="admin-stats-item">
+            <Card className="admin-stats-card">
+              <CardContent className="admin-stats-content">
+                <Box className="admin-stats-layout">
                   <Box>
-                    <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+                    <Typography variant="h3" className="admin-stats-number">
                       {stats.patients}
                     </Typography>
-                    <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                    <Typography variant="body1" className="admin-stats-label">
                       Pacientes Registrados
                     </Typography>
                   </Box>
-                  <PersonIcon sx={{ fontSize: 48, opacity: 0.8 }} />
+                  <PersonIcon className="admin-stats-icon" />
                 </Box>
               </CardContent>
-            </StatsCard>
+            </Card>
           </Box>
           
-          <Box sx={{ flex: '1 1 300px', maxWidth: 400 }}>
-            <StatsCard>
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box className="admin-stats-item">
+            <Card className="admin-stats-card">
+              <CardContent className="admin-stats-content">
+                <Box className="admin-stats-layout">
                   <Box>
-                    <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+                    <Typography variant="h3" className="admin-stats-number">
                       {stats.doctors}
                     </Typography>
-                    <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                    <Typography variant="body1" className="admin-stats-label">
                       Doctores Activos
                     </Typography>
                   </Box>
-                  <LocalHospitalIcon sx={{ fontSize: 48, opacity: 0.8 }} />
+                  <LocalHospitalIcon className="admin-stats-icon" />
                 </Box>
               </CardContent>
-            </StatsCard>
+            </Card>
           </Box>
           
-          <Box sx={{ flex: '1 1 300px', maxWidth: 400 }}>
-            <StatsCard>
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box className="admin-stats-item">
+            <Card className="admin-stats-card">
+              <CardContent className="admin-stats-content">
+                <Box className="admin-stats-layout">
                   <Box>
-                    <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+                    <Typography variant="h3" className="admin-stats-number">
                       {stats.pending}
                       {stats.pending > 0 && (
                         <Badge
                           badgeContent={stats.pending}
                           color="error"
-                          sx={{ ml: 2 }}
+                          className="admin-stats-badge"
                         />
                       )}
                     </Typography>
-                    <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                    <Typography variant="body1" className="admin-stats-label">
                       Solicitudes Pendientes
                     </Typography>
                   </Box>
-                  <PendingActionsIcon sx={{ fontSize: 48, opacity: 0.8 }} />
+                  <PendingActionsIcon className="admin-stats-icon" />
                 </Box>
               </CardContent>
-            </StatsCard>
+            </Card>
           </Box>
         </Box>
 
         {/* Action Cards */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
-          <Box sx={{ flex: '1 1 300px', maxWidth: 400 }}>
-            <HoverCard onClick={() => navigate('/admin/patients')}>
-              <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <Avatar sx={{ 
-                  mx: 'auto', 
-                  mb: 3, 
-                  width: 72, 
-                  height: 72, 
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' 
-                }}>
-                  <PersonIcon sx={{ fontSize: 36 }} />
+        <Box className="admin-actions-container">
+          <Box className="admin-action-item">
+            <Card className="admin-action-card" onClick={() => navigate('/admin/patients')}>
+              <CardContent className="admin-action-content">
+                <Avatar className="admin-action-avatar admin-action-avatar-patients">
+                  <PersonIcon className="admin-action-icon" />
                 </Avatar>
-                <Typography variant="h5" component="h2" sx={{ 
-                  fontWeight: 600, 
-                  mb: 2, 
-                  color: '#1a365d' 
-                }}>
+                <Typography variant="h5" component="h2" className="admin-action-title">
                   Gestionar Pacientes
                 </Typography>
-                <Typography variant="body1" sx={{ color: '#64748b', mb: 3 }}>
+                <Typography variant="body1" className="admin-action-description">
                   Ver lista completa de pacientes registrados y su información
                 </Typography>
                 <Button 
                   variant="contained" 
-                  sx={{ 
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%)',
-                    }
-                  }}
+                  className="admin-action-button admin-action-button-patients"
                 >
                   Ver Pacientes
                 </Button>
               </CardContent>
-            </HoverCard>
+            </Card>
           </Box>
 
-          <Box sx={{ flex: '1 1 300px', maxWidth: 400 }}>
-            <HoverCard onClick={() => navigate('/admin/doctors')}>
-              <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <Avatar sx={{ 
-                  mx: 'auto', 
-                  mb: 3, 
-                  width: 72, 
-                  height: 72, 
-                  background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)' 
-                }}>
-                  <LocalHospitalIcon sx={{ fontSize: 36 }} />
+          <Box className="admin-action-item">
+            <Card className="admin-action-card" onClick={() => navigate('/admin/doctors')}>
+              <CardContent className="admin-action-content">
+                <Avatar className="admin-action-avatar admin-action-avatar-doctors">
+                  <LocalHospitalIcon className="admin-action-icon" />
                 </Avatar>
-                <Typography variant="h5" component="h2" sx={{ 
-                  fontWeight: 600, 
-                  mb: 2, 
-                  color: '#1a365d' 
-                }}>
+                <Typography variant="h5" component="h2" className="admin-action-title">
                   Gestionar Doctores
                 </Typography>
-                <Typography variant="body1" sx={{ color: '#64748b', mb: 3 }}>
+                <Typography variant="body1" className="admin-action-description">
                   Administrar doctores activos y sus especialidades
                 </Typography>
                 <Button 
                   variant="contained" 
-                  sx={{ 
-                    background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #047857 0%, #065f46 100%)',
-                    }
-                  }}
+                  className="admin-action-button admin-action-button-doctors"
                 >
                   Ver Doctores
                 </Button>
               </CardContent>
-            </HoverCard>
+            </Card>
           </Box>
 
-          <Box sx={{ flex: '1 1 300px', maxWidth: 400 }}>
-            <HoverCard onClick={() => navigate('/admin/pending-doctors')}>
-              <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <Avatar sx={{ 
-                  mx: 'auto', 
-                  mb: 3, 
-                  width: 72, 
-                  height: 72, 
-                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                  position: 'relative'
-                }}>
-                  <PendingActionsIcon sx={{ fontSize: 36 }} />
+          <Box className="admin-action-item">
+            <Card className="admin-action-card" onClick={() => navigate('/admin/pending-doctors')}>
+              <CardContent className="admin-action-content">
+                <Avatar className="admin-action-avatar admin-action-avatar-pending">
+                  <PendingActionsIcon className="admin-action-icon" />
                   {stats.pending > 0 && (
                     <Badge
                       badgeContent={stats.pending}
                       color="error"
-                      sx={{
-                        position: 'absolute',
-                        top: -8,
-                        right: -8,
-                      }}
+                      className="admin-pending-badge"
                     />
                   )}
                 </Avatar>
-                <Typography variant="h5" component="h2" sx={{ 
-                  fontWeight: 600, 
-                  mb: 2, 
-                  color: '#1a365d' 
-                }}>
+                <Typography variant="h5" component="h2" className="admin-action-title">
                   Solicitudes Pendientes
                 </Typography>
-                <Typography variant="body1" sx={{ color: '#64748b', mb: 3 }}>
+                <Typography variant="body1" className="admin-action-description">
                   Revisar y aprobar solicitudes de registro de doctores
                 </Typography>
                 <Button 
                   variant="contained" 
-                  sx={{ 
-                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
-                    }
-                  }}
+                  className="admin-action-button admin-action-button-pending"
                 >
                   {stats.pending > 0 ? `Revisar (${stats.pending})` : 'Ver Solicitudes'}
                 </Button>
               </CardContent>
-            </HoverCard>
+            </Card>
           </Box>
         </Box>
       </Container>
-    </DashboardContainer>
+    </Box>
   );
 }

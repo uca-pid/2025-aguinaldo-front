@@ -2,7 +2,7 @@ import './App.css'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import HomeScreen from './components/HomeScreen/HomeScreen'
 import { useAuthMachine } from './providers/AuthProvider'
-import { Avatar, Box, Button, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material'
+import { Avatar, Box, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material'
 import { SignInResponse } from './models/Auth'
 import { useMachines } from './providers/MachineProvider'
 import { Logout, Person } from '@mui/icons-material'
@@ -24,23 +24,13 @@ function App() {
   return (
     <BrowserRouter>
       <Box>
-        <Box 
-          sx={{ 
-            p: 2, 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            background: '#22577a',
-            color: 'white',
-            boxShadow: '0 2px 8px rgba(34, 87, 122, 0.2)'
-          }}
-        >
+        <Box className="app-header">
           <Box>
             <h2>MediBook - Welcome {user.name} {user.surname}!</h2>
           </Box>
-          <Box display="flex" alignItems="center" gap={1}>
+          <Box className="app-user-section">
           <Avatar
-            sx={{ cursor: "pointer" }}
+            className="app-avatar"
             onClick={() =>
               uiSend({
                 type: "TOGGLE",
@@ -52,8 +42,7 @@ function App() {
           </Avatar>
           <Typography
             variant="subtitle1"
-            fontWeight={500}
-            sx={{ cursor: "pointer" }}
+            className="app-username"
             onClick={() =>
               uiSend({
                 type: "TOGGLE",
@@ -72,14 +61,7 @@ function App() {
           transformOrigin={{ horizontal: "right", vertical: "top" }}
           PaperProps={{
             elevation: 4,
-            sx: {
-              mt: 1.5,
-              borderRadius: 3,
-              minWidth: 200,
-              position: "absolute",
-              top: 60,
-              right: 20,
-            },
+            className: "app-menu"
           }}
         >
           <MenuItem
@@ -101,7 +83,7 @@ function App() {
               uiSend({ type: "TOGGLE", key: "userMenu" });
               handleLogout();
             }}
-            sx={{ color: "error.main" }}
+            className="app-menu-item-error"
           >
             <ListItemIcon>
               <Logout fontSize="small" color="error" />

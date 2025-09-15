@@ -1,0 +1,196 @@
+/* AdminDashboard Component Styles */
+
+.admin-dashboard-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 32px 16px;
+}
+
+.admin-header-section {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.admin-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.admin-header-avatar {
+  margin-right: 16px;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #22577a 0%, #2d7d90 100%);
+}
+
+.admin-header-title {
+  font-weight: 700;
+  color: #1a365d;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+}
+
+.admin-header-subtitle {
+  color: #64748b;
+  font-weight: 400;
+}
+
+/* Stats Section */
+.admin-stats-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  margin-bottom: 48px;
+  justify-content: center;
+}
+
+.admin-stats-item {
+  flex: 1 1 300px;
+  max-width: 400px;
+}
+
+.admin-stats-card {
+  background: linear-gradient(135deg, #22577a 0%, #2d7d90 100%);
+  color: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(34, 87, 122, 0.3);
+  transition: all 0.3s ease-in-out;
+}
+
+.admin-stats-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 35px rgba(34, 87, 122, 0.4);
+}
+
+.admin-stats-content {
+  padding: 24px;
+}
+
+.admin-stats-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-stats-number {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.admin-stats-label {
+  opacity: 0.9;
+}
+
+.admin-stats-icon {
+  font-size: 48px;
+  opacity: 0.8;
+}
+
+.admin-stats-badge {
+  margin-left: 16px;
+}
+
+/* Action Cards Section */
+.admin-actions-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  justify-content: center;
+}
+
+.admin-action-item {
+  flex: 1 1 300px;
+  max-width: 400px;
+}
+
+.admin-action-card {
+  transition: all 0.3s ease-in-out;
+  height: 100%;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(34, 87, 122, 0.1);
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+}
+
+.admin-action-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(34, 87, 122, 0.2);
+  border-color: #22577a;
+}
+
+.admin-action-content {
+  padding: 32px;
+  text-align: center;
+}
+
+.admin-action-avatar {
+  margin: 0 auto 24px;
+  width: 72px;
+  height: 72px;
+}
+
+.admin-action-avatar-patients {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.admin-action-avatar-doctors {
+  background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+}
+
+.admin-action-avatar-pending {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  position: relative;
+}
+
+.admin-action-icon {
+  font-size: 36px;
+}
+
+.admin-action-title {
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #1a365d;
+}
+
+.admin-action-description {
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+.admin-action-button {
+  border-radius: 8px;
+  text-transform: none;
+  font-weight: 600;
+}
+
+.admin-action-button-patients {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.admin-action-button-patients:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+}
+
+.admin-action-button-doctors {
+  background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+}
+
+.admin-action-button-doctors:hover {
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+}
+
+.admin-action-button-pending {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.admin-action-button-pending:hover {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+}
+
+.admin-pending-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+}
