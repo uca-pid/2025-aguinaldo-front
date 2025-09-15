@@ -4,6 +4,7 @@ import { useMachine } from '@xstate/react';
 import { uiMachine} from '../machines/uiMachine';
 import type { UiMachineContext, UiMachineEvent } from '../machines/uiMachine';
 import { turnMachine, type TurnMachineContext, type TurnMachineEvent } from '../machines/turnMachine';
+import { adminUserMachine } from '#/machines/adminUserMachine';
 
 interface MachineInstances {
   ui: {
@@ -16,6 +17,11 @@ interface MachineInstances {
     send: (event: TurnMachineEvent) => void;
     context: TurnMachineContext;
   };
+  adminUser: {
+    state:any;
+    send: (event: any) => void;
+    context: any;
+  };
 }
 
 const MachineContext = createContext<MachineInstances | null>(null);
@@ -27,6 +33,7 @@ interface MachineProviderProps {
 export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) => {
   const [uiState, uiSend] = useMachine(uiMachine);
   const [turnState, turnSend] = useMachine(turnMachine);
+  const [adminUserState, adminUserSend] = useMachine(adminUserMachine);
 
   const machines: MachineInstances = {
     ui: {
@@ -38,8 +45,12 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       state:turnState,
       send: turnSend,
       context: turnState.context
+    },
+    adminUser: {
+      state: adminUserState,
+      send: adminUserSend,
+      context: adminUserState.context
     }
-    
   };
 
   return (

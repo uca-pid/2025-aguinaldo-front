@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   Box, 
@@ -8,33 +8,48 @@ import {
   Badge,
   Container,
   Avatar,
-  Button
+  Button,
+  CircularProgress,
+  Alert
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import PendingActionsIcon from "@mui/icons-material/PendingActions";
+import { useAuthMachine } from "#/providers/AuthProvider";
+import { useMachines } from "#/providers/MachineProvider";
+import { SignInResponse } from "#/models/Auth";
 import "./AdminDashboard.css";
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({ patients: 0, doctors: 0, pending: 0 });
   const navigate = useNavigate();
+  const { auth } = useAuthMachine();
+  const { authResponse } = auth;
+  const { adminUser, ui } = useMachines();
+  const { context: adminContext, send: adminSend, state: adminState } = adminUser;
+  const { send: uiSend } = ui;
+  const user = authResponse as SignInResponse;
 
-  const fetchStats = async () => {
-    try {
-      // These would be actual API calls
-      setStats({
-        patients: 150,
-        doctors: 25,
-        pending: 5,
-      });
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    }
-  };
+  const stats = adminContext.adminStats;
+  const loading = adminContext.loading;
+  const error = adminContext.error;
 
   useEffect(() => {
-    fetchStats();
-  }, []);
+    if (user?.accessToken) {
+      adminSend({ 
+        type: 'FETCH_ADMIN_STATS', 
+        accessToken: user.accessToken 
+      });
+    }
+  }, [user?.accessToken, adminSend]);
+
+  const handleRetry = () => {
+    if (user?.accessToken) {
+      adminSend({ 
+        type: 'FETCH_PENDING_DOCTORS', 
+        accessToken: user.accessToken 
+      });
+    }
+  };
 
   return (
     <Box className="admin-dashboard-container">
@@ -42,7 +57,7 @@ export default function AdminDashboard() {
         <Box className="admin-header-section">
           <Box className="admin-header-content">
             <Avatar className="admin-header-avatar">
-              <LocalHospitalIcon sx={{ fontSize: 32, color: 'white' }} />
+              <LocalHospitalIcon className="admin-header-icon" />
             </Avatar>
             <Box>
               <Typography variant="h3" component="h1" className="admin-header-title">
@@ -54,6 +69,30 @@ export default function AdminDashboard() {
             </Box>
           </Box>
         </Box>
+
+        {/* Error Alert */}
+        {error && (
+          <Box sx={{ mb: 4 }}>
+            <Alert 
+              severity="error" 
+              action={
+                <Button color="inherit" size="small" onClick={handleRetry}>
+                  Reintentar
+                </Button>
+              }
+              onClose={() => adminSend({ type: 'CLEAR_ERROR' })}
+            >
+              {error}
+            </Alert>
+          </Box>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+            <CircularProgress />
+          </Box>
+        )}
 
         {/* Stats Section */}
         <Box className="admin-stats-container">
@@ -100,13 +139,6 @@ export default function AdminDashboard() {
                   <Box>
                     <Typography variant="h3" className="admin-stats-number">
                       {stats.pending}
-                      {stats.pending > 0 && (
-                        <Badge
-                          badgeContent={stats.pending}
-                          color="error"
-                          className="admin-stats-badge"
-                        />
-                      )}
                     </Typography>
                     <Typography variant="body1" className="admin-stats-label">
                       Solicitudes Pendientes
@@ -166,7 +198,7 @@ export default function AdminDashboard() {
           </Box>
 
           <Box className="admin-action-item">
-            <Card className="admin-action-card" onClick={() => navigate('/admin/pending-doctors')}>
+            <Card className="admin-action-card">
               <CardContent className="admin-action-content">
                 <Avatar className="admin-action-avatar admin-action-avatar-pending">
                   <PendingActionsIcon className="admin-action-icon" />
@@ -187,8 +219,14 @@ export default function AdminDashboard() {
                 <Button 
                   variant="contained" 
                   className="admin-action-button admin-action-button-pending"
+                    onClick={() => {
+                      adminSend({ type: 'FETCH_PENDING_DOCTORS', accessToken: user?.accessToken });
+                      uiSend({ type: 'NAVIGATE', to: '/admin/pending' });
+                    }}
+                  disabled={adminState.matches('fetchingPendingDoctors')}
+                  startIcon={adminState.matches('fetchingPendingDoctors') ? <CircularProgress size={20} /> : null}
                 >
-                  {stats.pending > 0 ? `Revisar (${stats.pending})` : 'Ver Solicitudes'}
+                  Ver Solicitudes
                 </Button>
               </CardContent>
             </Card>

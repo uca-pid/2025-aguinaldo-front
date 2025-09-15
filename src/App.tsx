@@ -1,13 +1,16 @@
 import './App.css'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import HomeScreen from './components/HomeScreen/HomeScreen'
 import { useAuthMachine } from './providers/AuthProvider'
 import { Avatar, Box, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material'
 import { SignInResponse } from './models/Auth'
 import { useMachines } from './providers/MachineProvider'
 import { Logout, Person } from '@mui/icons-material'
+import PendingScreen from './components/Admin/PendingScreen/PendingScreen'
+import { useEffect } from 'react'
 
-function App() {
+function AppContent() {
+  const navigate = useNavigate();
   const { auth } = useAuthMachine();
   const { authResponse } = auth;
   const {ui} = useMachines();
@@ -17,12 +20,23 @@ function App() {
 
   const open = Boolean(uiContext.toggleStates?.["userMenu"]);
 
+  useEffect(() => {
+    if (uiContext.navigationRequested) {
+      navigate(uiContext.navigationRequested);
+      uiSend({ type: "NAVIGATE", to: null });
+    }
+  }, [uiContext.navigationRequested, navigate, uiSend]);
+
   const handleLogout = () => {
     auth.send({ type: 'LOGOUT' });
   };
 
+  const handleNavigateToProfile = () => {
+    uiSend({ type: "TOGGLE", key: "userMenu" });
+    uiSend({ type: "NAVIGATE", to: "/profile" });
+  };
+
   return (
-    <BrowserRouter>
       <Box>
         <Box className="app-header">
           <Box>
@@ -64,12 +78,7 @@ function App() {
             className: "app-menu"
           }}
         >
-          <MenuItem
-            onClick={() => {
-              uiSend({ type: "TOGGLE", key: "userMenu" });
-              alert("Ir al perfil");
-            }}
-          >
+          <MenuItem onClick={handleNavigateToProfile}>
             <ListItemIcon>
               <Person fontSize="small" />
             </ListItemIcon>
@@ -95,10 +104,18 @@ function App() {
 
         <Routes>
           <Route path="/" element={<HomeScreen />} />
+          <Route path="/admin/pending" element={<PendingScreen />} />
         </Routes>
       </Box>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
-  )
+  );
 }
 
 export default App

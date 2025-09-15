@@ -17,6 +17,12 @@ export const API_CONFIG = {
     GET_PATIENT_TURNS: '/api/turns/patient',
     
     GET_DOCTORS: '/api/doctors',
+    
+    // Admin endpoints
+    GET_PENDING_DOCTORS: '/api/admin/pending-doctors',
+    APPROVE_DOCTOR: '/api/admin/approve-doctor',
+    REJECT_DOCTOR: '/api/admin/reject-doctor',
+    GET_ADMIN_STATS: '/api/admin/stats',
   },
   
   DEFAULT_HEADERS: {
