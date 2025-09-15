@@ -1,7 +1,20 @@
-import { Box, Button, List, ListItem, ListItemText, Modal, Typography } from "@mui/material"
+import { 
+  Avatar,
+  Box, 
+  Button, 
+  List, 
+  ListItem, 
+  Modal, 
+  Typography,
+  TextField,
+  InputAdornment
+} from "@mui/material"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
-import { useMachines } from "#/providers/MachineProvider";
+import { useMachines } from "#/providers/MachineProvider"
+import { PeopleOutlined, SearchOutlined, PersonOutlined, BadgeOutlined } from '@mui/icons-material'
+import { useState } from 'react'
+import './ViewPatients.css'
 
 const dummyPatients = [
   { id: 1, name: "Juan Pérez", age: 34, dni: "12345678" },
@@ -19,71 +32,124 @@ const ViewPatients: React.FC=()=>{
     const { context: uiContext, send: uiSend } = ui;
     const formContext = uiContext.toggleStates || {}
     const patients = formContext["showPatients"] ?? false;
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredPatients = dummyPatients.filter(patient =>
+        patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        patient.dni.includes(searchTerm)
+    );
+
+    const getInitials = (name: string) => {
+        return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    };
     
     return(
         <Modal open={patients} onClose={()=> uiSend({ type: "TOGGLE", key: "showPatients" })}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <Box
-            sx={{
-                position: "fixed",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                bgcolor: "background.paper",
-                borderRadius: 2,
-                boxShadow: 8,
-                p: { xs: 1.5, sm: 3 },
-                minWidth: { xs: "90vw", sm: 320 },
-                width: { xs: "95vw", sm: 370 },
-                maxWidth: "98vw",
-                maxHeight: { xs: "95vh", sm: "90vh" },
-                display: "flex",
-                flexDirection: "column",
-                gap: 1.5,
-                overflowY: "auto",
-            
-            }}
-            >
-            
-        
-                <Typography variant="h6" mb={1}>
-                Mis pacientes
-                </Typography>
-                <Box display="flex" flexDirection="column" gap={1}>
-                <Box>
-                  <List>
-                  {dummyPatients.map((patient) => (
-                    <ListItem key={patient.id} divider>
-                      <ListItemText
-                        primary={patient.name}
-                        secondary={
-                          <>
-                            Edad: {patient.age} <br />
-                            DNI: {patient.dni}
-                          </>
-                        }
-                      />
-                    </ListItem>
-                  ))}
+                <Box className="viewpatients-modal-container">
+                    {/* Header with Avatar and Title */}
+                    <Box className="viewpatients-header">
+                        <Avatar className="viewpatients-header-icon">
+                            <PeopleOutlined />
+                        </Avatar>
+                        <Box className="viewpatients-header-content">
+                            <Typography variant="h5" className="viewpatients-header-title">
+                                Mis Pacientes
+                            </Typography>
+                            <Typography variant="body2" className="viewpatients-header-subtitle">
+                                Gestiona y consulta la información de tus pacientes
+                            </Typography>
+                        </Box>
+                    </Box>
 
-                  {dummyPatients.length === 0 && (
-                    <Typography variant="body2">
-                      No tenés pacientes registrados
-                    </Typography>
-                  )}
-                  </List>
+                    {/* Content */}
+                    <Box className="viewpatients-content">
+                        {/* Search Bar */}
+                        <Box className="viewpatients-search-container">
+                            <TextField
+                                className="viewpatients-search-field"
+                                placeholder="Buscar por nombre o DNI..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <SearchOutlined color="action" />
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                        </Box>
+
+                        {/* Patients Count */}
+                        <Box className="viewpatients-patients-count">
+                            <Typography variant="body2">
+                                {filteredPatients.length} de {dummyPatients.length} paciente{dummyPatients.length !== 1 ? 's' : ''}
+                                {searchTerm && ' encontrado' + (filteredPatients.length !== 1 ? 's' : '')}
+                            </Typography>
+                        </Box>
+
+                        {/* Patients List */}
+                        {filteredPatients.length > 0 ? (
+                            <Box className="viewpatients-list-container">
+                                <List>
+                                    {filteredPatients.map((patient) => (
+                                        <ListItem key={patient.id} className="viewpatients-patient-card">
+                                            <Box className="viewpatients-patient-info">
+                                                <Avatar className="viewpatients-patient-avatar">
+                                                    {getInitials(patient.name)}
+                                                </Avatar>
+                                                <Box className="viewpatients-patient-details">
+                                                    <Typography className="viewpatients-patient-name">
+                                                        {patient.name}
+                                                    </Typography>
+                                                    <Box className="viewpatients-patient-info-row">
+                                                        <Typography className="viewpatients-patient-info-item">
+                                                            <PersonOutlined fontSize="small" />
+                                                            {patient.age} años
+                                                        </Typography>
+                                                        <Typography className="viewpatients-patient-info-item">
+                                                            <BadgeOutlined fontSize="small" />
+                                                            DNI: {patient.dni}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </Box>
+                        ) : (
+                            <Box className="viewpatients-empty-state">
+                                <Avatar className="viewpatients-empty-icon">
+                                    <SearchOutlined />
+                                </Avatar>
+                                <Typography variant="h6" gutterBottom>
+                                    {searchTerm ? 'No se encontraron pacientes' : 'No hay pacientes registrados'}
+                                </Typography>
+                                <Typography variant="body2" color="textSecondary">
+                                    {searchTerm 
+                                        ? 'Intenta con otros términos de búsqueda' 
+                                        : 'Los pacientes aparecerán aquí cuando se registren en el sistema'
+                                    }
+                                </Typography>
+                            </Box>
+                        )}
+                    </Box>
+
+                    {/* Actions */}
+                    <Box className="viewpatients-actions">
+                        <Button 
+                            onClick={()=> uiSend({ type: "TOGGLE", key: "showPatients" })} 
+                            variant="outlined"
+                            className="viewpatients-btn-close"
+                        >
+                            Cerrar
+                        </Button>
+                    </Box>
                 </Box>
-                </Box>
-                <Box display="flex" justifyContent="flex-end" mt={1}>
-                <Button onClick={()=>{ uiSend({ type: "TOGGLE", key: "showPatients" })}} color="inherit">
-                    Cancelar
-                </Button>
-                </Box>
-    
-            </Box>
             </LocalizationProvider>
         </Modal>
-
     )
 }
 

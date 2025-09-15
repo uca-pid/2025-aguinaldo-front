@@ -1,0 +1,280 @@
+/* Doctor EnableHours Component Styles */
+
+.enablehours-modal-container {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  background: white !important;
+  border-radius: 20px !important;
+  box-shadow: 0 20px 60px rgba(59, 130, 246, 0.2) !important;
+  padding: 24px !important;
+  min-width: 400px !important;
+  width: 90vw !important;
+  max-width: 800px !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  border: 1px solid #e0e7ff !important;
+}
+
+.enablehours-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+  border-radius: 16px;
+  border: 1px solid #e0e7ff;
+}
+
+.enablehours-header-icon {
+  width: 64px !important;
+  height: 64px !important;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+  flex-shrink: 0;
+}
+
+.enablehours-header-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.enablehours-header-title {
+  font-weight: 700 !important;
+  color: #1e3a8a !important;
+  margin: 0 !important;
+  line-height: 1.2;
+}
+
+.enablehours-header-subtitle {
+  color: #64748b !important;
+  font-weight: 400 !important;
+  margin: 4px 0 0 0 !important;
+  line-height: 1.3;
+}
+
+.enablehours-content {
+  background: #f8fafc !important;
+  border-radius: 12px !important;
+  padding: 20px !important;
+  border: 1px solid #e0e7ff !important;
+  margin-bottom: 20px;
+}
+
+.enablehours-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.enablehours-field-group {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e0e7ff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.enablehours-field-title {
+  color: #1e3a8a !important;
+  font-weight: 600 !important;
+  margin: 0 0 16px 0 !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.enablehours-field-subtitle {
+  color: #64748b !important;
+  font-size: 0.875rem !important;
+  margin: 0 0 16px 0 !important;
+  font-style: italic;
+}
+
+.enablehours-date-range-field,
+.enablehours-time-range-field {
+  width: 100% !important;
+}
+
+.enablehours-date-range-field .MuiInputBase-root,
+.enablehours-time-range-field .MuiInputBase-root {
+  border-radius: 8px !important;
+  background: #f8fafc !important;
+  border: 1px solid #e0e7ff !important;
+}
+
+.enablehours-date-range-field .MuiInputBase-root:hover,
+.enablehours-time-range-field .MuiInputBase-root:hover {
+  border-color: #3b82f6 !important;
+}
+
+.enablehours-date-range-field .MuiInputBase-root.Mui-focused,
+.enablehours-time-range-field .MuiInputBase-root.Mui-focused {
+  border-color: #3b82f6 !important;
+  border-width: 2px !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+.enablehours-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.enablehours-btn-cancel {
+  border-color: #64748b !important;
+  color: #64748b !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  padding: 8px 24px !important;
+}
+
+.enablehours-btn-cancel:hover {
+  border-color: #374151 !important;
+  color: #374151 !important;
+  background: #f8fafc !important;
+}
+
+.enablehours-btn-submit {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+  color: white !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  padding: 8px 24px !important;
+  border-radius: 8px !important;
+}
+
+.enablehours-btn-submit:hover {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;
+}
+
+.enablehours-btn-submit:disabled {
+  background: #e5e7eb !important;
+  color: #9ca3af !important;
+}
+
+.enablehours-alert {
+  margin-bottom: 16px !important;
+  border-radius: 8px !important;
+}
+
+.enablehours-help-text {
+  background: #f0f9ff !important;
+  border: 1px solid #bae6fd !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  margin-top: 16px !important;
+}
+
+.enablehours-help-text Typography {
+  color: #0369a1 !important;
+  font-size: 0.875rem !important;
+  margin: 0 !important;
+}
+
+.enablehours-loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+}
+
+.enablehours-loading-text {
+  color: #64748b !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .enablehours-modal-container {
+    padding: 16px !important;
+    width: 95vw !important;
+    max-width: none !important;
+    min-width: 320px !important;
+    border-radius: 16px !important;
+    max-height: 95vh !important;
+  }
+
+  .enablehours-header {
+    margin-bottom: 16px;
+    padding: 12px;
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .enablehours-header-content {
+    align-items: center;
+  }
+
+  .enablehours-header-icon {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .enablehours-header-title {
+    font-size: 1.5rem !important;
+  }
+
+  .enablehours-content,
+  .enablehours-field-group {
+    padding: 16px !important;
+  }
+
+  .enablehours-form-section {
+    gap: 16px;
+  }
+
+  .enablehours-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .enablehours-btn-cancel,
+  .enablehours-btn-submit {
+    width: 100%;
+    padding: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .enablehours-modal-container {
+    padding: 12px !important;
+    width: 98vw !important;
+    max-height: 98vh !important;
+    border-radius: 12px !important;
+  }
+
+  .enablehours-header {
+    padding: 8px;
+    margin-bottom: 12px;
+  }
+
+  .enablehours-header-title {
+    font-size: 1.25rem !important;
+  }
+
+  .enablehours-header-subtitle {
+    font-size: 0.875rem !important;
+  }
+
+  .enablehours-content,
+  .enablehours-field-group {
+    padding: 12px !important;
+  }
+
+  .enablehours-field-title {
+    font-size: 1rem !important;
+  }
+
+  .enablehours-btn-cancel,
+  .enablehours-btn-submit {
+    padding: 10px !important;
+    font-size: 0.875rem !important;
+  }
+}

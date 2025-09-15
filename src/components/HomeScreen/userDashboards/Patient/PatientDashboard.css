@@ -141,15 +141,35 @@
 .patient-upcoming-header {
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
   color: white !important;
-  padding: 24px !important;
+  padding: 20px !important;
   border-radius: 16px 16px 0 0 !important;
   font-weight: 600 !important;
 }
 
 .patient-upcoming-content {
-  padding: 24px !important;
-  max-height: 300px;
+  padding: 12px !important;
+  max-height: 210px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.patient-upcoming-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.patient-upcoming-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.patient-upcoming-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.patient-upcoming-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .patient-upcoming-item {
@@ -219,5 +239,14 @@
 
   .patient-action-content {
     padding: 24px !important;
+  }
+
+  .patient-upcoming-content {
+    padding: 16px !important;
+    max-height: 180px;
+  }
+
+  .patient-upcoming-item {
+    padding: 12px !important;
   }
 }
