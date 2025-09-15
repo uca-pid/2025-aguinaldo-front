@@ -1,159 +1,214 @@
-import React from "react";
-import { Box, Grid, Card, CardActionArea, CardContent, Typography, List, ListItem, ListItemText} from "@mui/material";
+import React, { useEffect } from "react";
+import {
+  Box, 
+  Typography, 
+  Card, 
+  CardContent, 
+  CircularProgress,
+  Container,
+  Avatar,
+  Button,
+  Chip
+} from "@mui/material";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
-import { styled } from "@mui/material/styles";
+import PersonIcon from "@mui/icons-material/Person";
 import { useMachines } from "#/providers/MachineProvider";
+import { useAuthMachine } from "#/providers/AuthProvider";
+import { SignInResponse } from "#/models/Auth";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import ViewTurns from "./ViewTurns";
 import EnableHours from "./EnableHours";
 import ViewPatients from "./ViewPatients";
-
-const upcomingAppointments = [
-  {
-    id: 1,
-    date: "15/09/2025",
-    time: "10:30",
-    patient: "María López",
-    reason: "Control de presión arterial"
-  },
-  {
-    id: 2,
-    date: "15/09/2025",
-    time: "11:30",
-    patient: "Juan Pérez",
-    reason: "Seguimiento psicológico"
-  },
-  {
-    id: 3,
-    date: "16/09/2025",
-    time: "09:00",
-    patient:"María García",
-    reason: "" 
-  },
-  {
-    id: 4,
-    date: "16/09/2025",
-    time: "10:15",
-    patient: "Carlos Martínez",
-    reason: "Consulta por dolor de espalda"
-  },
-  {
-    id: 5,
-    date: "17/09/2025",
-    time: "14:00",
-    patient: "Lucía Ramírez",
-    reason: "" 
-  }
-];
-
-const HoverCard = styled(Card)(({ theme }) => ({
-  transition: "transform 0.2s, box-shadow 0.2s",
-  height: "100%",
-  "&:hover": {
-    transform: "scale(1.05)",
-    boxShadow: theme.shadows[6],
-  },
-}));
+import dayjs from "dayjs";
+import "./DoctorDashboard.css";
 
 const DoctorDashboard: React.FC = () => {
-
-  const { ui } = useMachines();
+  const { ui, turn } = useMachines();
+  const { auth } = useAuthMachine();
   const { send: uiSend } = ui;
+  const authContext = auth.context;
+  const user = auth.authResponse as SignInResponse;
+  const { state: turnState, send: turnSend } = turn;
+  const turnContext = turnState.context;
+
+  useEffect(() => {
+    if (authContext.isAuthenticated && user.accessToken && user.id) {
+      turnSend({
+        type: "SET_AUTH",
+        accessToken: user.accessToken,
+        userId: user.id
+      });
+      
+      turnSend({ type: "LOAD_MY_TURNS" });
+    }
+  }, [authContext.isAuthenticated, user.accessToken, user.id, turnSend]);
+
+  const upcomingTurns = turnContext.myTurns
+    .filter((turn: any) => {
+      const turnDate = dayjs(turn.scheduledAt);
+      const now = dayjs();
+      const isUpcoming = turnDate.isAfter(now);
+      
+      return isUpcoming && (turn.status === 'SCHEDULED' || turn.status === 'CANCELED');
+    })
+    .slice(0, 10)
+    .sort((a: any, b: any) => dayjs(a.scheduledAt).diff(dayjs(b.scheduledAt)));
 
   return (
-    <Box width="100%" display="flex" flexDirection="column" gap={3} alignItems="center">
-      <Grid container spacing={3} justifyContent="center" alignItems="stretch">
-        <Grid>
-          <HoverCard>
-            <CardActionArea onClick={()=> uiSend({type:"TOGGLE", key:"showDoctorReservations"})} sx={{ height: "100%" }}>
-              <CardContent sx={{ textAlign: "center", py: 6 }}>
-                <ScheduleIcon fontSize="large" color="primary" />
-                <Typography variant="h6" mt={2}>
-                  Ver turnos
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <Box className="doctor-dashboard-container">
+        <Container maxWidth="lg">
+          <Box className="doctor-header-section">
+            <Box className="doctor-header-content">
+              <Avatar className="doctor-header-avatar">
+                <PersonIcon className="doctor-header-icon" />
+              </Avatar>
+              <Box>
+                <Typography variant="h4" component="h1" className="doctor-header-title">
+                  Hola, Dr. {user.name || 'Doctor'}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" mt={1}>
-                  Todos tus turnos programados
+                <Typography variant="h6" className="doctor-header-subtitle">
+                  Gestiona tus turnos y pacientes
                 </Typography>
-              </CardContent>
-            </CardActionArea>
-          </HoverCard>
-        </Grid>
+              </Box>
+            </Box>
+          </Box>
 
-        <Grid>
-          <HoverCard>
-            <CardActionArea onClick={()=>uiSend({ type: "TOGGLE", key: "enableDoctorReservations" })} sx={{ height: "100%" }}>
-              <CardContent sx={{ textAlign: "center", py: 6 }}>
-                <EventAvailableIcon fontSize="large" color="secondary" />
-                <Typography variant="h6" mt={2}>
-                  Disponibilidad
-                </Typography>
-                <Typography variant="body2" color="text.secondary" mt={1}>
-                  Definí los horarios que pueden reservar los pacientes
-                </Typography>
-              </CardContent>
-            </CardActionArea>
-          </HoverCard>
-        </Grid>
+          <Box className="doctor-actions-container">
+            <Box className="doctor-action-item">
+              <Card className="doctor-action-card" onClick={() => uiSend({ type: "TOGGLE", key: "showDoctorReservations" })}>
+                <CardContent className="doctor-action-content">
+                  <Avatar className="doctor-action-avatar doctor-action-avatar-schedule">
+                    <ScheduleIcon className="doctor-action-icon" />
+                  </Avatar>
+                  <Typography variant="h5" component="h2" className="doctor-action-title">
+                    Ver Turnos
+                  </Typography>
+                  <Typography variant="body1" className="doctor-action-description">
+                    Consulta y gestiona todos tus turnos programados
+                  </Typography>
+                  <Button 
+                    variant="contained" 
+                    className="doctor-action-button doctor-action-button-schedule"
+                  >
+                    Mis Turnos
+                  </Button>
+                </CardContent>
+              </Card>
+            </Box>
 
-        <Grid>
-          <HoverCard>
-            <CardActionArea onClick={()=>uiSend({ type: "TOGGLE", key: "showPatients" })} sx={{ height: "100%" }}>
-              <CardContent sx={{ textAlign: "center", py: 6 }}>
-                <PeopleAltIcon fontSize="large" color="success" />
-                <Typography variant="h6" mt={2}>
-                  Pacientes
-                </Typography>
-                <Typography variant="body2" color="text.secondary" mt={1}>
-                  Ver y administrar tu lista de pacientes
-                </Typography>
-              </CardContent>
-            </CardActionArea>
-          </HoverCard>
-        </Grid>
+            <Box className="doctor-action-item">
+              <Card className="doctor-action-card" onClick={() => uiSend({ type: "TOGGLE", key: "showPatients" })}>
+                <CardContent className="doctor-action-content">
+                  <Avatar className="doctor-action-avatar doctor-action-avatar-patients">
+                    <PeopleAltIcon className="doctor-action-icon" />
+                  </Avatar>
+                  <Typography variant="h5" component="h2" className="doctor-action-title">
+                    Pacientes
+                  </Typography>
+                  <Typography variant="body1" className="doctor-action-description">
+                    Ver y administrar tu lista de pacientes
+                  </Typography>
+                  <Button 
+                    variant="contained" 
+                    className="doctor-action-button doctor-action-button-patients"
+                  >
+                    Ver Pacientes
+                  </Button>
+                </CardContent>
+              </Card>
+            </Box>
 
-        <Grid>
-          <Card sx={{ height: "100%" }}>
-            <CardContent>
-              <Typography variant="h6" borderBottom="1px solid #eee">
-                Próximos Turnos
-              </Typography>
-              <List>
-                {upcomingAppointments.map((appt) => (
-                  <ListItem key={appt.id} divider>
-                    <ListItemText
-                      primary={`${appt.date} - ${appt.time}`}
-                      secondary={
-                        <>
-                          Paciente: {appt.patient} <br />
-                         
-                          {appt.reason && (
-                            <>
-                              <br />
-                              Motivo: {appt.reason}
-                            </>
+            <Box className="doctor-action-item">
+              <Card className="doctor-upcoming-card">
+                <Typography variant="h6" className="doctor-upcoming-header">
+                  Próximos Turnos
+                </Typography>
+                
+                <Box className="doctor-upcoming-content">
+                  {turnContext.isLoadingMyTurns ? (
+                    <Box className="doctor-upcoming-loading">
+                      <CircularProgress size={24} />
+                      <Typography className="doctor-upcoming-loading-text">
+                        Cargando turnos...
+                      </Typography>
+                    </Box>
+                  ) : turnContext.myTurnsError ? (
+                    <Typography variant="body2" className="doctor-upcoming-error">
+                      Error al cargar turnos: {turnContext.myTurnsError}
+                    </Typography>
+                  ) : upcomingTurns.length > 0 ? (
+                    upcomingTurns.map((turn: any, index: number) => (
+                      <Box key={turn.id || index} className={`doctor-upcoming-item ${turn.status === 'CANCELED' ? 'doctor-upcoming-item-canceled' : ''}`}>
+                        <Box className="doctor-upcoming-header-row">
+                          <Typography variant="body1" className="doctor-upcoming-date">
+                            {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
+                          </Typography>
+                          {turn.status === 'CANCELED' && (
+                            <Chip 
+                              label="CANCELADO" 
+                              size="small" 
+                              className="doctor-upcoming-canceled-chip"
+                              sx={{
+                                backgroundColor: '#fee2e2',
+                                color: '#dc2626',
+                                fontWeight: 600,
+                                fontSize: '0.75rem'
+                              }}
+                            />
                           )}
-                        </>
-                      }
-                    />
-                  </ListItem>
-                ))}
-                {upcomingAppointments.length === 0 && (
-                  <Typography variant="body2">No tenés turnos próximos</Typography>
-                )}
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+                        </Box>
+                        <Typography variant="body2" className="doctor-upcoming-patient">
+                          Paciente: {turn.patientName || "Paciente"}
+                        </Typography>
+                        {turn.reason && (
+                          <Typography variant="body2" className="doctor-upcoming-reason">
+                            Motivo: {turn.reason}
+                          </Typography>
+                        )}
+                      </Box>
+                    ))
+                  ) : (
+                    <Typography variant="body2" className="doctor-upcoming-empty">
+                      No tenés turnos próximos
+                    </Typography>
+                  )}
+                </Box>
+              </Card>
+            </Box>
 
-      <ViewTurns/>
+            <Box className="doctor-action-item">
+              <Card className="doctor-action-card" onClick={() => uiSend({ type: "TOGGLE", key: "enableDoctorReservations" })}>
+                <CardContent className="doctor-action-content">
+                  <Avatar className="doctor-action-avatar doctor-action-avatar-availability">
+                    <EventAvailableIcon className="doctor-action-icon" />
+                  </Avatar>
+                  <Typography variant="h5" component="h2" className="doctor-action-title">
+                    Disponibilidad
+                  </Typography>
+                  <Typography variant="body1" className="doctor-action-description">
+                    Define los horarios disponibles para reservas
+                  </Typography>
+                  <Button 
+                    variant="contained" 
+                    className="doctor-action-button doctor-action-button-availability"
+                  >
+                    Configurar
+                  </Button>
+                </CardContent>
+              </Card>
+            </Box>
+          </Box>
 
-      <EnableHours/>
-
-      <ViewPatients/>
-
-    </Box>
+          <ViewTurns />
+          <EnableHours />
+          <ViewPatients />
+        </Container>
+      </Box>
+    </LocalizationProvider>
   );
 };
 
