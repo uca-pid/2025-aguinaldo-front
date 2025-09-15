@@ -2,25 +2,23 @@
 import React from "react";
 import { Box, Typography, Paper, Grid, Avatar, Menu, MenuItem, Divider, ListItemIcon } from "@mui/material";
 import { Logout, Person } from "@mui/icons-material";
-import { useMachine } from "@xstate/react";
-import { homeHeaderMachine } from "../../machines/homeHeaderMachine";
 import PatientDashboard from "./userDashboards/Patient/PatientDashboard";
 import DoctorDashboard from "./userDashboards/Doctor/DoctorDashboard";
 import AdminDashboard from "./userDashboards/AdminDashboard";
+import { useMachines } from "../../providers/MachineProvider";
+import { useAuthMachine } from "../../providers/AuthProvider";
+import { SignInResponse } from "../../models/Auth";
 
 const HomeScreen: React.FC = () => {
-  const TEST_ROLE = "DOCTOR"; // "PATIENT" | "DOCTOR" | "ADMIN"
-  const userName = "Nombre Usuario";
+  const { auth } = useAuthMachine();
+  const user = auth.authResponse as SignInResponse;
+  const {ui} = useMachines();
+  const { context: uiContext, send: uiSend } = ui;
 
-  const dashboards = {
-    PATIENT: <PatientDashboard />,
-    DOCTOR: <DoctorDashboard />,
-    ADMIN: <AdminDashboard />,
-  };
+  const USER_ROLE = user.role;
+  const userName = user.name;
 
-  const [state, send] = useMachine(homeHeaderMachine);
-  const anchorEl = state.context.anchorEls?.["userMenu"] ?? null;
-  const open = Boolean(anchorEl);
+  const open = Boolean(uiContext.toggleStates?.["userMenu"]);
 
   return (
     <Box
@@ -53,11 +51,10 @@ const HomeScreen: React.FC = () => {
         <Box display="flex" alignItems="center" gap={1}>
           <Avatar
             sx={{ cursor: "pointer" }}
-            onClick={(e) =>
-              send({
-                type: "OPEN_MENU",
+            onClick={() =>
+              uiSend({
+                type: "TOGGLE",
                 key: "userMenu",
-                anchorEl: e.currentTarget,
               })
             }
           >
@@ -67,11 +64,10 @@ const HomeScreen: React.FC = () => {
             variant="subtitle1"
             fontWeight={500}
             sx={{ cursor: "pointer" }}
-            onClick={(e) =>
-              send({
-                type: "OPEN_MENU",
+            onClick={() =>
+              uiSend({
+                type: "TOGGLE",
                 key: "userMenu",
-                anchorEl: e.currentTarget,
               })
             }
           >
@@ -80,10 +76,9 @@ const HomeScreen: React.FC = () => {
         </Box>
 
         <Menu
-          anchorEl={anchorEl}
           open={open}
-          onClose={() => send({ type: "CLOSE_MENU", key: "userMenu" })}
-          anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+          onClose={() => uiSend({ type: "TOGGLE", key: "userMenu" })}
+          anchorOrigin={{ horizontal: "right", vertical: "top" }}
           transformOrigin={{ horizontal: "right", vertical: "top" }}
           PaperProps={{
             elevation: 4,
@@ -91,12 +86,15 @@ const HomeScreen: React.FC = () => {
               mt: 1.5,
               borderRadius: 3,
               minWidth: 200,
+              position: "absolute",
+              top: 60,
+              right: 20,
             },
           }}
         >
           <MenuItem
             onClick={() => {
-              send({ type: "CLOSE_MENU", key: "userMenu" });
+              uiSend({ type: "TOGGLE", key: "userMenu" });
               alert("Ir al perfil");
             }}
           >
@@ -110,7 +108,7 @@ const HomeScreen: React.FC = () => {
 
           <MenuItem
             onClick={() => {
-              send({ type: "CLOSE_MENU", key: "userMenu" });
+              uiSend({ type: "TOGGLE", key: "userMenu" });
               alert("Cerrar sesión");
             }}
             sx={{ color: "error.main" }}
@@ -132,7 +130,9 @@ const HomeScreen: React.FC = () => {
       >
         <Grid width="100%">
           <Paper elevation={6} sx={{ p: 4, borderRadius: 3 }}>
-            {dashboards[TEST_ROLE]}
+            {USER_ROLE === "PATIENT" && <PatientDashboard />}
+            {USER_ROLE === "DOCTOR" && <DoctorDashboard />}
+            {USER_ROLE === "ADMIN" && <AdminDashboard />}
           </Paper>
         </Grid>
       </Grid>

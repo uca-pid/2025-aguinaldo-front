@@ -1,21 +1,14 @@
 import { createMachine, assign, fromPromise } from "xstate";
 import {validateField, checkFormValidation} from "../utils/authFormValidation";
 import { AuthService } from "../service/auth-service.service";
+import { RegisterResponse, SignInResponse, ApiErrorResponse } from "../models/Auth";
 
 export interface AuthMachineContext {
   mode: "login" | "register";
   isPatient: boolean;
   hasErrorsOrEmpty: boolean;
   isAuthenticated: boolean;
-  accessToken: string | null;
-  refreshToken: string | null;
-  user: {
-    id: string | null;
-    email: string | null;
-    name: string | null;
-    surname: string | null;
-    role: string | null;
-  } | null;
+  loading: boolean;
   formValues: {
     // Login fields
     email: string;
@@ -35,7 +28,7 @@ export interface AuthMachineContext {
   formErrors?: {
     [key: string]: string;
   };
-  apiResponse?: any;
+  authResponse?: RegisterResponse | SignInResponse | ApiErrorResponse | null;
 }
 
 export const AuthMachineDefaultContext = {
@@ -43,9 +36,7 @@ export const AuthMachineDefaultContext = {
     isPatient: true,
     hasErrorsOrEmpty: true,
     isAuthenticated: false,
-    accessToken: null,
-    refreshToken: null,
-    user: null,
+    loading: false,
     formValues: {
       // Login fields
       email: "",
@@ -63,7 +54,7 @@ export const AuthMachineDefaultContext = {
       slotDurationMin: null
     },
     formErrors: {},
-    apiResponse: null
+    authResponse: null
   } as AuthMachineContext;
 
 export type AuthMachineEvent =
@@ -88,11 +79,10 @@ export const authMachine = createMachine({
   states: {
     checkingAuth: {
       entry: assign(() => {
-        const { accessToken, refreshToken } = AuthService.getStoredTokens();
+        const authData = AuthService.getStoredAuthData();
         return {
-          accessToken,
-          refreshToken,
-          isAuthenticated: !!(accessToken && refreshToken)
+          authResponse: authData,
+          isAuthenticated: !!(authData?.accessToken && authData?.refreshToken)
         };
       }),
       always: [
@@ -108,11 +98,40 @@ export const authMachine = createMachine({
     authenticated: {
       on: {
         LOGOUT: {
+          target: "loggingOut"
+        }
+      }
+    },
+    loggingOut: {
+      invoke: {
+        src: fromPromise(async () => {
+          try {
+            const authData = AuthService.getStoredAuthData();
+            if (authData?.refreshToken) {
+              await AuthService.signOut(authData.refreshToken);
+            }
+            AuthService.clearAuthData();
+            return true;
+          } catch (error) {
+            console.warn('Logout API call failed, but clearing local data:', error);
+            AuthService.clearAuthData();
+            return true;
+          }
+        }),
+        input: ({ context }) => context,
+        onDone: {
           target: "idle",
-          actions: assign((): AuthMachineContext => {
-            AuthService.clearTokens();
-            return AuthMachineDefaultContext;
-          })
+          actions: assign(() => ({
+            isAuthenticated: false,
+            authResponse: null
+          }))
+        },
+        onError: {
+          target: "idle",
+          actions: assign(() => ({
+            isAuthenticated: false,
+            authResponse: null
+          }))
         }
       }
     },
@@ -166,7 +185,8 @@ export const authMachine = createMachine({
               mode: event.mode,
               hasErrorsOrEmpty: true,
               formErrors: {},
-              apiResponse: null
+              authResponse: null,
+              loading: false
             };
           })
         },
@@ -231,6 +251,9 @@ export const authMachine = createMachine({
       ]
     },
     submitting: {
+      entry: assign(() => ({
+        loading: true
+      })),
       invoke: {
         src: fromPromise(async ({ input }: { input: AuthMachineContext }) => {
           try {
@@ -253,39 +276,60 @@ export const authMachine = createMachine({
           }
         }),
         input: ({context}) => context,
-        onDone: {
-          target: "authenticated",
-          actions: assign(({ event }) => {
-            const response = event.output;
-            
-            if (response.accessToken && response.refreshToken) {
-              AuthService.saveTokens(response.accessToken, response.refreshToken);
-            }
-            
-            return {
-              isAuthenticated: true,
-              accessToken: response.accessToken || null,
-              refreshToken: response.refreshToken || null,
-              user: {
-                id: response.id || null,
-                email: response.email || null,
-                name: response.name || null,
-                surname: response.surname || null,
-                role: response.role || null
-              },
-              apiResponse: response,
-              formErrors: {},
-              hasErrorsOrEmpty: true
-            };
-          })
-        },
+        onDone: [
+          {
+            target: "authenticated",
+            guard: ({ context }) => context.mode === "login",
+            actions: assign(({ event }) => {
+              const response = event.output;
+              
+              if (response.accessToken && response.refreshToken) {
+                AuthService.saveAuthData(response);
+              }
+              
+              return {
+                isAuthenticated: true,
+                authResponse: response,
+                formValues: { ...AuthMachineDefaultContext.formValues },
+                formErrors: {},
+                hasErrorsOrEmpty: true,
+                loading: false
+              };
+            })
+          },
+          {
+            target: "idle",
+            guard: ({ context }) => context.mode === "register",
+            actions: assign(({ event, context }): AuthMachineContext => {
+              const response = event.output;
+              
+              return {
+                ...context,
+                mode: "login",
+                formValues: {
+                  ...AuthMachineDefaultContext.formValues,
+                  email: context.formValues.email,
+                },
+                authResponse: {
+                  ...response,
+                  message: "Registration successful! Please sign in with your credentials."
+                },
+                formErrors: {},
+                hasErrorsOrEmpty: false,
+                isAuthenticated: false,
+                loading: false
+              };
+            })
+          }
+        ],
         onError: {
           target: "idle",
           actions: assign(({ event }) => {
             return {
-              apiResponse: { 
+              authResponse: { 
                 error: event.error instanceof Error ? event.error.message : 'Authentication failed' 
-              }
+              },
+              loading: false
             };
           })
         }

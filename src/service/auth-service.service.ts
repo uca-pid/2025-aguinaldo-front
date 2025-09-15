@@ -150,19 +150,25 @@ export class AuthService {
     }
   }
 
-  static saveTokens(accessToken: string, refreshToken: string) {
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
+  static saveAuthData(signInResponse: SignInResponse) {
+    localStorage.setItem('authData', JSON.stringify(signInResponse));
   }
 
-  static getStoredTokens() {
-    return {
-      accessToken: localStorage.getItem('accessToken'),
-      refreshToken: localStorage.getItem('refreshToken')
-    };
+  static getStoredAuthData(): SignInResponse | null {
+    const storedData = localStorage.getItem('authData');
+    if (storedData) {
+      try {
+        return JSON.parse(storedData);
+      } catch (error) {
+        console.error('Error parsing stored auth data:', error);
+        return null;
+      }
+    }
+    return null;
   }
 
-  static clearTokens() {
+  static clearAuthData() {
+    localStorage.removeItem('authData');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
   }

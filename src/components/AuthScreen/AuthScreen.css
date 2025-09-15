@@ -1,0 +1,338 @@
+/* AuthScreen.css - Shared styles for Login and Register screens */
+
+/* Container Styles */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1f4f6f 0%, #22577a 50%, #2d7d90 100%);
+  padding: 8px 16px;
+}
+
+@media (min-width: 600px) {
+  .auth-container {
+    padding: 16px;
+  }
+}
+
+/* Paper Styles */
+.auth-paper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px;
+  width: 100%;
+  max-width: 100%;
+  border-radius: 16px;
+  opacity: 1;
+  transition: all 0.3s ease-in-out;
+  background: white;
+  box-shadow: 0 20px 40px rgba(31, 79, 111, 0.15);
+  margin: 0 8px;
+}
+
+@media (min-width: 600px) {
+  .auth-paper {
+    flex-direction: row;
+    gap: 32px;
+    padding: 32px;
+    max-width: 800px;
+    margin: 0 16px;
+  }
+}
+
+@media (min-width: 960px) {
+  .auth-paper {
+    max-width: 1000px;
+  }
+}
+
+.auth-paper--mobile {
+  flex-direction: column;
+}
+
+/* Left Section Styles */
+.auth-left-section {
+  flex: 1;
+  text-align: center;
+  padding-right: 0;
+}
+
+@media (min-width: 600px) {
+  .auth-left-section {
+    padding-right: 16px;
+  }
+}
+
+.auth-logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.auth-logo {
+  width: 80px;
+  height: 80px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+  border: 4px solid #fff;
+}
+
+@media (min-width: 600px) {
+  .auth-logo {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+@media (min-width: 960px) {
+  .auth-logo {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+.auth-title {
+  font-weight: 800;
+  margin-bottom: 16px;
+  font-size: 1.8rem;
+  color: #0d2230;
+}
+
+@media (min-width: 600px) {
+  .auth-title {
+    font-size: 2.5rem;
+  }
+}
+
+@media (min-width: 960px) {
+  .auth-title {
+    font-size: 3rem;
+  }
+}
+
+.auth-subtitle {
+  font-weight: 500;
+  font-size: 1rem;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 600px) {
+  .auth-subtitle {
+    font-size: 1.2rem;
+  }
+}
+
+.auth-description {
+  line-height: 1.6;
+  font-size: 0.9rem;
+  padding: 0 16px;
+}
+
+@media (min-width: 600px) {
+  .auth-description {
+    font-size: 1rem;
+  }
+}
+
+/* Role Cards Styles */
+.auth-cards-container {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.auth-role-card {
+  padding: 16px;
+  text-align: center;
+  min-width: 120px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.auth-role-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.auth-role-icon--doctor {
+  color: #22577a;
+}
+
+.auth-role-icon--patient {
+  color: #2d7d90;
+}
+
+.auth-role-text--doctor {
+  font-weight: 600;
+  color: #22577a;
+}
+
+.auth-role-text--patient {
+  font-weight: 600;
+  color: #2d7d90;
+}
+
+/* Right Section Styles */
+.auth-right-section {
+  flex: 1;
+  width: 100%;
+}
+
+.auth-mobile-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.auth-mobile-logo {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 16px auto;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+@media (min-width: 600px) {
+  .auth-mobile-logo {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+.auth-mobile-title {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #0d2230;
+}
+
+@media (min-width: 600px) {
+  .auth-mobile-title {
+    font-size: 2rem;
+  }
+}
+
+/* Success Screen Styles */
+.auth-success-container {
+  text-align: center;
+  padding: 32px;
+}
+
+.auth-success-emoji {
+  margin-bottom: 16px;
+}
+
+.auth-success-title {
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* Form Styles */
+.auth-form-title {
+  margin-bottom: 8px;
+  font-weight: 700;
+  text-align: center;
+  color: #2d3748;
+}
+
+.auth-form-subtitle {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.auth-form-stack {
+  gap: 24px;
+}
+
+/* Field Styles */
+.auth-field .MuiOutlinedInput-root {
+  border-radius: 8px;
+}
+
+.auth-field .MuiOutlinedInput-root:hover fieldset {
+  border-color: #22577a;
+}
+
+.auth-field .MuiOutlinedInput-root.Mui-focused fieldset {
+  border-color: #22577a;
+}
+
+.auth-password-field {
+  border-radius: 8px;
+}
+
+.auth-password-field:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #22577a;
+}
+
+.auth-password-field.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #22577a;
+}
+
+.auth-password-error {
+  margin-top: 4px;
+  margin-left: 12px;
+}
+
+/* Button Styles */
+.auth-submit-button {
+  margin-top: 32px;
+  padding: 14.4px 0;
+  border-radius: 8px;
+  background: #22577a;
+  box-shadow: 0 4px 15px rgba(34, 87, 122, 0.3);
+}
+
+.auth-submit-button:hover {
+  background: #1f4f6f;
+  box-shadow: 0 6px 20px rgba(34, 87, 122, 0.4);
+}
+
+.auth-submit-button:disabled {
+  background: #e2e8f0;
+  box-shadow: none;
+}
+
+.auth-toggle-container {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.auth-toggle-button {
+  text-transform: none;
+  padding: 0;
+  min-width: auto;
+  color: #22577a;
+  font-weight: 600;
+}
+
+.auth-toggle-button:hover {
+  background-color: transparent;
+  color: #1f4f6f;
+}
+
+/* Message Styles */
+.auth-error-box {
+  padding: 16px;
+  border-radius: 8px;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  margin-top: 16px;
+}
+
+.auth-success-box {
+  padding: 16px;
+  border-radius: 8px;
+  background-color: #dcfce7;
+  border: 1px solid #bbf7d0;
+  margin-top: 16px;
+}
+
+.auth-message-text {
+  text-align: center;
+}
+
+/* Divider */
+.auth-divider {
+  margin: 0 16px;
+}

@@ -21,26 +21,21 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalHospital, Person } from "@mui/icons-material";
-import { useMachines } from "../../../providers/MachineProvider";
 import { useAuthMachine } from "../../../providers/AuthProvider";
 import Logo from "../../../assets/MediBook-Logo.png";
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
+import "./RegisterScreen.css";
 
-// Set Spanish locale for dayjs
 dayjs.locale('es');
 
 function RegisterScreen() {
   const { auth } = useAuthMachine();
-  const { ui } = useMachines();
-  const { context: uiContext } = ui;
   const { context: authContext, send: authSend } = auth;
 
-  const formContext = uiContext.toggleStates || {};
   const isPatient = authContext.isPatient;
-  const isIn = formContext["fade"] ?? true;
-  const isSuccess =
-    (authContext.apiResponse && !authContext.apiResponse.error) ?? false;
+  
+  const isSuccess = authContext.authResponse && 'message' in authContext.authResponse && !('error' in authContext.authResponse);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -51,78 +46,47 @@ function RegisterScreen() {
   };
 
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="100vh"
-      sx={{
-        background: 'linear-gradient(135deg, #1f4f6f 0%, #22577a 50%, #2d7d90 100%)',
-        p: { xs: 1, sm: 2 }
-      }}
-    >
+    <Box className="auth-container">
       <Paper
         elevation={12}
-        sx={{
-          display: "flex",
-          flexDirection: isMobile ? "column" : "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: isMobile ? 2 : 4,
-          p: { xs: 2, sm: 4 },
-          width: "100%",
-          maxWidth: { xs: "100%", sm: 900, md: 1100 },
-          borderRadius: 4,
-          opacity: isIn ? 1 : 0,
-          transition: "all 0.3s ease-in-out",
-          background: 'white',
-          boxShadow: '0 20px 40px rgba(13, 34, 48, 0.15)',
-          mx: { xs: 1, sm: 2 },
-        }}
+        className={`auth-paper register-paper ${isMobile ? 'auth-paper--mobile' : ''}`}
       >
         {!isMobile && (
-          <Box flex={1} textAlign="center" sx={{ pr: 2 }}>
-            <Box display="flex" justifyContent="center" mb={3}>
+          <Box className="auth-left-section">
+            <Box className="auth-logo-container">
               <Avatar
                 src={Logo}
                 alt="MediBook Logo"
-                sx={{ 
-                  width: 120, 
-                  height: 120,
-                  boxShadow: '0 8px 16px rgba(0,0,0,0.15)',
-                  border: '4px solid #fff'
-                }}
+                className="auth-logo"
               />
             </Box>
-            <Typography variant="h3" fontWeight={800} mb={2} sx={{ 
-              color: '#0d2230',
-            }}>
+            <Typography variant="h3" className="auth-title">
               MediBook
             </Typography>
-            <Typography variant="h6" color="text.secondary" mb={3} sx={{ fontWeight: 500 }}>
+            <Typography variant="h6" color="text.secondary" className="auth-subtitle">
               Sistema de Gestión de Turnos Médicos
             </Typography>
-            <Typography variant="body1" color="text.secondary" px={2} sx={{ lineHeight: 1.6, mb: 4 }}>
+            <Typography variant="body1" color="text.secondary" className="auth-description" sx={{ mb: 4 }}>
               Únete a nuestra plataforma para gestionar turnos médicos de manera eficiente.
             </Typography>
             
-            <Stack spacing={2}>
-              <Card sx={{ p: 3, backgroundColor: '#f8fafc', border: '2px solid #e2e8f0' }}>
-                <Box display="flex" alignItems="center" gap={2} mb={2}>
-                  <Person sx={{ fontSize: 32, color: '#22577a' }} />
-                  <Typography variant="h6" fontWeight={600}>Para Pacientes</Typography>
+            <Stack spacing={2} className="register-feature-cards">
+              <Card className="register-feature-card">
+                <Box className="register-feature-header">
+                  <Person className="register-feature-icon register-feature-icon--patient" />
+                  <Typography variant="h6" className="register-feature-title">Para Pacientes</Typography>
                 </Box>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" className="register-feature-description">
                   Reserva y gestiona tus citas médicas fácilmente
                 </Typography>
               </Card>
               
-              <Card sx={{ p: 3, backgroundColor: '#f8fafc', border: '2px solid #e2e8f0' }}>
-                <Box display="flex" alignItems="center" gap={2} mb={2}>
-                  <LocalHospital sx={{ fontSize: 32, color: '#38a3a5' }} />
-                  <Typography variant="h6" fontWeight={600}>Para Médicos</Typography>
+              <Card className="register-feature-card">
+                <Box className="register-feature-header">
+                  <LocalHospital className="register-feature-icon register-feature-icon--doctor" />
+                  <Typography variant="h6" className="register-feature-title">Para Médicos</Typography>
                 </Box>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" className="register-feature-description">
                   Administra tu agenda y atiende a tus pacientes
                 </Typography>
               </Card>
@@ -130,37 +94,29 @@ function RegisterScreen() {
           </Box>
         )}
 
-        {!isMobile && <Divider orientation="vertical" flexItem sx={{ mx: 2 }} />}
+        {!isMobile && <Divider orientation="vertical" flexItem className="auth-divider" />}
 
-        <Box flex={1.2} width="100%">
+        <Box className="auth-right-section register-right-section">
           {isMobile && (
-            <Box textAlign="center" mb={4}>
+            <Box className="auth-mobile-header">
               <Avatar
                 src={Logo}
                 alt="MediBook Logo"
-                sx={{ 
-                  width: 80, 
-                  height: 80,
-                  mx: 'auto',
-                  mb: 2,
-                  boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                }}
+                className="auth-mobile-logo"
               />
-              <Typography variant="h4" fontWeight={700} sx={{ 
-                color: '#0d2230',
-              }}>
+              <Typography variant="h4" className="auth-mobile-title">
                 MediBook
               </Typography>
             </Box>
           )}
           
           {isSuccess ? (
-            <Box textAlign="center" p={4}>
-              <Typography variant="h4" mb={2}>🎉</Typography>
-              <Typography variant="h5" fontWeight={600} color="success.main" mb={2}>
+            <Box className="auth-success-container">
+              <Typography variant="h4" className="auth-success-emoji">🎉</Typography>
+              <Typography variant="h5" fontWeight={600} color="success.main" className="auth-success-title register-success-message">
                 ¡Registro exitoso!
               </Typography>
-              <Typography variant="body1" color="text.secondary">
+              <Typography variant="body1" color="text.secondary" className="register-success-description">
                 Tu cuenta ha sido creada correctamente
               </Typography>
             </Box>
@@ -169,18 +125,14 @@ function RegisterScreen() {
               <CardContent sx={{ p: 0 }}>
                 <Typography
                   variant="h4"
-                  mb={1}
-                  fontWeight={700}
-                  textAlign="center"
-                  sx={{ color: '#2d3748' }}
+                  className="auth-form-title"
                 >
                   Crear Cuenta
                 </Typography>
                 <Typography
                   variant="body2"
-                  textAlign="center"
                   color="text.secondary"
-                  mb={4}
+                  className="auth-form-subtitle"
                 >
                   Únete a MediBook para gestionar turnos médicos
                 </Typography>
@@ -189,13 +141,14 @@ function RegisterScreen() {
                   direction={isMobile ? "column" : "row"}
                   spacing={2}
                   justifyContent="center"
-                  mb={4}
+                  className="register-user-type-chips"
                 >
                   <Chip
                     icon={<Person />}
                     label="Paciente"
                     variant={isPatient ? "filled" : "outlined"}
                     onClick={() => authSend({ type: "TOGGLE_USER_TYPE", isPatient: true})}
+                    className={`register-chip ${isPatient ? 'register-chip--patient' : ''}`}
                     sx={{
                       py: 2,
                       px: 3,
@@ -218,6 +171,7 @@ function RegisterScreen() {
                     label="Médico"
                     variant={!isPatient ? "filled" : "outlined"}
                     onClick={() => authSend({ type: "TOGGLE_USER_TYPE", isPatient: false})}
+                    className={`register-chip ${!isPatient ? 'register-chip--doctor' : ''}`}
                     sx={{
                       py: 2,
                       px: 3,
@@ -238,8 +192,8 @@ function RegisterScreen() {
                 </Stack>
 
                 <Box component="form" onSubmit={handleSubmit}>
-                  <Stack spacing={3}>
-                  <Stack direction={isMobile ? "column" : "row"} spacing={2}>
+                  <Stack className="register-form-stack">
+                  <Stack direction={isMobile ? "column" : "row"} spacing={2} className="register-form-row">
                     <TextField
                       label="Nombre"
                       name="name"
@@ -249,13 +203,7 @@ function RegisterScreen() {
                       onChange={(e) => authSend({ type: "UPDATE_FORM", key: "name", value: e.target.value })}
                       error={!!authContext.formErrors?.name}
                       helperText={authContext.formErrors?.name || ""}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: 2,
-                          '&:hover fieldset': { borderColor: '#22577a' },
-                          '&.Mui-focused fieldset': { borderColor: '#22577a' },
-                        },
-                      }}
+                      className="auth-field"
                     />
                     <TextField
                       label="Apellido"
@@ -266,17 +214,11 @@ function RegisterScreen() {
                       onChange={(e) => authSend({ type: "UPDATE_FORM", key: "surname", value: e.target.value })}
                       error={!!authContext.formErrors?.surname}
                       helperText={authContext.formErrors?.surname || ""}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: 2,
-                          '&:hover fieldset': { borderColor: '#22577a' },
-                          '&.Mui-focused fieldset': { borderColor: '#22577a' },
-                        },
-                      }}
+                      className="auth-field"
                     />
                   </Stack>
 
-                  <Stack direction={isMobile ? "column" : "row"} spacing={2}>
+                  <Stack direction={isMobile ? "column" : "row"} spacing={2} className="register-form-row">
                     <TextField
                       label="DNI"
                       name="dni"
@@ -287,25 +229,13 @@ function RegisterScreen() {
                       onChange={(e) => authSend({ type: "UPDATE_FORM", key: "dni", value: e.target.value })}
                       error={!!authContext.formErrors?.dni}
                       helperText={authContext.formErrors?.dni || ""}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: 2,
-                          '&:hover fieldset': { borderColor: '#22577a' },
-                          '&.Mui-focused fieldset': { borderColor: '#22577a' },
-                        },
-                      }}
+                      className="auth-field"
                     />
                     <FormControl
                       fullWidth
                       required
                       error={!!authContext.formErrors?.gender}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: 2,
-                          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#22577a' },
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#22577a' },
-                        },
-                      }}
+                      className="auth-field"
                     >
                       <InputLabel id="genero-label">Género</InputLabel>
                       <Select
@@ -326,7 +256,7 @@ function RegisterScreen() {
                     </FormControl>
                   </Stack>
 
-                  <Stack direction={isMobile ? "column" : "row"} spacing={2}>
+                  <Stack direction={isMobile ? "column" : "row"} spacing={2} className="register-form-row">
                     <FormControl fullWidth required>
                       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
                         <DatePicker
@@ -337,13 +267,7 @@ function RegisterScreen() {
                               required: true,
                               fullWidth: true,
                               name: "birthdate",
-                              sx: {
-                                '& .MuiOutlinedInput-root': {
-                                  borderRadius: 2,
-                                  '&:hover fieldset': { borderColor: '#22577a' },
-                                  '&.Mui-focused fieldset': { borderColor: '#22577a' },
-                                },
-                              }
+                              className: "auth-field"
                             },
                           }}
                           onChange={(date) => authSend({ type: "UPDATE_FORM", key: "birthdate", value: date ? date.toISOString() : null })}
@@ -360,13 +284,7 @@ function RegisterScreen() {
                       onChange={(e) => authSend({ type: "UPDATE_FORM", key: "phone", value: e.target.value })}
                       error={!!authContext.formErrors?.phone}
                       helperText={authContext.formErrors?.phone || ""}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: 2,
-                          '&:hover fieldset': { borderColor: '#22577a' },
-                          '&.Mui-focused fieldset': { borderColor: '#22577a' },
-                        },
-                      }}
+                      className="auth-field"
                     />
                   </Stack>
 
@@ -380,16 +298,10 @@ function RegisterScreen() {
                     onChange={(e) => authSend({ type: "UPDATE_FORM", key: "email", value: e.target.value })}
                     error={!!authContext.formErrors?.email}
                     helperText={authContext.formErrors?.email || ""}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        '&:hover fieldset': { borderColor: '#22577a' },
-                        '&.Mui-focused fieldset': { borderColor: '#22577a' },
-                      },
-                    }}
+                    className="auth-field"
                   />
 
-                  <Stack direction={isMobile ? "column" : "row"} spacing={2}>
+                  <Stack direction={isMobile ? "column" : "row"} spacing={2} className="register-form-row">
                     <TextField
                       label="Contraseña"
                       name="password"
@@ -400,13 +312,7 @@ function RegisterScreen() {
                       onChange={(e) => authSend({ type: "UPDATE_FORM", key: "password", value: e.target.value })}
                       error={!!authContext.formErrors?.password}
                       helperText={authContext.formErrors?.password || ""}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: 2,
-                          '&:hover fieldset': { borderColor: '#22577a' },
-                          '&.Mui-focused fieldset': { borderColor: '#22577a' },
-                        },
-                      }}
+                      className="auth-field"
                     />
                     <TextField
                       label="Confirmar Contraseña"
@@ -418,30 +324,18 @@ function RegisterScreen() {
                       onChange={(e) => authSend({ type: "UPDATE_FORM", key: "password_confirm", value: e.target.value })}
                       error={!!authContext.formErrors?.password_confirm}
                       helperText={authContext.formErrors?.password_confirm || ""}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: 2,
-                          '&:hover fieldset': { borderColor: '#22577a' },
-                          '&.Mui-focused fieldset': { borderColor: '#22577a' },
-                        },
-                      }}
+                      className="auth-field"
                     />
                   </Stack>
 
                   {/* Doctor-specific fields */}
                   {!isPatient && (
-                    <Box sx={{ 
-                      p: 3, 
-                      borderRadius: 2, 
-                      backgroundColor: '#f0f9ff', 
-                      border: '2px solid #dbeafe',
-                      mt: 2 
-                    }}>
-                      <Typography variant="h6" fontWeight={600} mb={3} sx={{ color: '#22577a' }}>
+                    <Box className="register-doctor-section">
+                      <Typography variant="h6" className="register-doctor-title">
                         Información Profesional
                       </Typography>
                       <Stack spacing={3}>
-                        <Stack direction={isMobile ? "column" : "row"} spacing={2}>
+                        <Stack direction={isMobile ? "column" : "row"} spacing={2} className="register-form-row">
                           <TextField
                             label="Especialidad"
                             name="specialty"
@@ -451,13 +345,7 @@ function RegisterScreen() {
                             onChange={(e) => authSend({ type: "UPDATE_FORM", key: "specialty", value: e.target.value })}
                             error={!!authContext.formErrors?.specialty}
                             helperText={authContext.formErrors?.specialty || ""}
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                '&:hover fieldset': { borderColor: '#22577a' },
-                                '&.Mui-focused fieldset': { borderColor: '#22577a' },
-                              },
-                            }}
+                            className="auth-field"
                           />
                           <TextField
                             label="Matrícula Médica"
@@ -468,13 +356,7 @@ function RegisterScreen() {
                             onChange={(e) => authSend({ type: "UPDATE_FORM", key: "medicalLicense", value: e.target.value })}
                             error={!!authContext.formErrors?.medicalLicense}
                             helperText={authContext.formErrors?.medicalLicense || ""}
-                            sx={{
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                '&:hover fieldset': { borderColor: '#22577a' },
-                                '&.Mui-focused fieldset': { borderColor: '#22577a' },
-                              },
-                            }}
+                            className="auth-field"
                           />
                         </Stack>
                         <TextField
@@ -486,13 +368,7 @@ function RegisterScreen() {
                           onChange={(e) => authSend({ type: "UPDATE_FORM", key: "slotDurationMin", value: parseInt(e.target.value) })}
                           error={!!authContext.formErrors?.slotDurationMin}
                           helperText={authContext.formErrors?.slotDurationMin || ""}
-                          sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: 2,
-                              '&:hover fieldset': { borderColor: '#22577a' },
-                              '&.Mui-focused fieldset': { borderColor: '#22577a' },
-                            },
-                          }}
+                          className="auth-field"
                         />
                       </Stack>
                     </Box>
@@ -503,63 +379,37 @@ function RegisterScreen() {
                     variant="contained"
                     fullWidth
                     size="large"
-                    disabled={authContext.apiResponse?.loading || authContext.hasErrorsOrEmpty}
-                    sx={{ 
-                      mt: 4, 
-                      py: 2,
-                      borderRadius: 2,
-                      background: '#22577a',
-                      boxShadow: '0 4px 15px rgba(34, 87, 122, 0.3)',
-                      fontSize: '1.1rem',
-                      fontWeight: 600,
-                      '&:hover': {
-                        background: '#1f4f6f',
-                        boxShadow: '0 6px 20px rgba(34, 87, 122, 0.4)',
-                      },
-                      '&:disabled': {
-                        background: '#e2e8f0',
-                        boxShadow: 'none',
-                      }
-                    }}
+                    disabled={authContext.loading || authContext.hasErrorsOrEmpty}
+                    className="auth-submit-button"
                   >
-                    {authContext.apiResponse?.loading ? "Creando cuenta..." : "Crear Cuenta"}
+                    {authContext.loading ? "Creando cuenta..." : "Crear Cuenta"}
                   </Button>
 
-                  <Box textAlign="center" mt={3}>
+                  <Box className="auth-toggle-container">
                     <Typography variant="body2" color="text.secondary">
                       ¿Ya tienes cuenta?{" "}
                       <Button
                         variant="text"
                         onClick={() => authSend({ type: "TOGGLE_MODE", mode: "login" })}
-                        sx={{ 
-                          textTransform: "none", 
-                          p: 0, 
-                          minWidth: "auto",
-                          color: '#22577a',
-                          fontWeight: 600,
-                          '&:hover': {
-                            backgroundColor: 'transparent',
-                            color: '#5a6fd8',
-                          }
-                        }}
+                        className="auth-toggle-button"
                       >
                         Inicia sesión aquí
                       </Button>
                     </Typography>
                   </Box>
 
-                  {authContext.apiResponse?.error && (
-                    <Box 
-                      sx={{ 
-                        p: 2, 
-                        borderRadius: 2, 
-                        backgroundColor: '#fee2e2', 
-                        border: '1px solid #fecaca',
-                        mt: 2 
-                      }}
-                    >
-                      <Typography variant="body2" color="error" textAlign="center">
-                        {authContext.apiResponse.error}
+                  {authContext.authResponse && 'error' in authContext.authResponse && (
+                    <Box className="auth-error-box">
+                      <Typography variant="body2" color="error" className="auth-message-text">
+                        {authContext.authResponse.error || authContext.authResponse.message || 'Error en el registro'}
+                      </Typography>
+                    </Box>
+                  )}
+
+                  {authContext.authResponse && 'message' in authContext.authResponse && !('error' in authContext.authResponse) && (
+                    <Box className="auth-success-box">
+                      <Typography variant="body2" color="success.main" className="auth-message-text">
+                        {authContext.authResponse.message}
                       </Typography>
                     </Box>
                   )}

@@ -7,6 +7,7 @@ import ListAltIcon from "@mui/icons-material/ListAlt";
 import { styled } from "@mui/material/styles";
 import { useMachines } from "../../../../providers/MachineProvider";
 import { useAuthMachine } from "../../../../providers/AuthProvider";
+import { SignInResponse } from "../../../../models/Auth";
 import {LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import ReservationTurns from "./ReservationTurns";
@@ -27,20 +28,21 @@ const PatientDashboard: React.FC = () => {
   const { auth } = useAuthMachine();
   const { send: uiSend } = ui;
   const authContext = auth.context;
+  const user = auth.authResponse as SignInResponse;;
   const { state: turnState, send: turnSend } = turn;
   const turnContext = turnState.context;
 
   useEffect(() => {
-    if (authContext.isAuthenticated && authContext.accessToken && authContext.user?.id) {
+    if (authContext.isAuthenticated && user.accessToken && user.id) {
       turnSend({
         type: "SET_AUTH",
-        accessToken: authContext.accessToken,
-        userId: authContext.user.id
+        accessToken: user.accessToken,
+        userId: user.id
       });
       
       turnSend({ type: "LOAD_MY_TURNS" });
     }
-  }, [authContext.isAuthenticated, authContext.accessToken, authContext.user?.id, turnSend]);
+  }, [authContext.isAuthenticated, user.accessToken, user.id, turnSend]);
 
   const upcomingTurns = turnContext.myTurns
     .filter((turn: any) => {

@@ -3,9 +3,12 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import HomeScreen from './components/HomeScreen/HomeScreen'
 import { useAuthMachine } from './providers/AuthProvider'
 import { Box, Button } from '@mui/material'
+import { SignInResponse } from './models/Auth'
 
 function App() {
   const { auth } = useAuthMachine();
+  const { authResponse } = auth;
+  const user = authResponse as SignInResponse;
 
   const handleLogout = () => {
     auth.send({ type: 'LOGOUT' });
@@ -26,7 +29,7 @@ function App() {
           }}
         >
           <Box>
-            <h2>MediBook - Welcome {auth.context.user?.name}!</h2>
+            <h2>MediBook - Welcome {user.name} {user.surname}!</h2>
           </Box>
           <Button 
             onClick={handleLogout}
@@ -48,7 +51,6 @@ function App() {
 
         <Routes>
           <Route path="/" element={<HomeScreen />} />
-          <Route path="/dashboard" element={<HomeScreen />} />
         </Routes>
       </Box>
     </BrowserRouter>

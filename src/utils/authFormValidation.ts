@@ -29,6 +29,9 @@ export const validateField = (key: string, value: any, context: AuthMachineConte
   }
 
   if (key.includes("password") && !key.includes("confirm")) {
+    if (context.mode === "login") {
+      return "";
+    }
     return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(value)
       ? ""
       : "Mínimo 8 caracteres, mayúscula, minúscula y número";
