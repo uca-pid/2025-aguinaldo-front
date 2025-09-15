@@ -20,11 +20,7 @@ const ViewTurns: React.FC = () => {
   const user = authResponse as SignInResponse
   const { state: turnState, send: turnSend } = turn;
   const [cancellingTurnId, setCancellingTurnId] = useState<string | null>(null);
-  const [completingTurnId, setCompletingTurnId] = useState<string | null>(null);
-  const [absentTurnId, setAbsentTurnId] = useState<string | null>(null);
   const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
-  const [completeSuccess, setCompleteSuccess] = useState<string | null>(null);
-  const [absentSuccess, setAbsentSuccess] = useState<string | null>(null);
   
   const formContext = uiContext.toggleStates || {};
   const reservations = formContext["showDoctorReservations"] ?? false;
@@ -87,72 +83,13 @@ const ViewTurns: React.FC = () => {
     }
   };
 
-  const handleCompleteTurn = async (turnId: string) => {
-    if (!user.accessToken) return;
-    
-    setCompletingTurnId(turnId);
-    try {
-      const response = await fetch(`/api/turns/${turnId}/complete`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${user.accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        setCompleteSuccess('Turno marcado como completado exitosamente');
-        turnSend({ type: "LOAD_MY_TURNS" });
-        setTimeout(() => setCompleteSuccess(null), 3000);
-      } else {
-        const errorData = await response.text();
-        console.error('Error completing turn:', errorData);
-      }
-    } catch (error) {
-      console.error('Error completing turn:', error);
-    } finally {
-      setCompletingTurnId(null);
-    }
-  };
-
-  const handleMarkAbsent = async (turnId: string) => {
-    if (!user.accessToken) return;
-    
-    setAbsentTurnId(turnId);
-    try {
-      const response = await fetch(`/api/turns/${turnId}/absent`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${user.accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        setAbsentSuccess('Turno marcado como ausente exitosamente');
-        turnSend({ type: "LOAD_MY_TURNS" });
-        setTimeout(() => setAbsentSuccess(null), 3000);
-      } else {
-        const errorData = await response.text();
-        console.error('Error marking turn as absent:', errorData);
-      }
-    } catch (error) {
-      console.error('Error marking turn as absent:', error);
-    } finally {
-      setAbsentTurnId(null);
-    }
-  };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'SCHEDULED':
         return 'Programado';
-      case 'COMPLETED':
-        return 'Completado';
       case 'CANCELED':
         return 'Cancelado';
-      case 'ABSENT':
-        return 'Ausente';
       case 'AVAILABLE':
         return 'Disponible';
       default:
@@ -168,20 +105,10 @@ const ViewTurns: React.FC = () => {
     return turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt);
   };
 
-  const canCompleteTurn = (turn: any) => {
-    return turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt);
-  };
-
-  const canMarkAbsent = (turn: any) => {
-    return turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt);
-  };
-
   const handleClose = () => {
     uiSend({ type: "TOGGLE", key: "showDoctorReservations" });
     turnSend({ type: "RESET_SHOW_TURNS" });
     setCancelSuccess(null);
-    setCompleteSuccess(null);
-    setAbsentSuccess(null);
   };
   return (
     <>
@@ -214,18 +141,6 @@ const ViewTurns: React.FC = () => {
               </Alert>
             )}
 
-            {completeSuccess && (
-              <Alert severity="success" className="doctor-viewturns-alert">
-                {completeSuccess}
-              </Alert>
-            )}
-
-            {absentSuccess && (
-              <Alert severity="success" className="doctor-viewturns-alert">
-                {absentSuccess}
-              </Alert>
-            )}
-
             <Box className="doctor-viewturns-content">
               <Box className="doctor-viewturns-filters-section">
                 <Box className="doctor-viewturns-filters-header">
@@ -246,9 +161,7 @@ const ViewTurns: React.FC = () => {
                       >
                         <MenuItem value="">Todos los estados</MenuItem>
                         <MenuItem value="SCHEDULED">Programados</MenuItem>
-                        <MenuItem value="COMPLETED">Completados</MenuItem>
                         <MenuItem value="CANCELED">Cancelados</MenuItem>
-                        <MenuItem value="ABSENT">Ausentes</MenuItem>
                       </Select>
                     </FormControl>
 
@@ -328,54 +241,6 @@ const ViewTurns: React.FC = () => {
                                 </>
                               ) : (
                                 'Cancelar'
-                              )}
-                            </Button>
-                          )}
-                          {canCompleteTurn(turn) && (
-                            <Button 
-                              variant="contained" 
-                              size="small"
-                              className="doctor-viewturns-complete-btn"
-                              onClick={() => handleCompleteTurn(turn.id)}
-                              disabled={completingTurnId === turn.id}
-                              sx={{
-                                backgroundColor: '#10b981',
-                                '&:hover': {
-                                  backgroundColor: '#059669'
-                                }
-                              }}
-                            >
-                              {completingTurnId === turn.id ? (
-                                <>
-                                  <CircularProgress size={16} sx={{ mr: 1 }} />
-                                  Completando...
-                                </>
-                              ) : (
-                                'Marcar Completado'
-                              )}
-                            </Button>
-                          )}
-                          {canMarkAbsent(turn) && (
-                            <Button 
-                              variant="contained" 
-                              size="small"
-                              className="doctor-viewturns-absent-btn"
-                              onClick={() => handleMarkAbsent(turn.id)}
-                              disabled={absentTurnId === turn.id}
-                              sx={{
-                                backgroundColor: '#f59e0b',
-                                '&:hover': {
-                                  backgroundColor: '#d97706'
-                                }
-                              }}
-                            >
-                              {absentTurnId === turn.id ? (
-                                <>
-                                  <CircularProgress size={16} sx={{ mr: 1 }} />
-                                  Marcando...
-                                </>
-                              ) : (
-                                'Marcar Ausente'
                               )}
                             </Button>
                           )}
