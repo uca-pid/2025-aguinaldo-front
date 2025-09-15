@@ -4,8 +4,6 @@ import {
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
-import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
-import { DateCalendar } from "@mui/x-date-pickers";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { SignInResponse } from "#/models/Auth";
@@ -39,20 +37,13 @@ const ViewTurns: React.FC = () => {
   }, [reservations, authContext.isAuthenticated, user.accessToken, turnSend]);
 
   const filteredTurns = turnContext.myTurns.filter((turn: any) => {
-    let matchesDate = true;
     let matchesStatus = true;
-
-    if (showTurnsContext.dateSelected) {
-      const turnDate = dayjs(turn.scheduledAt).format("DD/MM/YYYY");
-      const selectedDate = showTurnsContext.dateSelected.format("DD/MM/YYYY");
-      matchesDate = turnDate === selectedDate;
-    }
 
     if (showTurnsContext.statusFilter) {
       matchesStatus = turn.status === showTurnsContext.statusFilter;
     }
 
-    return matchesDate && matchesStatus;
+    return matchesStatus;
   });
 
   const handleCancelTurn = async (turnId: string) => {
@@ -83,25 +74,10 @@ const ViewTurns: React.FC = () => {
     }
   };
 
-  const getStatusColor = (status: string): string => {
-    switch (status) {
-      case 'RESERVED':
-        return 'primary';
-      case 'COMPLETED':
-        return 'success';
-      case 'CANCELLED':
-        return 'error';
-      case 'AVAILABLE':
-        return 'default';
-      default:
-        return 'default';
-    }
-  };
-
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'RESERVED':
-        return 'Reservado';
+      case 'SCHEDULED':
+        return 'Programado';
       case 'COMPLETED':
         return 'Completado';
       case 'CANCELLED':
@@ -126,14 +102,16 @@ const ViewTurns: React.FC = () => {
           {/* Header */}
           <Box className="viewturns-header">
             <Avatar className="viewturns-header-icon">
-              <ListAltIcon sx={{ fontSize: 32, color: 'white' }} />
+              <ListAltIcon sx={{ fontSize: 40, color: 'white' }} />
             </Avatar>
-            <Typography variant="h4" className="viewturns-header-title">
-              Mis Turnos
-            </Typography>
-            <Typography variant="body1" className="viewturns-header-subtitle">
-              Consulta y gestiona tus citas médicas
-            </Typography>
+            <Box className="viewturns-header-content">
+              <Typography variant="h4" className="viewturns-header-title">
+                Mis Turnos
+              </Typography>
+              <Typography variant="body1" className="viewturns-header-subtitle">
+                Consulta y gestiona tus citas médicas
+              </Typography>
+            </Box>
           </Box>
 
           {/* Alerts */}
@@ -149,73 +127,53 @@ const ViewTurns: React.FC = () => {
             </Alert>
           )}
 
-          {/* Filters */}
-          <Box className="viewturns-filters-container">
-            <Typography variant="h6" className="viewturns-filters-title">
-              Filtros de búsqueda
-            </Typography>
-            
-            <Box className="viewturns-filters-row">
-              <FormControl size="small" className="viewturns-filter-select">
-                <InputLabel>Estado</InputLabel>
-                <Select
-                  value={showTurnsContext.statusFilter}
-                  label="Estado"
-                  onChange={(e) => turnSend({
-                    type: "UPDATE_FORM_SHOW_TURNS",
-                    key: "statusFilter",
-                    value: e.target.value
-                  })}
-                >
-                  <MenuItem value="">Todos</MenuItem>
-                  <MenuItem value="RESERVED">Reservados</MenuItem>
-                  <MenuItem value="SCHEDULED">Programados</MenuItem>
-                  <MenuItem value="COMPLETED">Completados</MenuItem>
-                  <MenuItem value="CANCELLED">Cancelados</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
-
-            <Box className="viewturns-calendar-container">
-              <DemoContainer components={['DateCalendar']}>
-                <DemoItem label="Filtrar por fecha (opcional)">
-                  <DateCalendar
-                    value={showTurnsContext.dateSelected}
-                    onChange={(e) => {
-                      turnSend({
+          {/* Main Content */}
+          <Box className="viewturns-content">
+            {/* Filters Section */}
+            <Box className="viewturns-filters-section">
+              <Box className="viewturns-filters-header">
+                <Typography variant="h6" className="viewturns-section-title">
+                  🔍 Filtros
+                </Typography>
+                <Box className="viewturns-filters-controls">
+                  <FormControl size="small" className="viewturns-filter-select">
+                    <InputLabel>Estado del turno</InputLabel>
+                    <Select
+                      value={showTurnsContext.statusFilter}
+                      label="Estado del turno"
+                      onChange={(e) => turnSend({
                         type: "UPDATE_FORM_SHOW_TURNS",
-                        key: "dateSelected",
-                        value: e
-                      });
-                    }}
-                  />
-                </DemoItem>
-              </DemoContainer>
+                        key: "statusFilter",
+                        value: e.target.value
+                      })}
+                    >
+                      <MenuItem value="">Todos los estados</MenuItem>
+                      <MenuItem value="SCHEDULED">Programados</MenuItem>
+                      <MenuItem value="COMPLETED">Completados</MenuItem>
+                      <MenuItem value="CANCELLED">Cancelados</MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  {showTurnsContext.statusFilter && (
+                    <Button
+                      variant="outlined"
+                      onClick={() => turnSend({
+                        type: "UPDATE_FORM_SHOW_TURNS",
+                        key: "statusFilter",
+                        value: ""
+                      })}
+                      className="viewturns-clear-filter-btn"
+                    >
+                      Limpiar filtro
+                    </Button>
+                  )}
+                </Box>
+              </Box>
             </Box>
 
-            {(showTurnsContext.dateSelected || showTurnsContext.statusFilter) && (
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => turnSend({ type: "RESET_SHOW_TURNS" })}
-                className="viewturns-clear-filters"
-              >
-                Limpiar filtros
-              </Button>
-            )}
-          </Box>
-
-          {/* Turns List */}
-          <Box className="viewturns-list-container">
-            <Typography variant="h6" className="viewturns-list-header">
-              {showTurnsContext.dateSelected 
-                ? `Turnos del ${showTurnsContext.dateSelected.format("DD/MM/YYYY")}`
-                : 'Todos mis turnos'
-              }
-              {showTurnsContext.statusFilter && ` - ${getStatusLabel(showTurnsContext.statusFilter)}`}
-            </Typography>
-
-            <Box className="viewturns-list-content">
+            {/* Turns List Section */}
+            <Box className="viewturns-list-section">
+              <Box className="viewturns-list-content">
               {turnContext.isLoadingMyTurns ? (
                 <Box className="viewturns-loading-container">
                   <CircularProgress size={24} />
@@ -244,7 +202,7 @@ const ViewTurns: React.FC = () => {
                           className={`viewturns-status-chip status-${turn.status.toLowerCase()}`}
                           size="small"
                         />
-                        {(turn.status === 'RESERVED' || turn.status === 'SCHEDULED') && (
+                        {turn.status === 'SCHEDULED' && (
                           <Button 
                             variant="contained" 
                             size="small"
@@ -276,6 +234,7 @@ const ViewTurns: React.FC = () => {
                   </Typography>
                 </Box>
               )}
+            </Box>
             </Box>
           </Box>
 

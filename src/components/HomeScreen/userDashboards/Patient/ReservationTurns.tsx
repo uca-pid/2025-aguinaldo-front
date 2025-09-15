@@ -167,16 +167,12 @@ const ReservationTurns: React.FC = () => {
                   1. Información de la consulta
                 </Box>
                 <Box className="reservation-progress-step inactive">
-                  2. Fecha y horario
+                  2. Selecciona fecha y horario
                 </Box>
               </Box>
 
               {/* Form Information */}
               <Box className="reservation-form-section">
-                <Typography variant="h6" className="reservation-form-title">
-                  📋 Información de la consulta
-                </Typography>
-                
                 <TextField
                   label="Motivo de la consulta"
                   value={formValues.reason}
@@ -270,7 +266,7 @@ const ReservationTurns: React.FC = () => {
                   ✓ 1. Información completada
                 </Box>
                 <Box className="reservation-progress-step active">
-                  2. Fecha y horario
+                  2. Selecciona fecha y horario
                 </Box>
               </Box>
 
@@ -278,9 +274,6 @@ const ReservationTurns: React.FC = () => {
               <Box className="reservation-step2-content">
                 {/* Left Column - Calendar */}
                 <Box className="reservation-calendar-section">
-                  <Typography variant="h6" className="reservation-calendar-title">
-                    📅 Selecciona una fecha
-                  </Typography>
                   <Box className="reservation-calendar-container">
                     <DemoContainer components={['DateCalendar']}>
                       <DemoItem>
@@ -299,10 +292,6 @@ const ReservationTurns: React.FC = () => {
 
                 {/* Right Column - Time Selection */}
                 <Box className="reservation-time-section">
-                  <Typography variant="h6" className="reservation-calendar-title">
-                    🕐 Horarios disponibles
-                  </Typography>
-                  
                   {!formValues.dateSelected ? (
                     <Box className="reservation-empty-state">
                       <Typography>

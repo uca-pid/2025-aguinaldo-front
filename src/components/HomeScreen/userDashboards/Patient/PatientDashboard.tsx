@@ -50,7 +50,7 @@ const PatientDashboard: React.FC = () => {
       const now = dayjs();
       const isUpcoming = turnDate.isAfter(now);
       
-      return isUpcoming && ['RESERVED', 'SCHEDULED'].includes(turn.status);
+      return isUpcoming && turn.status === 'SCHEDULED';
     })
     .slice(0, 10)
     .sort((a: any, b: any) => dayjs(a.scheduledAt).diff(dayjs(b.scheduledAt)));
