@@ -1,7 +1,7 @@
 import { 
   Box, Button, FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, 
   TextField, Typography, CircularProgress, Alert,
-  Avatar, Container 
+  Container 
 } from "@mui/material";
 import React, { useEffect } from "react";
 import { useMachines } from "#/providers/MachineProvider";
@@ -13,7 +13,6 @@ import { DateCalendar } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import { SignInResponse } from "#/models/Auth";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import "./ReservationTurns.css";
 
@@ -122,9 +121,10 @@ const ReservationTurns: React.FC = () => {
   };
 
   return(
-    <Container maxWidth="lg" className="reservation-container">
-      <Box className="reservation-page-container">
-        <Box className="reservation-header">
+    <Box className="reservation-container">
+      <Container maxWidth="lg" className="reservation-page-container">
+        {/* Page Header */}
+        <Box className="reservation-page-header">
           <Button
             startIcon={<ArrowBackIcon />}
             onClick={handleClose}
@@ -133,36 +133,35 @@ const ReservationTurns: React.FC = () => {
           >
             Volver al Dashboard
           </Button>
-          <Avatar className="reservation-header-icon">
-            <CalendarTodayIcon sx={{ fontSize: 32, color: 'white' }} />
-          </Avatar>
-          <Box className="reservation-header-content">
-            <Typography variant="h4" className="reservation-header-title">
-              Reservar Turno
+          
+          <Box className="reservation-title-section">
+            <Typography variant="h3" className="reservation-page-title">
+              Reservar Turno Médico
             </Typography>
-            <Typography variant="body1" className="reservation-header-subtitle">
-              Agenda tu cita médica en simples pasos
+            <Typography variant="h6" className="reservation-page-subtitle">
+              Agenda tu cita médica siguiendo estos simples pasos
             </Typography>
           </Box>
         </Box>
 
-          {turnContext.doctorsError && (
-            <Alert severity="error" className="reservation-alert">
-              Error al cargar doctores: {turnContext.doctorsError}
-            </Alert>
-          )}
-          
-          {turnContext.availableError && (
-            <Alert severity="error" className="reservation-alert">
-              Error al cargar turnos disponibles: {turnContext.availableError}
-            </Alert>
-          )}
-          
-          {turnContext.error && (
-            <Alert severity="error" className="reservation-alert">
-              Error al crear turno: {turnContext.error}
-            </Alert>
-          )}
+        {/* Error Alerts */}
+        {turnContext.doctorsError && (
+          <Alert severity="error" className="reservation-alert">
+            Error al cargar doctores: {turnContext.doctorsError}
+          </Alert>
+        )}
+        
+        {turnContext.availableError && (
+          <Alert severity="error" className="reservation-alert">
+            Error al cargar turnos disponibles: {turnContext.availableError}
+          </Alert>
+        )}
+        
+        {turnContext.error && (
+          <Alert severity="error" className="reservation-alert">
+            Error al crear turno: {turnContext.error}
+          </Alert>
+        )}
 
           {currentStep === "step1" && (
             <Box className="reservation-step1-container">
@@ -176,18 +175,7 @@ const ReservationTurns: React.FC = () => {
               </Box>
 
               <Box className="reservation-form-section">
-                <TextField
-                  label="Motivo de la consulta"
-                  value={formValues.reason}
-                  onChange={handleReasonChange}
-                  fullWidth
-                  size="small"
-                  className="reservation-input"
-                  multiline
-                  rows={3}
-                  placeholder="Describe brevemente el motivo de tu consulta..."
-                />
-                
+
                 <FormControl required size="small" fullWidth className="reservation-select specialty-select">
                   <InputLabel id="profession-select-label">Especialidad</InputLabel>
                   <Select
@@ -209,7 +197,7 @@ const ReservationTurns: React.FC = () => {
                   </Select>
                   {turnContext.isLoadingDoctors && <FormHelperText>Cargando especialidades...</FormHelperText>}
                 </FormControl>
-                
+
                 <FormControl required size="small" fullWidth className="reservation-select doctor-select">
                   <InputLabel id="doctor-select-label">Doctor</InputLabel>
                   <Select
@@ -236,6 +224,19 @@ const ReservationTurns: React.FC = () => {
                     }
                   </FormHelperText>
                 </FormControl>
+
+                <TextField
+                  label="Motivo de la consulta"
+                  value={formValues.reason}
+                  onChange={handleReasonChange}
+                  fullWidth
+                  size="small"
+                  className="reservation-input"
+                  multiline
+                  rows={3}
+                  placeholder="Describe brevemente el motivo de tu consulta..."
+                />
+                
               </Box>
 
               <Box className="reservation-actions">
@@ -383,9 +384,9 @@ const ReservationTurns: React.FC = () => {
               </Box>
             </Box>
           )}
-        </Box>
-      </Container>
-  );
-}
+        </Container>
+      </Box>
+    );
+  }
 
-export default ReservationTurns;
+  export default ReservationTurns;

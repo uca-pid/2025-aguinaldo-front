@@ -268,17 +268,6 @@ const ViewTurns: React.FC = () => {
             )}
           </Box>
         </Box>
-
-        {/* Actions */}
-        <Box className="viewturns-actions">
-          <Button 
-            onClick={handleClose} 
-            className="viewturns-btn-close"
-            variant="outlined"
-          >
-            Volver al Dashboard
-          </Button>
-        </Box>
       </Box>
     </Box>
   );
