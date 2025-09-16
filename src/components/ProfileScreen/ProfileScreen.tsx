@@ -1,5 +1,5 @@
 
-import { Box, Divider, Grid, List, ListItem, ListItemText } from "@mui/material";
+import { Box, Divider, Grid, List, ListItem, ListItemText, Typography } from "@mui/material";
 
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
@@ -8,17 +8,6 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useMachines } from "#/providers/MachineProvider";
 
 import EditField from "./EditField";
-
-const style = {
-  py: 0,
-  width: '100%',
-  maxWidth: 360,
-  borderRadius: 2,
-  border: '1px solid',
-  borderColor: 'divider',
-  backgroundColor: 'background.paper',
-  
-};
 
 const ProfileScreen: React.FC = () => {
     
@@ -56,26 +45,28 @@ const ProfileScreen: React.FC = () => {
   }}>
         <Box
             sx={{
-                mx: "4px",   
-                mt:"30px",                   
-                borderRadius: 2,
-                boxShadow: 8,
-                p: { xs: 1.5, sm: 3 },
-                minWidth: { xs: "90vw", sm: 320 },
-                width: { xs: "95vw", sm: 370 },
-                maxWidth: "98vw",
-                maxHeight: { xs: "calc(100vh - 140px)", sm: "calc(100vh - 160px)" }, 
+                mt:"25px",
+                borderRadius: 3,
+                boxShadow: 6,
+                p: { xs: 2, sm: 3 },
+                minWidth: { xs: "90vw", sm: 360 },
+                width: { xs: "95vw", sm: 400 },
+                maxHeight: "calc(100vh - 160px)",
+                overflowY: "auto",
                 display: "flex",
                 flexDirection: "column",
-                gap: 1.5,
-                overflowY: "auto",
                 alignItems: "center",
-                backgroundColor: "background.paper",
+                backgroundColor: "background.paper"
             }}
         >
-            <AccountCircleIcon sx={{ fontSize: 80, color: 'primary.main', mb: 2 }} />
-
-            <List sx={{...style, width: "100%", overflow: "visible"}}>
+            <AccountCircleIcon sx={{ fontSize: 90, color: 'primary.main', mb: 1 }} />
+            <Typography variant="h6" fontWeight="bold" gutterBottom>Mi Perfil</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Acá puedes ver y editar tu información personal!</Typography>
+            <List sx={{width: "100%",
+                borderRadius: 2,
+                border: "1px solid",
+                borderColor: "divider",
+                backgroundColor: "background.paper",}}>
                 <EditField label="Nombre" value={user.name} isEditing={name} toggleKey="editName" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "name", value: val })}/>
                 <EditField label="Apellido" value={user.surname} isEditing={surname} toggleKey="editSurname" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "surname", value: val })} />
                 <EditField label="Email" value={user.email} isEditing={email} toggleKey="editEmail" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "email", value: val })}/>
@@ -86,7 +77,7 @@ const ProfileScreen: React.FC = () => {
 
                 {user.role === 'DOCTOR' && (
                 <>
-                    <Divider component="li" />
+                 
                     <ListItem>
                     <ListItemText primary={`Matrícula Nacional: `} />
                     </ListItem>

@@ -4,6 +4,7 @@ import { Box, Divider, IconButton, ListItem, ListItemText, TextField } from "@mu
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
+import React from "react";
 
 type EditFieldProps={
     label:string;
@@ -16,7 +17,12 @@ type EditFieldProps={
 const EditField :React.FC<EditFieldProps>= ({label, value,isEditing, toggleKey, onChange})=>{
     const {ui}= useMachines()
     const { send: uiSend } = ui;
-    
+
+    const [localValue, setLocalValue] = React.useState(value ?? "");
+
+    React.useEffect(() => {
+      setLocalValue(value ?? ""); 
+    }, [value]);
     
     return(
         <>
@@ -31,8 +37,8 @@ const EditField :React.FC<EditFieldProps>= ({label, value,isEditing, toggleKey, 
           {isEditing ? (
             <TextField
               label={label}
-              value={value}
-              onChange={(e)=> {uiSend({type: "TOGGLE", key: toggleKey }); onChange(e.target.value)}}
+              value={localValue}
+              onChange={(e) => setLocalValue(e.target.value)}
               size="small"
               fullWidth
             />
