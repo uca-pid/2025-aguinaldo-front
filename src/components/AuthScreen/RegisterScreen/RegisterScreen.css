@@ -27,6 +27,7 @@
 /* User type selection chips */
 .register-user-type-chips {
   margin-bottom: 32px;
+  margin-top: 20px;
 }
 
 .register-chip {

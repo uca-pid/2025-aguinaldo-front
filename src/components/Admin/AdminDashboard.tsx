@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { 
   Box, 
   Card, 
@@ -21,7 +20,6 @@ import { SignInResponse } from "#/models/Auth";
 import "./AdminDashboard.css";
 
 export default function AdminDashboard() {
-  const navigate = useNavigate();
   const { auth } = useAuthMachine();
   const { authResponse } = auth;
   const { adminUser, ui } = useMachines();
@@ -151,10 +149,10 @@ export default function AdminDashboard() {
           </Box>
         </Box>
 
-        {/* Action Cards */}
+        {/* Action Cards */}``
         <Box className="admin-actions-container">
           <Box className="admin-action-item">
-            <Card className="admin-action-card" onClick={() => navigate('/admin/patients')}>
+            <Card className="admin-action-card" onClick={() => uiSend({type:'NAVIGATE', to:'/admin/patients'})}>
               <CardContent className="admin-action-content">
                 <Avatar className="admin-action-avatar admin-action-avatar-patients">
                   <PersonIcon className="admin-action-icon" />
@@ -176,7 +174,7 @@ export default function AdminDashboard() {
           </Box>
 
           <Box className="admin-action-item">
-            <Card className="admin-action-card" onClick={() => navigate('/admin/doctors')}>
+            <Card className="admin-action-card" onClick={() => uiSend({type:'NAVIGATE', to:'/admin/doctors'})}>
               <CardContent className="admin-action-content">
                 <Avatar className="admin-action-avatar admin-action-avatar-doctors">
                   <LocalHospitalIcon className="admin-action-icon" />

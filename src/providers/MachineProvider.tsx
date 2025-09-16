@@ -1,10 +1,11 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext,useContext } from 'react';
 import type { ReactNode } from 'react';
 import { useMachine } from '@xstate/react';
 import { uiMachine} from '../machines/uiMachine';
 import type { UiMachineContext, UiMachineEvent } from '../machines/uiMachine';
 import { turnMachine, type TurnMachineContext, type TurnMachineEvent } from '../machines/turnMachine';
 import { adminUserMachine } from '#/machines/adminUserMachine';
+import { useNavigate } from 'react-router-dom';
 
 interface MachineInstances {
   ui: {
@@ -31,7 +32,8 @@ interface MachineProviderProps {
 }
 
 export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) => {
-  const [uiState, uiSend] = useMachine(uiMachine);
+  const navigate = useNavigate();
+  const [uiState, uiSend] = useMachine(uiMachine, { input: { navigate } });
   const [turnState, turnSend] = useMachine(turnMachine);
   const [adminUserState, adminUserSend] = useMachine(adminUserMachine);
 

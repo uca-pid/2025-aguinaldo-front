@@ -4,6 +4,7 @@ export interface UiMachineContext {
   toggleStates?: Record<string, boolean>;
   currentPath?: string;
   navigationRequested?: string | null;
+  navigate: (to: string) => void;
 }
 
 export type UiMachineEvent =
@@ -13,14 +14,16 @@ export type UiMachineEvent =
 export const uiMachine = createMachine({
   id: "ui",
   initial: "idle",
-  context: {
+  context: ({input}) => ({
     toggleStates: {},
     currentPath: "/",
     navigationRequested: null,
-  }, 
+    navigate: input.navigate,
+  }), 
   types: { 
     context: {} as UiMachineContext,
     events: {} as UiMachineEvent,
+    input: {} as { navigate: (to: string) => void },
   },
   states: { 
     idle: {
@@ -34,9 +37,15 @@ export const uiMachine = createMachine({
           }),
         },
         NAVIGATE: {
-          actions: assign({
-            navigationRequested: ({ event }) => event.to,
-          }),
+          actions: ({ context, event }) => {
+            console.log('Navigation requested:', event.to);
+            if (event.to) {
+              console.log('Navigating to:', event.to);
+              context.navigate(event.to);
+            } else {
+              console.log('Navigation cancelled: no destination provided');
+            }
+          },
         },
       },
     },

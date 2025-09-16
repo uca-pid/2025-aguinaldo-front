@@ -130,13 +130,6 @@ function RegisterScreen() {
                 >
                   Crear Cuenta
                 </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  className="auth-form-subtitle"
-                >
-                  Únete a MediBook para gestionar turnos médicos
-                </Typography>
 
                 <Stack
                   direction={isMobile ? "column" : "row"}
