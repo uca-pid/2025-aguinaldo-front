@@ -10,6 +10,9 @@ import PendingScreen from './components/Admin/PendingScreen/PendingScreen'
 import { useEffect } from 'react'
 import ReservationTurns from './components/Patient/ReservationTurns'
 import ViewTurns from './components/Patient/ViewTurns'
+import EnableHours from './components/Doctor/EnableHours'
+import ViewPatients from './components/Doctor/ViewPatients'
+import DoctorViewTurns from './components/Doctor/ViewTurns'
 
 function AppContent() {
   const navigate = useNavigate();
@@ -114,7 +117,9 @@ function AppContent() {
           <Route path="/patient/reservation-turns" element={<ReservationTurns />} />
           <Route path="/patient/view-turns" element={<ViewTurns />} />
 
-          <Route path="/doctor/patients" element={<div>Doctor Patients Page - To be implemented</div>} />
+          <Route path="/doctor/enable-hours" element={<EnableHours />} />
+          <Route path="/doctor/view-patients" element={<ViewPatients />} />
+          <Route path="/doctor/view-turns" element={<DoctorViewTurns />} />
           <Route path="/profile" element={<div>Profile Page - To be implemented</div>} />
         </Routes>
       </Box>

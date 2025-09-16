@@ -4,15 +4,15 @@ import {
   Button, 
   List, 
   ListItem, 
-  Modal, 
   Typography,
   TextField,
-  InputAdornment
+  InputAdornment,
+  Container
 } from "@mui/material"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { useMachines } from "#/providers/MachineProvider"
-import { PeopleOutlined, SearchOutlined, PersonOutlined, BadgeOutlined } from '@mui/icons-material'
+import { PeopleOutlined, SearchOutlined, PersonOutlined, BadgeOutlined, ArrowBack } from '@mui/icons-material'
 import { useState } from 'react'
 import './ViewPatients.css'
 
@@ -27,12 +27,14 @@ const dummyPatients = [
   { id: 8, name: "Laura Torres", age: 26, dni: "89012345"}
 ];
 
-const ViewPatients: React.FC=()=>{
+const ViewPatients: React.FC = () => {
     const { ui } = useMachines();
-    const { context: uiContext, send: uiSend } = ui;
-    const formContext = uiContext.toggleStates || {}
-    const patients = formContext["showPatients"] ?? false;
+    const { send: uiSend } = ui;
     const [searchTerm, setSearchTerm] = useState('');
+
+    const handleBack = () => {
+        uiSend({ type: "NAVIGATE", to: "/dashboard" });
+    };
 
     const filteredPatients = dummyPatients.filter(patient =>
         patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -43,21 +45,32 @@ const ViewPatients: React.FC=()=>{
         return name.split(' ').map(n => n[0]).join('').toUpperCase();
     };
     
-    return(
-        <Modal open={patients} onClose={()=> uiSend({ type: "TOGGLE", key: "showPatients" })}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <Box className="viewpatients-modal-container">
-                    <Box className="viewpatients-header">
-                        <Avatar className="viewpatients-header-icon">
-                            <PeopleOutlined />
-                        </Avatar>
-                        <Box className="viewpatients-header-content">
-                            <Typography variant="h5" className="viewpatients-header-title">
-                                Mis Pacientes
-                            </Typography>
-                            <Typography variant="body2" className="viewpatients-header-subtitle">
-                                Gestiona y consulta la información de tus pacientes
-                            </Typography>
+    return (
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Box className="viewpatients-page-container">
+                <Container maxWidth="lg">
+                    <Box className="viewpatients-page-header">
+                        <Button
+                            startIcon={<ArrowBack />}
+                            onClick={handleBack}
+                            className="viewpatients-back-button"
+                            variant="outlined"
+                        >
+                            Volver al Dashboard
+                        </Button>
+                        
+                        <Box className="viewpatients-header">
+                            <Avatar className="viewpatients-header-icon">
+                                <PeopleOutlined />
+                            </Avatar>
+                            <Box className="viewpatients-header-content">
+                                <Typography variant="h4" className="viewpatients-header-title">
+                                    Mis Pacientes
+                                </Typography>
+                                <Typography variant="h6" className="viewpatients-header-subtitle">
+                                    Gestiona y consulta la información de tus pacientes
+                                </Typography>
+                            </Box>
                         </Box>
                     </Box>
 
@@ -131,19 +144,9 @@ const ViewPatients: React.FC=()=>{
                             </Box>
                         )}
                     </Box>
-
-                    <Box className="viewpatients-actions">
-                        <Button 
-                            onClick={()=> uiSend({ type: "TOGGLE", key: "showPatients" })} 
-                            variant="outlined"
-                            className="viewpatients-btn-close"
-                        >
-                            Cerrar
-                        </Button>
-                    </Box>
-                </Box>
-            </LocalizationProvider>
-        </Modal>
+                </Container>
+            </Box>
+        </LocalizationProvider>
     )
 }
 

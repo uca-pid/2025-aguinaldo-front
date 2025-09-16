@@ -16,9 +16,6 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import DashboardCard from "../shared/DashboardCard/DashboardCard";
 import DashboardUpcomingCard from "../shared/DashboardUpcomingCard/DashboardUpcomingCard";
-import ViewTurns from "./ViewTurns";
-import EnableHours from "./EnableHours";
-import ViewPatients from "./ViewPatients";
 import dayjs from "dayjs";
 import "./DoctorDashboard.css";
 
@@ -82,7 +79,7 @@ const DoctorDashboard: React.FC = () => {
               title="Ver Turnos"
               description="Consulta y gestiona todos tus turnos programados"
               buttonText="Mis Turnos"
-              onClick={() => uiSend({ type: "TOGGLE", key: "showDoctorReservations" })}
+              onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/view-turns" })}
             />
 
             <DashboardCard
@@ -92,7 +89,7 @@ const DoctorDashboard: React.FC = () => {
               title="Pacientes"
               description="Ver y administrar tu lista de pacientes"
               buttonText="Ver Pacientes"
-              onClick={() => uiSend({ type: "TOGGLE", key: "showPatients" })}
+              onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/view-patients" })}
             />
 
             <DashboardUpcomingCard
@@ -111,13 +108,9 @@ const DoctorDashboard: React.FC = () => {
               title="Disponibilidad"
               description="Define los horarios disponibles para reservas"
               buttonText="Configurar"
-              onClick={() => uiSend({ type: "TOGGLE", key: "enableDoctorReservations" })}
+              onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/enable-hours" })}
             />
           </Box>
-
-          <ViewTurns />
-          <EnableHours />
-          <ViewPatients />
         </Container>
       </Box>
     </LocalizationProvider>
