@@ -1,5 +1,5 @@
 import './App.css'
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import HomeScreen from './components/HomeScreen/HomeScreen'
 import { useAuthMachine } from './providers/AuthProvider'
 import { Avatar, Box, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material'
@@ -8,6 +8,8 @@ import { useMachines } from './providers/MachineProvider'
 import { Logout, Person } from '@mui/icons-material'
 import PendingScreen from './components/Admin/PendingScreen/PendingScreen'
 import { useEffect } from 'react'
+import ReservationTurns from './components/Patient/ReservationTurns'
+import ViewTurns from './components/Patient/ViewTurns'
 
 function AppContent() {
   const navigate = useNavigate();
@@ -103,8 +105,17 @@ function AppContent() {
         </Box>
 
         <Routes>
-          <Route path="/" element={<HomeScreen />} />
+          <Route path="*" element={<HomeScreen />} />
+
           <Route path="/admin/pending" element={<PendingScreen />} />
+          <Route path="/admin/patients" element={<div>Admin Patients Page - To be implemented</div>} />
+          <Route path="/admin/doctors" element={<div>Admin Doctors Page - To be implemented</div>} />
+
+          <Route path="/patient/reservation-turns" element={<ReservationTurns />} />
+          <Route path="/patient/view-turns" element={<ViewTurns />} />
+
+          <Route path="/doctor/patients" element={<div>Doctor Patients Page - To be implemented</div>} />
+          <Route path="/profile" element={<div>Profile Page - To be implemented</div>} />
         </Routes>
       </Box>
   );

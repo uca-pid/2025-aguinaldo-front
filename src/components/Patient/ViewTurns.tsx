@@ -1,5 +1,5 @@
 import { 
-  Box, Button, Modal, Typography, CircularProgress, 
+  Box, Button, Typography, CircularProgress, 
   Alert, Chip, FormControl, InputLabel, Select, MenuItem, Avatar 
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
@@ -8,25 +8,24 @@ import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { SignInResponse } from "#/models/Auth";
 import ListAltIcon from "@mui/icons-material/ListAlt";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import "./ViewTurns.css";
 
 const ViewTurns: React.FC = () => {
   const { ui, turn } = useMachines();
   const { auth } = useAuthMachine();
-  const { context: uiContext, send: uiSend } = ui;
+  const { send: uiSend } = ui;
   const { context: authContext, authResponse: authResponse } = auth;
   const user = authResponse as SignInResponse
   const { state: turnState, send: turnSend } = turn;
   const [cancellingTurnId, setCancellingTurnId] = useState<string | null>(null);
   const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
   
-  const formContext = uiContext.toggleStates || {};
-  const reservations = formContext["reservations"] ?? false;
   const turnContext = turnState.context;
   const showTurnsContext = turnContext.showTurns;
 
   useEffect(() => {
-    if (reservations && authContext.isAuthenticated && user.accessToken) {
+    if (authContext.isAuthenticated && user.accessToken) {
       turnSend({
         type: "SET_AUTH",
         accessToken: user.accessToken,
@@ -34,7 +33,7 @@ const ViewTurns: React.FC = () => {
       });
       turnSend({ type: "LOAD_MY_TURNS" });
     }
-  }, [reservations, authContext.isAuthenticated, user.accessToken, turnSend]);
+  }, [authContext.isAuthenticated, user.accessToken, turnSend]);
 
   const filteredTurns = turnContext.myTurns.filter((turn: any) => {
     let matchesStatus = true;
@@ -96,173 +95,192 @@ const ViewTurns: React.FC = () => {
   };
 
   const handleClose = () => {
-    uiSend({ type: "TOGGLE", key: "reservations" });
+    uiSend({ type: "NAVIGATE", to: "/patient" });
     turnSend({ type: "RESET_SHOW_TURNS" });
     setCancelSuccess(null);
   };
 
   return (
-    <>
-      <Modal open={reservations} onClose={handleClose}>
-        <Box className="viewturns-modal-container">
-          {/* Header */}
-          <Box className="viewturns-header">
+    <Box className="viewturns-container">
+      {/* Header Section */}
+      <Box className="viewturns-header">
+        <Box className="viewturns-header-layout">
+          <Box className="viewturns-back-button-container">
+            <Button
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
+              onClick={handleClose}
+              className="viewturns-back-button"
+            >
+              Volver al Dashboard
+            </Button>
+          </Box>
+          <Box className="viewturns-header-content">
             <Avatar className="viewturns-header-icon">
-              <ListAltIcon sx={{ fontSize: 40, color: 'white' }} />
+              <ListAltIcon sx={{ fontSize: 28 }} />
             </Avatar>
-            <Box className="viewturns-header-content">
-              <Typography variant="h4" className="viewturns-header-title">
+            <Box>
+              <Typography variant="h4" component="h1" className="viewturns-header-title">
                 Mis Turnos
               </Typography>
-              <Typography variant="body1" className="viewturns-header-subtitle">
+              <Typography variant="h6" className="viewturns-header-subtitle">
                 Consulta y gestiona tus citas médicas
               </Typography>
             </Box>
           </Box>
+          <Box className="viewturns-header-spacer"></Box>
+        </Box>
+      </Box>
 
-          {turnContext.myTurnsError && (
-            <Alert severity="error" className="viewturns-alert">
-              Error al cargar turnos: {turnContext.myTurnsError}
-            </Alert>
-          )}
+      <Box className="viewturns-content">
+        {/* Alerts */}
+        {turnContext.myTurnsError && (
+          <Alert severity="error" className="viewturns-alert">
+            Error al cargar turnos: {turnContext.myTurnsError}
+          </Alert>
+        )}
 
-          {cancelSuccess && (
-            <Alert severity="success" className="viewturns-alert">
-              {cancelSuccess}
-            </Alert>
-          )}
+        {cancelSuccess && (
+          <Alert severity="success" className="viewturns-alert">
+            {cancelSuccess}
+          </Alert>
+        )}
 
-          <Box className="viewturns-content">
-            <Box className="viewturns-filters-section">
-              <Box className="viewturns-filters-header">
-                <Typography variant="h6" className="viewturns-section-title">
-                  🔍 Filtros
-                </Typography>
-                <Box className="viewturns-filters-controls">
-                  <FormControl size="small" className="viewturns-filter-select">
-                    <InputLabel>Estado del turno</InputLabel>
-                    <Select
-                      value={showTurnsContext.statusFilter}
-                      label="Estado del turno"
-                      onChange={(e) => turnSend({
-                        type: "UPDATE_FORM_SHOW_TURNS",
-                        key: "statusFilter",
-                        value: e.target.value
-                      })}
-                    >
-                      <MenuItem value="">Todos los estados</MenuItem>
-                      <MenuItem value="SCHEDULED">Programados</MenuItem>
-                      <MenuItem value="CANCELED">Cancelados</MenuItem>
-                    </Select>
-                  </FormControl>
+        {/* Filters Section */}
+        <Box className="viewturns-filters-section">
+          <Box className="viewturns-filters-header">
+            <Typography variant="h6" className="viewturns-section-title">
+              🔍 Filtros
+            </Typography>
+            <Box className="viewturns-filters-controls">
+              <FormControl size="small" className="viewturns-filter-select">
+                <InputLabel>Estado del turno</InputLabel>
+                <Select
+                  value={showTurnsContext.statusFilter}
+                  label="Estado del turno"
+                  onChange={(e) => turnSend({
+                    type: "UPDATE_FORM_SHOW_TURNS",
+                    key: "statusFilter",
+                    value: e.target.value
+                  })}
+                >
+                  <MenuItem value="">Todos los estados</MenuItem>
+                  <MenuItem value="SCHEDULED">Programados</MenuItem>
+                  <MenuItem value="CANCELED">Cancelados</MenuItem>
+                </Select>
+              </FormControl>
 
-                  {showTurnsContext.statusFilter && (
-                    <Button
-                      variant="outlined"
-                      onClick={() => turnSend({
-                        type: "UPDATE_FORM_SHOW_TURNS",
-                        key: "statusFilter",
-                        value: ""
-                      })}
-                      className="viewturns-clear-filter-btn"
-                    >
-                      Limpiar filtro
-                    </Button>
-                  )}
-                </Box>
-              </Box>
-            </Box>
-
-            <Box className="viewturns-list-section">
-              <Box className="viewturns-list-content">
-              {turnContext.isLoadingMyTurns ? (
-                <Box className="viewturns-loading-container">
-                  <CircularProgress size={24} />
-                  <Typography className="viewturns-loading-text">
-                    Cargando turnos...
-                  </Typography>
-                </Box>
-              ) : filteredTurns.length > 0 ? (
-                filteredTurns.map((turn: any, index: number) => (
-                  <Box key={turn.id || index} className="viewturns-turn-item">
-                    <Box className="viewturns-turn-content">
-                      <Box className="viewturns-turn-info">
-                        <Typography variant="h6" className="viewturns-turn-datetime">
-                          {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
-                          {turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt) && (
-                            <Chip 
-                              label="Vencido" 
-                              size="small" 
-                              sx={{ 
-                                ml: 1, 
-                                backgroundColor: '#fbbf24', 
-                                color: '#92400e',
-                                fontSize: '0.75rem'
-                              }} 
-                            />
-                          )}
-                        </Typography>
-                        <Typography variant="body1" className="viewturns-turn-doctor">
-                          Dr. {turn.doctorName}
-                        </Typography>
-                        <Typography variant="body2" className="viewturns-turn-specialty">
-                          {turn.doctorSpecialty}
-                        </Typography>
-                      </Box>
-                      <Box className="viewturns-turn-actions">
-                        <Chip
-                          label={getStatusLabel(turn.status)}
-                          className={`viewturns-status-chip status-${turn.status.toLowerCase()}`}
-                          size="small"
-                        />
-                        {canCancelTurn(turn) && (
-                          <Button 
-                            variant="contained" 
-                            size="small"
-                            className="viewturns-cancel-btn"
-                            onClick={() => handleCancelTurn(turn.id)}
-                            disabled={cancellingTurnId === turn.id}
-                          >
-                            {cancellingTurnId === turn.id ? (
-                              <>
-                                <CircularProgress size={16} sx={{ mr: 1 }} />
-                                Cancelando...
-                              </>
-                            ) : (
-                              'Cancelar turno'
-                            )}
-                          </Button>
-                        )}
-                      </Box>
-                    </Box>
-                  </Box>
-                ))
-              ) : (
-                <Box className="viewturns-empty-state">
-                  <Typography>
-                    {showTurnsContext.dateSelected || showTurnsContext.statusFilter
-                      ? 'No hay turnos que coincidan con los filtros seleccionados'
-                      : 'No tenés turnos registrados'
-                    }
-                  </Typography>
-                </Box>
+              {showTurnsContext.statusFilter && (
+                <Button
+                  variant="outlined"
+                  onClick={() => turnSend({
+                    type: "UPDATE_FORM_SHOW_TURNS",
+                    key: "statusFilter",
+                    value: ""
+                  })}
+                  className="viewturns-clear-filter-btn"
+                >
+                  Limpiar filtro
+                </Button>
               )}
             </Box>
-            </Box>
-          </Box>
-
-          <Box className="viewturns-actions">
-            <Button 
-              onClick={handleClose} 
-              className="viewturns-btn-close"
-              variant="outlined"
-            >
-              Cerrar
-            </Button>
           </Box>
         </Box>
-      </Modal>
-    </>
+
+        {/* Turns List Section */}
+        <Box className="viewturns-list-section">
+          <Box className="viewturns-list-content">
+            {turnContext.isLoadingMyTurns ? (
+              <Box className="viewturns-loading-container">
+                <CircularProgress size={24} />
+                <Typography className="viewturns-loading-text">
+                  Cargando turnos...
+                </Typography>
+              </Box>
+            ) : filteredTurns.length > 0 ? (
+              filteredTurns.map((turn: any, index: number) => (
+                <Box key={turn.id || index} className="viewturns-turn-item">
+                  <Box className="viewturns-turn-content">
+                    <Box className="viewturns-turn-info">
+                      <Typography variant="h6" className="viewturns-turn-datetime">
+                        {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
+                        {turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt) && (
+                          <Chip 
+                            label="Vencido" 
+                            size="small" 
+                            sx={{ 
+                              ml: 1, 
+                              backgroundColor: '#fbbf24', 
+                              color: '#92400e',
+                              fontSize: '0.75rem'
+                            }} 
+                          />
+                        )}
+                      </Typography>
+                      <Typography variant="body1" className="viewturns-turn-doctor">
+                        Dr. {turn.doctorName}
+                      </Typography>
+                      <Typography variant="body2" className="viewturns-turn-specialty">
+                        {turn.doctorSpecialty}
+                      </Typography>
+                    </Box>
+                    <Box className="viewturns-turn-actions">
+                      <Chip
+                        label={getStatusLabel(turn.status)}
+                        className={`viewturns-status-chip status-${turn.status.toLowerCase()}`}
+                        size="small"
+                      />
+                      {canCancelTurn(turn) && (
+                        <Button 
+                          variant="contained" 
+                          size="small"
+                          className="viewturns-cancel-btn"
+                          onClick={() => handleCancelTurn(turn.id)}
+                          disabled={cancellingTurnId === turn.id}
+                        >
+                          {cancellingTurnId === turn.id ? (
+                            <>
+                              <CircularProgress size={16} sx={{ mr: 1 }} />
+                              Cancelando...
+                            </>
+                          ) : (
+                            'Cancelar turno'
+                          )}
+                        </Button>
+                      )}
+                    </Box>
+                  </Box>
+                </Box>
+              ))
+            ) : (
+              <Box className="viewturns-empty-state">
+                <Box className="viewturns-empty-emoji">📅</Box>
+                <Typography variant="h5" className="viewturns-empty-title">
+                  No hay turnos disponibles
+                </Typography>
+                <Typography variant="body1" className="viewturns-empty-subtitle">
+                  {showTurnsContext.dateSelected || showTurnsContext.statusFilter
+                    ? 'No hay turnos que coincidan con los filtros seleccionados'
+                    : 'No tenés turnos registrados'
+                  }
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </Box>
+
+        {/* Actions */}
+        <Box className="viewturns-actions">
+          <Button 
+            onClick={handleClose} 
+            className="viewturns-btn-close"
+            variant="outlined"
+          >
+            Volver al Dashboard
+          </Button>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

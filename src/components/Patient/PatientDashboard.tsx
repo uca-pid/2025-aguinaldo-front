@@ -3,11 +3,9 @@ import {
   Box, 
   Typography, 
   Card, 
-  CardContent, 
   CircularProgress,
   Container,
-  Avatar,
-  Button
+  Avatar
 } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ListAltIcon from "@mui/icons-material/ListAlt";
@@ -17,8 +15,7 @@ import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import ReservationTurns from "./ReservationTurns";
-import ViewTurns from "./ViewTurns";
+import DashboardCard from "../shared/DashboardCard/DashboardCard";
 import dayjs from "dayjs";
 import "./PatientDashboard.css";
 
@@ -75,49 +72,25 @@ const PatientDashboard: React.FC = () => {
           </Box>
 
           <Box className="patient-actions-container">
-            <Box className="patient-action-item">
-              <Card className="patient-action-card" onClick={() => uiSend({ type: "TOGGLE", key: "showDoAReservationTurn" })}>
-                <CardContent className="patient-action-content">
-                  <Avatar className="patient-action-avatar patient-action-avatar-reservation">
-                    <CalendarTodayIcon className="patient-action-icon" />
-                  </Avatar>
-                  <Typography variant="h5" component="h2" className="patient-action-title">
-                    Reservar Turno
-                  </Typography>
-                  <Typography variant="body1" className="patient-action-description">
-                    Agenda una nueva cita médica con tu especialista preferido
-                  </Typography>
-                  <Button 
-                    variant="contained" 
-                    className="patient-action-button patient-action-button-reservation"
-                  >
-                    Nuevo Turno
-                  </Button>
-                </CardContent>
-              </Card>
-            </Box>
+            <DashboardCard
+              type="patient"
+              variant="primary"
+              icon={<CalendarTodayIcon className="patient-action-icon" />}
+              title="Reservar Turno"
+              description="Agenda una nueva cita médica con tu especialista preferido"
+              buttonText="Nuevo Turno"
+              onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/reservation-turns" })}
+            />
 
-            <Box className="patient-action-item">
-              <Card className="patient-action-card" onClick={() => uiSend({ type: "TOGGLE", key: "reservations" })}>
-                <CardContent className="patient-action-content">
-                  <Avatar className="patient-action-avatar patient-action-avatar-view">
-                    <ListAltIcon className="patient-action-icon" />
-                  </Avatar>
-                  <Typography variant="h5" component="h2" className="patient-action-title">
-                    Mis Turnos
-                  </Typography>
-                  <Typography variant="body1" className="patient-action-description">
-                    Consulta, modifica o cancela tus turnos programados
-                  </Typography>
-                  <Button 
-                    variant="contained" 
-                    className="patient-action-button patient-action-button-view"
-                  >
-                    Ver Turnos
-                  </Button>
-                </CardContent>
-              </Card>
-            </Box>
+            <DashboardCard
+              type="patient"
+              variant="secondary"
+              icon={<ListAltIcon className="patient-action-icon" />}
+              title="Mis Turnos"
+              description="Consulta, modifica o cancela tus turnos programados"
+              buttonText="Ver Turnos"
+              onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })}
+            />
 
             <Box className="patient-action-item">
               <Card className="patient-upcoming-card">
@@ -154,9 +127,6 @@ const PatientDashboard: React.FC = () => {
               </Card>
             </Box>
           </Box>
-
-          <ReservationTurns />
-          <ViewTurns />
         </Container>
       </Box>
     </LocalizationProvider>

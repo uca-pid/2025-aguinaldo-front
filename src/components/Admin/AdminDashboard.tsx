@@ -4,7 +4,6 @@ import {
   Card, 
   CardContent, 
   Typography, 
-  Badge,
   Container,
   Avatar,
   Button,
@@ -17,6 +16,7 @@ import PendingActionsIcon from "@mui/icons-material/PendingActions";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { useMachines } from "#/providers/MachineProvider";
 import { SignInResponse } from "#/models/Auth";
+import DashboardCard from "../shared/DashboardCard/DashboardCard";
 import "./AdminDashboard.css";
 
 export default function AdminDashboard() {
@@ -151,84 +151,41 @@ export default function AdminDashboard() {
 
         {/* Action Cards */}``
         <Box className="admin-actions-container">
-          <Box className="admin-action-item">
-            <Card className="admin-action-card" onClick={() => uiSend({type:'NAVIGATE', to:'/admin/patients'})}>
-              <CardContent className="admin-action-content">
-                <Avatar className="admin-action-avatar admin-action-avatar-patients">
-                  <PersonIcon className="admin-action-icon" />
-                </Avatar>
-                <Typography variant="h5" component="h2" className="admin-action-title">
-                  Pacientes
-                </Typography>
-                <Typography variant="body1" className="admin-action-description">
-                  Ver mas estadísticas de los pacientes
-                </Typography>
-                <Button 
-                  variant="contained" 
-                  className="admin-action-button admin-action-button-patients"
-                >
-                  Ver Pacientes
-                </Button>
-              </CardContent>
-            </Card>
-          </Box>
+          <DashboardCard
+            type="admin"
+            variant="primary"
+            icon={<PersonIcon className="admin-action-icon" />}
+            title="Pacientes"
+            description="Ver mas estadísticas de los pacientes"
+            buttonText="Ver Pacientes"
+            onClick={() => uiSend({type:'NAVIGATE', to:'/admin/patients'})}
+          />
 
-          <Box className="admin-action-item">
-            <Card className="admin-action-card" onClick={() => uiSend({type:'NAVIGATE', to:'/admin/doctors'})}>
-              <CardContent className="admin-action-content">
-                <Avatar className="admin-action-avatar admin-action-avatar-doctors">
-                  <LocalHospitalIcon className="admin-action-icon" />
-                </Avatar>
-                <Typography variant="h5" component="h2" className="admin-action-title">
-                  Doctores
-                </Typography>
-                <Typography variant="body1" className="admin-action-description">
-                  Ver mas estadísticas de los doctores
-                </Typography>
-                <Button 
-                  variant="contained" 
-                  className="admin-action-button admin-action-button-doctors"
-                >
-                  Ver Doctores
-                </Button>
-              </CardContent>
-            </Card>
-          </Box>
+          <DashboardCard
+            type="admin"
+            variant="secondary"
+            icon={<LocalHospitalIcon className="admin-action-icon" />}
+            title="Doctores"
+            description="Ver mas estadísticas de los doctores"
+            buttonText="Ver Doctores"
+            onClick={() => uiSend({type:'NAVIGATE', to:'/admin/doctors'})}
+          />
 
-          <Box className="admin-action-item">
-            <Card className="admin-action-card">
-              <CardContent className="admin-action-content">
-                <Avatar className="admin-action-avatar admin-action-avatar-pending">
-                  <PendingActionsIcon className="admin-action-icon" />
-                  {stats.pending > 0 && (
-                    <Badge
-                      badgeContent={stats.pending}
-                      color="error"
-                      className="admin-pending-badge"
-                    />
-                  )}
-                </Avatar>
-                <Typography variant="h5" component="h2" className="admin-action-title">
-                  Solicitudes Pendientes
-                </Typography>
-                <Typography variant="body1" className="admin-action-description">
-                  Revisar y aprobar solicitudes de registro de doctores
-                </Typography>
-                <Button 
-                  variant="contained" 
-                  className="admin-action-button admin-action-button-pending"
-                    onClick={() => {
-                      adminSend({ type: 'FETCH_PENDING_DOCTORS', accessToken: user?.accessToken });
-                      uiSend({ type: 'NAVIGATE', to: '/admin/pending' });
-                    }}
-                  disabled={adminState.matches('fetchingPendingDoctors')}
-                  startIcon={adminState.matches('fetchingPendingDoctors') ? <CircularProgress size={20} /> : null}
-                >
-                  Ver Solicitudes
-                </Button>
-              </CardContent>
-            </Card>
-          </Box>
+          <DashboardCard
+            type="admin"
+            variant="accent"
+            icon={<PendingActionsIcon className="admin-action-icon" />}
+            title="Solicitudes Pendientes"
+            description="Revisar y aprobar solicitudes de registro de doctores"
+            buttonText="Ver Solicitudes"
+            onClick={() => {
+              adminSend({ type: 'FETCH_PENDING_DOCTORS', accessToken: user?.accessToken });
+              uiSend({ type: 'NAVIGATE', to: '/admin/pending' });
+            }}
+            disabled={adminState.matches('fetchingPendingDoctors')}
+            loading={adminState.matches('fetchingPendingDoctors')}
+            badge={stats.pending}
+          />
         </Box>
       </Container>
     </Box>

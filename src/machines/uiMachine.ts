@@ -38,12 +38,8 @@ export const uiMachine = createMachine({
         },
         NAVIGATE: {
           actions: ({ context, event }) => {
-            console.log('Navigation requested:', event.to);
             if (event.to) {
-              console.log('Navigating to:', event.to);
               context.navigate(event.to);
-            } else {
-              console.log('Navigation cancelled: no destination provided');
             }
           },
         },

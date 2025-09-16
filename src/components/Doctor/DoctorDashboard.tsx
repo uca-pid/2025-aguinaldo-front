@@ -19,9 +19,9 @@ import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import ViewTurns from "./ViewTurns";
-import EnableHours from "./EnableHours";
-import ViewPatients from "./ViewPatients";
+import ViewTurns from "../HomeScreen/userDashboards/Doctor/ViewTurns";
+import EnableHours from "../HomeScreen/userDashboards/Doctor/EnableHours";
+import ViewPatients from "../HomeScreen/userDashboards/Doctor/ViewPatients";
 import dayjs from "dayjs";
 import "./DoctorDashboard.css";
 
