@@ -2,8 +2,6 @@ import React, { useEffect } from "react";
 import {
   Box, 
   Typography, 
-  Card, 
-  CircularProgress,
   Container,
   Avatar
 } from "@mui/material";
@@ -16,6 +14,7 @@ import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import DashboardCard from "../shared/DashboardCard/DashboardCard";
+import DashboardUpcomingCard from "../shared/DashboardUpcomingCard/DashboardUpcomingCard";
 import dayjs from "dayjs";
 import "./PatientDashboard.css";
 
@@ -92,40 +91,14 @@ const PatientDashboard: React.FC = () => {
               onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })}
             />
 
-            <Box className="patient-action-item">
-              <Card className="patient-upcoming-card">
-                <Typography variant="h6" className="patient-upcoming-header">
-                  Próximos
-                </Typography>
-                
-                <Box className="patient-upcoming-content">
-                  {turnContext.isLoadingMyTurns ? (
-                    <Box className="patient-upcoming-loading">
-                      <CircularProgress size={24} />
-                    </Box>
-                  ) : turnContext.myTurnsError ? (
-                    <Typography variant="body2" className="patient-upcoming-error">
-                      Error al cargar turnos: {turnContext.myTurnsError}
-                    </Typography>
-                  ) : upcomingTurns.length > 0 ? (
-                    upcomingTurns.map((turn: any, index: number) => (
-                      <Box key={turn.id || index} className="patient-upcoming-item">
-                        <Typography variant="body1" className="patient-upcoming-date">
-                          {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
-                        </Typography>
-                        <Typography variant="body2" className="patient-upcoming-doctor">
-                          {turn.doctorName || "Doctor"} - {turn.doctorSpecialty || "Especialidad"}
-                        </Typography>
-                      </Box>
-                    ))
-                  ) : (
-                    <Typography variant="body2" className="patient-upcoming-empty">
-                      No tenés turnos próximos
-                    </Typography>
-                  )}
-                </Box>
-              </Card>
-            </Box>
+            <DashboardUpcomingCard
+              type="patient"
+              title="Próximos"
+              turns={upcomingTurns}
+              isLoading={turnContext.isLoadingMyTurns}
+              error={turnContext.myTurnsError}
+              emptyMessage="No tenés turnos próximos"
+            />
           </Box>
         </Container>
       </Box>

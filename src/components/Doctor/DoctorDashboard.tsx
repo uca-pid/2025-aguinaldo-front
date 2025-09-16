@@ -2,13 +2,8 @@ import React, { useEffect } from "react";
 import {
   Box, 
   Typography, 
-  Card, 
-  CardContent, 
-  CircularProgress,
   Container,
-  Avatar,
-  Button,
-  Chip
+  Avatar
 } from "@mui/material";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
@@ -19,9 +14,11 @@ import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import ViewTurns from "../HomeScreen/userDashboards/Doctor/ViewTurns";
-import EnableHours from "../HomeScreen/userDashboards/Doctor/EnableHours";
-import ViewPatients from "../HomeScreen/userDashboards/Doctor/ViewPatients";
+import DashboardCard from "../shared/DashboardCard/DashboardCard";
+import DashboardUpcomingCard from "../shared/DashboardUpcomingCard/DashboardUpcomingCard";
+import ViewTurns from "./ViewTurns";
+import EnableHours from "./EnableHours";
+import ViewPatients from "./ViewPatients";
 import dayjs from "dayjs";
 import "./DoctorDashboard.css";
 
@@ -78,129 +75,44 @@ const DoctorDashboard: React.FC = () => {
           </Box>
 
           <Box className="doctor-actions-container">
-            <Box className="doctor-action-item">
-              <Card className="doctor-action-card" onClick={() => uiSend({ type: "TOGGLE", key: "showDoctorReservations" })}>
-                <CardContent className="doctor-action-content">
-                  <Avatar className="doctor-action-avatar doctor-action-avatar-schedule">
-                    <ScheduleIcon className="doctor-action-icon" />
-                  </Avatar>
-                  <Typography variant="h5" component="h2" className="doctor-action-title">
-                    Ver Turnos
-                  </Typography>
-                  <Typography variant="body1" className="doctor-action-description">
-                    Consulta y gestiona todos tus turnos programados
-                  </Typography>
-                  <Button 
-                    variant="contained" 
-                    className="doctor-action-button doctor-action-button-schedule"
-                  >
-                    Mis Turnos
-                  </Button>
-                </CardContent>
-              </Card>
-            </Box>
+            <DashboardCard
+              type="doctor"
+              variant="primary"
+              icon={<ScheduleIcon className="doctor-action-icon" />}
+              title="Ver Turnos"
+              description="Consulta y gestiona todos tus turnos programados"
+              buttonText="Mis Turnos"
+              onClick={() => uiSend({ type: "TOGGLE", key: "showDoctorReservations" })}
+            />
 
-            <Box className="doctor-action-item">
-              <Card className="doctor-action-card" onClick={() => uiSend({ type: "TOGGLE", key: "showPatients" })}>
-                <CardContent className="doctor-action-content">
-                  <Avatar className="doctor-action-avatar doctor-action-avatar-patients">
-                    <PeopleAltIcon className="doctor-action-icon" />
-                  </Avatar>
-                  <Typography variant="h5" component="h2" className="doctor-action-title">
-                    Pacientes
-                  </Typography>
-                  <Typography variant="body1" className="doctor-action-description">
-                    Ver y administrar tu lista de pacientes
-                  </Typography>
-                  <Button 
-                    variant="contained" 
-                    className="doctor-action-button doctor-action-button-patients"
-                  >
-                    Ver Pacientes
-                  </Button>
-                </CardContent>
-              </Card>
-            </Box>
+            <DashboardCard
+              type="doctor"
+              variant="secondary"
+              icon={<PeopleAltIcon className="doctor-action-icon" />}
+              title="Pacientes"
+              description="Ver y administrar tu lista de pacientes"
+              buttonText="Ver Pacientes"
+              onClick={() => uiSend({ type: "TOGGLE", key: "showPatients" })}
+            />
 
-            <Box className="doctor-action-item">
-              <Card className="doctor-upcoming-card">
-                <Typography variant="h6" className="doctor-upcoming-header">
-                  Próximos Turnos
-                </Typography>
-                
-                <Box className="doctor-upcoming-content">
-                  {turnContext.isLoadingMyTurns ? (
-                    <Box className="doctor-upcoming-loading">
-                      <CircularProgress size={24} />
-                      <Typography className="doctor-upcoming-loading-text">
-                        Cargando turnos...
-                      </Typography>
-                    </Box>
-                  ) : turnContext.myTurnsError ? (
-                    <Typography variant="body2" className="doctor-upcoming-error">
-                      Error al cargar turnos: {turnContext.myTurnsError}
-                    </Typography>
-                  ) : upcomingTurns.length > 0 ? (
-                    upcomingTurns.map((turn: any, index: number) => (
-                      <Box key={turn.id || index} className={`doctor-upcoming-item ${turn.status === 'CANCELED' ? 'doctor-upcoming-item-canceled' : ''}`}>
-                        <Box className="doctor-upcoming-header-row">
-                          <Typography variant="body1" className="doctor-upcoming-date">
-                            {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
-                          </Typography>
-                          {turn.status === 'CANCELED' && (
-                            <Chip 
-                              label="CANCELADO" 
-                              size="small" 
-                              className="doctor-upcoming-canceled-chip"
-                              sx={{
-                                backgroundColor: '#fee2e2',
-                                color: '#dc2626',
-                                fontWeight: 600,
-                                fontSize: '0.75rem'
-                              }}
-                            />
-                          )}
-                        </Box>
-                        <Typography variant="body2" className="doctor-upcoming-patient">
-                          Paciente: {turn.patientName || "Paciente"}
-                        </Typography>
-                        {turn.reason && (
-                          <Typography variant="body2" className="doctor-upcoming-reason">
-                            Motivo: {turn.reason}
-                          </Typography>
-                        )}
-                      </Box>
-                    ))
-                  ) : (
-                    <Typography variant="body2" className="doctor-upcoming-empty">
-                      No tenés turnos próximos
-                    </Typography>
-                  )}
-                </Box>
-              </Card>
-            </Box>
+            <DashboardUpcomingCard
+              type="doctor"
+              title="Próximos Turnos"
+              turns={upcomingTurns}
+              isLoading={turnContext.isLoadingMyTurns}
+              error={turnContext.myTurnsError}
+              emptyMessage="No tenés turnos próximos"
+            />
 
-            <Box className="doctor-action-item">
-              <Card className="doctor-action-card" onClick={() => uiSend({ type: "TOGGLE", key: "enableDoctorReservations" })}>
-                <CardContent className="doctor-action-content">
-                  <Avatar className="doctor-action-avatar doctor-action-avatar-availability">
-                    <EventAvailableIcon className="doctor-action-icon" />
-                  </Avatar>
-                  <Typography variant="h5" component="h2" className="doctor-action-title">
-                    Disponibilidad
-                  </Typography>
-                  <Typography variant="body1" className="doctor-action-description">
-                    Define los horarios disponibles para reservas
-                  </Typography>
-                  <Button 
-                    variant="contained" 
-                    className="doctor-action-button doctor-action-button-availability"
-                  >
-                    Configurar
-                  </Button>
-                </CardContent>
-              </Card>
-            </Box>
+            <DashboardCard
+              type="doctor"
+              variant="accent"
+              icon={<EventAvailableIcon className="doctor-action-icon" />}
+              title="Disponibilidad"
+              description="Define los horarios disponibles para reservas"
+              buttonText="Configurar"
+              onClick={() => uiSend({ type: "TOGGLE", key: "enableDoctorReservations" })}
+            />
           </Box>
 
           <ViewTurns />

@@ -1,16 +1,12 @@
 /* DashboardCard Component Styles */
 
 /* Base styles for all card types */
-.admin-action-item,
-.patient-action-item,
-.dashboard-action-item {
+.dashboard-card-item {
   flex: 1 1 300px;
   max-width: 400px;
 }
 
-.admin-action-card,
-.patient-action-card,
-.dashboard-action-card {
+.dashboard-card {
   transition: all 0.3s ease-in-out !important;
   height: 100% !important;
   background: white !important;
@@ -20,169 +16,136 @@
   cursor: pointer !important;
 }
 
-.admin-action-card:hover,
-.patient-action-card:hover,
-.dashboard-action-card:hover {
+.dashboard-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 12px 30px rgba(34, 87, 122, 0.2);
   border-color: #22577a;
 }
 
-.admin-action-content,
-.patient-action-content,
-.dashboard-action-content {
+.dashboard-card-content {
   padding: 32px !important;
   text-align: center !important;
 }
 
-.admin-action-avatar,
-.patient-action-avatar,
-.dashboard-action-avatar {
+.dashboard-card-avatar {
   margin: 0 auto 24px !important;
   width: 72px !important;
   height: 72px !important;
 }
 
-.admin-action-icon,
-.patient-action-icon,
-.dashboard-action-icon {
+.dashboard-card-icon {
   font-size: 36px !important;
   color: white !important;
 }
 
-.admin-action-title,
-.patient-action-title,
-.dashboard-action-title {
+.dashboard-card-title {
   font-weight: 600 !important;
   margin-bottom: 16px !important;
   color: #0d2230 !important;
 }
 
-.admin-action-description,
-.patient-action-description,
-.dashboard-action-description {
+.dashboard-card-description {
   color: #1f4f6f !important;
   margin-bottom: 24px !important;
 }
 
-.admin-action-button,
-.patient-action-button,
-.dashboard-action-button {
+.dashboard-card-button {
   border-radius: 8px !important;
   text-transform: none !important;
   font-weight: 600 !important;
   color: white !important;
 }
 
-/* Admin theme variants */
-.admin-action-avatar-primary {
+/* Admin, Patient, and Doctor shared theme variants */
+.admin-avatar-primary,
+.patient-avatar-primary,
+.doctor-avatar-primary {
   background: #22577a !important;
 }
 
-.admin-action-avatar-secondary {
+.admin-avatar-secondary,
+.patient-avatar-secondary,
+.doctor-avatar-secondary {
   background: #38a3a5 !important;
 }
 
-.admin-action-avatar-accent {
+.admin-avatar-accent,
+.patient-avatar-accent,
+.doctor-avatar-accent {
   background: #57cc99 !important;
   position: relative !important;
 }
 
-.admin-action-button-primary {
+.admin-button-primary,
+.patient-button-primary,
+.doctor-button-primary {
   background: #22577a !important;
 }
 
-.admin-action-button-primary:hover {
+.admin-button-primary:hover,
+.patient-button-primary:hover,
+.doctor-button-primary:hover {
   background: #1f4f6f !important;
 }
 
-.admin-action-button-secondary {
+.admin-button-secondary,
+.patient-button-secondary,
+.doctor-button-secondary {
   background: #38a3a5 !important;
 }
 
-.admin-action-button-secondary:hover {
+.admin-button-secondary:hover,
+.patient-button-secondary:hover,
+.doctor-button-secondary:hover {
   background: #2d7d90 !important;
 }
 
-.admin-action-button-accent {
+.admin-button-accent,
+.patient-button-accent,
+.doctor-button-accent {
   background: #57cc99 !important;
 }
 
-.admin-action-button-accent:hover {
-  background: #80ed99 !important;
-}
-
-/* Patient theme variants */
-.patient-action-avatar-primary {
-  background: #22577a !important;
-}
-
-.patient-action-avatar-secondary {
-  background: #38a3a5 !important;
-}
-
-.patient-action-avatar-accent {
-  background: #57cc99 !important;
-}
-
-.patient-action-button-primary {
-  background: #22577a !important;
-}
-
-.patient-action-button-primary:hover {
-  background: #1f4f6f !important;
-}
-
-.patient-action-button-secondary {
-  background: #38a3a5 !important;
-}
-
-.patient-action-button-secondary:hover {
-  background: #2d7d90 !important;
-}
-
-.patient-action-button-accent {
-  background: #57cc99 !important;
-}
-
-.patient-action-button-accent:hover {
+.admin-button-accent:hover,
+.patient-button-accent:hover,
+.doctor-button-accent:hover {
   background: #80ed99 !important;
 }
 
 /* Dashboard (generic) theme variants */
-.dashboard-action-avatar-primary {
+.dashboard-avatar-primary {
   background: #3b82f6 !important;
 }
 
-.dashboard-action-avatar-secondary {
+.dashboard-avatar-secondary {
   background: #059669 !important;
 }
 
-.dashboard-action-avatar-accent {
+.dashboard-avatar-accent {
   background: #dc2626 !important;
 }
 
-.dashboard-action-button-primary {
+.dashboard-button-primary {
   background: #3b82f6 !important;
 }
 
-.dashboard-action-button-primary:hover {
+.dashboard-button-primary:hover {
   background: #2563eb !important;
 }
 
-.dashboard-action-button-secondary {
+.dashboard-button-secondary {
   background: #059669 !important;
 }
 
-.dashboard-action-button-secondary:hover {
+.dashboard-button-secondary:hover {
   background: #047857 !important;
 }
 
-.dashboard-action-button-accent {
+.dashboard-button-accent {
   background: #dc2626 !important;
 }
 
-.dashboard-action-button-accent:hover {
+.dashboard-button-accent:hover {
   background: #b91c1c !important;
 }
 
@@ -195,16 +158,12 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .admin-action-item,
-  .patient-action-item,
-  .dashboard-action-item {
+  .dashboard-card-item {
     flex: 1 1 100%;
     max-width: none;
   }
 
-  .admin-action-content,
-  .patient-action-content,
-  .dashboard-action-content {
+  .dashboard-card-content {
     padding: 24px !important;
   }
 }

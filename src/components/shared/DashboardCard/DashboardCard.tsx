@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import "./DashboardCard.css";
 
-type CardType = 'admin' | 'patient' | 'dashboard';
+type CardType = 'admin' | 'patient' | 'doctor' | 'dashboard';
 type CardVariant = 'primary' | 'secondary' | 'accent';
 
 interface DashboardCardProps {
@@ -40,14 +40,14 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
 }) => {
   const getClassNames = () => {
     const baseClasses = {
-      item: `${type}-action-item`,
-      card: `${type}-action-card`,
-      content: `${type}-action-content`,
-      avatar: `${type}-action-avatar ${type}-action-avatar-${variant}`,
-      icon: `${type}-action-icon`,
-      title: `${type}-action-title`,
-      description: `${type}-action-description`,
-      button: `${type}-action-button ${type}-action-button-${variant}`
+      item: 'dashboard-card-item',
+      card: 'dashboard-card',
+      content: 'dashboard-card-content',
+      avatar: `dashboard-card-avatar ${type}-avatar-${variant}`,
+      icon: 'dashboard-card-icon',
+      title: 'dashboard-card-title',
+      description: 'dashboard-card-description',
+      button: `dashboard-card-button ${type}-button-${variant}`
     };
     
     return baseClasses;

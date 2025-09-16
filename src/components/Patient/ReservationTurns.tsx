@@ -6,6 +6,8 @@ import {
 import React, { useEffect } from "react";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { DateCalendar } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
@@ -274,15 +276,17 @@ const ReservationTurns: React.FC = () => {
               <Box className="reservation-step2-content">
                 <Box className="reservation-calendar-section">
                   <Box className="reservation-calendar-container">
-                    <DemoContainer components={['DateCalendar']}>
-                      <DemoItem>
-                        <DateCalendar
-                          value={formValues.dateSelected}
-                          onChange={handleDateChange}
-                          minDate={dayjs()}
-                        />
-                      </DemoItem>
-                    </DemoContainer>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DemoContainer components={['DateCalendar']}>
+                        <DemoItem>
+                          <DateCalendar
+                            value={formValues.dateSelected}
+                            onChange={handleDateChange}
+                            minDate={dayjs()}
+                          />
+                        </DemoItem>
+                      </DemoContainer>
+                    </LocalizationProvider>
                   </Box>
                   <Typography variant="body2" color="text.secondary" textAlign="center" mt={2}>
                     👨‍⚕️ Dr. {filteredDoctors.find((d: any) => d.id === formValues.doctorId)?.name} {filteredDoctors.find((d: any) => d.id === formValues.doctorId)?.surname}

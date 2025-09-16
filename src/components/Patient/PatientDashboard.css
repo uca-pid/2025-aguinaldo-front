@@ -2,7 +2,7 @@
 
 .patient-dashboard-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
   padding: 32px 16px;
 }
 
@@ -50,89 +50,6 @@
   margin-bottom: 48px;
 }
 
-/* Upcoming Turns Card */
-.patient-upcoming-card {
-  background: white !important;
-  border-radius: 16px !important;
-  box-shadow: 0 4px 15px rgba(34, 87, 122, 0.1) !important;
-  border: 1px solid #e2e8f0 !important;
-  height: 100% !important;
-}
-
-.patient-upcoming-header {
-  background: linear-gradient(135deg, #22577a 0%, #2d7d90 100%) !important;
-  color: white !important;
-  padding: 20px !important;
-  border-radius: 16px 16px 0 0 !important;
-  font-weight: 600 !important;
-}
-
-.patient-upcoming-content {
-  padding: 12px !important;
-  max-height: 210px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
-}
-
-.patient-upcoming-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.patient-upcoming-content::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 3px;
-}
-
-.patient-upcoming-content::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
-}
-
-.patient-upcoming-content::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-.patient-upcoming-item {
-  padding: 16px !important;
-  border-radius: 8px !important;
-  background: #f8fafc !important;
-  margin-bottom: 12px !important;
-  border-left: 4px solid #22577a !important;
-}
-
-.patient-upcoming-item:last-child {
-  margin-bottom: 0 !important;
-}
-
-.patient-upcoming-date {
-  font-weight: 600 !important;
-  color: #0d2230 !important;
-}
-
-.patient-upcoming-doctor {
-  color: #1f4f6f !important;
-  margin-top: 4px !important;
-}
-
-.patient-upcoming-empty {
-  text-align: center !important;
-  color: #1f4f6f !important;
-  padding: 32px !important;
-}
-
-.patient-upcoming-loading {
-  display: flex !important;
-  justify-content: center !important;
-  padding: 32px !important;
-}
-
-.patient-upcoming-error {
-  color: #dc2626 !important;
-  text-align: center !important;
-  padding: 16px !important;
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
   .patient-dashboard-container {
@@ -151,14 +68,5 @@
 
   .patient-actions-container {
     gap: 16px;
-  }
-
-  .patient-upcoming-content {
-    padding: 16px !important;
-    max-height: 180px;
-  }
-
-  .patient-upcoming-item {
-    padding: 12px !important;
   }
 }
