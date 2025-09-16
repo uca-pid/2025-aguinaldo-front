@@ -5,6 +5,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import React from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 type EditFieldProps={
     label:string;
@@ -13,6 +14,8 @@ type EditFieldProps={
     toggleKey:string;
     onChange: (val: string) => void 
 }
+
+const MotionBox = motion(Box);
 
 const EditField :React.FC<EditFieldProps>= ({label, value,isEditing, toggleKey, onChange})=>{
     const {ui}= useMachines()
@@ -34,18 +37,35 @@ const EditField :React.FC<EditFieldProps>= ({label, value,isEditing, toggleKey, 
           px: 2,
         }}
         >
+        <AnimatePresence mode="wait" initial={false}>
           {isEditing ? (
-            <TextField
-              label={label}
-              value={localValue}
-              onChange={(e) => setLocalValue(e.target.value)}
-              size="small"
-              fullWidth
-            />
-          ) : (
-            <ListItemText primary={label} secondary={value} />
-          )}
-
+            <MotionBox key="edit"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.25 }}
+              sx={{ flex: 1, mr: 1 }}>
+                <TextField
+                  label={label}
+                  value={localValue}
+                  onChange={(e) => setLocalValue(e.target.value)}
+                  size="small"
+                  fullWidth
+                />
+              </MotionBox>
+              ) : (
+                <MotionBox
+                  key="view"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.25 }}
+                  sx={{ flex: 1, mr: 1 }}
+                >
+                  <ListItemText primary={label} secondary={value} />
+                </MotionBox>
+              )}
+        </AnimatePresence>
           <Box>
             {isEditing ? (
               <>
