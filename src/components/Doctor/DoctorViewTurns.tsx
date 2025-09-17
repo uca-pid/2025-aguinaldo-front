@@ -12,7 +12,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import { ArrowBack } from '@mui/icons-material';
-import "./ViewTurns.css";
+import "./DoctorViewTurns.css";
 
 const ViewTurns: React.FC = () => {
   const { ui, turn } = useMachines();
@@ -110,30 +110,35 @@ const ViewTurns: React.FC = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Box className="doctor-viewturns-page-container">
-        <Container maxWidth="lg">
-          <Box className="doctor-viewturns-page-header">
-            <Button
-              startIcon={<ArrowBack />}
-              onClick={handleBack}
-              className="doctor-viewturns-back-button"
-              variant="outlined"
-            >
-              Volver al Dashboard
-            </Button>
-            
-            <Box className="doctor-viewturns-header">
-              <Avatar className="doctor-viewturns-header-icon">
-                <ScheduleIcon sx={{ fontSize: 40, color: 'white' }} />
-              </Avatar>
-              <Box className="doctor-viewturns-header-content">
-                <Typography variant="h4" className="doctor-viewturns-header-title">
-                  Mis Turnos
-                </Typography>
-                <Typography variant="h6" className="doctor-viewturns-header-subtitle">
-                  Consulta y gestiona tus citas médicas
-                </Typography>
+
+      <Box className="viewturns-container">          
+          <Box className="viewturns-header">
+            <Box className="viewturns-header-layout">
+              <Box className="viewturns-back-button-container">
+                <Button
+                  startIcon={<ArrowBack />}
+                  onClick={handleBack}
+                  variant="outlined"
+                  className="viewturns-back-button"
+                >
+                  Volver al Dashboard
+                </Button>
               </Box>
+              
+              <Box className="viewturns-header-content">
+                <Avatar className="viewturns-header-icon">
+                  <ScheduleIcon sx={{ fontSize: 28 }} />
+                </Avatar>
+                <Box>
+                  <Typography variant="h4" component="h1" className="doctor-viewturns-header-title">
+                    Mis Turnos
+                  </Typography>
+                  <Typography variant="h6" className="doctor-viewturns-header-subtitle">
+                    Consulta y gestiona tus citas médicas
+                  </Typography>
+                </Box>
+              </Box>
+              <Box className="viewturns-header-spacer"></Box>
             </Box>
           </Box>
 
@@ -269,7 +274,6 @@ const ViewTurns: React.FC = () => {
             </Box>
             </Box>
           </Box>
-        </Container>
       </Box>
     </LocalizationProvider>
   );

@@ -12,7 +12,7 @@ import ReservationTurns from './components/Patient/ReservationTurns'
 import ViewTurns from './components/Patient/ViewTurns'
 import EnableHours from './components/Doctor/EnableHours'
 import ViewPatients from './components/Doctor/ViewPatients'
-import DoctorViewTurns from './components/Doctor/ViewTurns'
+import DoctorViewTurns from './components/Doctor/DoctorViewTurns'
 
 function AppContent() {
   const navigate = useNavigate();

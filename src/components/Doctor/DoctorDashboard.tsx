@@ -53,25 +53,25 @@ const DoctorDashboard: React.FC = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Box className="doctor-dashboard-container">
+      <Box className="dashboard-container">
         <Container maxWidth="lg">
-          <Box className="doctor-header-section">
-            <Box className="doctor-header-content">
-              <Avatar className="doctor-header-avatar">
-                <PersonIcon className="doctor-header-icon" />
+          <Box className="dashboard-header-section">
+            <Box className="dashboard-header-content">
+              <Avatar className="dashboard-header-avatar doctor-header-avatar">
+                <PersonIcon className="dashboard-header-icon" />
               </Avatar>
               <Box>
-                <Typography variant="h4" component="h1" className="doctor-header-title">
+                <Typography variant="h4" component="h1" className="dashboard-header-title">
                   Hola, Dr. {user.name || 'Doctor'}
                 </Typography>
-                <Typography variant="h6" className="doctor-header-subtitle">
+                <Typography variant="h6" className="dashboard-header-subtitle doctor-header-subtitle">
                   Gestiona tus turnos y pacientes
                 </Typography>
               </Box>
             </Box>
           </Box>
 
-          <Box className="doctor-actions-container">
+          <Box className="dashboard-actions-container">
             <DashboardCard
               type="doctor"
               variant="primary"
