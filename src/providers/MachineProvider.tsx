@@ -1,10 +1,12 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext,useContext } from 'react';
 import type { ReactNode } from 'react';
 import { useMachine } from '@xstate/react';
 import { uiMachine} from '../machines/uiMachine';
 import type { UiMachineContext, UiMachineEvent } from '../machines/uiMachine';
 import { turnMachine, type TurnMachineContext, type TurnMachineEvent } from '../machines/turnMachine';
+import doctorMachine, { type DoctorMachineContext, type DoctorMachineEvent } from '../machines/doctorMachine';
 import { adminUserMachine } from '#/machines/adminUserMachine';
+import { useNavigate } from 'react-router-dom';
 
 interface MachineInstances {
   ui: {
@@ -16,6 +18,11 @@ interface MachineInstances {
     state:any;
     send: (event: TurnMachineEvent) => void;
     context: TurnMachineContext;
+  };
+  doctor: {
+    state:any;
+    send: (event: DoctorMachineEvent) => void;
+    context: DoctorMachineContext;
   };
   adminUser: {
     state:any;
@@ -31,8 +38,10 @@ interface MachineProviderProps {
 }
 
 export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) => {
-  const [uiState, uiSend] = useMachine(uiMachine);
+  const navigate = useNavigate();
+  const [uiState, uiSend] = useMachine(uiMachine, { input: { navigate } });
   const [turnState, turnSend] = useMachine(turnMachine);
+  const [doctorState, doctorSend] = useMachine(doctorMachine);
   const [adminUserState, adminUserSend] = useMachine(adminUserMachine);
 
   const machines: MachineInstances = {
@@ -45,6 +54,11 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       state:turnState,
       send: turnSend,
       context: turnState.context
+    },
+    doctor: {
+      state: doctorState,
+      send: doctorSend,
+      context: doctorState.context
     },
     adminUser: {
       state: adminUserState,

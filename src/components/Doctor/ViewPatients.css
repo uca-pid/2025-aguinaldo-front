@@ -1,50 +1,81 @@
-/* Doctor ViewPatients Component Styles */
+:root {
+  --gunmetal: #0d2230;
+  --indigo-dye: #1f4f6f;
+  --lapis-lazuli: #22577a;
+  --cerulean: #286a85;
+  --cerulean-2: #2d7d90;
+  --verdigris: #38a3a5;
+  --emerald: #57cc99;
+  --light-green: #80ed99;
+  --tea-green: #c7f9cc;
+  --tea-green-2: #ccfad1;
+  --white: #ffffff;
+  --black: #000000;
+}
 
-.viewpatients-modal-container {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  background: white !important;
-  border-radius: 20px !important;
-  box-shadow: 0 20px 60px rgba(59, 130, 246, 0.2) !important;
-  padding: 24px !important;
-  min-width: 500px !important;
-  width: 90vw !important;
-  max-width: 900px !important;
-  max-height: 90vh !important;
-  overflow-y: auto !important;
-  border: 1px solid #e0e7ff !important;
+.viewpatients-container {
+  min-height: 100vh !important;
+  background-color: var(--white) !important;
+  padding: 0 !important;
+}
+
+.viewpatients-header-layout {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  position: relative !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 24px !important;
+}
+
+.viewpatients-back-button-container {
+  flex-shrink: 0 !important;
+}
+
+.viewpatients-back-button {
+  border: 2px solid var(--lapis-lazuli) !important;
+  color: var(--lapis-lazuli) !important;
+  background: transparent !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.viewpatients-back-button:hover {
+  border-color: var(--indigo-dye) !important;
+  background-color: var(--lapis-lazuli) !important;
+  color: white !important;
 }
 
 .viewpatients-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 20px;
-  padding: 16px;
-  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
-  border-radius: 16px;
-  border: 1px solid #e0e7ff;
+  background: linear-gradient(135deg, var(--white) 0%, var(--white) 100%) !important;
+  border-radius: 0 !important;
+  margin-bottom: 32px !important;
+  box-shadow: 0 4px 12px rgba(13, 34, 48, 0.15) !important;
+  padding: 32px 0 !important;
 }
 
 .viewpatients-header-icon {
-  width: 64px !important;
-  height: 64px !important;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-  flex-shrink: 0;
+  background-color: var(--verdigris) !important;
+  width: 56px !important;
+  height: 56px !important;
+  margin-right: 24px !important;
 }
 
 .viewpatients-header-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
 .viewpatients-header-title {
   font-weight: 700 !important;
-  color: #1e3a8a !important;
+  color: #0d2230 !important;
   margin: 0 !important;
   line-height: 1.2;
 }
@@ -56,20 +87,23 @@
   line-height: 1.3;
 }
 
+.viewpatients-header-spacer {
+  flex-shrink: 0 !important;
+  width: 180px !important;
+}
+
 .viewpatients-content {
-  background: #f8fafc !important;
-  border-radius: 12px !important;
-  padding: 20px !important;
-  border: 1px solid #e0e7ff !important;
-  margin-bottom: 20px;
-  min-height: 400px;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 24px 32px 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 32px !important;
 }
 
 .viewpatients-search-container {
   background: white;
   border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
   border: 1px solid #e0e7ff;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
 }
@@ -204,7 +238,6 @@
   border: 1px solid #bae6fd !important;
   border-radius: 8px !important;
   padding: 12px !important;
-  margin-bottom: 16px !important;
   text-align: center;
 }
 
@@ -214,17 +247,7 @@
   margin: 0 !important;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
-  .viewpatients-modal-container {
-    padding: 16px !important;
-    width: 95vw !important;
-    max-width: none !important;
-    min-width: 320px !important;
-    border-radius: 16px !important;
-    max-height: 95vh !important;
-  }
-
   .viewpatients-header {
     margin-bottom: 16px;
     padding: 12px;
@@ -278,13 +301,6 @@
 }
 
 @media (max-width: 480px) {
-  .viewpatients-modal-container {
-    padding: 12px !important;
-    width: 98vw !important;
-    max-height: 98vh !important;
-    border-radius: 12px !important;
-  }
-
   .viewpatients-header {
     padding: 8px;
     margin-bottom: 12px;

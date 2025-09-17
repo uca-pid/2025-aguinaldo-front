@@ -7,11 +7,12 @@ import { AuthProvider } from "./providers/AuthProvider";
 import AuthScreen from "./components/AuthScreen/AuthScreen";
 import { useAuthMachine } from "./providers/AuthProvider";
 import { CircularProgress, Box } from "@mui/material";
+import { BrowserRouter } from "react-router-dom";
 
 const AppRouter = () => {
   const { auth } = useAuthMachine();
   
-  if (auth.isLoading) {
+  if (auth.context.loading) {
     return (
       <Box 
         display="flex" 
@@ -32,13 +33,15 @@ const AppRouter = () => {
 
 const Root = () => {
   return (
-    <AuthProvider>
-      <MachineProvider>
-        <StrictMode>
-          <AppRouter />
-        </StrictMode>
-      </MachineProvider>
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <MachineProvider>
+          <StrictMode>
+            <AppRouter />
+          </StrictMode>
+        </MachineProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 };
 

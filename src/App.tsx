@@ -1,5 +1,5 @@
 import './App.css'
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import HomeScreen from './components/HomeScreen/HomeScreen'
 import { useAuthMachine } from './providers/AuthProvider'
 import { Avatar, Box, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material'
@@ -9,6 +9,11 @@ import { Logout, Person } from '@mui/icons-material'
 import PendingScreen from './components/Admin/PendingScreen/PendingScreen'
 import ProfileScreen from './components/ProfileScreen/ProfileScreen'
 import { useEffect } from 'react'
+import ReservationTurns from './components/Patient/ReservationTurns'
+import ViewTurns from './components/Patient/ViewTurns'
+import EnableHours from './components/Doctor/EnableHours'
+import ViewPatients from './components/Doctor/ViewPatients'
+import DoctorViewTurns from './components/Doctor/DoctorViewTurns'
 
 function AppContent() {
   const navigate = useNavigate();
@@ -104,8 +109,19 @@ function AppContent() {
         </Box>
 
         <Routes>
-          <Route path="/" element={<HomeScreen />} />
+          <Route path="*" element={<HomeScreen />} />
+
           <Route path="/admin/pending" element={<PendingScreen />} />
+          <Route path="/admin/patients" element={<div>Admin Patients Page - To be implemented</div>} />
+          <Route path="/admin/doctors" element={<div>Admin Doctors Page - To be implemented</div>} />
+
+          <Route path="/patient/reservation-turns" element={<ReservationTurns />} />
+          <Route path="/patient/view-turns" element={<ViewTurns />} />
+
+          <Route path="/doctor/enable-hours" element={<EnableHours />} />
+          <Route path="/doctor/view-patients" element={<ViewPatients />} />
+          <Route path="/doctor/view-turns" element={<DoctorViewTurns />} />
+          
           <Route path="/profile" element={<ProfileScreen />} />
         </Routes>
       </Box>
@@ -114,9 +130,7 @@ function AppContent() {
 
 function App() {
   return (
-    <BrowserRouter>
       <AppContent />
-    </BrowserRouter>
   );
 }
 

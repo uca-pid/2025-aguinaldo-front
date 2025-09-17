@@ -1,0 +1,151 @@
+/* DashboardUpcomingCard Component Styles */
+
+/* Base card styles */
+.upcoming-card {
+  background: white !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 15px rgba(34, 87, 122, 0.1) !important;
+  border: 1px solid #e2e8f0 !important;
+  height: 100% !important;
+}
+
+.upcoming-card-header {
+  color: white !important;
+  padding: 20px !important;
+  border-radius: 16px 16px 0 0 !important;
+  font-weight: 600 !important;
+}
+
+.upcoming-card-content {
+  padding: 12px !important;
+  max-height: 210px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.upcoming-card-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.upcoming-card-content::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.upcoming-card-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.upcoming-card-content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.upcoming-card-item {
+  padding: 16px !important;
+  border-radius: 8px !important;
+  background: #f8fafc !important;
+  margin-bottom: 12px !important;
+  border-left: 4px solid #22577a !important;
+}
+
+.upcoming-card-item:last-child {
+  margin-bottom: 0 !important;
+}
+
+.upcoming-card-item-canceled {
+  background: #fef2f2 !important;
+  border-left-color: #ef4444 !important;
+  opacity: 0.85 !important;
+}
+
+.upcoming-card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.upcoming-card-canceled-chip {
+  flex-shrink: 0;
+}
+
+.upcoming-card-date {
+  font-weight: 600 !important;
+  color: #0d2230 !important;
+  margin-bottom: 0 !important;
+  flex-grow: 1;
+}
+
+.upcoming-card-secondary {
+  color: #1f4f6f !important;
+  margin-top: 4px !important;
+  font-weight: 500 !important;
+}
+
+.upcoming-card-reason {
+  color: #64748b !important;
+  font-style: italic !important;
+  margin-top: 4px !important;
+}
+
+.upcoming-card-loading {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px !important;
+}
+
+.upcoming-card-loading-text {
+  color: #64748b !important;
+}
+
+.upcoming-card-empty {
+  text-align: center !important;
+  color: #1f4f6f !important;
+  padding: 32px !important;
+  font-style: italic !important;
+}
+
+.upcoming-card-error {
+  color: #dc2626 !important;
+  text-align: center !important;
+  padding: 16px !important;
+  background: #fef2f2 !important;
+  border-radius: 8px !important;
+  border: 1px solid #fecaca !important;
+}
+
+/* Patient theme */
+.patient-upcoming-header {
+  background: linear-gradient(135deg, #22577a 0%, #2d7d90 100%) !important;
+}
+
+/* Doctor theme */
+.doctor-upcoming-header {
+  background: linear-gradient(135deg, #22577a 0%, #2d7d90 100%) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .upcoming-card-content {
+    padding: 16px !important;
+    max-height: 180px;
+  }
+
+  .upcoming-card-item {
+    padding: 12px !important;
+  }
+
+  .upcoming-card-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .upcoming-card-canceled-chip {
+    align-self: flex-end;
+  }
+}
