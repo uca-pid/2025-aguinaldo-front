@@ -7,6 +7,7 @@ import { SignInResponse } from './models/Auth'
 import { useMachines } from './providers/MachineProvider'
 import { Logout, Person } from '@mui/icons-material'
 import PendingScreen from './components/Admin/PendingScreen/PendingScreen'
+import ProfileScreen from './components/ProfileScreen/ProfileScreen'
 import { useEffect } from 'react'
 import ReservationTurns from './components/Patient/ReservationTurns'
 import ViewTurns from './components/Patient/ViewTurns'
@@ -120,7 +121,8 @@ function AppContent() {
           <Route path="/doctor/enable-hours" element={<EnableHours />} />
           <Route path="/doctor/view-patients" element={<ViewPatients />} />
           <Route path="/doctor/view-turns" element={<DoctorViewTurns />} />
-          <Route path="/profile" element={<div>Profile Page - To be implemented</div>} />
+          
+          <Route path="/profile" element={<ProfileScreen />} />
         </Routes>
       </Box>
   );
