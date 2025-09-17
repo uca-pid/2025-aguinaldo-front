@@ -7,42 +7,60 @@ import {
   Typography,
   TextField,
   InputAdornment,
-  Container
+  CircularProgress,
+  Alert
 } from "@mui/material"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { useMachines } from "#/providers/MachineProvider"
+import { useAuthMachine } from "#/providers/AuthProvider"
 import { PeopleOutlined, SearchOutlined, PersonOutlined, BadgeOutlined, ArrowBack } from '@mui/icons-material'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { SignInResponse } from "#/models/Auth"
+import { Patient, calculateAge } from "#/models/Doctor"
 import './ViewPatients.css'
 
-const dummyPatients = [
-  { id: 1, name: "Juan Pérez", age: 34, dni: "12345678" },
-  { id: 2, name: "María González", age: 28, dni: "23456789" },
-  { id: 3, name: "Carlos López", age: 45, dni: "34567890"},
-  { id: 4, name: "Ana Martínez", age: 52, dni: "45678901" },
-  { id: 5, name: "Luis Fernández", age: 39, dni: "56789012" },
-  { id: 6, name: "Sofía Ramírez", age: 31, dni: "67890123" },
-  { id: 7, name: "Pedro Sánchez", age: 47, dni: "78901234" },
-  { id: 8, name: "Laura Torres", age: 26, dni: "89012345"}
-];
-
 const ViewPatients: React.FC = () => {
-    const { ui } = useMachines();
+    const { ui, doctor } = useMachines();
+    const { auth } = useAuthMachine();
     const { send: uiSend } = ui;
+    const { state: doctorState, send: doctorSend } = doctor;
+    const { authResponse } = auth;
+    const user = authResponse as SignInResponse;
     const [searchTerm, setSearchTerm] = useState('');
+
+    const doctorContext = doctorState.context;
+    const patients: Patient[] = doctorContext.patients;
+    const isLoading = doctorContext.isLoadingPatients;
+    const error = doctorContext.patientsError;
+
+    useEffect(() => {
+        if (user?.accessToken && user?.id) {
+            doctorSend({ type: "SET_AUTH", accessToken: user.accessToken, doctorId: user.id });
+            doctorSend({ type: "LOAD_PATIENTS" });
+        }
+    }, [user?.accessToken, user?.id, doctorSend]);
 
     const handleBack = () => {
         uiSend({ type: "NAVIGATE", to: "/dashboard" });
     };
 
-    const filteredPatients = dummyPatients.filter(patient =>
+    const handleRetry = () => {
+        doctorSend({ type: "RETRY" });
+    };
+
+    const filteredPatients = patients.filter(patient =>
         patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        patient.dni.includes(searchTerm)
+        patient.surname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        patient.dni.toString().includes(searchTerm)
     );
 
-    const getInitials = (name: string) => {
-        return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    const getInitials = (name: string, surname: string) => {
+        return (name[0] + surname[0]).toUpperCase();
+    };
+
+    const getFullName = (name: string, surname: string) => {
+        return `${name} ${surname}`;
     };
     
     return (
@@ -87,6 +105,7 @@ const ViewPatients: React.FC = () => {
                             placeholder="Buscar por nombre o DNI..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
+                            disabled={isLoading}
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">
@@ -97,57 +116,82 @@ const ViewPatients: React.FC = () => {
                         />
                     </Box>
 
-                    <Box className="viewpatients-patients-count">
-                        <Typography variant="body2">
-                            {filteredPatients.length} de {dummyPatients.length} paciente{dummyPatients.length !== 1 ? 's' : ''}
-                            {searchTerm && ' encontrado' + (filteredPatients.length !== 1 ? 's' : '')}
-                        </Typography>
-                    </Box>
+                    {error && (
+                        <Alert 
+                            severity="error" 
+                            action={
+                                <Button color="inherit" size="small" onClick={handleRetry}>
+                                    Reintentar
+                                </Button>
+                            }
+                            sx={{ mb: 2 }}
+                        >
+                            {error}
+                        </Alert>
+                    )}
 
-                    {filteredPatients.length > 0 ? (
-                        <Box className="viewpatients-list-container">
-                            <List>
-                                {filteredPatients.map((patient) => (
-                                    <ListItem key={patient.id} className="viewpatients-patient-card">
-                                        <Box className="viewpatients-patient-info">
-                                            <Avatar className="viewpatients-patient-avatar">
-                                                {getInitials(patient.name)}
-                                            </Avatar>
-                                            <Box className="viewpatients-patient-details">
-                                                <Typography className="viewpatients-patient-name">
-                                                    {patient.name}
-                                                </Typography>
-                                                <Box className="viewpatients-patient-info-row">
-                                                    <Typography className="viewpatients-patient-info-item">
-                                                        <PersonOutlined fontSize="small" />
-                                                        {patient.age} años
-                                                    </Typography>
-                                                    <Typography className="viewpatients-patient-info-item">
-                                                        <BadgeOutlined fontSize="small" />
-                                                        DNI: {patient.dni}
-                                                    </Typography>
-                                                </Box>
-                                            </Box>
-                                        </Box>
-                                    </ListItem>
-                                ))}
-                            </List>
+                    {isLoading ? (
+                        <Box className="viewpatients-empty-state">
+                            <CircularProgress size={40} />
+                            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                                Cargando pacientes...
+                            </Typography>
                         </Box>
                     ) : (
-                        <Box className="viewpatients-empty-state">
-                            <Avatar className="viewpatients-empty-icon">
-                                <SearchOutlined />
-                            </Avatar>
-                            <Typography variant="h6" gutterBottom>
-                                {searchTerm ? 'No se encontraron pacientes' : 'No hay pacientes registrados'}
-                            </Typography>
-                            <Typography variant="body2" color="textSecondary">
-                                {searchTerm 
-                                    ? 'Intenta con otros términos de búsqueda' 
-                                    : 'Los pacientes aparecerán aquí cuando se registren en el sistema'
-                                }
-                            </Typography>
-                        </Box>
+                        <>
+                            <Box className="viewpatients-patients-count">
+                                <Typography variant="body2">
+                                    {filteredPatients.length} de {patients.length} paciente{patients.length !== 1 ? 's' : ''}
+                                    {searchTerm && ' encontrado' + (filteredPatients.length !== 1 ? 's' : '')}
+                                </Typography>
+                            </Box>
+
+                            {filteredPatients.length > 0 ? (
+                                <Box className="viewpatients-list-container">
+                                    <List>
+                                        {filteredPatients.map((patient) => (
+                                            <ListItem key={patient.id} className="viewpatients-patient-card">
+                                                <Box className="viewpatients-patient-info">
+                                                    <Avatar className="viewpatients-patient-avatar">
+                                                        {getInitials(patient.name, patient.surname)}
+                                                    </Avatar>
+                                                    <Box className="viewpatients-patient-details">
+                                                        <Typography className="viewpatients-patient-name">
+                                                            {getFullName(patient.name, patient.surname)}
+                                                        </Typography>
+                                                        <Box className="viewpatients-patient-info-row">
+                                                            <Typography className="viewpatients-patient-info-item">
+                                                                <PersonOutlined fontSize="small" />
+                                                                {calculateAge(patient.birthdate) ? `${calculateAge(patient.birthdate)} años` : 'Edad no disponible'}
+                                                            </Typography>
+                                                            <Typography className="viewpatients-patient-info-item">
+                                                                <BadgeOutlined fontSize="small" />
+                                                                DNI: {patient.dni}
+                                                            </Typography>
+                                                        </Box>
+                                                    </Box>
+                                                </Box>
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                </Box>
+                            ) : (
+                                <Box className="viewpatients-empty-state">
+                                    <Avatar className="viewpatients-empty-icon">
+                                        <SearchOutlined />
+                                    </Avatar>
+                                    <Typography variant="h6" gutterBottom>
+                                        {searchTerm ? 'No se encontraron pacientes' : 'No hay pacientes registrados'}
+                                    </Typography>
+                                    <Typography variant="body2" color="textSecondary">
+                                        {searchTerm 
+                                            ? 'Intenta con otros términos de búsqueda' 
+                                            : 'Los pacientes aparecerán aquí cuando tengas turnos asignados'
+                                        }
+                                    </Typography>
+                                </Box>
+                            )}
+                        </>
                     )}
                 </Box>
             </Box>
