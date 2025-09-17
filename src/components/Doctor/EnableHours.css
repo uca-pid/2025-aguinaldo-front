@@ -1,20 +1,25 @@
-/* Doctor EnableHours Component Styles */
+.enablehours-page-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+  padding: 20px 0;
+}
 
-.enablehours-modal-container {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  background: white !important;
-  border-radius: 20px !important;
-  box-shadow: 0 20px 60px rgba(59, 130, 246, 0.2) !important;
-  padding: 24px !important;
-  min-width: 400px !important;
-  width: 90vw !important;
-  max-width: 800px !important;
-  max-height: 90vh !important;
-  overflow-y: auto !important;
-  border: 1px solid #e0e7ff !important;
+.enablehours-page-header {
+  margin-bottom: 32px;
+}
+
+.enablehours-back-button {
+  margin-bottom: 20px !important;
+  border-color: #64748b !important;
+  color: #64748b !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+}
+
+.enablehours-back-button:hover {
+  background: #f1f5f9 !important;
+  border-color: #374151 !important;
+  color: #374151 !important;
 }
 
 .enablehours-header {
@@ -189,17 +194,7 @@
   color: #64748b !important;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
-  .enablehours-modal-container {
-    padding: 16px !important;
-    width: 95vw !important;
-    max-width: none !important;
-    min-width: 320px !important;
-    border-radius: 16px !important;
-    max-height: 95vh !important;
-  }
-
   .enablehours-header {
     margin-bottom: 16px;
     padding: 12px;
@@ -243,13 +238,6 @@
 }
 
 @media (max-width: 480px) {
-  .enablehours-modal-container {
-    padding: 12px !important;
-    width: 98vw !important;
-    max-height: 98vh !important;
-    border-radius: 12px !important;
-  }
-
   .enablehours-header {
     padding: 8px;
     margin-bottom: 12px;

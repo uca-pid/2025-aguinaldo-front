@@ -125,15 +125,8 @@ function LoginScreen() {
                 >
                   Iniciar Sesión
                 </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  className="auth-form-subtitle"
-                >
-                  Accede a tu cuenta para gestionar turnos médicos
-                </Typography>
 
-                <Box component="form" onSubmit={handleSubmit}>
+                <Box component="form" onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
                   <Stack className="auth-form-stack">
                   <TextField
                     label="Correo Electrónico"

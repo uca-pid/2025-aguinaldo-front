@@ -1,8 +1,8 @@
 // HomeScreen.tsx
 import React from "react";
 import { Box, Typography, Paper, Grid} from "@mui/material";
-import PatientDashboard from "./userDashboards/Patient/PatientDashboard";
-import DoctorDashboard from "./userDashboards/Doctor/DoctorDashboard";
+import PatientDashboard from "../Patient/PatientDashboard";
+import DoctorDashboard from "../Doctor/DoctorDashboard";
 import AdminDashboard from "../Admin/AdminDashboard";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";

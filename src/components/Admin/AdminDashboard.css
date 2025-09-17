@@ -99,108 +99,10 @@
   margin-left: 16px !important;
 }
 
-/* Action Cards Section */
+/* Actions Container */
 .admin-actions-container {
   display: flex;
   flex-wrap: wrap;
   gap: 32px;
   justify-content: center;
-}
-
-.admin-action-item {
-  flex: 1 1 300px;
-  max-width: 400px;
-}
-
-.admin-action-card {
-  transition: all 0.3s ease-in-out !important;
-  height: 100% !important;
-  background: white !important;
-  border-radius: 16px !important;
-  box-shadow: 0 4px 15px rgba(34, 87, 122, 0.1) !important;
-  border: 1px solid #e2e8f0 !important;
-  cursor: pointer !important;
-}
-
-.admin-action-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 30px rgba(34, 87, 122, 0.2);
-  border-color: #22577a;
-}
-
-.admin-action-content {
-  padding: 32px !important;
-  text-align: center !important;
-}
-
-.admin-action-avatar {
-  margin: 0 auto 24px !important;
-  width: 72px !important;
-  height: 72px !important;
-}
-
-.admin-action-avatar-patients {
-  background: #22577a !important;
-}
-
-.admin-action-avatar-doctors {
-  background: #38a3a5 !important;
-}
-
-.admin-action-avatar-pending {
-  background: #57cc99 !important;
-  position: relative !important;
-}
-
-.admin-action-icon {
-  font-size: 36px !important;
-  color: white !important;
-}
-
-.admin-action-title {
-  font-weight: 600 !important;
-  margin-bottom: 16px !important;
-  color: #0d2230 !important;
-}
-
-.admin-action-description {
-  color: #1f4f6f !important;
-  margin-bottom: 24px !important;
-}
-
-.admin-action-button {
-  border-radius: 8px !important;
-  text-transform: none !important;
-  font-weight: 600 !important;
-  color: white !important;
-}
-
-.admin-action-button-patients {
-  background: #22577a !important;
-}
-
-.admin-action-button-patients:hover {
-  background: #1f4f6f !important;
-}
-
-.admin-action-button-doctors {
-  background: #38a3a5 !important;
-}
-
-.admin-action-button-doctors:hover {
-  background: #2d7d90 !important;
-}
-
-.admin-action-button-pending {
-  background: #57cc99 !important;
-}
-
-.admin-action-button-pending:hover {
-  background: #80ed99 !important;
-}
-
-.admin-pending-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
 }

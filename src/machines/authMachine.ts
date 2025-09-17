@@ -65,7 +65,8 @@ export type AuthMachineEvent =
   | { type: "API_SUCCESS"; data: any }
   | { type: "API_ERROR"; error: any }
   | { type: "LOGOUT" }
-  | { type: "CHECK_AUTH" };
+  | { type: "CHECK_AUTH" }
+  | { type: "SAVE_PROFILE" }; 
 
 
 export const authMachine = createMachine({
@@ -99,8 +100,14 @@ export const authMachine = createMachine({
       on: {
         LOGOUT: {
           target: "loggingOut"
+        },
+        SAVE_PROFILE:{
+          target:"savingProfile"
         }
       }
+    },
+    savingProfile:{
+      
     },
     loggingOut: {
       invoke: {
@@ -334,6 +341,7 @@ export const authMachine = createMachine({
           })
         }
       }
-    }
+    },
+  
   }
 });
