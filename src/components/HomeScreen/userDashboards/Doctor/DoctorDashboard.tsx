@@ -5,10 +5,9 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import { styled } from "@mui/material/styles";
 import { useMachines } from "../../../../providers/MachineProvider";
-import ViewTurns from "./ViewTurns";
-import EnableHours from "./EnableHours";
+import ViewTurns from "../Doctor/Turns/ViewTurns";
 import ViewPatients from "./ViewPatients";
-
+import WeeklyAvailability from "./Turns/WeeklyAvailability";
 const upcomingAppointments = [
   {
     id: 1,
@@ -59,8 +58,9 @@ const HoverCard = styled(Card)(({ theme }) => ({
 const DoctorDashboard: React.FC = () => {
 
   const { ui } = useMachines();
-  const { send: uiSend } = ui;
-
+  const { context: uiContext, send: uiSend } = ui;
+  const formContext = uiContext.toggleStates || {};
+  const reservations= formContext["enableDoctorReservations"] ?? false;
   return (
     <Box width="100%" display="flex" flexDirection="column" gap={3} alignItems="center">
       <Grid container spacing={3} justifyContent="center" alignItems="stretch">
@@ -149,7 +149,7 @@ const DoctorDashboard: React.FC = () => {
 
       <ViewTurns/>
 
-      <EnableHours/>
+      {reservations && <WeeklyAvailability/>}
 
       <ViewPatients/>
 
