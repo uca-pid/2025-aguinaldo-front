@@ -1,5 +1,5 @@
 
-import { Box, Card, CardContent, Divider, Grid, List, ListItem, ListItemText, Typography } from "@mui/material";
+import { Box, Card, CardContent, Divider, List, ListItem, ListItemText, Typography } from "@mui/material";
 
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
@@ -32,7 +32,7 @@ const ProfileScreen: React.FC = () => {
     const birthdate= formContext["editBirthdate"] ?? false;
 
     
-    const {send: authSend, context: authContext  } = auth;
+    const {send: authSend} = auth;
     
 
 
