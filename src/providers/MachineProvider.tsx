@@ -1,18 +1,12 @@
 import React, { createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
 import { useMachine } from '@xstate/react';
-import { homeHeaderMachine,} from '../machines/homeHeaderMachine';
-import type {HomeHeaderMachineContext, HomeHeaderMachineEvent} from '../machines/homeHeaderMachine';
 import { uiMachine} from '../machines/uiMachine';
 import type { UiMachineContext, UiMachineEvent } from '../machines/uiMachine';
 import { turnMachine, type TurnMachineContext, type TurnMachineEvent } from '../machines/turnMachine';
+import { adminUserMachine } from '#/machines/adminUserMachine';
 
 interface MachineInstances {
-  homeHeader: {
-    state: any;
-    send: (event: HomeHeaderMachineEvent) => void;
-    context: HomeHeaderMachineContext;
-  };
   ui: {
     state: any;
     send: (event: UiMachineEvent) => void;
@@ -23,6 +17,11 @@ interface MachineInstances {
     send: (event: TurnMachineEvent) => void;
     context: TurnMachineContext;
   };
+  adminUser: {
+    state:any;
+    send: (event: any) => void;
+    context: any;
+  };
 }
 
 const MachineContext = createContext<MachineInstances | null>(null);
@@ -32,16 +31,11 @@ interface MachineProviderProps {
 }
 
 export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) => {
-  const [homeHeaderState, homeHeaderSend] = useMachine(homeHeaderMachine);
   const [uiState, uiSend] = useMachine(uiMachine);
   const [turnState, turnSend] = useMachine(turnMachine);
+  const [adminUserState, adminUserSend] = useMachine(adminUserMachine);
 
   const machines: MachineInstances = {
-    homeHeader: {
-      state: homeHeaderState,
-      send: homeHeaderSend,
-      context: homeHeaderState.context
-    },
     ui: {
       state: uiState,
       send: uiSend,
@@ -51,8 +45,12 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       state:turnState,
       send: turnSend,
       context: turnState.context
+    },
+    adminUser: {
+      state: adminUserState,
+      send: adminUserSend,
+      context: adminUserState.context
     }
-    
   };
 
   return (

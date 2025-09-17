@@ -1,0 +1,141 @@
+@import '../AuthScreen.css';
+
+/* Register-specific overrides and additions */
+
+.register-paper {
+  /* Inherits from .auth-paper with larger max-width for register form */
+  max-width: 100%;
+}
+
+@media (min-width: 600px) {
+  .register-paper {
+    max-width: 900px;
+  }
+}
+
+@media (min-width: 960px) {
+  .register-paper {
+    max-width: 1100px;
+  }
+}
+
+.register-right-section {
+  /* Inherits from .auth-right-section with slightly larger flex for more content */
+  flex: 1.2;
+}
+
+/* User type selection chips */
+.register-user-type-chips {
+  margin-bottom: 32px;
+}
+
+.register-chip {
+  padding: 16px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.register-chip--patient {
+  background: #22577a;
+  color: white;
+  box-shadow: 0 4px 15px rgba(34, 87, 122, 0.3);
+}
+
+.register-chip--patient:hover {
+  background: #1f4f6f;
+  box-shadow: 0 6px 20px rgba(34, 87, 122, 0.4);
+}
+
+.register-chip--doctor {
+  background: #2d7d90;
+  color: white;
+  box-shadow: 0 4px 15px rgba(45, 125, 144, 0.3);
+}
+
+.register-chip--doctor:hover {
+  background: #22577a;
+  box-shadow: 0 6px 20px rgba(45, 125, 144, 0.4);
+}
+
+/* Doctor professional info section */
+.register-doctor-section {
+  padding: 24px;
+  border-radius: 8px;
+  background-color: #f0f9ff;
+  border: 2px solid #dbeafe;
+  margin-top: 16px;
+}
+
+.register-doctor-title {
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: #22577a;
+}
+
+/* Two-column form layout for larger screens */
+.register-form-row {
+  display: flex;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .register-form-row {
+    flex-direction: column;
+  }
+}
+
+/* Enhanced left section for register with feature cards */
+.register-feature-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.register-feature-card {
+  padding: 24px;
+  background-color: #f8fafc;
+  border: 2px solid #e2e8f0;
+}
+
+.register-feature-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.register-feature-icon {
+  font-size: 32px;
+}
+
+.register-feature-icon--patient {
+  color: #22577a;
+}
+
+.register-feature-icon--doctor {
+  color: #38a3a5;
+}
+
+.register-feature-title {
+  font-weight: 600;
+}
+
+.register-feature-description {
+  font-size: 0.875rem;
+}
+
+/* Register form specific spacing */
+.register-form-stack {
+  gap: 24px;
+}
+
+/* Success message styling for register */
+.register-success-message {
+  color: #22c55e;
+}
+
+.register-success-description {
+  margin-top: 8px;
+}

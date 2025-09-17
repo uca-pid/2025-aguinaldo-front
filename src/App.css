@@ -13,3 +13,48 @@ html, body, #root {
   padding: 0;
   overflow-x: hidden;
 }
+
+/* App Header Styles */
+.app-header {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #22577a;
+  color: white;
+  box-shadow: 0 2px 8px rgba(34, 87, 122, 0.2);
+}
+
+.app-header h2 {
+  margin: 0;
+  font-weight: 500;
+}
+
+.app-user-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-avatar {
+  cursor: pointer;
+}
+
+.app-username {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* Menu Styles */
+.app-menu {
+  margin-top: 12px;
+  border-radius: 12px;
+  min-width: 200px;
+  position: absolute;
+  top: 60px;
+  right: 20px;
+}
+
+.app-menu-item-error {
+  color: #d32f2f;
+}
