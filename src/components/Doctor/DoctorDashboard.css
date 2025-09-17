@@ -1,0 +1,10 @@
+@import "../shared/Dashboard/Dashboard.css";
+
+.doctor-header-avatar {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+}
+
+.doctor-header-subtitle {
+  color: #64748b !important;
+}
+

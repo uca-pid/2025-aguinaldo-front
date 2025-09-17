@@ -6,6 +6,18 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --gunmetal: #0d2230;
+  --indigo-dye: #1f4f6f;
+  --lapis-lazuli: #22577a;
+  --cerulean: #286a85;
+  --cerulean-2: #2d7d90;
+  --verdigris: #38a3a5;
+  --emerald: #57cc99;
+  --light-green: #80ed99;
+  --tea-green: #c7f9cc;
+  --tea-green-2: #ccfad1;
+  --white: #ffffff;
+  --black: #000000;
 }
 
 * {

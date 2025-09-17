@@ -2,38 +2,51 @@ import {
   Avatar, 
   Box, 
   Button, 
-  Modal, 
-  Typography
+  Typography,
+  Container
 } from "@mui/material"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { MultiInputDateRangeField } from "@mui/x-date-pickers-pro/MultiInputDateRangeField"
 import { MultiInputTimeRangeField } from "@mui/x-date-pickers-pro/MultiInputTimeRangeField"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
-import { CalendarMonthOutlined, AccessTimeOutlined } from '@mui/icons-material'
+import { CalendarMonthOutlined, AccessTimeOutlined, ArrowBack } from '@mui/icons-material'
 import { useMachines } from "#/providers/MachineProvider"
 import './EnableHours.css'
 
-const EnableHours:React.FC=()=>{
+const EnableHours: React.FC = () => {
     const { ui } = useMachines();
-    const { context: uiContext, send: uiSend } = ui;
-    const formContext = uiContext.toggleStates || {};
-    const reservations= formContext["enableDoctorReservations"] ?? false;
+    const { send: uiSend } = ui;
     
-    return(
-        <Modal open={reservations} onClose={()=> uiSend({ type: "TOGGLE", key: "enableDoctorReservations" })}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <Box className="enablehours-modal-container">
-                    <Box className="enablehours-header">
-                        <Avatar className="enablehours-header-icon">
-                            <CalendarMonthOutlined />
-                        </Avatar>
-                        <Box className="enablehours-header-content">
-                            <Typography variant="h5" className="enablehours-header-title">
-                                Configurar Horarios Disponibles
-                            </Typography>
-                            <Typography variant="body2" className="enablehours-header-subtitle">
-                                Establece los días y horarios para tus consultas médicas
-                            </Typography>
+    const handleBack = () => {
+        uiSend({ type: "NAVIGATE", to: "/dashboard" });
+    };
+    
+    return (
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Box className="enablehours-page-container">
+                <Container maxWidth="lg">
+                    <Box className="enablehours-page-header">
+                        <Button
+                            startIcon={<ArrowBack />}
+                            onClick={handleBack}
+                            className="enablehours-back-button"
+                            variant="outlined"
+                        >
+                            Volver al Dashboard
+                        </Button>
+                        
+                        <Box className="enablehours-header">
+                            <Avatar className="enablehours-header-icon">
+                                <CalendarMonthOutlined />
+                            </Avatar>
+                            <Box className="enablehours-header-content">
+                                <Typography variant="h4" className="enablehours-header-title">
+                                    Configurar Horarios Disponibles
+                                </Typography>
+                                <Typography variant="h6" className="enablehours-header-subtitle">
+                                    Establece los días y horarios para tus consultas médicas
+                                </Typography>
+                            </Box>
                         </Box>
                     </Box>
 
@@ -87,23 +100,24 @@ const EnableHours:React.FC=()=>{
 
                     <Box className="enablehours-actions">
                         <Button 
-                            onClick={()=> uiSend({ type: "TOGGLE", key: "enableDoctorReservations" })} 
+                            onClick={handleBack} 
                             variant="outlined"
                             className="enablehours-btn-cancel"
                         >
                             Cancelar
                         </Button>
                         <Button 
-                            onClick={()=> uiSend({ type: "TOGGLE", key: "enableDoctorReservations" })} 
+                            onClick={handleBack} 
                             variant="contained"
                             className="enablehours-btn-submit"
                         >
                             Guardar Horarios
                         </Button>
                     </Box>
-                </Box>
-            </LocalizationProvider>
-        </Modal>
+                </Container>
+            </Box>
+        </LocalizationProvider>
     )
 }
+
 export default EnableHours

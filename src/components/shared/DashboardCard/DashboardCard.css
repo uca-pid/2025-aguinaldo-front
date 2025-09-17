@@ -1,0 +1,169 @@
+/* DashboardCard Component Styles */
+
+/* Base styles for all card types */
+.dashboard-card-item {
+  flex: 1 1 300px;
+  max-width: 400px;
+}
+
+.dashboard-card {
+  transition: all 0.3s ease-in-out !important;
+  height: 100% !important;
+  background: white !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 15px rgba(34, 87, 122, 0.1) !important;
+  border: 1px solid #e2e8f0 !important;
+  cursor: pointer !important;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(34, 87, 122, 0.2);
+  border-color: #22577a;
+}
+
+.dashboard-card-content {
+  padding: 32px !important;
+  text-align: center !important;
+}
+
+.dashboard-card-avatar {
+  margin: 0 auto 24px !important;
+  width: 72px !important;
+  height: 72px !important;
+}
+
+.dashboard-card-icon {
+  font-size: 36px !important;
+  color: white !important;
+}
+
+.dashboard-card-title {
+  font-weight: 600 !important;
+  margin-bottom: 16px !important;
+  color: #0d2230 !important;
+}
+
+.dashboard-card-description {
+  color: #1f4f6f !important;
+  margin-bottom: 24px !important;
+}
+
+.dashboard-card-button {
+  border-radius: 8px !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  color: white !important;
+}
+
+/* Admin, Patient, and Doctor shared theme variants */
+.admin-avatar-primary,
+.patient-avatar-primary,
+.doctor-avatar-primary {
+  background: #22577a !important;
+}
+
+.admin-avatar-secondary,
+.patient-avatar-secondary,
+.doctor-avatar-secondary {
+  background: #38a3a5 !important;
+}
+
+.admin-avatar-accent,
+.patient-avatar-accent,
+.doctor-avatar-accent {
+  background: #57cc99 !important;
+  position: relative !important;
+}
+
+.admin-button-primary,
+.patient-button-primary,
+.doctor-button-primary {
+  background: #22577a !important;
+}
+
+.admin-button-primary:hover,
+.patient-button-primary:hover,
+.doctor-button-primary:hover {
+  background: #1f4f6f !important;
+}
+
+.admin-button-secondary,
+.patient-button-secondary,
+.doctor-button-secondary {
+  background: #38a3a5 !important;
+}
+
+.admin-button-secondary:hover,
+.patient-button-secondary:hover,
+.doctor-button-secondary:hover {
+  background: #2d7d90 !important;
+}
+
+.admin-button-accent,
+.patient-button-accent,
+.doctor-button-accent {
+  background: #57cc99 !important;
+}
+
+.admin-button-accent:hover,
+.patient-button-accent:hover,
+.doctor-button-accent:hover {
+  background: #80ed99 !important;
+}
+
+/* Dashboard (generic) theme variants */
+.dashboard-avatar-primary {
+  background: #3b82f6 !important;
+}
+
+.dashboard-avatar-secondary {
+  background: #059669 !important;
+}
+
+.dashboard-avatar-accent {
+  background: #dc2626 !important;
+}
+
+.dashboard-button-primary {
+  background: #3b82f6 !important;
+}
+
+.dashboard-button-primary:hover {
+  background: #2563eb !important;
+}
+
+.dashboard-button-secondary {
+  background: #059669 !important;
+}
+
+.dashboard-button-secondary:hover {
+  background: #047857 !important;
+}
+
+.dashboard-button-accent {
+  background: #dc2626 !important;
+}
+
+.dashboard-button-accent:hover {
+  background: #b91c1c !important;
+}
+
+/* Badge styles */
+.pending-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-card-item {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+
+  .dashboard-card-content {
+    padding: 24px !important;
+  }
+}

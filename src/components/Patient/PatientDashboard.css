@@ -1,0 +1,9 @@
+@import "../shared/Dashboard/Dashboard.css";
+
+.patient-header-avatar {
+  background: linear-gradient(135deg, #22577a 0%, #2d7d90 100%) !important;
+}
+
+.patient-header-subtitle {
+  color: #1f4f6f !important;
+}
