@@ -20,15 +20,17 @@ import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import ViewTurns from "./ViewTurns";
-import EnableHours from "./EnableHours";
 import ViewPatients from "./ViewPatients";
+import WeeklyAvailability from "./Turns/WeeklyAvailability";
 import dayjs from "dayjs";
 import "./DoctorDashboard.css";
 
 const DoctorDashboard: React.FC = () => {
   const { ui, turn } = useMachines();
   const { auth } = useAuthMachine();
-  const { send: uiSend } = ui;
+  const { context: uiContext, send: uiSend } = ui;
+  const formContext = uiContext.toggleStates || {};
+  const reservations= formContext["enableDoctorReservations"] ?? false;
   const authContext = auth.context;
   const user = auth.authResponse as SignInResponse;
   const { state: turnState, send: turnSend } = turn;
@@ -204,7 +206,7 @@ const DoctorDashboard: React.FC = () => {
           </Box>
 
           <ViewTurns />
-          <EnableHours />
+            {reservations && <WeeklyAvailability />}
           <ViewPatients />
         </Container>
       </Box>
