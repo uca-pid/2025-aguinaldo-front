@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import { 
   Avatar, 
   Box, 
@@ -35,13 +35,73 @@ const EnableHours: React.FC = () => {
     const enabledDays = availability.filter(day => day.enabled).length;
     const totalRanges = availability.reduce((total, day) => total + (day.enabled ? day.ranges.length : 0), 0);
 
+    useEffect(() => {
+        if (turnContext.accessToken && turnContext.userId) {
+            turnSend({ type: "LOAD_AVAILABILITY" });
+        }
+    }, [turnSend, turnContext.accessToken, turnContext.userId]);
+
     const handleBack = () => {
         uiSend({ type: "NAVIGATE", to: "/dashboard" });
     };
 
     const saveAvailability = () => {
+        if (!turnContext.accessToken || !turnContext.userId) {
+            console.error("Authentication required to save availability");
+            return;
+        }
+        
+        const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        let hasValidData = false;
+        const errors: string[] = [];
+        
+        availability.forEach((day) => {
+            if (day.enabled) {
+                if (!day.ranges || day.ranges.length === 0) {
+                    errors.push(`${day.day}: No hay rangos de horarios configurados`);
+                } else {
+                    day.ranges.forEach((range, rangeIndex) => {
+                        if (!range.start || !range.end) {
+                            errors.push(`${day.day} - Rango ${rangeIndex + 1}: Falta hora de inicio o fin`);
+                        } else {
+                            if (!timeRegex.test(range.start)) {
+                                errors.push(`${day.day} - Rango ${rangeIndex + 1}: Hora de inicio inválida (${range.start}). Use formato HH:MM`);
+                            }
+                            if (!timeRegex.test(range.end)) {
+                                errors.push(`${day.day} - Rango ${rangeIndex + 1}: Hora de fin inválida (${range.end}). Use formato HH:MM`);
+                            }
+                            if (timeRegex.test(range.start) && timeRegex.test(range.end)) {
+                                const [startHour, startMin] = range.start.split(':').map(Number);
+                                const [endHour, endMin] = range.end.split(':').map(Number);
+                                const startTime = startHour * 60 + startMin;
+                                const endTime = endHour * 60 + endMin;
+                                
+                                if (startTime >= endTime) {
+                                    errors.push(`${day.day} - Rango ${rangeIndex + 1}: La hora de inicio debe ser menor que la hora de fin`);
+                                } else {
+                                    hasValidData = true;
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        
+        if (errors.length > 0) {
+            console.error("Errores de validación:", errors);
+            alert("Errores encontrados:\n" + errors.join("\n"));
+            return;
+        }
+        
+        if (!hasValidData) {
+            console.warn("No hay días habilitados con horarios válidos configurados");
+            alert("Debe configurar al menos un día con horarios válidos");
+            return;
+        }
+        
+        console.log("Guardando disponibilidad...", availability);
         turnSend({ type: "SAVE_AVAILABILITY" });
-        // Optionally navigate back or show success message
     };
 
     const handleToggleDay = useCallback((dayIndex: number) => {
@@ -97,6 +157,13 @@ const EnableHours: React.FC = () => {
                         </Box>
                         <Box className="enablehours-header-spacer"></Box>
                     </Box>
+
+                    {/* Error Alert */}
+                    {turnContext.error && (
+                        <Alert severity="error" sx={{ mt: 2, maxWidth: '1000px', margin: '16px auto 0' }}>
+                            {turnContext.error}
+                        </Alert>
+                    )}
                 </Box>
 
                 <Box className="enablehours-content">
@@ -239,7 +306,7 @@ const EnableHours: React.FC = () => {
 
                     {(enabledDays === 0 || totalRanges === 0) && (
                         <Alert severity="warning" className="enablehours-warning">
-                            ⚠️ Debes activar al menos un día y configurar horarios para poder guardar tu disponibilidad.
+                            Debes activar al menos un día y configurar horarios para poder guardar tu disponibilidad.
                         </Alert>
                     )}
 
@@ -251,10 +318,10 @@ const EnableHours: React.FC = () => {
                             onClick={saveAvailability}
                             size="large"
                             startIcon={<CheckCircle />}
-                            disabled={enabledDays === 0 || totalRanges === 0}
+                            disabled={enabledDays === 0 || totalRanges === 0 || turnContext.isSavingAvailability}
                             className="enablehours-save-button"
                         >
-                            Guardar Disponibilidad
+                            {turnContext.isSavingAvailability ? 'Guardando...' : 'Guardar Disponibilidad'}
                         </Button>
                     </Box>
 

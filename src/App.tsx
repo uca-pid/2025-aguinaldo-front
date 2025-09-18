@@ -46,7 +46,7 @@ function AppContent() {
       <Box>
         <Box className="app-header">
           <Box>
-            <h2>MediBook - Welcome {user.name} {user.surname}!</h2>
+            <h2>MediBook</h2>
           </Box>
           <Box className="app-user-section">
           <Avatar
