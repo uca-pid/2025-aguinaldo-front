@@ -100,7 +100,7 @@ const ProfileScreen: React.FC = () => {
                             <EditField label="Telefono" value={profile.phone} isEditing={phone} toggleKey="editNumberPhone" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "phone", value: val })}/>
                             <EditField label="DNI" value={profile.dni} isEditing={dni} toggleKey="editDni" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "dni", value: val })}/>
                             <EditField label="Género" value={profile.gender} isEditing={gender} toggleKey="editGender" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "gender", value: val })}/>
-                            <EditField label="Fecha de nacimiento" value={profile.birthdate} isEditing={birthdate} toggleKey="editGender" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "birthdate", value: val })}/>
+                            <EditField label="Fecha de nacimiento" value={profile.birthdate} isEditing={birthdate} toggleKey="editBirthdate" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "birthdate", value: val })}/>
 
                             {user.role === 'DOCTOR' && (
                             <>
