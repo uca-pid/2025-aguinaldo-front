@@ -1,10 +1,11 @@
-import { API_CONFIG, buildApiUrl, getDefaultFetchOptions } from '../../config/api';
+import { API_CONFIG, buildApiUrl, getAuthenticatedFetchOptions, getDefaultFetchOptions } from '../../config/api';
 import type {
     RegisterRequestData,
     RegisterResponse,
     SignInRequestData,
     SignInResponse,
-    ApiErrorResponse
+    ApiErrorResponse,
+    ProfileResponse
 } from '../models/Auth';
 
 export class AuthService {
@@ -172,4 +173,31 @@ export class AuthService {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
   }
+
+
+  static async getProfile(accessToken: string, profileId: string): Promise<ProfileResponse> {
+      const url = buildApiUrl(`/api/profile/${profileId}`);
+      
+      try {
+        const response = await fetch(url, {
+          ...getAuthenticatedFetchOptions(accessToken),
+          method: 'GET',
+        });
+  
+        if (!response.ok) {
+          const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData?.message || 
+            errorData?.error ||
+            `Failed to fetch data profile! Status: ${response.status}`
+          );
+        }
+  
+        const result: ProfileResponse = await response.json();
+        return result;
+      } catch (error) {
+        console.error('Failed to fetch data profile:', error);
+        throw error;
+      }
+    }
 }

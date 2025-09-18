@@ -5,6 +5,7 @@ import { authMachine } from '../machines/authMachine';
 import type { AuthMachineContext, AuthMachineEvent } from '../machines/authMachine';
 import { SignInResponse } from '../models/Auth';
 import { RegisterResponse } from '../models/Auth';
+import { ProfileResponse } from '../models/Auth';
 
 interface AuthMachineInstance {
   auth: {
@@ -12,7 +13,8 @@ interface AuthMachineInstance {
     send: (event: AuthMachineEvent) => void;
     context: AuthMachineContext;
     isAuthenticated: boolean;
-    authResponse?: RegisterResponse | SignInResponse | { error: string | null } | null;
+    authResponse?: RegisterResponse | SignInResponse |{ error: string | null } | null;
+    profile?: ProfileResponse|null;
   };
 }
 
@@ -31,7 +33,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       send: authSend,
       context: authState.context,
       isAuthenticated: authState.context.isAuthenticated,
-      authResponse: authState.context.authResponse
+      authResponse: authState.context.authResponse,
+      profile: authState.context.profile,
     },
   };
 

@@ -44,3 +44,20 @@ export interface ApiErrorResponse {
   error?: string;
   status?: number;
 }
+
+export interface ProfileResponse{
+  id:string;
+  email: string;
+  name: string;
+  surname:string;
+  dni:string;
+  phone:string;
+  birthdate:string | null;
+  gender:string;
+  role: "PATIENT" | "DOCTOR" | "ADMIN";
+  status:string;
+
+  medicalLicense?:string | null;
+  specialty?:string | null;
+  slotDurationMin?: number | null;
+}
