@@ -18,11 +18,13 @@ import DoctorViewTurns from './components/Doctor/DoctorViewTurns'
 function AppContent() {
   const navigate = useNavigate();
   const { auth } = useAuthMachine();
-  const { authResponse } = auth;
+  const { authResponse, context: authContext } = auth;
   const {ui} = useMachines();
   const { context: uiContext, send: uiSend } = ui;
   const user = authResponse as SignInResponse;
-  const userName = user.name;
+  
+  // Usar el perfil actualizado si está disponible, sino usar authResponse
+  const userName = authContext.profile?.name || user.name;
 
   const open = Boolean(uiContext.toggleStates?.["userMenu"]);
 

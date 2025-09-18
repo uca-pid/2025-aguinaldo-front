@@ -216,9 +216,22 @@ export const authMachine = createMachine({
         onDone: {
           target: "authenticated",
           actions: assign(({ event, context }) => {
+            // Actualizar tanto el profile como el authResponse con los nuevos datos
+            const updatedProfile = event.output;
+            const updatedAuthResponse = context.authResponse && "accessToken" in context.authResponse 
+              ? {
+                  ...context.authResponse,
+                  name: updatedProfile.name,
+                  surname: updatedProfile.surname,
+                  email: updatedProfile.email,
+                  phone: updatedProfile.phone
+                }
+              : context.authResponse;
+
             return {
               ...context,
-              profile: event.output,
+              profile: updatedProfile,
+              authResponse: updatedAuthResponse,
               updatingProfile: false
             };
           }),
