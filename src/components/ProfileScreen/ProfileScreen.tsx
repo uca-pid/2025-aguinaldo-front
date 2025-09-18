@@ -97,8 +97,16 @@ const ProfileScreen: React.FC = () => {
                             <EditField  key="name" label="Nombre" value={profile.name} isEditing={name} toggleKey="editName" fieldKey="name" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "name", value: val })}/>
                             <EditField  key= "surname" label="Apellido" value={profile.surname} isEditing={surname} toggleKey="editSurname" fieldKey="surname" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "surname", value: val })} />
                             {/*<EditField key="email" label="Email" value={profile.email} isEditing={email} toggleKey="editEmail" fieldKey="email" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "email", value: val })}/>*/}
+                            <ListItem>
+                                <ListItemText primary={`Email `}  secondary={profile.email}/>
+                            </ListItem>
+                            <Divider component="li" />
                             <EditField key="phone" label="Telefono" value={profile.phone} isEditing={phone} toggleKey="editNumberPhone" fieldKey="phone" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "phone", value: val })}/>
                             {/*<EditField key="dni" label="DNI" value={profile.dni} isEditing={dni} toggleKey="editDni" fieldKey="dni" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "dni", value: val })}/>*/}
+                            <ListItem>
+                                <ListItemText primary={`DNI `}  secondary={profile.dni}/>
+                            </ListItem>
+                            <Divider component="li" />
                             <EditField key ="gender" label="Género" value={profile.gender} isEditing={gender} toggleKey="editGender" fieldKey="gender" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "gender", value: val })}/>
                             <EditField key="birthdate" label="Fecha de nacimiento" value={profile.birthdate} isEditing={birthdate} toggleKey="editBirthdate" fieldKey="birthdate" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "birthdate", value: val })}/>
 
