@@ -3,6 +3,17 @@ import { Dayjs } from "dayjs";
 import { TurnService } from "../service/turn-service.service";
 import type { Doctor, TurnResponse } from "../models/Turn";
 
+interface Range {
+  start: string;
+  end: string;
+}
+
+interface DayAvailability {
+  day: string;
+  enabled: boolean;
+  ranges: Range[];
+}
+
 export interface TurnMachineContext {
   doctors: Doctor[];
   availableTurns: string[];
@@ -36,6 +47,8 @@ export interface TurnMachineContext {
   
   accessToken: string | null;
   userId: string | null;
+
+  availability: DayAvailability[];
 }
 
 export type TurnMachineEvent =
@@ -52,7 +65,12 @@ export type TurnMachineEvent =
   | { type: "CREATE_TURN" }
   | { type: "SET_AUTH"; accessToken: string; userId: string }
   | { type: "API_SUCCESS"; data: any; action: string }
-  | { type: "API_ERROR"; error: string; action: string };
+  | { type: "API_ERROR"; error: string; action: string }
+  | { type: "TOGGLE_DAY"; index: number }
+  | { type: "ADD_RANGE"; dayIndex: number }
+  | { type: "REMOVE_RANGE"; dayIndex: number; rangeIndex: number }
+  | { type: "UPDATE_RANGE"; dayIndex: number; rangeIndex: number; field: "start" | "end"; value: string }
+  | { type: "SAVE_AVAILABILITY" };
 
 export const turnMachine = createMachine({
   id: "turnMachine",
@@ -90,6 +108,17 @@ export const turnMachine = createMachine({
     
     accessToken: null,
     userId: null,
+
+
+    availability: [
+    { day: "Lunes", enabled: false, ranges: [{ start: "", end: "" }] },
+    { day: "Martes", enabled: false, ranges: [{ start: "", end: "" }] },
+    { day: "Miércoles", enabled: false, ranges: [{ start: "", end: "" }] },
+    { day: "Jueves", enabled: false, ranges: [{ start: "", end: "" }] },
+    { day: "Viernes", enabled: false, ranges: [{ start: "", end: "" }] },
+    { day: "Sábado", enabled: false, ranges: [{ start: "", end: "" }] },
+    { day: "Domingo", enabled: false, ranges: [{ start: "", end: "" }] },
+  ],
   } as TurnMachineContext,
   types: {
     context: {} as TurnMachineContext,
@@ -377,5 +406,74 @@ export const turnMachine = createMachine({
         },
       },
     },
+    availability: {
+  initial: "idle",
+  states: {
+    idle: {
+      on: {
+        TOGGLE_DAY: {
+          actions: assign({
+            availability: ({ context, event }) =>
+              context.availability.map((d, i) =>
+                i === event.index ? { ...d, enabled: !d.enabled } : d
+              ),
+          }),
+        },
+        ADD_RANGE: {
+          actions: assign({
+            availability: ({ context, event }) =>
+              context.availability.map((d, i) =>
+                i === event.dayIndex
+                  ? { ...d, ranges: [...d.ranges, { start: "", end: "" }] }
+                  : d
+              ),
+          }),
+        },
+        REMOVE_RANGE: {
+          actions: assign({
+            availability: ({ context, event }) =>
+              context.availability.map((d, i) =>
+                i === event.dayIndex
+                  ? {
+                      ...d,
+                      ranges: d.ranges.filter((_, r) => r !== event.rangeIndex),
+                    }
+                  : d
+              ),
+          }),
+        },
+        UPDATE_RANGE: {
+          actions: assign({
+            availability: ({ context, event }) =>
+              context.availability.map((d, i) =>
+                i === event.dayIndex
+                  ? {
+                      ...d,
+                      ranges: d.ranges.map((r, ri) =>
+                        ri === event.rangeIndex
+                          ? { ...r, [event.field]: event.value }
+                          : r
+                      ),
+                    }
+                  : d
+              ),
+          }),
+        },
+        SAVE_AVAILABILITY: "saving",
+      },
+    },
+    saving: {
+      //invoke: {
+        //src: fromPromise(async ({ context }) => {
+    
+          //console.log("Saving availability...", context.availability);
+        //}),
+
+        //onDone: { target: "idle" },
+        //onError: { target: "idle" },
+      //},
+    },
+  },
+},
   },
 });
