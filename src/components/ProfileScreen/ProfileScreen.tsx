@@ -140,7 +140,11 @@ const ProfileScreen: React.FC = () => {
                                 boxShadow: '0px 6px 16px rgba(0,0,0,0.15)',
                                 },
                             }}
-                            onClick={() => console.log("Dar de baja la cuenta")}
+                            onClick={() => {
+                                if (window.confirm('¿Estás seguro de que quieres dar de baja tu cuenta? Esta acción no se puede deshacer.')) {
+                                    authSend({ type: "DEACTIVATE_ACCOUNT" });
+                                }
+                            }}
                             >
                             Dar de baja la cuenta
                             </Button>

@@ -73,7 +73,8 @@ export type AuthMachineEvent =
   | { type: "CHECK_AUTH" }
   | { type: "SAVE_PROFILE" }
   | { type: "UPDATE_PROFILE" }
-  | { type: "CANCEL_PROFILE_EDIT"; key: string }; 
+  | { type: "CANCEL_PROFILE_EDIT"; key: string }
+  | { type: "DEACTIVATE_ACCOUNT" }; 
 
 
 export const authMachine = createMachine({
@@ -113,6 +114,9 @@ export const authMachine = createMachine({
         },
         UPDATE_PROFILE: {
           target: "updatingProfile"
+        },
+        DEACTIVATE_ACCOUNT: {
+          target: "deactivatingAccount"
         },
         UPDATE_FORM: {
           actions: assign(({ context, event }) => {
@@ -236,6 +240,56 @@ export const authMachine = createMachine({
           }),
         },
       },
+    },
+
+    deactivatingAccount: {
+      invoke: {
+        src: fromPromise(async ({ input }: { input: AuthMachineContext }) => {
+          try {
+            if (!input.authResponse || !("accessToken" in input.authResponse)) {
+              throw new Error("No access token available");
+            }
+            
+            const accessToken = input.authResponse.accessToken;
+            console.log('Iniciando desactivación desde máquina de estado...');
+            await AuthService.deactivateAccount(accessToken);
+            console.log('Desactivación completada desde máquina de estado');
+            return { success: true };
+          } catch (error) {
+            console.error('Error en desactivación desde máquina de estado:', error);
+            throw error;
+          }
+        }),
+        input: ({ context }) => context,
+        onDone: {
+          target: "idle",
+          actions: assign(() => {
+            console.log('Limpiando estado después de desactivación...');
+            
+            return {
+              token: null,
+              profile: null,
+              formValues: { ...AuthMachineDefaultContext.formValues },
+              error: null,
+              isAuthenticated: false,
+              authResponse: null,
+              updatingProfile: false
+            };
+          })
+        },
+        onError: {
+          target: "authenticated",
+          actions: assign(({ event, context }) => {
+            console.error('Error en desactivación, volviendo a authenticated:', event.error);
+            return {
+              ...context,
+              authResponse: {
+                error: (event.error as Error).message
+              }
+            };
+          })
+        }
+      }
     },
 
     loggingOut: {
