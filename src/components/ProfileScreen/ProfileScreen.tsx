@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { useMachines } from "#/providers/MachineProvider";
 
 import EditField from "./EditField";
+import { useEffect } from "react";
 
 const MotionCard = motion(Card);
 
@@ -16,8 +17,11 @@ const ProfileScreen: React.FC = () => {
     
 
     const { auth } = useAuthMachine();
+    const { context: authContext, send: authSend } = auth;
     const user = auth.authResponse as SignInResponse;
     
+    const profile = authContext.profile;
+
     const {ui}= useMachines()
     const { context: uiContext } = ui;
     const formContext = uiContext.toggleStates || {};
@@ -32,9 +36,13 @@ const ProfileScreen: React.FC = () => {
     const birthdate= formContext["editBirthdate"] ?? false;
 
     
-    const {send: authSend} = auth;
+;
     
-
+    useEffect(() => {
+    if (user?.accessToken && user?.id) {
+      authSend({ type: "SAVE_PROFILE" });
+    }
+    }, [user, authSend]);
 
  
     return (
@@ -80,29 +88,34 @@ const ProfileScreen: React.FC = () => {
                         Acá podes ver y editar tu información personal
                         </Typography>
                     </Box>
-                    <List disablePadding>
-                        <EditField label="Nombre" value={user.name} isEditing={name} toggleKey="editName" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "name", value: val })}/>
-                        <EditField label="Apellido" value={user.surname} isEditing={surname} toggleKey="editSurname" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "surname", value: val })} />
-                        <EditField label="Email" value={user.email} isEditing={email} toggleKey="editEmail" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "email", value: val })}/>
-                        <EditField label="Telefono" value={12345} isEditing={phone} toggleKey="editNumberPhone" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "phone", value: val })}/>
-                        <EditField label="DNI" value={12345} isEditing={dni} toggleKey="editDni" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "dni", value: val })}/>
-                        <EditField label="Género" value={12345} isEditing={gender} toggleKey="editGender" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "gender", value: val })}/>
-                        <EditField label="Fecha de nacimiento" value={12345} isEditing={birthdate} toggleKey="editGender" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "birthdate", value: val })}/>
+                    {!profile ? (
+                    <Typography align="center" color="text.secondary">
+                    Cargando perfil...
+                    </Typography>
+                    ) : (
+                        <List disablePadding>
+                            <EditField label="Nombre" value={profile.name} isEditing={name} toggleKey="editName" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "name", value: val })}/>
+                            <EditField label="Apellido" value={profile.surname} isEditing={surname} toggleKey="editSurname" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "surname", value: val })} />
+                            <EditField label="Email" value={profile.email} isEditing={email} toggleKey="editEmail" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "email", value: val })}/>
+                            <EditField label="Telefono" value={profile.phone} isEditing={phone} toggleKey="editNumberPhone" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "phone", value: val })}/>
+                            <EditField label="DNI" value={profile.dni} isEditing={dni} toggleKey="editDni" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "dni", value: val })}/>
+                            <EditField label="Género" value={profile.gender} isEditing={gender} toggleKey="editGender" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "gender", value: val })}/>
+                            <EditField label="Fecha de nacimiento" value={profile.birthdate} isEditing={birthdate} toggleKey="editBirthdate" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "birthdate", value: val })}/>
 
-                        {user.role === 'DOCTOR' && (
-                        <>
+                            {user.role === 'DOCTOR' && (
+                            <>
 
-                            <ListItem>
-                            <ListItemText primary={`Matrícula Nacional: `} />
-                            </ListItem>
-                            <Divider component="li" />
-                            <EditField label="Especialidad" value={"Psicologia"} isEditing={speciality} toggleKey="editSpeciality" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "specialty", value: val })}/>
-                            <EditField label="Minutos por turno" value={12} isEditing={minutes} toggleKey="editMinutes" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "slotDurationMin", value: val })}/>
+                                <ListItem>
+                                <ListItemText primary={`Matrícula Nacional: `} />
+                                </ListItem>
+                                <Divider component="li" />
+                                <EditField label="Especialidad" value={profile.specialty} isEditing={speciality} toggleKey="editSpeciality" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "specialty", value: val })}/>
+                                <EditField label="Minutos por turno" value={profile.slotDurationMin} isEditing={minutes} toggleKey="editMinutes" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "slotDurationMin", value: val })}/>
 
 
-                            </>
-                            )}
-                    </List>
+                                </>
+                                )}
+                        </List>)}
                  </CardContent>
             </MotionCard> 
         </Box>

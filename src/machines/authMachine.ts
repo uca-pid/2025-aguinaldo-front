@@ -2,6 +2,7 @@ import { createMachine, assign, fromPromise } from "xstate";
 import {validateField, checkFormValidation} from "../utils/authFormValidation";
 import { AuthService } from "../service/auth-service.service";
 import { RegisterResponse, SignInResponse, ApiErrorResponse } from "../models/Auth";
+import { ProfileResponse } from "../models/Auth";
 
 export interface AuthMachineContext {
   mode: "login" | "register";
@@ -29,6 +30,7 @@ export interface AuthMachineContext {
     [key: string]: string;
   };
   authResponse?: RegisterResponse | SignInResponse | ApiErrorResponse | null;
+  profile?:ProfileResponse|null;
 }
 
 export const AuthMachineDefaultContext = {
@@ -54,7 +56,8 @@ export const AuthMachineDefaultContext = {
       slotDurationMin: null
     },
     formErrors: {},
-    authResponse: null
+    authResponse: null,
+    profile:null,
   } as AuthMachineContext;
 
 export type AuthMachineEvent =
@@ -106,9 +109,47 @@ export const authMachine = createMachine({
         }
       }
     },
-    savingProfile:{
-      
+    savingProfile: {
+      invoke: {
+        src: fromPromise(async ({ input }: { input: AuthMachineContext }) => {
+          if (!input.authResponse || !("accessToken" in input.authResponse)) {
+            throw new Error("No access token available");
+          }
+
+          const accessToken = input.authResponse.accessToken;
+          const profileId = input.authResponse.id; 
+
+          const profile = await AuthService.getProfile(accessToken, profileId);
+          return profile;
+        }),
+        input: ({ context }) => context,
+        onDone: {
+          target: "authenticated",
+          actions: assign(({ event, context }) => {
+            return {
+              ...context,
+              profile: event.output, 
+            };
+          }),
+        },
+        onError: {
+          target: "authenticated", 
+          actions: assign(({ event, context }) => {
+            return {
+              ...context,
+              profile: null,
+              authResponse: {
+                error:
+                  event.error instanceof Error
+                    ? event.error.message
+                    : "Failed to fetch profile",
+              },
+            };
+          }),
+        },
+      },
     },
+
     loggingOut: {
       invoke: {
         src: fromPromise(async () => {
