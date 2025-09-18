@@ -10,6 +10,7 @@ export interface AuthMachineContext {
   hasErrorsOrEmpty: boolean;
   isAuthenticated: boolean;
   loading: boolean;
+  updatingProfile: boolean;
   formValues: {
     // Login fields
     email: string;
@@ -39,6 +40,7 @@ export const AuthMachineDefaultContext = {
     hasErrorsOrEmpty: true,
     isAuthenticated: false,
     loading: false,
+    updatingProfile: false,
     formValues: {
       // Login fields
       email: "",
@@ -69,7 +71,9 @@ export type AuthMachineEvent =
   | { type: "API_ERROR"; error: any }
   | { type: "LOGOUT" }
   | { type: "CHECK_AUTH" }
-  | { type: "SAVE_PROFILE" }; 
+  | { type: "SAVE_PROFILE" }
+  | { type: "UPDATE_PROFILE" }
+  | { type: "CANCEL_PROFILE_EDIT"; key: string }; 
 
 
 export const authMachine = createMachine({
@@ -106,6 +110,32 @@ export const authMachine = createMachine({
         },
         SAVE_PROFILE:{
           target:"savingProfile"
+        },
+        UPDATE_PROFILE: {
+          target: "updatingProfile"
+        },
+        UPDATE_FORM: {
+          actions: assign(({ context, event }) => {
+            return {
+              ...context,
+              formValues: {
+                ...context.formValues,
+                [event.key]: event.value
+              }
+            };
+          })
+        },
+        CANCEL_PROFILE_EDIT: {
+          actions: assign(({ context, event }) => {
+            if (!context.profile) return context;
+            return {
+              ...context,
+              formValues: {
+                ...context.formValues,
+                [event.key]: (context.profile as any)[event.key] || ""
+              }
+            };
+          })
         }
       }
     },
@@ -143,6 +173,64 @@ export const authMachine = createMachine({
                   event.error instanceof Error
                     ? event.error.message
                     : "Failed to fetch profile",
+              },
+            };
+          }),
+        },
+      },
+    },
+
+    updatingProfile: {
+      entry: assign(({ context }) => ({
+        ...context,
+        updatingProfile: true
+      })),
+      invoke: {
+        src: fromPromise(async ({ input }: { input: AuthMachineContext }) => {
+          if (!input.authResponse || !("accessToken" in input.authResponse)) {
+            throw new Error("No access token available");
+          }
+
+          const accessToken = input.authResponse.accessToken;
+          const profileId = input.authResponse.id;
+
+          // Construir el objeto de datos a actualizar usando formValues
+          const updateData: any = {};
+          
+          // Mapear formValues a los campos del perfil
+          Object.keys(input.formValues).forEach(key => {
+            const value = input.formValues[key as keyof typeof input.formValues];
+            if (value !== null && value !== undefined && value !== "") {
+              updateData[key] = value;
+            }
+          });
+
+          const updatedProfile = await AuthService.updateProfile(accessToken, profileId, updateData);
+          return updatedProfile;
+        }),
+        input: ({ context }) => context,
+        onDone: {
+          target: "authenticated",
+          actions: assign(({ event, context }) => {
+            return {
+              ...context,
+              profile: event.output,
+              updatingProfile: false
+            };
+          }),
+        },
+        onError: {
+          target: "authenticated",
+          actions: assign(({ event, context }) => {
+            console.error("Failed to update profile:", event.error);
+            return {
+              ...context,
+              updatingProfile: false,
+              authResponse: {
+                error:
+                  event.error instanceof Error
+                    ? event.error.message
+                    : "Failed to update profile",
               },
             };
           }),
