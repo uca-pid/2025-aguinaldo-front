@@ -1,6 +1,7 @@
 import { createMachine, assign, fromPromise } from "xstate";
 import { Dayjs } from "dayjs";
 import { TurnService } from "../service/turn-service.service";
+import { DoctorService, type DoctorAvailabilityRequest } from "../service/doctor-service.service";
 import type { Doctor, TurnResponse } from "../models/Turn";
 
 interface Range {
@@ -24,6 +25,8 @@ export interface TurnMachineContext {
   isLoadingMyTurns: boolean;
   isCreatingTurn: boolean;
   isReservingTurn: boolean;
+  isSavingAvailability: boolean;
+  isLoadingAvailability: boolean;
   
   error: string | null;
   doctorsError: string | null;
@@ -70,7 +73,8 @@ export type TurnMachineEvent =
   | { type: "ADD_RANGE"; dayIndex: number }
   | { type: "REMOVE_RANGE"; dayIndex: number; rangeIndex: number }
   | { type: "UPDATE_RANGE"; dayIndex: number; rangeIndex: number; field: "start" | "end"; value: string }
-  | { type: "SAVE_AVAILABILITY" };
+  | { type: "SAVE_AVAILABILITY" }
+  | { type: "LOAD_AVAILABILITY" };
 
 export const turnMachine = createMachine({
   id: "turnMachine",
@@ -85,6 +89,8 @@ export const turnMachine = createMachine({
     isLoadingMyTurns: false,
     isCreatingTurn: false,
     isReservingTurn: false,
+    isSavingAvailability: false,
+    isLoadingAvailability: false,
     
     error: null,
     doctorsError: null,
@@ -460,18 +466,155 @@ export const turnMachine = createMachine({
           }),
         },
         SAVE_AVAILABILITY: "saving",
+        LOAD_AVAILABILITY: "loading",
+      },
+    },
+    loading: {
+      entry: assign({
+        isLoadingAvailability: true,
+        error: null
+      }),
+      
+      invoke: {
+        src: fromPromise(async ({ input }: { input: { accessToken: string; userId: string } }) => {
+          const response = await DoctorService.getAvailability(input.accessToken, input.userId);
+          return response;
+        }),
+
+        input: ({ context }) => ({
+          accessToken: context.accessToken!,
+          userId: context.userId!
+        }),
+
+        onDone: { 
+          target: "idle",
+          actions: assign({
+            availability: ({ event, context }) => {
+              const response = event.output as any;
+              
+              const dayMapping: { [key: string]: string } = {
+                "MONDAY": "Lunes",
+                "TUESDAY": "Martes", 
+                "WEDNESDAY": "Miércoles",
+                "THURSDAY": "Jueves",
+                "FRIDAY": "Viernes",
+                "SATURDAY": "Sábado",
+                "SUNDAY": "Domingo"
+              };
+              
+              if (response && response.weeklyAvailability && response.weeklyAvailability.length > 0) {
+                console.log('Loading availability from API:', response.weeklyAvailability);
+                
+                return response.weeklyAvailability.map((day: any) => ({
+                  day: dayMapping[day.day] || day.day,
+                  enabled: day.enabled,
+                  ranges: day.ranges || [{ start: "", end: "" }]
+                }));
+              }
+              
+              console.log('No API data found, using default availability');
+              return context.availability;
+            },
+            error: () => null,
+            isLoadingAvailability: false
+          })
+        },
+        onError: { 
+          target: "idle",
+          actions: assign({
+            error: () => null, 
+            isLoadingAvailability: false
+          })
+        },
       },
     },
     saving: {
-      //invoke: {
-        //src: fromPromise(async ({ context }) => {
-    
-          //console.log("Saving availability...", context.availability);
-        //}),
+      entry: assign({
+        isSavingAvailability: true,
+        error: null
+      }),
+      
+      invoke: {
+        src: fromPromise(async ({ input }: { input: { accessToken: string; userId: string; availability: DayAvailability[] } }) => {
+          const dayMapping: { [key: string]: string } = {
+            "LUNES": "MONDAY",
+            "MARTES": "TUESDAY", 
+            "MIÉRCOLES": "WEDNESDAY",
+            "MIERCOLES": "WEDNESDAY",
+            "JUEVES": "THURSDAY",
+            "VIERNES": "FRIDAY",
+            "SÁBADO": "SATURDAY",
+            "SABADO": "SATURDAY",
+            "DOMINGO": "SUNDAY"
+          };
 
-        //onDone: { target: "idle" },
-        //onError: { target: "idle" },
-      //},
+          const availabilityRequest: DoctorAvailabilityRequest = {
+            slotDurationMin: 30, 
+            weeklyAvailability: input.availability.map((day: DayAvailability) => {
+              const spanishDay = day.day.toUpperCase();
+              const englishDay = dayMapping[spanishDay] || spanishDay;
+              
+              console.log(`Mapping day: ${day.day} -> ${spanishDay} -> ${englishDay}`);
+              
+              return {
+                day: englishDay,
+                enabled: day.enabled,
+                ranges: (day.ranges || []).filter(range => {
+                  if (!range.start || !range.end) return false;
+                  
+                  const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+                  const isValidStart = timeRegex.test(range.start);
+                  const isValidEnd = timeRegex.test(range.end);
+                  
+                  if (!isValidStart || !isValidEnd) {
+                    console.warn(`Invalid time format: start=${range.start}, end=${range.end}`);
+                    return false;
+                  }
+                  
+                  return true;
+                })
+              };
+            })
+          };
+
+          console.log('Sending availability request:', JSON.stringify(availabilityRequest, null, 2));
+          await DoctorService.saveAvailability(input.accessToken, input.userId, availabilityRequest);
+          return "Availability saved successfully";
+        }),
+
+        input: ({ context }) => ({
+          accessToken: context.accessToken!,
+          userId: context.userId!,
+          availability: context.availability
+        }),
+
+        onDone: { 
+          target: "idle",
+          actions: assign({
+            error: () => null,
+            isSavingAvailability: false
+          })
+        },
+        onError: { 
+          target: "idle",
+          actions: assign({
+            error: ({ event }) => {
+              const error = event.error as Error;
+              if (error?.message?.includes('Failed to fetch') || error?.message?.includes('fetch')) {
+                return "No se pudo conectar con el servidor. Verifica tu conexión.";
+              }
+              if (error?.message?.includes('404')) {
+                return "Servicio no disponible. Inténtalo más tarde.";
+              }
+              if (error?.message?.includes('401') || error?.message?.includes('403')) {
+                return "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
+              }
+              return error?.message || "Error al guardar la disponibilidad. Inténtalo de nuevo.";
+            },
+            isSavingAvailability: false
+          })
+        },
+      },
     },
   },
 },

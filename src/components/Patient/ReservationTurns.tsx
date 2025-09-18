@@ -351,7 +351,7 @@ const ReservationTurns: React.FC = () => {
                         {formValues.dateSelected.format("DD/MM/YYYY")}
                       </Typography>
                       <Typography variant="body2" sx={{ mt: 1, opacity: 0.7 }}>
-                        Intenta seleccionar otra fecha
+                        El doctor aún no ha configurado sus horarios de atención
                       </Typography>
                     </Box>
                   )}
