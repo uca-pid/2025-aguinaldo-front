@@ -200,4 +200,36 @@ export class AuthService {
         throw error;
       }
     }
+
+    static async updateProfile(accessToken: string,profileId: string,updates: Partial<ProfileResponse>): Promise<ProfileResponse> {
+      const url = buildApiUrl(`/api/profile/${profileId}`);
+
+      try {
+        const response = await fetch(url, {
+          ...getAuthenticatedFetchOptions(accessToken),
+          method: 'PUT',
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(updates),
+        });
+
+        if (!response.ok) {
+          const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData?.message ||
+            errorData?.error ||
+            `Failed to update profile! Status: ${response.status}`
+          );
+        }
+
+        const result: ProfileResponse = await response.json();
+        return result;
+      } catch (error) {
+        console.error("Failed to update profile:", error);
+        throw error;
+      }
+    }
+
 }

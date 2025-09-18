@@ -1,5 +1,5 @@
 
-import { Box, Card, CardContent, Divider, List, ListItem, ListItemText, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, Divider, List, ListItem, ListItemText, Typography } from "@mui/material";
 
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
@@ -9,7 +9,7 @@ import { useMachines } from "#/providers/MachineProvider";
 
 import EditField from "./EditField";
 import { useEffect } from "react";
-
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 const MotionCard = motion(Card);
 
 
@@ -115,7 +115,41 @@ const ProfileScreen: React.FC = () => {
 
                                 </>
                                 )}
-                        </List>)}
+
+                            <Box
+                            component={motion.div}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}
+                            >
+                            <Button
+                            variant="contained"
+                            color="error"
+                            startIcon={<DeleteForeverIcon />}
+                            sx={{
+                                borderRadius: 2,
+                                px: 4,
+                                py: 1.5,
+                                textTransform: 'none',
+                                fontWeight: 'bold',
+                                boxShadow: '0px 4px 12px rgba(0,0,0,0.1)',
+                                transition: 'all 0.2s ease-in-out',
+                                '&:hover': {
+                                transform: 'scale(1.05)',
+                                boxShadow: '0px 6px 16px rgba(0,0,0,0.15)',
+                                },
+                            }}
+                            onClick={() => console.log("Dar de baja la cuenta")}
+                            >
+                            Dar de baja la cuenta
+                            </Button>
+                        </Box>
+                     
+                        </List>
+                    
+                    
+                    )}
                  </CardContent>
             </MotionCard> 
         </Box>
