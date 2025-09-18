@@ -1,5 +1,6 @@
 import { useMachines } from "#/providers/MachineProvider";
-import { Box, Divider, IconButton, ListItem, ListItemText, TextField } from "@mui/material"
+import { useAuthMachine } from "#/providers/AuthProvider";
+import { Box, Divider, IconButton, ListItem, ListItemText, TextField, CircularProgress } from "@mui/material"
 
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -12,20 +13,41 @@ type EditFieldProps={
     value:any;
     isEditing:boolean;
     toggleKey:string;
+    fieldKey: string; // Nueva prop para identificar el campo
     onChange: (val: string) => void 
 }
 
 const MotionBox = motion(Box);
 
-const EditField :React.FC<EditFieldProps>= ({label, value,isEditing, toggleKey, onChange})=>{
+const EditField :React.FC<EditFieldProps>= ({label, value, isEditing, toggleKey, fieldKey, onChange})=>{
     const {ui}= useMachines()
     const { send: uiSend } = ui;
+    const { auth } = useAuthMachine();
+    const { send: authSend, context: authContext } = auth;
 
     const [localValue, setLocalValue] = React.useState(value ?? "");
+    const isUpdating = authContext.updatingProfile;
 
     React.useEffect(() => {
       setLocalValue(value ?? ""); 
     }, [value]);
+
+    const handleSave = () => {
+      // Actualizar el valor en el contexto de auth
+      onChange(localValue);
+      // Llamar a la API para actualizar el perfil
+      authSend({ type: "UPDATE_PROFILE" });
+      // Cerrar el modo de edición
+      uiSend({type: "TOGGLE", key: toggleKey});
+    };
+
+    const handleCancel = () => {
+      // Revertir al valor original
+      setLocalValue(value ?? "");
+      authSend({ type: "CANCEL_PROFILE_EDIT", key: fieldKey });
+      // Cerrar el modo de edición
+      uiSend({type: "TOGGLE", key: toggleKey});
+    };
     
     return(
         <>
@@ -69,15 +91,15 @@ const EditField :React.FC<EditFieldProps>= ({label, value,isEditing, toggleKey, 
           <Box>
             {isEditing ? (
               <>
-                <IconButton onClick={()=>uiSend({type: "TOGGLE", key: toggleKey})}>
-                  <CheckIcon color="success" />
+                <IconButton onClick={handleSave} disabled={isUpdating}>
+                  {isUpdating ? <CircularProgress size={20} /> : <CheckIcon color="success" />}
                 </IconButton>
-                <IconButton onClick={()=>uiSend({type: "TOGGLE", key: toggleKey})}>
+                <IconButton onClick={handleCancel} disabled={isUpdating}>
                   <CloseIcon color="error" />
                 </IconButton>
               </>
             ) : (
-              <IconButton onClick={() => uiSend({type: "TOGGLE", key:toggleKey})}>
+              <IconButton onClick={() => uiSend({type: "TOGGLE", key:toggleKey})} disabled={isUpdating}>
                 <EditIcon />
               </IconButton>
             )}

@@ -18,11 +18,14 @@ import DoctorViewTurns from './components/Doctor/DoctorViewTurns'
 function AppContent() {
   const navigate = useNavigate();
   const { auth } = useAuthMachine();
-  const { authResponse } = auth;
+  const { authResponse, context: authContext } = auth;
   const {ui} = useMachines();
   const { context: uiContext, send: uiSend } = ui;
   const user = authResponse as SignInResponse;
-  const userName = user.name;
+  
+  // Usar el perfil actualizado si está disponible, sino usar authResponse
+  const userName = authContext.profile?.name || user.name;
+  const userRole = authContext.profile?.role || user.role;
 
   const open = Boolean(uiContext.toggleStates?.["userMenu"]);
 
@@ -41,6 +44,29 @@ function AppContent() {
     uiSend({ type: "TOGGLE", key: "userMenu" });
     uiSend({ type: "NAVIGATE", to: "/profile" });
   };
+
+  const renderAdminRoutes = () => (
+    <>
+      <Route path="/admin/pending" element={<PendingScreen />} />
+      <Route path="/admin/patients" element={<div>Admin Patients Page - To be implemented</div>} />
+      <Route path="/admin/doctors" element={<div>Admin Doctors Page - To be implemented</div>} />
+    </>
+  );
+
+  const renderDoctorRoutes = () => (
+    <>
+      <Route path="/doctor/enable-hours" element={<EnableHours />} />
+      <Route path="/doctor/view-patients" element={<ViewPatients />} />
+      <Route path="/doctor/view-turns" element={<DoctorViewTurns />} />
+    </>
+  );
+
+  const renderPatientRoutes = () => (
+    <>
+      <Route path="/patient/reservation-turns" element={<ReservationTurns />} />
+      <Route path="/patient/view-turns" element={<ViewTurns />} />
+    </>
+  );
 
   return (
       <Box>
@@ -110,17 +136,10 @@ function AppContent() {
 
         <Routes>
           <Route path="*" element={<HomeScreen />} />
-
-          <Route path="/admin/pending" element={<PendingScreen />} />
-          <Route path="/admin/patients" element={<div>Admin Patients Page - To be implemented</div>} />
-          <Route path="/admin/doctors" element={<div>Admin Doctors Page - To be implemented</div>} />
-
-          <Route path="/patient/reservation-turns" element={<ReservationTurns />} />
-          <Route path="/patient/view-turns" element={<ViewTurns />} />
-
-          <Route path="/doctor/enable-hours" element={<EnableHours />} />
-          <Route path="/doctor/view-patients" element={<ViewPatients />} />
-          <Route path="/doctor/view-turns" element={<DoctorViewTurns />} />
+          
+          {userRole === 'ADMIN' && renderAdminRoutes()}
+          {userRole === 'DOCTOR' && renderDoctorRoutes()}
+          {userRole === 'PATIENT' && renderPatientRoutes()}
           
           <Route path="/profile" element={<ProfileScreen />} />
         </Routes>
