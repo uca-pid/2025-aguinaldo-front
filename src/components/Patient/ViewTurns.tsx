@@ -12,12 +12,11 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import "./ViewTurns.css";
 
 const ViewTurns: React.FC = () => {
-  const { ui, turn } = useMachines();
-  const { auth } = useAuthMachine();
-  const { send: uiSend } = ui;
-  const { context: authContext, authResponse: authResponse } = auth;
-  const user = authResponse as SignInResponse
-  const { state: turnState, send: turnSend } = turn;
+  const { uiSend, turnState, turnSend } = useMachines();
+  const { authState } = useAuthMachine();
+  const user: SignInResponse = authState?.context?.user || {};
+  const authContext = authState?.context || {};
+
   const [cancellingTurnId, setCancellingTurnId] = useState<string | null>(null);
   const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
   

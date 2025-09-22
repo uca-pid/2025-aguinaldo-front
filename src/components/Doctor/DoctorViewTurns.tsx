@@ -1,7 +1,6 @@
 import { 
   Box, Button, Typography, CircularProgress, 
   Alert, Chip, FormControl, InputLabel, Select, MenuItem, Avatar,
-  Container 
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
@@ -15,12 +14,11 @@ import { ArrowBack } from '@mui/icons-material';
 import "./DoctorViewTurns.css";
 
 const ViewTurns: React.FC = () => {
-  const { ui, turn } = useMachines();
-  const { auth } = useAuthMachine();
-  const { send: uiSend } = ui;
-  const { context: authContext, authResponse: authResponse } = auth;
-  const user = authResponse as SignInResponse
-  const { state: turnState, send: turnSend } = turn;
+  const { uiSend, turnState, turnSend } = useMachines();
+  const { authState } = useAuthMachine();
+  const authContext = authState?.context;
+  const user = authContext?.user as SignInResponse;
+
   const [cancellingTurnId, setCancellingTurnId] = useState<string | null>(null);
   const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
   

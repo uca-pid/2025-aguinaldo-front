@@ -21,12 +21,10 @@ import { Patient, calculateAge } from "#/models/Doctor"
 import './ViewPatients.css'
 
 const ViewPatients: React.FC = () => {
-    const { ui, doctor } = useMachines();
-    const { auth } = useAuthMachine();
-    const { send: uiSend } = ui;
-    const { state: doctorState, send: doctorSend } = doctor;
-    const { authResponse } = auth;
-    const user = authResponse as SignInResponse;
+    const { uiSend, doctorState, doctorSend } = useMachines();
+    const { authState } = useAuthMachine();
+    const user: SignInResponse | null = authState?.context?.user || null;
+
     const [searchTerm, setSearchTerm] = useState('');
 
     const doctorContext = doctorState.context;

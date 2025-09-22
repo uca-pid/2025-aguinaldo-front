@@ -4,6 +4,30 @@ import { TurnService } from "../service/turn-service.service";
 import { DoctorService, type DoctorAvailabilityRequest } from "../service/doctor-service.service";
 import type { Doctor, TurnResponse } from "../models/Turn";
 
+export const TURN_MACHINE_ID = "turn";
+export const TURN_MACHINE_EVENT_TYPES = [
+  "UPDATE_FORM_TAKE_TURN",
+  "UPDATE_FORM_SHOW_TURNS",
+  "NEXT",
+  "BACK",
+  "RESET_TAKE_TURN",
+  "RESET_SHOW_TURNS",
+  "LOAD_DOCTORS",
+  "LOAD_AVAILABLE_TURNS",
+  "LOAD_MY_TURNS",
+  "RESERVE_TURN",
+  "CREATE_TURN",
+  "SET_AUTH",
+  "API_SUCCESS",
+  "API_ERROR",
+  "TOGGLE_DAY",
+  "ADD_RANGE",
+  "REMOVE_RANGE",
+  "UPDATE_RANGE",
+  "SAVE_AVAILABILITY",
+  "LOAD_AVAILABILITY"
+];
+
 interface Range {
   start: string;
   end: string;

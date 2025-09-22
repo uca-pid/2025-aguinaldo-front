@@ -20,13 +20,10 @@ import dayjs from "dayjs";
 import "./DoctorDashboard.css";
 
 const DoctorDashboard: React.FC = () => {
-  const { ui, turn } = useMachines();
-  const { auth } = useAuthMachine();
-  const { send: uiSend } = ui;
-  const authContext = auth.context;
-  const user = auth.authResponse as SignInResponse;
-  const { state: turnState, send: turnSend } = turn;
-  const turnContext = turnState.context;
+  const { uiSend, turnState, turnSend } = useMachines();
+  const turnContext = turnState?.context;
+  const authContext = useAuthMachine().authState?.context;
+  const user = authContext.user as SignInResponse;
 
   useEffect(() => {
     if (authContext.isAuthenticated && user.accessToken && user.id) {

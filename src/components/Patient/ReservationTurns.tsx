@@ -17,12 +17,10 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import "./ReservationTurns.css";
 
 const ReservationTurns: React.FC = () => {
-  const { ui, turn } = useMachines();
-  const { auth } = useAuthMachine();
-  const { send: uiSend } = ui;
-  const { context: authContext, authResponse: authResponse } = auth;
-  const user = authResponse as SignInResponse
-  const { state: turnState, send: turnSend } = turn;
+  const { uiSend, turnState, turnSend } = useMachines();
+  const { authState } = useAuthMachine();
+  const user: SignInResponse = authState?.context?.user || {};
+  const authContext = authState?.context || {};
   
   const turnContext = turnState.context;
   const formValues = turnContext.takeTurn;

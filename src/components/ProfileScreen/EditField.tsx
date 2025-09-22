@@ -20,10 +20,9 @@ type EditFieldProps={
 const MotionBox = motion(Box);
 
 const EditField :React.FC<EditFieldProps>= ({label, value, isEditing, toggleKey, fieldKey, onChange})=>{
-    const {ui}= useMachines()
-    const { send: uiSend } = ui;
-    const { auth } = useAuthMachine();
-    const { send: authSend, context: authContext } = auth;
+    const { uiSend } = useMachines();
+    const { authState, authSend } = useAuthMachine();
+    const authContext = authState?.context;
 
     const [localValue, setLocalValue] = React.useState(value ?? "");
     const isUpdating = authContext.updatingProfile;

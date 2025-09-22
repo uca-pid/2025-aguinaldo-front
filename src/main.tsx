@@ -10,9 +10,9 @@ import { CircularProgress, Box } from "@mui/material";
 import { BrowserRouter } from "react-router-dom";
 
 const AppRouter = () => {
-  const { auth } = useAuthMachine();
-  
-  if (auth.context.loading) {
+  const { authState } = useAuthMachine();
+
+  if (authState?.context?.loading) {
     return (
       <Box 
         display="flex" 
@@ -27,8 +27,8 @@ const AppRouter = () => {
       </Box>
     );
   }
-  
-  return auth.isAuthenticated ? <App /> : <AuthScreen />;
+
+  return authState?.context.isAuthenticated ? <App /> : <AuthScreen />;
 };
 
 const Root = () => {

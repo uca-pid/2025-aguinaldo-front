@@ -27,13 +27,12 @@ import './EnableHours.css'
 const RangeRow = motion(Box);
 
 const EnableHours: React.FC = () => {
-    const { ui, turn } = useMachines();
-    const { send: uiSend } = ui;
-    const { context: turnContext, send: turnSend } = turn;
+    const { uiSend, turnState, turnSend } = useMachines();
+    const turnContext = turnState.context;
 
     const availability = turnContext.availability || [];
-    const enabledDays = availability.filter(day => day.enabled).length;
-    const totalRanges = availability.reduce((total, day) => total + (day.enabled ? day.ranges.length : 0), 0);
+    const enabledDays = availability.filter((day: any) => day.enabled).length;
+    const totalRanges = availability.reduce((total: any, day: any) => total + (day.enabled ? day.ranges.length : 0), 0);
 
     useEffect(() => {
         if (turnContext.accessToken && turnContext.userId) {
@@ -55,12 +54,12 @@ const EnableHours: React.FC = () => {
         let hasValidData = false;
         const errors: string[] = [];
         
-        availability.forEach((day) => {
+        availability.forEach((day: any) => {
             if (day.enabled) {
                 if (!day.ranges || day.ranges.length === 0) {
                     errors.push(`${day.day}: No hay rangos de horarios configurados`);
                 } else {
-                    day.ranges.forEach((range, rangeIndex) => {
+                    day.ranges.forEach((range: any, rangeIndex: number) => {
                         if (!range.start || !range.end) {
                             errors.push(`${day.day} - Rango ${rangeIndex + 1}: Falta hora de inicio o fin`);
                         } else {
@@ -169,7 +168,7 @@ const EnableHours: React.FC = () => {
                 <Box className="enablehours-content">
                     {/* Days Configuration */}
                     <Box className="enablehours-days-container">
-                        {availability.map((day, dayIndex) => (
+                        {availability.map((day: any, dayIndex: number) => (
                             <Box key={day.day} className="enablehours-day-container">
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -195,7 +194,7 @@ const EnableHours: React.FC = () => {
                                                     </Box>
                                                     {day.enabled && day.ranges.length > 0 && (
                                                         <Box className="enablehours-ranges-preview">
-                                                            {day.ranges.map((range, idx) => (
+                                                            {day.ranges.map((range: any, idx: number) => (
                                                                 <Typography key={idx} variant="body2" color="text.secondary">
                                                                     {range.start && range.end ? `${range.start} - ${range.end}` : 'Sin configurar'}
                                                                 </Typography>
@@ -240,7 +239,7 @@ const EnableHours: React.FC = () => {
                                                                 </Box>
                                                             ) : (
                                                                 <>
-                                                                    {day.ranges.map((range, rangeIndex) => (
+                                                                    {day.ranges.map((range: any, rangeIndex: number) => (
                                                                         <RangeRow
                                                                             key={rangeIndex}
                                                                             initial={{ opacity: 0, x: -10 }}

@@ -2,6 +2,18 @@ import { createMachine, assign, fromPromise } from "xstate";
 import { AdminService } from "#/service/admin-service.service";
 import type { PendingDoctor, DoctorApprovalResponse } from "#/models/Admin";
 
+export const ADMIN_USER_MACHINE_ID = "adminUser";
+export const ADMIN_USER_MACHINE_EVENT_TYPES = [
+  'FETCH_PENDING_DOCTORS',
+  'FETCH_ADMIN_STATS',
+  'APPROVE_DOCTOR', 
+  'REJECT_DOCTOR',
+  'SELECT_DOCTOR',
+  'CLEAR_SELECTION',
+  'CLEAR_ERROR',
+  'RETRY_LAST_OPERATION'
+];
+
 export interface AdminUserMachineContext {
   loading: boolean;
   error: string | null;

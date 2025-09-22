@@ -20,12 +20,10 @@ import DashboardCard from "../shared/DashboardCard/DashboardCard";
 import "./AdminDashboard.css";
 
 export default function AdminDashboard() {
-  const { auth } = useAuthMachine();
-  const { authResponse } = auth;
-  const { adminUser, ui } = useMachines();
-  const { context: adminContext, send: adminSend, state: adminState } = adminUser;
-  const { send: uiSend } = ui;
-  const user = authResponse as SignInResponse;
+  const { authState } = useAuthMachine();
+  const user = authState.context.user as SignInResponse | null;
+  const { uiSend, adminUserState, adminUserSend } = useMachines();
+  const adminContext = adminUserState.context;
 
   const stats = adminContext.adminStats;
   const loading = adminContext.loading;
@@ -33,16 +31,16 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (user?.accessToken) {
-      adminSend({ 
+      adminUserSend({ 
         type: 'FETCH_ADMIN_STATS', 
         accessToken: user.accessToken 
       });
     }
-  }, [user?.accessToken, adminSend]);
+  }, [user?.accessToken, adminUserSend]);
 
   const handleRetry = () => {
     if (user?.accessToken) {
-      adminSend({ 
+      adminUserSend({ 
         type: 'FETCH_PENDING_DOCTORS', 
         accessToken: user.accessToken 
       });
@@ -78,7 +76,7 @@ export default function AdminDashboard() {
                   Reintentar
                 </Button>
               }
-              onClose={() => adminSend({ type: 'CLEAR_ERROR' })}
+              onClose={() => adminUserSend({ type: 'CLEAR_ERROR' })}
             >
               {error}
             </Alert>
@@ -179,11 +177,11 @@ export default function AdminDashboard() {
             description="Revisar y aprobar solicitudes de registro de doctores"
             buttonText="Ver Solicitudes"
             onClick={() => {
-              adminSend({ type: 'FETCH_PENDING_DOCTORS', accessToken: user?.accessToken });
+              adminUserSend({ type: 'FETCH_PENDING_DOCTORS', accessToken: user?.accessToken });
               uiSend({ type: 'NAVIGATE', to: '/admin/pending' });
             }}
-            disabled={adminState.matches('fetchingPendingDoctors')}
-            loading={adminState.matches('fetchingPendingDoctors')}
+            disabled={adminUserState.matches('fetchingPendingDoctors')}
+            loading={adminUserState.matches('fetchingPendingDoctors')}
             badge={stats.pending}
           />
         </Box>

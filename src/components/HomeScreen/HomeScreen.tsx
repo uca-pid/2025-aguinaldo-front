@@ -8,8 +8,8 @@ import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
 
 const HomeScreen: React.FC = () => {
-  const { auth } = useAuthMachine();
-  const user = auth.authResponse as SignInResponse;
+  const { authState } = useAuthMachine();
+  const user = authState?.context?.user as SignInResponse;
 
   const USER_ROLE = user.role;
 

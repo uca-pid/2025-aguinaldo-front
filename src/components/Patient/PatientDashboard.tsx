@@ -19,13 +19,11 @@ import dayjs from "dayjs";
 import "./PatientDashboard.css";
 
 const PatientDashboard: React.FC = () => {
-  const { ui, turn } = useMachines();
-  const { auth } = useAuthMachine();
-  const { send: uiSend } = ui;
-  const authContext = auth.context;
-  const user = auth.authResponse as SignInResponse;
-  const { state: turnState, send: turnSend } = turn;
-  const turnContext = turnState.context;
+  const { uiSend, turnState, turnSend } = useMachines();
+  const { authState } = useAuthMachine();
+  const user: SignInResponse = authState?.context?.user || {};
+  const authContext = authState?.context || {};
+  const turnContext = turnState?.context || {};
 
   useEffect(() => {
     if (authContext.isAuthenticated && user.accessToken && user.id) {

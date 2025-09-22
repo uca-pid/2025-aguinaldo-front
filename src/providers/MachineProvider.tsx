@@ -1,70 +1,68 @@
-import React, { createContext,useContext } from 'react';
+import React, { createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
-import { useMachine } from '@xstate/react';
-import { uiMachine} from '../machines/uiMachine';
-import type { UiMachineContext, UiMachineEvent } from '../machines/uiMachine';
-import { turnMachine, type TurnMachineContext, type TurnMachineEvent } from '../machines/turnMachine';
-import doctorMachine, { type DoctorMachineContext, type DoctorMachineEvent } from '../machines/doctorMachine';
-import { adminUserMachine } from '#/machines/adminUserMachine';
-import { useNavigate } from 'react-router-dom';
+import { orchestrator } from '#/core/Orchestrator';
+import { useStateMachine } from '#/hooks/useStateMachine';
+import { uiMachine, UI_MACHINE_ID, UI_MACHINE_EVENT_TYPES, type UiMachineEvent } from '../machines/uiMachine';
+import { turnMachine, TURN_MACHINE_ID, TURN_MACHINE_EVENT_TYPES, type TurnMachineEvent } from '../machines/turnMachine';
+import doctorMachine, { DOCTOR_MACHINE_ID, DOCTOR_MACHINE_EVENT_TYPES, type DoctorMachineEvent } from '../machines/doctorMachine';
+import { adminUserMachine, ADMIN_USER_MACHINE_ID, ADMIN_USER_MACHINE_EVENT_TYPES } from '#/machines/adminUserMachine';
 
 interface MachineInstances {
-  ui: {
-    state: any;
-    send: (event: UiMachineEvent) => void;
-    context: UiMachineContext;
-  };
-  turn:{
-    state:any;
-    send: (event: TurnMachineEvent) => void;
-    context: TurnMachineContext;
-  };
-  doctor: {
-    state:any;
-    send: (event: DoctorMachineEvent) => void;
-    context: DoctorMachineContext;
-  };
-  adminUser: {
-    state:any;
-    send: (event: any) => void;
-    context: any;
-  };
+    uiState: any;
+    uiSend: (event: UiMachineEvent) => void;
+    turnState: any;
+    turnSend: (event: TurnMachineEvent) => void;
+    doctorState: any;
+    doctorSend: (event: DoctorMachineEvent) => void;
+    adminUserState: any;
+    adminUserSend: (event: any) => void;
 }
-
-const MachineContext = createContext<MachineInstances | null>(null);
 
 interface MachineProviderProps {
   children: ReactNode;
 }
 
+const MachineContext = createContext<MachineInstances | null>(null);
+
+orchestrator.registerMachine({
+  id: UI_MACHINE_ID,
+  machine: uiMachine,
+  eventTypes: UI_MACHINE_EVENT_TYPES
+});
+
+orchestrator.registerMachine({
+  id: TURN_MACHINE_ID,
+  machine: turnMachine,
+  eventTypes: TURN_MACHINE_EVENT_TYPES
+});
+
+orchestrator.registerMachine({
+  id: DOCTOR_MACHINE_ID,
+  machine: doctorMachine,
+  eventTypes: DOCTOR_MACHINE_EVENT_TYPES
+});
+
+orchestrator.registerMachine({
+  id: ADMIN_USER_MACHINE_ID,
+  machine: adminUserMachine,
+  eventTypes: ADMIN_USER_MACHINE_EVENT_TYPES
+});
+
 export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) => {
-  const navigate = useNavigate();
-  const [uiState, uiSend] = useMachine(uiMachine, { input: { navigate } });
-  const [turnState, turnSend] = useMachine(turnMachine);
-  const [doctorState, doctorSend] = useMachine(doctorMachine);
-  const [adminUserState, adminUserSend] = useMachine(adminUserMachine);
+  const { state: uiState, send: uiSend } = useStateMachine(UI_MACHINE_ID);
+  const { state: turnState, send: turnSend } = useStateMachine(TURN_MACHINE_ID);
+  const { state: doctorState, send: doctorSend } = useStateMachine(DOCTOR_MACHINE_ID);
+  const { state: adminUserState, send: adminUserSend } = useStateMachine(ADMIN_USER_MACHINE_ID);
 
   const machines: MachineInstances = {
-    ui: {
-      state: uiState,
-      send: uiSend,
-      context: uiState.context
-    },
-    turn:{
-      state:turnState,
-      send: turnSend,
-      context: turnState.context
-    },
-    doctor: {
-      state: doctorState,
-      send: doctorSend,
-      context: doctorState.context
-    },
-    adminUser: {
-      state: adminUserState,
-      send: adminUserSend,
-      context: adminUserState.context
-    }
+      uiState: uiState,
+      uiSend: uiSend,
+      turnState: turnState,
+      turnSend: turnSend,
+      doctorState: doctorState,
+      doctorSend: doctorSend,
+      adminUserState: adminUserState,
+      adminUserSend: adminUserSend
   };
 
   return (

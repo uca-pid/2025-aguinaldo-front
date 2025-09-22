@@ -24,14 +24,12 @@ import "./PendingScreen.css";
 
 
 export default function PendingScreen() {
-    const { auth } = useAuthMachine();
-    const { authResponse } = auth;
-    const user = authResponse as SignInResponse;
-    const { adminUser, ui } = useMachines();
-    const { context: adminContext, send: adminSend, state: adminState } = adminUser;
-    const { send: uiSend } = ui;
+  const { authState } = useAuthMachine();
+  const user = authState.context.user as SignInResponse | null;
+  const { adminUserState, adminUserSend, uiSend } = useMachines();
+  const adminContext = adminUserState.context;
 
-    const pendingDoctors = adminContext.pendingDoctors || [];
+  const pendingDoctors = adminContext.pendingDoctors || [];
 
     return (
     <Box className="pending-main-container">
@@ -106,32 +104,32 @@ export default function PendingScreen() {
                         <Button
                           variant="contained"
                           startIcon={<CheckCircleIcon />}
-                          onClick={() => adminSend({ 
+                          onClick={() => adminUserSend({ 
                             type: 'APPROVE_DOCTOR', 
                             doctorId: doctor.id,
                             accessToken: user?.accessToken
                           })}
-                          disabled={adminState.matches('approvingDoctor')}
+                          disabled={adminUserState.matches('approvingDoctor')}
                           className="pending-approve-button"
                         >
-                          {adminState.matches('approvingDoctor') ? 
+                          {adminUserState.matches('approvingDoctor') ? 
                             <CircularProgress size={16} sx={{ color: 'white', mr: 1 }} /> : null}
-                          {adminState.matches('approvingDoctor') ? 'Aprobando...' : 'Aprobar'}
+                          {adminUserState.matches('approvingDoctor') ? 'Aprobando...' : 'Aprobar'}
                         </Button>
                         <Button
                           variant="contained"
                           startIcon={<CancelIcon />}
-                          onClick={() => adminSend({ 
+                          onClick={() => adminUserSend({ 
                             type: 'REJECT_DOCTOR', 
                             doctorId: doctor.id,
                             accessToken: user?.accessToken
                           })}
-                          disabled={adminState.matches('rejectingDoctor')}
+                          disabled={adminUserState.matches('rejectingDoctor')}
                           className="pending-reject-button"
                         >
-                          {adminState.matches('rejectingDoctor') ? 
+                          {adminUserState.matches('rejectingDoctor') ? 
                             <CircularProgress size={16} sx={{ color: 'white', mr: 1 }} /> : null}
-                          {adminState.matches('rejectingDoctor') ? 'Rechazando...' : 'Rechazar'}
+                          {adminUserState.matches('rejectingDoctor') ? 'Rechazando...' : 'Rechazar'}
                         </Button>
                       </Box>
                     </Box>

@@ -2,6 +2,14 @@ import { createMachine, assign, fromPromise } from "xstate";
 import { DoctorService } from "../service/doctor-service.service";
 import type { Patient } from "../models/Doctor";
 
+export const DOCTOR_MACHINE_ID = "doctor";
+export const DOCTOR_MACHINE_EVENT_TYPES = [
+  "LOAD_PATIENTS",
+  "SET_AUTH",
+  "RETRY",
+  "RESET"
+];
+
 export interface DoctorMachineContext {
   patients: Patient[];
   isLoadingPatients: boolean;

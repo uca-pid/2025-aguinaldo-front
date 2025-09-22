@@ -14,28 +14,20 @@ const MotionCard = motion(Card);
 
 
 const ProfileScreen: React.FC = () => {
-    
+    const { authState, authSend } = useAuthMachine();
+    const { uiState } = useMachines();
+    const user = authState?.context?.user as SignInResponse | null;
+    const profile = authState?.context?.profile;
+    const uiContext = uiState?.context || {};
 
-    const { auth } = useAuthMachine();
-    const { context: authContext, send: authSend } = auth;
-    const user = auth.authResponse as SignInResponse;
-    
-    const profile = authContext.profile;
-
-    const {ui}= useMachines()
-    const { context: uiContext } = ui;
     const formContext = uiContext.toggleStates || {};
     const name= formContext["editName"] ?? false;
     const surname= formContext["editSurname"] ?? false;
-    const email= formContext["editEmail"] ?? false;
     const phone= formContext["editNumberPhone"] ?? false;
     const speciality= formContext["editSpeciality"]??false;
     const minutes= formContext["editMinutes"] ?? false;
-    const dni= formContext["editDni"] ?? false;
     const gender= formContext["editGender"] ?? false;
     const birthdate= formContext["editBirthdate"] ?? false;
-
-    
 ;
     
     useEffect(() => {
@@ -110,7 +102,7 @@ const ProfileScreen: React.FC = () => {
                             <EditField key ="gender" label="Género" value={profile.gender} isEditing={gender} toggleKey="editGender" fieldKey="gender" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "gender", value: val })}/>
                             <EditField key="birthdate" label="Fecha de nacimiento" value={profile.birthdate} isEditing={birthdate} toggleKey="editBirthdate" fieldKey="birthdate" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "birthdate", value: val })}/>
 
-                            {user.role === 'DOCTOR' && (
+                            {user?.role === 'DOCTOR' && (
                             <>
 
                                 <ListItem>

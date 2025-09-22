@@ -17,27 +17,24 @@ import DoctorViewTurns from './components/Doctor/DoctorViewTurns'
 
 function AppContent() {
   const navigate = useNavigate();
-  const { auth } = useAuthMachine();
-  const { authResponse, context: authContext } = auth;
-  const {ui} = useMachines();
-  const { context: uiContext, send: uiSend } = ui;
-  const user = authResponse as SignInResponse;
+  const { authState, authSend } = useAuthMachine();
+  const user = authState.context.user as SignInResponse;
+  const authContext = authState.context;
+
+  const { uiState, uiSend } = useMachines();
+  const uiContext = uiState.context;
   
-  // Usar el perfil actualizado si está disponible, sino usar authResponse
   const userName = authContext.profile?.name || user.name;
   const userRole = authContext.profile?.role || user.role;
 
   const open = Boolean(uiContext.toggleStates?.["userMenu"]);
 
   useEffect(() => {
-    if (uiContext.navigationRequested) {
-      navigate(uiContext.navigationRequested);
-      uiSend({ type: "NAVIGATE", to: null });
-    }
-  }, [uiContext.navigationRequested, navigate, uiSend]);
+    uiSend({ type: "ADD_NAVIGATE_HOOK", navigate, initialPath: window.location.pathname });
+  }, [uiSend, navigate]);
 
   const handleLogout = () => {
-    auth.send({ type: 'LOGOUT' });
+    authSend({ type: 'LOGOUT' });
   };
 
   const handleNavigateToProfile = () => {

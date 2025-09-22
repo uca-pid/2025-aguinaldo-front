@@ -4,6 +4,23 @@ import { AuthService } from "../service/auth-service.service";
 import { RegisterResponse, SignInResponse, ApiErrorResponse } from "../models/Auth";
 import { ProfileResponse } from "../models/Auth";
 
+export const AUTH_MACHINE_ID = "auth";
+export const AUTH_MACHINE_EVENT_TYPES = [
+  'USER_AUTHENTICATED',
+  'LOGOUT',
+  'UPDATE_FORM',
+  'TOGGLE_USER_TYPE',
+  'TOGGLE_MODE',
+  'SUBMIT',
+  'API_SUCCESS',
+  'API_ERROR',
+  'CHECK_AUTH',
+  'SAVE_PROFILE',
+  'UPDATE_PROFILE',
+  'CANCEL_PROFILE_EDIT',
+  'DEACTIVATE_ACCOUNT'
+];
+
 export interface AuthMachineContext {
   mode: "login" | "register";
   isPatient: boolean;
