@@ -18,8 +18,6 @@ export const TURN_MACHINE_EVENT_TYPES = [
   "CREATE_TURN",
   "CANCEL_TURN",
   "CLEAR_CANCEL_SUCCESS",
-  "API_SUCCESS",
-  "API_ERROR"
 ];
 
 export interface TurnMachineContext {
@@ -66,8 +64,6 @@ export type TurnMachineEvent =
   | { type: "CREATE_TURN" }
   | { type: "CANCEL_TURN"; turnId: string }
   | { type: "CLEAR_CANCEL_SUCCESS" }
-  | { type: "API_SUCCESS"; data: any; action: string }
-  | { type: "API_ERROR"; error: string; action: string };
 
 export const turnMachine = createMachine({
   id: "turnMachine",

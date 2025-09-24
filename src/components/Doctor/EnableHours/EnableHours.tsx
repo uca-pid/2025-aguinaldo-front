@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback } from "react";
 import { 
   Avatar, 
   Box, 
@@ -33,11 +33,6 @@ const EnableHours: React.FC = () => {
     const availability = doctorContext.availability || [];
     const enabledDays = availability.filter((day: any) => day.enabled).length;
     const totalRanges = availability.reduce((total: any, day: any) => total + (day.enabled ? day.ranges.length : 0), 0);
-
-    useEffect(() => {
-        // Initialize availability page - this will only load once when component mounts
-        doctorSend({ type: "INIT_AVAILABILITY_PAGE" });
-    }, [doctorSend]);
 
     const handleBack = () => {
         uiSend({ type: "NAVIGATE", to: "/dashboard" });

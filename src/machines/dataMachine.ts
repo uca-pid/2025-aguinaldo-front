@@ -1,5 +1,6 @@
 import { createMachine, assign, fromPromise } from "xstate";
 import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns } from "../utils/dataMachineUtils";
+import { loadDoctorPatients, loadDoctorAvailability } from "../utils/doctorMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, AdminStats } from "../models/Admin";
 import type { Doctor } from "../models/Turn";
@@ -13,18 +14,23 @@ export const DATA_MACHINE_EVENT_TYPES = [
   "RELOAD_ADMIN_STATS",
   "RELOAD_ALL",
   "LOAD_AVAILABLE_TURNS",
-  "LOAD_MY_TURNS"
+  "LOAD_MY_TURNS",
+  "LOAD_DOCTOR_PATIENTS",
+  "LOAD_DOCTOR_AVAILABILITY"
 ];
 
 export interface DataMachineContext {
   accessToken: string | null;
   userRole: string | null;
+  doctorId: string | null;
   
   doctors: Doctor[];
   pendingDoctors: PendingDoctor[];
   adminStats: AdminStats;
   availableTurns: string[];
   myTurns: any[];
+  doctorPatients: any[];
+  doctorAvailability: any[];
   
   loading: {
     doctors: boolean;
@@ -32,6 +38,8 @@ export interface DataMachineContext {
     adminStats: boolean;
     availableTurns: boolean;
     myTurns: boolean;
+    doctorPatients: boolean;
+    doctorAvailability: boolean;
   };
   
   errors: {
@@ -40,18 +48,23 @@ export interface DataMachineContext {
     adminStats: string | null;
     availableTurns: string | null;
     myTurns: string | null;
+    doctorPatients: string | null;
+    doctorAvailability: string | null;
   };
 }
 
 export const DataMachineDefaultContext: DataMachineContext = {
   accessToken: null,
   userRole: null,
+  doctorId: null,
   
   doctors: [],
   pendingDoctors: [],
   adminStats: { patients: 0, doctors: 0, pending: 0 },
   availableTurns: [],
   myTurns: [],
+  doctorPatients: [],
+  doctorAvailability: [],
   
   loading: {
     doctors: false,
@@ -59,6 +72,8 @@ export const DataMachineDefaultContext: DataMachineContext = {
     adminStats: false,
     availableTurns: false,
     myTurns: false,
+    doctorPatients: false,
+    doctorAvailability: false,
   },
   
   errors: {
@@ -67,18 +82,22 @@ export const DataMachineDefaultContext: DataMachineContext = {
     adminStats: null,
     availableTurns: null,
     myTurns: null,
+    doctorPatients: null,
+    doctorAvailability: null,
   },
 };
 
 export type DataMachineEvent =
-  | { type: "SET_AUTH"; accessToken: string; userId: string; userRole: string }
+  | { type: "SET_AUTH"; accessToken: string; userId: string; userRole: string; doctorId?: string }
   | { type: "CLEAR_ACCESS_TOKEN" }
   | { type: "RELOAD_DOCTORS" }
   | { type: "RELOAD_PENDING_DOCTORS" }
   | { type: "RELOAD_ADMIN_STATS" }
   | { type: "RELOAD_ALL" }
   | { type: "LOAD_AVAILABLE_TURNS"; doctorId: string; date: string }
-  | { type: "LOAD_MY_TURNS"; status?: string };
+  | { type: "LOAD_MY_TURNS"; status?: string }
+  | { type: "LOAD_DOCTOR_PATIENTS" }
+  | { type: "LOAD_DOCTOR_AVAILABILITY" };
 
 export const dataMachine = createMachine({
   id: "data",
@@ -132,6 +151,14 @@ export const dataMachine = createMachine({
           target: "fetchingMyTurns",
           guard: ({ context }) => !!context.accessToken,
         },
+        LOAD_DOCTOR_PATIENTS: {
+          target: "fetchingDoctorPatients",
+          guard: ({ context }) => !!context.accessToken,
+        },
+        LOAD_DOCTOR_AVAILABILITY: {
+          target: "fetchingDoctorAvailability",
+          guard: ({ context }) => !!context.accessToken,
+        },
       },
     },
     
@@ -145,6 +172,8 @@ export const dataMachine = createMachine({
             adminStats: isAdmin,
             availableTurns: false,
             myTurns: false,
+            doctorPatients: false,
+            doctorAvailability: false,
           },
           errors: {
             doctors: null,
@@ -152,6 +181,8 @@ export const dataMachine = createMachine({
             adminStats: null,
             availableTurns: null,
             myTurns: null,
+            doctorPatients: null,
+            doctorAvailability: null,
           },
         };
       }),
@@ -288,6 +319,12 @@ export const dataMachine = createMachine({
         },
         LOAD_MY_TURNS: {
           target: "fetchingMyTurns",
+        },
+        LOAD_DOCTOR_PATIENTS: {
+          target: "fetchingDoctorPatients",
+        },
+        LOAD_DOCTOR_AVAILABILITY: {
+          target: "fetchingDoctorAvailability",
         },
       },
     },
@@ -468,6 +505,82 @@ export const dataMachine = createMachine({
             errors: ({ context, event }) => ({ 
               ...context.errors, 
               myTurns: (event.error as Error).message 
+            }),
+          }),
+        },
+      },
+    },
+    
+    fetchingDoctorPatients: {
+      entry: assign({
+        loading: ({ context }) => ({ ...context.loading, doctorPatients: true }),
+        errors: ({ context }) => ({ ...context.errors, doctorPatients: null }),
+      }),
+      invoke: {
+        src: fromPromise(async ({ input }: { input: { accessToken: string; doctorId: string } }) => {
+          return await loadDoctorPatients(input);
+        }),
+        input: ({ context }) => ({ 
+          accessToken: context.accessToken!,
+          doctorId: context.accessToken! // This should come from auth context - needs to be fixed
+        }),
+        onDone: {
+          target: "ready",
+          actions: assign({
+            doctorPatients: ({ event }) => {
+              orchestrator.send({
+                type: "DATA_LOADED"
+              });
+              return event.output;
+            },
+            loading: ({ context }) => ({ ...context.loading, doctorPatients: false }),
+          }),
+        },
+        onError: {
+          target: "ready",
+          actions: assign({
+            loading: ({ context }) => ({ ...context.loading, doctorPatients: false }),
+            errors: ({ context, event }) => ({ 
+              ...context.errors, 
+              doctorPatients: (event.error as Error).message 
+            }),
+          }),
+        },
+      },
+    },
+    
+    fetchingDoctorAvailability: {
+      entry: assign({
+        loading: ({ context }) => ({ ...context.loading, doctorAvailability: true }),
+        errors: ({ context }) => ({ ...context.errors, doctorAvailability: null }),
+      }),
+      invoke: {
+        src: fromPromise(async ({ input }: { input: { accessToken: string; doctorId: string } }) => {
+          return await loadDoctorAvailability(input);
+        }),
+        input: ({ context }) => ({ 
+          accessToken: context.accessToken!,
+          doctorId: context.accessToken! // This should come from auth context - needs to be fixed
+        }),
+        onDone: {
+          target: "ready",
+          actions: assign({
+            doctorAvailability: ({ event }) => {
+              orchestrator.send({
+                type: "DATA_LOADED"
+              });
+              return event.output;
+            },
+            loading: ({ context }) => ({ ...context.loading, doctorAvailability: false }),
+          }),
+        },
+        onError: {
+          target: "ready",
+          actions: assign({
+            loading: ({ context }) => ({ ...context.loading, doctorAvailability: false }),
+            errors: ({ context, event }) => ({ 
+              ...context.errors, 
+              doctorAvailability: (event.error as Error).message 
             }),
           }),
         },

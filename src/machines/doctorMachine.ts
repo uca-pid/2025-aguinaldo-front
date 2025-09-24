@@ -1,11 +1,13 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { loadDoctorPatients, loadDoctorAvailability, saveDoctorAvailability } from "../utils/doctorMachineUtils";
+import { saveDoctorAvailability } from "../utils/doctorMachineUtils";
+import { orchestrator } from "#/core/Orchestrator";
+import { DATA_MACHINE_ID } from "./dataMachine";
 import type { Patient } from "../models/Doctor";
 
 export const DOCTOR_MACHINE_ID = "doctor";
 export const DOCTOR_MACHINE_EVENT_TYPES = [
-  "LOAD_PATIENTS",
   "SET_AUTH",
+  "DATA_LOADED",
   "RETRY",
   "RESET",
   "TOGGLE_DAY",
@@ -13,7 +15,6 @@ export const DOCTOR_MACHINE_EVENT_TYPES = [
   "REMOVE_RANGE",
   "UPDATE_RANGE",
   "SAVE_AVAILABILITY",
-  "LOAD_AVAILABILITY",
   "SET_PATIENT_SEARCH",
   "INIT_AVAILABILITY_PAGE",
   "INIT_PATIENTS_PAGE"
@@ -45,8 +46,8 @@ export interface DoctorMachineContext {
 }
 
 export type DoctorMachineEvent =
-  | { type: "LOAD_PATIENTS" }
   | { type: "SET_AUTH"; accessToken: string; userId: string; userRole?: string }
+  | { type: "DATA_LOADED" }
   | { type: "RETRY" }
   | { type: "RESET" }
   | { type: "TOGGLE_DAY"; index: number }
@@ -54,7 +55,6 @@ export type DoctorMachineEvent =
   | { type: "REMOVE_RANGE"; dayIndex: number; rangeIndex: number }
   | { type: "UPDATE_RANGE"; dayIndex: number; rangeIndex: number; field: "start" | "end"; value: string }
   | { type: "SAVE_AVAILABILITY" }
-  | { type: "LOAD_AVAILABILITY" }
   | { type: "SET_PATIENT_SEARCH"; searchTerm: string }
   | { type: "INIT_AVAILABILITY_PAGE" }
   | { type: "INIT_PATIENTS_PAGE" };
@@ -91,60 +91,32 @@ const doctorMachine = createMachine({
       states: {
         idle: {
           on: {
-            LOAD_PATIENTS: {
-              target: "loadingPatients",
-              guard: ({ context }) => !!context.accessToken && !!context.doctorId,
-            },
-          },
-        },
-
-        loadingPatients: {
-          entry: assign({
-            isLoadingPatients: true,
-            patientsError: null,
-          }),
-
-          invoke: {
-            src: fromPromise(async ({ input }: { input: { accessToken: string; doctorId: string } }) => {
-              return await loadDoctorPatients(input);
-            }),
-
-            input: ({ context }) => ({
-              accessToken: context.accessToken!,
-              doctorId: context.doctorId!,
-            }),
-
-            onDone: {
-              target: "success",
-              actions: assign({
-                patients: ({ event }) => event.output,
-                isLoadingPatients: false,
-                patientsError: null,
+            DATA_LOADED: {
+              actions: assign(() => {
+                try {
+                  const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
+                  const dataContext = dataSnapshot.context;
+                  return {
+                    patients: dataContext.doctorPatients || [],
+                    isLoadingPatients: false,
+                    patientsError: null,
+                  };
+                } catch (error) {
+                  console.warn("Could not get dataMachine snapshot:", error);
+                  return {};
+                }
               }),
             },
-
-            onError: {
-              target: "error",
-              actions: assign({
-                isLoadingPatients: false,
-                patientsError: "Error al cargar pacientes",
-              }),
+            RETRY: {
+              actions: ({ context }) => {
+                if (context.accessToken && context.doctorId) {
+                  orchestrator.send({
+                    type: "LOAD_DOCTOR_PATIENTS"
+                  });
+                }
+              },
             },
-          },
-        },
-
-        success: {
-          on: {
-            LOAD_PATIENTS: "loadingPatients",
-            RETRY: "loadingPatients",
-          },
-        },
-
-        error: {
-          on: {
-            RETRY: "loadingPatients",
             RESET: {
-              target: "idle",
               actions: assign({
                 patients: [],
                 patientsError: null,
@@ -209,31 +181,11 @@ const doctorMachine = createMachine({
               }),
             },
             SAVE_AVAILABILITY: "saving",
-            LOAD_AVAILABILITY: "loading",
-          },
-        },
-      
-        loading: {
-          entry: assign({
-            isLoadingAvailability: true,
-            availabilityError: null
-          }),
-          
-          invoke: {
-            src: fromPromise(async ({ input }: { input: { accessToken: string; doctorId: string } }) => {
-              return await loadDoctorAvailability(input);
-            }),
-
-            input: ({ context }) => ({
-              accessToken: context.accessToken!,
-              doctorId: context.doctorId!
-            }),
-
-            onDone: { 
-              target: "idle",
-              actions: assign({
-                availability: ({ event, context }) => {
-                  const response = event.output as any;
+            DATA_LOADED: {
+              actions: assign(() => {
+                try {
+                  const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
+                  const dataContext = dataSnapshot.context;
                   
                   const dayMapping: { [key: string]: string } = {
                     "MONDAY": "Lunes",
@@ -245,41 +197,28 @@ const doctorMachine = createMachine({
                     "SUNDAY": "Domingo"
                   };
                   
-                  if (response && response.weeklyAvailability && response.weeklyAvailability.length > 0) {
-                    console.log('Loading availability from API:', response.weeklyAvailability);
-                    
-                    return response.weeklyAvailability.map((day: any) => ({
-                      day: dayMapping[day.day] || day.day,
-                      enabled: day.enabled,
-                      ranges: day.ranges || [{ start: "", end: "" }]
-                    }));
+                  const availabilityData = dataContext.doctorAvailability as any;
+                  if (availabilityData && availabilityData.weeklyAvailability && availabilityData.weeklyAvailability.length > 0) {
+                    return {
+                      availability: availabilityData.weeklyAvailability.map((day: any) => ({
+                        day: dayMapping[day.day] || day.day,
+                        enabled: day.enabled,
+                        ranges: day.ranges || [{ start: "", end: "" }]
+                      })),
+                      isLoadingAvailability: false,
+                      availabilityError: null,
+                    };
                   }
                   
-                  console.log('No availability data received, using default availability');
-                  return context.availability;
-                },
-                availabilityError: () => null,
-                isLoadingAvailability: false
-              })
-            },
-            onError: { 
-              target: "idle",
-              actions: assign({
-                availabilityError: ({ event }) => {
-                  const error = event.error as Error;
-                  if (error?.message?.includes('Failed to fetch') || error?.message?.includes('fetch')) {
-                    return "No se pudo conectar con el servidor. Verifica tu conexión.";
-                  }
-                  if (error?.message?.includes('404')) {
-                    return "Disponibilidad no encontrada. Se usará la configuración por defecto.";
-                  }
-                  if (error?.message?.includes('401') || error?.message?.includes('403')) {
-                    return "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
-                  }
-                  return error?.message || "Error al cargar la disponibilidad.";
-                }, 
-                isLoadingAvailability: false
-              })
+                  return {
+                    isLoadingAvailability: false,
+                    availabilityError: null,
+                  };
+                } catch (error) {
+                  console.warn("Could not get dataMachine snapshot:", error);
+                  return {};
+                }
+              }),
             },
           },
         },
@@ -346,16 +285,16 @@ const doctorMachine = createMachine({
       }),
     },
     INIT_AVAILABILITY_PAGE: {
-      actions: ({ context, self }) => {
+      actions: ({ context }) => {
         if (context.accessToken && context.doctorId) {
-          self.send({ type: "LOAD_AVAILABILITY" });
+          orchestrator.send({ type: "LOAD_DOCTOR_AVAILABILITY" });
         }
       },
     },
     INIT_PATIENTS_PAGE: {
-      actions: ({ context, self }) => {
+      actions: ({ context }) => {
         if (context.accessToken && context.doctorId) {
-          self.send({ type: "LOAD_PATIENTS" });
+          orchestrator.send({ type: "LOAD_DOCTOR_PATIENTS" });
         }
       },
     },

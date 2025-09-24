@@ -14,7 +14,6 @@ import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { useMachines } from "#/providers/MachineProvider"
 import { PeopleOutlined, SearchOutlined, PersonOutlined, BadgeOutlined, ArrowBack } from '@mui/icons-material'
-import { useEffect } from 'react'
 import { Patient, calculateAge } from "#/models/Doctor"
 import './ViewPatients.css'
 
@@ -26,11 +25,6 @@ const ViewPatients: React.FC = () => {
     const isLoading = doctorContext.isLoadingPatients;
     const error = doctorContext.patientsError;
     const searchTerm = doctorContext.patientSearchTerm;
-
-    useEffect(() => {
-        // Initialize patients page - this will load patients if authenticated
-        doctorSend({ type: "INIT_PATIENTS_PAGE" });
-    }, [doctorSend]);
 
     const handleBack = () => {
         uiSend({ type: "NAVIGATE", to: "/dashboard" });
