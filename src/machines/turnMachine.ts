@@ -1,6 +1,6 @@
 import { createMachine, assign, fromPromise } from "xstate";
 import { Dayjs } from "dayjs";
-import { TurnService } from "../service/turn-service.service";
+import { reserveTurn, createTurn } from "../utils/turnMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { Doctor, TurnResponse } from "../models/Turn";
 import { DATA_MACHINE_ID } from "./dataMachine";
@@ -219,10 +219,7 @@ export const turnMachine = createMachine({
           }),
           invoke: {
             src: fromPromise(async ({ input }: { input: { accessToken: string; userId: string; turnId: string } }) => {
-              return await TurnService.reserveTurn(
-                { turnId: input.turnId, patientId: input.userId },
-                input.accessToken
-              );
+              return await reserveTurn(input);
             }),
             input: ({ context, event }) => ({
               accessToken: context.accessToken!,
@@ -252,14 +249,7 @@ export const turnMachine = createMachine({
           }),
           invoke: {
             src: fromPromise(async ({ input }: { input: { accessToken: string; userId: string; doctorId: string; scheduledAt: string } }) => {
-              return await TurnService.createTurn(
-                {
-                  doctorId: input.doctorId,
-                  patientId: input.userId,
-                  scheduledAt: input.scheduledAt,
-                },
-                input.accessToken
-              );
+              return await createTurn(input);
             }),
             input: ({ context }) => {
               const inputData = {

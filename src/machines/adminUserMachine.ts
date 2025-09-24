@@ -1,5 +1,5 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { AdminService } from "#/service/admin-service.service";
+import { approveDoctor, rejectDoctor } from "../utils/adminUserMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, DoctorApprovalResponse } from "#/models/Admin";
 import { DATA_MACHINE_ID } from "./dataMachine";
@@ -116,7 +116,7 @@ export const adminUserMachine = createMachine({
       })),
       invoke: {
         src: fromPromise(async ({ input }: { input: { doctorId: string; accessToken: string } }) => {
-          return await AdminService.approveDoctor(input.doctorId, input.accessToken);
+          return await approveDoctor(input);
         }),
         input: ({ event }) => ({
           doctorId: (event as any).doctorId,
@@ -170,7 +170,7 @@ export const adminUserMachine = createMachine({
       })),
       invoke: {
         src: fromPromise(async ({ input }: { input: { doctorId: string; accessToken: string } }) => {
-          return await AdminService.rejectDoctor(input.doctorId, input.accessToken);
+          return await rejectDoctor(input);
         }),
         input: ({ event }) => ({
           doctorId: (event as any).doctorId,

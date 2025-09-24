@@ -10,9 +10,9 @@ import ProfileScreen from './components/ProfileScreen/ProfileScreen'
 import { useEffect } from 'react'
 import ReservationTurns from './components/Patient/ReservationTurns'
 import ViewTurns from './components/Patient/ViewTurns'
-import EnableHours from './components/Doctor/EnableHours'
-import ViewPatients from './components/Doctor/ViewPatients'
-import DoctorViewTurns from './components/Doctor/DoctorViewTurns'
+import EnableHours from './components/Doctor/EnableHours/EnableHours'
+import ViewPatients from './components/Doctor/ViewPatients/ViewPatients'
+import DoctorViewTurns from './components/Doctor/DoctorViewTurns/DoctorViewTurns'
 
 function AppContent() {
   const navigate = useNavigate();

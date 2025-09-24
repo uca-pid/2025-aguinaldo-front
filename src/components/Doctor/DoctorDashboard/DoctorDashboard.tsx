@@ -14,8 +14,8 @@ import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import DashboardCard from "../shared/DashboardCard/DashboardCard";
-import DashboardUpcomingCard from "../shared/DashboardUpcomingCard/DashboardUpcomingCard";
+import DashboardCard from "../../shared/DashboardCard/DashboardCard";
+import DashboardUpcomingCard from "../../shared/DashboardUpcomingCard/DashboardUpcomingCard";
 import dayjs from "dayjs";
 import "./DoctorDashboard.css";
 

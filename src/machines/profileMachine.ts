@@ -1,5 +1,5 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { AuthService } from "../service/auth-service.service";
+import { loadProfile, updateProfile, deactivateAccount } from "../utils/profileMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { ProfileResponse } from "../models/Auth";
 
@@ -58,7 +58,7 @@ export const ProfileMachineDefaultContext: ProfileMachineContext = {
 };
 
 export type ProfileMachineEvent =
-  | { type: "SET_AUTH"; accessToken: string; userId: string }
+  | { type: "SET_AUTH"; accessToken: string; userId: string; userRole?: string }
   | { type: "LOGOUT" }
   | { type: "SAVE_PROFILE" }
   | { type: "UPDATE_PROFILE" }
@@ -135,8 +135,7 @@ export const profileMachine = createMachine({
       }),
       invoke: {
         src: fromPromise(async ({ input }: { input: { accessToken: string; userId: string } }) => {
-          const profile = await AuthService.getProfile(input.accessToken, input.userId);
-          return profile;
+          return await loadProfile(input);
         }),
         input: ({ context }) => ({
           accessToken: context.accessToken!,
@@ -200,12 +199,11 @@ export const profileMachine = createMachine({
             }
           });
 
-          const updatedProfile = await AuthService.updateProfile(
-            input.accessToken, 
-            input.userId, 
-            updateData
-          );
-          return updatedProfile;
+          return await updateProfile({
+            accessToken: input.accessToken,
+            userId: input.userId,
+            formValues: input.formValues
+          });
         }),
         input: ({ context }) => ({
           accessToken: context.accessToken!,
@@ -255,7 +253,7 @@ export const profileMachine = createMachine({
       invoke: {
         src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
           console.log('Starting account deactivation from profile machine...');
-          await AuthService.deactivateAccount(input.accessToken);
+          await deactivateAccount(input);
           console.log('Account deactivation completed from profile machine');
           return { success: true };
         }),

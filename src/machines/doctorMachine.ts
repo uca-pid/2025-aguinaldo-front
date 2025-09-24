@@ -1,5 +1,5 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { DoctorService, type DoctorAvailabilityRequest } from "../service/doctor-service.service";
+import { loadDoctorPatients, loadDoctorAvailability, saveDoctorAvailability } from "../utils/doctorMachineUtils";
 import type { Patient } from "../models/Doctor";
 
 export const DOCTOR_MACHINE_ID = "doctor";
@@ -42,7 +42,7 @@ export interface DoctorMachineContext {
 
 export type DoctorMachineEvent =
   | { type: "LOAD_PATIENTS" }
-  | { type: "SET_AUTH"; accessToken: string; doctorId: string }
+  | { type: "SET_AUTH"; accessToken: string; userId: string; userRole?: string }
   | { type: "RETRY" }
   | { type: "RESET" }
   | { type: "TOGGLE_DAY"; index: number }
@@ -98,7 +98,7 @@ const doctorMachine = createMachine({
 
           invoke: {
             src: fromPromise(async ({ input }: { input: { accessToken: string; doctorId: string } }) => {
-              return await DoctorService.getDoctorPatients(input.accessToken, input.doctorId);
+              return await loadDoctorPatients(input);
             }),
 
             input: ({ context }) => ({
@@ -204,7 +204,7 @@ const doctorMachine = createMachine({
             LOAD_AVAILABILITY: "loading",
           },
         },
-        
+      
         loading: {
           entry: assign({
             isLoadingAvailability: true,
@@ -213,8 +213,7 @@ const doctorMachine = createMachine({
           
           invoke: {
             src: fromPromise(async ({ input }: { input: { accessToken: string; doctorId: string } }) => {
-              const response = await DoctorService.getAvailability(input.accessToken, input.doctorId);
-              return response;
+              return await loadDoctorAvailability(input);
             }),
 
             input: ({ context }) => ({
@@ -248,7 +247,7 @@ const doctorMachine = createMachine({
                     }));
                   }
                   
-                  console.log('No API data found, using default availability');
+                  console.log('No availability data received, using default availability');
                   return context.availability;
                 },
                 availabilityError: () => null,
@@ -258,7 +257,19 @@ const doctorMachine = createMachine({
             onError: { 
               target: "idle",
               actions: assign({
-                availabilityError: () => null, 
+                availabilityError: ({ event }) => {
+                  const error = event.error as Error;
+                  if (error?.message?.includes('Failed to fetch') || error?.message?.includes('fetch')) {
+                    return "No se pudo conectar con el servidor. Verifica tu conexión.";
+                  }
+                  if (error?.message?.includes('404')) {
+                    return "Disponibilidad no encontrada. Se usará la configuración por defecto.";
+                  }
+                  if (error?.message?.includes('401') || error?.message?.includes('403')) {
+                    return "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
+                  }
+                  return error?.message || "Error al cargar la disponibilidad.";
+                }, 
                 isLoadingAvailability: false
               })
             },
@@ -273,50 +284,7 @@ const doctorMachine = createMachine({
           
           invoke: {
             src: fromPromise(async ({ input }: { input: { accessToken: string; doctorId: string; availability: DayAvailability[] } }) => {
-              const dayMapping: { [key: string]: string } = {
-                "LUNES": "MONDAY",
-                "MARTES": "TUESDAY", 
-                "MIÉRCOLES": "WEDNESDAY",
-                "MIERCOLES": "WEDNESDAY",
-                "JUEVES": "THURSDAY",
-                "VIERNES": "FRIDAY",
-                "SÁBADO": "SATURDAY",
-                "SABADO": "SATURDAY",
-                "DOMINGO": "SUNDAY"
-              };
-
-              const availabilityRequest: DoctorAvailabilityRequest = {
-                slotDurationMin: 30, 
-                weeklyAvailability: input.availability.map((day: DayAvailability) => {
-                  const spanishDay = day.day.toUpperCase();
-                  const englishDay = dayMapping[spanishDay] || spanishDay;
-                  
-                  console.log(`Mapping day: ${day.day} -> ${spanishDay} -> ${englishDay}`);
-                  
-                  return {
-                    day: englishDay,
-                    enabled: day.enabled,
-                    ranges: (day.ranges || []).filter(range => {
-                      if (!range.start || !range.end) return false;
-                      
-                      const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-                      const isValidStart = timeRegex.test(range.start);
-                      const isValidEnd = timeRegex.test(range.end);
-                      
-                      if (!isValidStart || !isValidEnd) {
-                        console.warn(`Invalid time format: start=${range.start}, end=${range.end}`);
-                        return false;
-                      }
-                      
-                      return true;
-                    })
-                  };
-                })
-              };
-
-              console.log('Sending availability request:', JSON.stringify(availabilityRequest, null, 2));
-              await DoctorService.saveAvailability(input.accessToken, input.doctorId, availabilityRequest);
-              return "Availability saved successfully";
+              return await saveDoctorAvailability(input);
             }),
 
             input: ({ context }) => ({
@@ -361,7 +329,7 @@ const doctorMachine = createMachine({
     SET_AUTH: {
       actions: assign({
         accessToken: ({ event }) => event.accessToken,
-        doctorId: ({ event }) => event.doctorId,
+        doctorId: ({ event }) => event.userId, // For doctors, userId is the same as doctorId
       }),
     },
   },

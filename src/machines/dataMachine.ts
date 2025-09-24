@@ -1,13 +1,12 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { AdminService } from "../service/admin-service.service";
-import { TurnService } from "../service/turn-service.service";
+import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns } from "../utils/dataMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, AdminStats } from "../models/Admin";
 import type { Doctor } from "../models/Turn";
 
 export const DATA_MACHINE_ID = "data";
 export const DATA_MACHINE_EVENT_TYPES = [
-  "SET_ACCESS_TOKEN",
+  "SET_AUTH",
   "CLEAR_ACCESS_TOKEN", 
   "RELOAD_DOCTORS",
   "RELOAD_PENDING_DOCTORS", 
@@ -19,6 +18,7 @@ export const DATA_MACHINE_EVENT_TYPES = [
 
 export interface DataMachineContext {
   accessToken: string | null;
+  userRole: string | null;
   
   doctors: Doctor[];
   pendingDoctors: PendingDoctor[];
@@ -45,6 +45,7 @@ export interface DataMachineContext {
 
 export const DataMachineDefaultContext: DataMachineContext = {
   accessToken: null,
+  userRole: null,
   
   doctors: [],
   pendingDoctors: [],
@@ -70,7 +71,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
 };
 
 export type DataMachineEvent =
-  | { type: "SET_ACCESS_TOKEN"; accessToken: string }
+  | { type: "SET_AUTH"; accessToken: string; userId: string; userRole: string }
   | { type: "CLEAR_ACCESS_TOKEN" }
   | { type: "RELOAD_DOCTORS" }
   | { type: "RELOAD_PENDING_DOCTORS" }
@@ -90,10 +91,11 @@ export const dataMachine = createMachine({
   states: {
     idle: {
       on: {
-        SET_ACCESS_TOKEN: {
+        SET_AUTH: {
           target: "loadingInitialData",
           actions: assign({
             accessToken: ({ event }) => event.accessToken,
+            userRole: ({ event }) => event.userRole,
           }),
         },
         CLEAR_ACCESS_TOKEN: {
@@ -134,27 +136,30 @@ export const dataMachine = createMachine({
     },
     
     loadingInitialData: {
-      entry: assign({
-        loading: {
-          doctors: true,
-          pendingDoctors: true,
-          adminStats: true,
-          availableTurns: false,
-          myTurns: false,
-        },
-        errors: {
-          doctors: null,
-          pendingDoctors: null,
-          adminStats: null,
-          availableTurns: null,
-          myTurns: null,
-        },
+      entry: assign(({ context }) => {
+        const isAdmin = context.userRole === "ADMIN";
+        return {
+          loading: {
+            doctors: true,
+            pendingDoctors: isAdmin,
+            adminStats: isAdmin,
+            availableTurns: false,
+            myTurns: false,
+          },
+          errors: {
+            doctors: null,
+            pendingDoctors: null,
+            adminStats: null,
+            availableTurns: null,
+            myTurns: null,
+          },
+        };
       }),
       invoke: [
         {
           id: "loadDoctors",
           src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
-            return await TurnService.getDoctors(input.accessToken);
+            return await loadDoctors(input);
           }),
           input: ({ context }) => ({ accessToken: context.accessToken! }),
           onDone: {
@@ -180,10 +185,11 @@ export const dataMachine = createMachine({
         },
         {
           id: "loadPendingDoctors", 
-          src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
-            return await AdminService.getPendingDoctors(input.accessToken);
+          src: fromPromise(async ({ input }: { input: { accessToken: string; isAdmin: boolean } }) => {
+            if (!input.isAdmin) return [];
+            return await loadPendingDoctors(input);
           }),
-          input: ({ context }) => ({ accessToken: context.accessToken! }),
+          input: ({ context }) => ({ accessToken: context.accessToken!, isAdmin: context.userRole === "ADMIN" }),
           onDone: {
             actions: assign({
               pendingDoctors: ({ event }) => {
@@ -207,10 +213,11 @@ export const dataMachine = createMachine({
         },
         {
           id: "loadAdminStats",
-          src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
-            return await AdminService.getAdminStats(input.accessToken);
+          src: fromPromise(async ({ input }: { input: { accessToken: string; isAdmin: boolean } }) => {
+            if (!input.isAdmin) return { patients: 0, doctors: 0, pending: 0 };
+            return await loadAdminStats(input);
           }),
-          input: ({ context }) => ({ accessToken: context.accessToken! }),
+          input: ({ context }) => ({ accessToken: context.accessToken!, isAdmin: context.userRole === "ADMIN" }),
           onDone: {
             actions: assign({
               adminStats: ({ event }) => {
@@ -235,19 +242,22 @@ export const dataMachine = createMachine({
       ],
       always: {
         target: "ready",
-        guard: ({ context }) => 
-          !context.loading.doctors && 
-          !context.loading.pendingDoctors && 
-          !context.loading.adminStats,
+        guard: ({ context }) => {
+          const isAdmin = context.userRole === "ADMIN";
+          return !context.loading.doctors && 
+                 (!isAdmin || !context.loading.pendingDoctors) && 
+                 (!isAdmin || !context.loading.adminStats);
+        },
       },
     },
     
     ready: {
       on: {
-        SET_ACCESS_TOKEN: {
+        SET_AUTH: {
           target: "loadingInitialData",
           actions: assign({
             accessToken: ({ event }) => event.accessToken,
+            userRole: ({ event }) => event.userRole,
           }),
         },
         CLEAR_ACCESS_TOKEN: {
@@ -289,7 +299,7 @@ export const dataMachine = createMachine({
       }),
       invoke: {
         src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
-          return await TurnService.getDoctors(input.accessToken);
+          return await loadDoctors(input);
         }),
         input: ({ context }) => ({ accessToken: context.accessToken! }),
         onDone: {
@@ -324,7 +334,7 @@ export const dataMachine = createMachine({
       }),
       invoke: {
         src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
-          return await AdminService.getPendingDoctors(input.accessToken);
+          return await loadPendingDoctors({ accessToken: input.accessToken, isAdmin: true });
         }),
         input: ({ context }) => ({ accessToken: context.accessToken! }),
         onDone: {
@@ -359,7 +369,7 @@ export const dataMachine = createMachine({
       }),
       invoke: {
         src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
-          return await AdminService.getAdminStats(input.accessToken);
+          return await loadAdminStats({ accessToken: input.accessToken, isAdmin: true });
         }),
         input: ({ context }) => ({ accessToken: context.accessToken! }),
         onDone: {
@@ -394,7 +404,7 @@ export const dataMachine = createMachine({
       }),
       invoke: {
         src: fromPromise(async ({ input }: { input: { accessToken: string; doctorId: string; date: string } }) => {
-          return await TurnService.getAvailableTurns(input.doctorId, input.date, input.accessToken);
+          return await loadAvailableTurns(input);
         }),
         input: ({ context, event }) => ({
           accessToken: context.accessToken!,
@@ -433,7 +443,7 @@ export const dataMachine = createMachine({
       }),
       invoke: {
         src: fromPromise(async ({ input }: { input: { accessToken: string; status?: string } }) => {
-          return await TurnService.getMyTurns(input.accessToken, input.status);
+          return await loadMyTurns(input);
         }),
         input: ({ context, event }) => ({
           accessToken: context.accessToken!,

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+
 import { 
   Box, 
   Card, 
@@ -28,15 +28,6 @@ export default function AdminDashboard() {
   const stats = adminContext.adminStats;
   const loading = adminContext.loading;
   const error = adminContext.error;
-
-  useEffect(() => {
-    if (user?.accessToken) {
-      adminUserSend({ 
-        type: 'FETCH_ADMIN_STATS', 
-        accessToken: user.accessToken 
-      });
-    }
-  }, [user?.accessToken, adminUserSend]);
 
   const handleRetry = () => {
     if (user?.accessToken) {

@@ -1,5 +1,6 @@
 import { createMachine, assign, fromPromise } from "xstate";
 import {validateField, checkFormValidation} from "../utils/authFormValidation";
+import { checkStoredAuth, submitAuthentication, logoutUser } from "../utils/authMachineUtils";
 import { AuthService } from "../service/auth-service.service";
 import { RegisterResponse, SignInResponse, ApiErrorResponse } from "../models/Auth";
 import { orchestrator } from "#/core/Orchestrator";
@@ -89,10 +90,10 @@ export const authMachine = createMachine({
   states: {
     checkingAuth: {
       entry: assign(() => {
-        const authData = AuthService.getStoredAuthData();
+        const { authData, isAuthenticated } = checkStoredAuth();
         return {
           authResponse: authData,
-          isAuthenticated: !!(authData?.accessToken && authData?.refreshToken)
+          isAuthenticated
         };
       }),
       always: [
@@ -117,7 +118,8 @@ export const authMachine = createMachine({
           context.send({ 
             type: "SET_AUTH", 
             accessToken: context.authResponse.accessToken, 
-            userId: context.authResponse.id 
+            userId: context.authResponse.id,
+            userRole: context.authResponse.role
           });
         }
       }
@@ -127,18 +129,7 @@ export const authMachine = createMachine({
     loggingOut: {
       invoke: {
         src: fromPromise(async () => {
-          try {
-            const authData = AuthService.getStoredAuthData();
-            if (authData?.refreshToken) {
-              await AuthService.signOut(authData.refreshToken);
-            }
-            AuthService.clearAuthData();
-            return true;
-          } catch (error) {
-            console.warn('Logout API call failed, but clearing local data:', error);
-            AuthService.clearAuthData();
-            return true;
-          }
+          return await logoutUser();
         }),
         input: ({ context }) => context,
         onDone: {
@@ -278,24 +269,7 @@ export const authMachine = createMachine({
       })),
       invoke: {
         src: fromPromise(async ({ input }: { input: AuthMachineContext }) => {
-          try {
-            let response;
-            
-            if (input.mode === "login") {
-              response = await AuthService.signIn({
-                email: input.formValues.email,
-                password: input.formValues.password
-              });
-            } else {
-              response = input.isPatient
-                ? await AuthService.registerPatient(input.formValues)
-                : await AuthService.registerDoctor(input.formValues);
-            }
-            
-            return response;
-          } catch (error) {
-            throw error;
-          }
+          return await submitAuthentication({ context: input });
         }),
         input: ({context}) => context,
         onDone: [
