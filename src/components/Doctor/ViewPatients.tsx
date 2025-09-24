@@ -23,7 +23,7 @@ import './ViewPatients.css'
 const ViewPatients: React.FC = () => {
     const { uiSend, doctorState, doctorSend } = useMachines();
     const { authState } = useAuthMachine();
-    const user: SignInResponse | null = authState?.context?.user || null;
+    const user: SignInResponse | null = authState?.context?.authResponse || null;
 
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -34,7 +34,6 @@ const ViewPatients: React.FC = () => {
 
     useEffect(() => {
         if (user?.accessToken && user?.id) {
-            doctorSend({ type: "SET_AUTH", accessToken: user.accessToken, doctorId: user.id });
             doctorSend({ type: "LOAD_PATIENTS" });
         }
     }, [user?.accessToken, user?.id, doctorSend]);

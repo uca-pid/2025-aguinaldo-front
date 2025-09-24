@@ -1,11 +1,12 @@
 import { createMachine, assign, fromPromise } from "xstate";
 import { AdminService } from "#/service/admin-service.service";
+import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, DoctorApprovalResponse } from "#/models/Admin";
+import { DATA_MACHINE_ID } from "./dataMachine";
 
 export const ADMIN_USER_MACHINE_ID = "adminUser";
 export const ADMIN_USER_MACHINE_EVENT_TYPES = [
-  'FETCH_PENDING_DOCTORS',
-  'FETCH_ADMIN_STATS',
+  'DATA_LOADED',
   'APPROVE_DOCTOR', 
   'REJECT_DOCTOR',
   'SELECT_DOCTOR',
@@ -24,7 +25,7 @@ export interface AdminUserMachineContext {
     pending: number;
   };
   lastOperation: {
-    type: 'approve' | 'reject' | 'fetch' | null;
+    type: 'approve' | 'reject' | null;
     doctorId?: string;
     success?: boolean;
     message?: string;
@@ -46,8 +47,7 @@ export const AdminUserMachineDefaultContext: AdminUserMachineContext = {
 };
 
 export type AdminUserMachineEvent =
-  | { type: "FETCH_PENDING_DOCTORS"; accessToken: string }
-  | { type: "FETCH_ADMIN_STATS"; accessToken: string }
+  | { type: "DATA_LOADED" }
   | { type: "APPROVE_DOCTOR"; doctorId: string; accessToken: string }
   | { type: "REJECT_DOCTOR"; doctorId: string; accessToken: string }
   | { type: "SELECT_DOCTOR"; doctor: PendingDoctor }
@@ -66,11 +66,20 @@ export const adminUserMachine = createMachine({
   states: {
     idle: {
       on: {
-        FETCH_PENDING_DOCTORS: {
-          target: "fetchingPendingDoctors"
-        },
-        FETCH_ADMIN_STATS: {
-          target: "fetchingAdminStats"
+        DATA_LOADED: {
+          actions: assign(() => {
+            try {
+              const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
+              const dataContext = dataSnapshot.context;
+              return {
+                pendingDoctors: dataContext.pendingDoctors || [],
+                adminStats: dataContext.adminStats || { patients: 0, doctors: 0, pending: 0 }
+              };
+            } catch (error) {
+              console.warn("Could not get dataMachine snapshot:", error);
+              return {};
+            }
+          })
         },
         APPROVE_DOCTOR: {
           target: "approvingDoctor"
@@ -96,88 +105,6 @@ export const adminUserMachine = createMachine({
         },
         RETRY_LAST_OPERATION: {
           target: "retryingOperation"
-        }
-      }
-    },
-
-    fetchingPendingDoctors: {
-      entry: assign(() => ({
-        loading: true,
-        error: null
-      })),
-      invoke: {
-        src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
-          return await AdminService.getPendingDoctors(input.accessToken);
-        }),
-        input: ({ event }) => ({
-          accessToken: (event as any).accessToken
-        }),
-        onDone: {
-          target: "idle",
-          actions: assign(({ event, context }) => ({
-            loading: false,
-            pendingDoctors: event.output,
-            adminStats: {
-              ...context.adminStats,
-              pending: event.output.length
-            },
-            lastOperation: {
-              type: 'fetch' as const,
-              success: true,
-              message: `Found ${event.output.length} pending doctors`
-            }
-          }))
-        },
-        onError: {
-          target: "idle",
-          actions: assign(({ event }) => ({
-            loading: false,
-            error: event.error instanceof Error ? event.error.message : 'Failed to fetch pending doctors',
-            lastOperation: {
-              type: 'fetch' as const,
-              success: false,
-              message: 'Failed to fetch pending doctors'
-            }
-          }))
-        }
-      }
-    },
-
-    fetchingAdminStats: {
-      entry: assign(() => ({
-        loading: true,
-        error: null
-      })),
-      invoke: {
-        src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
-          return await AdminService.getAdminStats(input.accessToken);
-        }),
-        input: ({ event }) => ({
-          accessToken: (event as any).accessToken
-        }),
-        onDone: {
-          target: "idle",
-          actions: assign(({ event }) => ({
-            loading: false,
-            adminStats: event.output,
-            lastOperation: {
-              type: 'fetch' as const,
-              success: true,
-              message: 'Statistics updated successfully'
-            }
-          }))
-        },
-        onError: {
-          target: "idle",
-          actions: assign(({ event }) => ({
-            loading: false,
-            error: event.error instanceof Error ? event.error.message : 'Failed to fetch admin statistics',
-            lastOperation: {
-              type: 'fetch' as const,
-              success: false,
-              message: 'Failed to fetch admin statistics'
-            }
-          }))
         }
       }
     },
@@ -296,10 +223,6 @@ export const adminUserMachine = createMachine({
         error: null
       })),
       always: [
-        {
-          target: "fetchingPendingDoctors",
-          guard: ({ context }) => context.lastOperation?.type === 'fetch'
-        },
         {
           target: "approvingDoctor",
           guard: ({ context }) => context.lastOperation?.type === 'approve' && !!context.lastOperation?.doctorId

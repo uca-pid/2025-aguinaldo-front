@@ -6,6 +6,7 @@ import { uiMachine, UI_MACHINE_ID, UI_MACHINE_EVENT_TYPES, type UiMachineEvent }
 import { turnMachine, TURN_MACHINE_ID, TURN_MACHINE_EVENT_TYPES, type TurnMachineEvent } from '../machines/turnMachine';
 import doctorMachine, { DOCTOR_MACHINE_ID, DOCTOR_MACHINE_EVENT_TYPES, type DoctorMachineEvent } from '../machines/doctorMachine';
 import { adminUserMachine, ADMIN_USER_MACHINE_ID, ADMIN_USER_MACHINE_EVENT_TYPES } from '#/machines/adminUserMachine';
+import { profileMachine, PROFILE_MACHINE_ID, PROFILE_MACHINE_EVENT_TYPES, type ProfileMachineEvent } from '../machines/profileMachine';
 
 interface MachineInstances {
     uiState: any;
@@ -16,6 +17,8 @@ interface MachineInstances {
     doctorSend: (event: DoctorMachineEvent) => void;
     adminUserState: any;
     adminUserSend: (event: any) => void;
+    profileState: any;
+    profileSend: (event: ProfileMachineEvent) => void;
 }
 
 interface MachineProviderProps {
@@ -48,11 +51,18 @@ orchestrator.registerMachine({
   eventTypes: ADMIN_USER_MACHINE_EVENT_TYPES
 });
 
+orchestrator.registerMachine({
+  id: PROFILE_MACHINE_ID,
+  machine: profileMachine,
+  eventTypes: PROFILE_MACHINE_EVENT_TYPES
+});
+
 export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) => {
   const { state: uiState, send: uiSend } = useStateMachine(UI_MACHINE_ID);
   const { state: turnState, send: turnSend } = useStateMachine(TURN_MACHINE_ID);
   const { state: doctorState, send: doctorSend } = useStateMachine(DOCTOR_MACHINE_ID);
   const { state: adminUserState, send: adminUserSend } = useStateMachine(ADMIN_USER_MACHINE_ID);
+  const { state: profileState, send: profileSend } = useStateMachine(PROFILE_MACHINE_ID);
 
   const machines: MachineInstances = {
       uiState: uiState,
@@ -62,7 +72,9 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       doctorState: doctorState,
       doctorSend: doctorSend,
       adminUserState: adminUserState,
-      adminUserSend: adminUserSend
+      adminUserSend: adminUserSend,
+      profileState: profileState,
+      profileSend: profileSend
   };
 
   return (

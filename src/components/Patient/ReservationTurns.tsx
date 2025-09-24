@@ -3,51 +3,23 @@ import {
   TextField, Typography, CircularProgress, Alert,
   Container 
 } from "@mui/material";
-import React, { useEffect } from "react";
+import React from "react";
 import { useMachines } from "#/providers/MachineProvider";
-import { useAuthMachine } from "#/providers/AuthProvider";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { DateCalendar } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
 import dayjs from "dayjs";
-import { SignInResponse } from "#/models/Auth";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import "./ReservationTurns.css";
 
 const ReservationTurns: React.FC = () => {
-  const { uiSend, turnState, turnSend } = useMachines();
-  const { authState } = useAuthMachine();
-  const user: SignInResponse = authState?.context?.authResponse || {};
-  const authContext = authState?.context || {};
-  
+  const { uiSend, turnState, turnSend } = useMachines();  
   const turnContext = turnState.context;
   const formValues = turnContext.takeTurn;
 
   const currentStep = turnState.value.takeTurn;
-
-  useEffect(() => {
-    if (authContext.isAuthenticated && user.accessToken) {
-      turnSend({
-        type: "SET_AUTH",
-        accessToken: user.accessToken,
-        userId: user.id || ""
-      });
-      turnSend({ type: "LOAD_DOCTORS" });
-    }
-  }, [authContext.isAuthenticated, user.accessToken, turnSend]);
-
-  useEffect(() => {
-    if (formValues.doctorId && formValues.dateSelected && user.accessToken) {
-      const dateString = formValues.dateSelected.format('YYYY-MM-DD');
-      turnSend({
-        type: "LOAD_AVAILABLE_TURNS",
-        doctorId: formValues.doctorId,
-        date: dateString
-      });
-    }
-  }, [formValues.doctorId, formValues.dateSelected, user.accessToken, turnSend]);
 
   const isProfessionSelected = !!formValues.professionSelected;
   const isDoctorSelected = !!formValues.doctorId;
@@ -103,7 +75,6 @@ const ReservationTurns: React.FC = () => {
         if (!turnContext.error) {
           uiSend({ type: "NAVIGATE", to: "/patient" });
           turnSend({ type: "RESET_TAKE_TURN" });
-          turnSend({ type: "LOAD_MY_TURNS" });
         }
       }, 1000);
     } catch (error) {

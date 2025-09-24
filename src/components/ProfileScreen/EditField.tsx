@@ -1,5 +1,4 @@
 import { useMachines } from "#/providers/MachineProvider";
-import { useAuthMachine } from "#/providers/AuthProvider";
 import { Box, Divider, IconButton, ListItem, ListItemText, TextField, CircularProgress } from "@mui/material"
 
 import CheckIcon from '@mui/icons-material/Check';
@@ -20,22 +19,21 @@ type EditFieldProps={
 const MotionBox = motion(Box);
 
 const EditField :React.FC<EditFieldProps>= ({label, value, isEditing, toggleKey, fieldKey, onChange})=>{
-    const { uiSend } = useMachines();
-    const { authState, authSend } = useAuthMachine();
-    const authContext = authState?.context;
+    const { uiSend, profileState, profileSend } = useMachines();
+    const profileContext = profileState?.context;
 
     const [localValue, setLocalValue] = React.useState(value ?? "");
-    const isUpdating = authContext.updatingProfile;
+    const isUpdating = profileContext?.updatingProfile;
 
     React.useEffect(() => {
       setLocalValue(value ?? ""); 
     }, [value]);
 
     const handleSave = () => {
-      // Actualizar el valor en el contexto de auth
+      // Actualizar el valor en el contexto de profile
       onChange(localValue);
       // Llamar a la API para actualizar el perfil
-      authSend({ type: "UPDATE_PROFILE" });
+      profileSend({ type: "UPDATE_PROFILE" });
       // Cerrar el modo de edición
       uiSend({type: "TOGGLE", key: toggleKey});
     };
@@ -43,7 +41,7 @@ const EditField :React.FC<EditFieldProps>= ({label, value, isEditing, toggleKey,
     const handleCancel = () => {
       // Revertir al valor original
       setLocalValue(value ?? "");
-      authSend({ type: "CANCEL_PROFILE_EDIT", key: fieldKey });
+      profileSend({ type: "CANCEL_PROFILE_EDIT", key: fieldKey });
       // Cerrar el modo de edición
       uiSend({type: "TOGGLE", key: toggleKey});
     };

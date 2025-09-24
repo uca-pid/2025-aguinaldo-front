@@ -4,7 +4,7 @@ import {
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import dayjs from "dayjs";
 import { SignInResponse } from "#/models/Auth";
 import ListAltIcon from "@mui/icons-material/ListAlt";
@@ -15,24 +15,12 @@ const ViewTurns: React.FC = () => {
   const { uiSend, turnState, turnSend } = useMachines();
   const { authState } = useAuthMachine();
   const user: SignInResponse = authState?.context?.authResponse || {};
-  const authContext = authState?.context || {};
 
   const [cancellingTurnId, setCancellingTurnId] = useState<string | null>(null);
   const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
   
   const turnContext = turnState.context;
   const showTurnsContext = turnContext.showTurns;
-
-  useEffect(() => {
-    if (authContext.isAuthenticated && user.accessToken) {
-      turnSend({
-        type: "SET_AUTH",
-        accessToken: user.accessToken,
-        userId: user.id || ""
-      });
-      turnSend({ type: "LOAD_MY_TURNS" });
-    }
-  }, [authContext.isAuthenticated, user.accessToken, turnSend]);
 
   const filteredTurns = turnContext.myTurns.filter((turn: any) => {
     let matchesStatus = true;
@@ -59,7 +47,6 @@ const ViewTurns: React.FC = () => {
 
       if (response.ok) {
         setCancelSuccess('Turno cancelado exitosamente');
-        turnSend({ type: "LOAD_MY_TURNS" });
         setTimeout(() => setCancelSuccess(null), 3000);
       } else {
         const errorData = await response.text();

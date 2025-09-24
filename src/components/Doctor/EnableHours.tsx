@@ -27,25 +27,25 @@ import './EnableHours.css'
 const RangeRow = motion(Box);
 
 const EnableHours: React.FC = () => {
-    const { uiSend, turnState, turnSend } = useMachines();
-    const turnContext = turnState.context;
+    const { uiSend, doctorState, doctorSend } = useMachines();
+    const doctorContext = doctorState.context;
 
-    const availability = turnContext.availability || [];
+    const availability = doctorContext.availability || [];
     const enabledDays = availability.filter((day: any) => day.enabled).length;
     const totalRanges = availability.reduce((total: any, day: any) => total + (day.enabled ? day.ranges.length : 0), 0);
 
     useEffect(() => {
-        if (turnContext.accessToken && turnContext.userId) {
-            turnSend({ type: "LOAD_AVAILABILITY" });
+        if (doctorContext.accessToken && doctorContext.doctorId) {
+            doctorSend({ type: "LOAD_AVAILABILITY" });
         }
-    }, [turnSend, turnContext.accessToken, turnContext.userId]);
+    }, [doctorSend, doctorContext.accessToken, doctorContext.doctorId]);
 
     const handleBack = () => {
         uiSend({ type: "NAVIGATE", to: "/dashboard" });
     };
 
     const saveAvailability = () => {
-        if (!turnContext.accessToken || !turnContext.userId) {
+        if (!doctorContext.accessToken || !doctorContext.doctorId) {
             console.error("Authentication required to save availability");
             return;
         }
@@ -100,30 +100,30 @@ const EnableHours: React.FC = () => {
         }
         
         console.log("Guardando disponibilidad...", availability);
-        turnSend({ type: "SAVE_AVAILABILITY" });
+        doctorSend({ type: "SAVE_AVAILABILITY" });
     };
 
     const handleToggleDay = useCallback((dayIndex: number) => {
-        turnSend({ type: "TOGGLE_DAY", index: dayIndex });
-    }, [turnSend]);
+        doctorSend({ type: "TOGGLE_DAY", index: dayIndex });
+    }, [doctorSend]);
 
     const handleAddRange = useCallback((dayIndex: number) => {
-        turnSend({ type: "ADD_RANGE", dayIndex });
-    }, [turnSend]);
+        doctorSend({ type: "ADD_RANGE", dayIndex });
+    }, [doctorSend]);
 
     const handleRemoveRange = useCallback((dayIndex: number, rangeIndex: number) => {
-        turnSend({ type: "REMOVE_RANGE", dayIndex, rangeIndex });
-    }, [turnSend]);
+        doctorSend({ type: "REMOVE_RANGE", dayIndex, rangeIndex });
+    }, [doctorSend]);
 
     const handleUpdateRange = useCallback((dayIndex: number, rangeIndex: number, field: "start" | "end", value: string) => {
-        turnSend({
+        doctorSend({
             type: "UPDATE_RANGE",
             dayIndex,
             rangeIndex,
             field,
             value,
         });
-    }, [turnSend]);
+    }, [doctorSend]);
     
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -158,9 +158,9 @@ const EnableHours: React.FC = () => {
                     </Box>
 
                     {/* Error Alert */}
-                    {turnContext.error && (
+                    {doctorContext.availabilityError && (
                         <Alert severity="error" sx={{ mt: 2, maxWidth: '1000px', margin: '16px auto 0' }}>
-                            {turnContext.error}
+                            {doctorContext.availabilityError}
                         </Alert>
                     )}
                 </Box>
@@ -317,10 +317,10 @@ const EnableHours: React.FC = () => {
                             onClick={saveAvailability}
                             size="large"
                             startIcon={<CheckCircle />}
-                            disabled={enabledDays === 0 || totalRanges === 0 || turnContext.isSavingAvailability}
+                            disabled={enabledDays === 0 || totalRanges === 0 || doctorContext.isSavingAvailability}
                             className="enablehours-save-button"
                         >
-                            {turnContext.isSavingAvailability ? 'Guardando...' : 'Guardar Disponibilidad'}
+                            {doctorContext.isSavingAvailability ? 'Guardando...' : 'Guardar Disponibilidad'}
                         </Button>
                     </Box>
 

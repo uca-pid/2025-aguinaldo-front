@@ -4,7 +4,7 @@ import {
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import dayjs from "dayjs";
 import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -28,17 +28,6 @@ const ViewTurns: React.FC = () => {
   const handleBack = () => {
     uiSend({ type: "NAVIGATE", to: "/dashboard" });
   };
-
-  useEffect(() => {
-    if (authContext.isAuthenticated && user.accessToken) {
-      turnSend({
-        type: "SET_AUTH",
-        accessToken: user.accessToken,
-        userId: user.id || ""
-      });
-      turnSend({ type: "LOAD_MY_TURNS" });
-    }
-  }, [authContext.isAuthenticated, user.accessToken, turnSend]);
 
   const filteredTurns = turnContext.myTurns.filter((turn: any) => {
     let matchesStatus = true;
@@ -72,7 +61,6 @@ const ViewTurns: React.FC = () => {
 
       if (response.ok) {
         setCancelSuccess('Turno cancelado exitosamente');
-        turnSend({ type: "LOAD_MY_TURNS" });
         setTimeout(() => setCancelSuccess(null), 3000);
       } else {
         const errorData = await response.text();
