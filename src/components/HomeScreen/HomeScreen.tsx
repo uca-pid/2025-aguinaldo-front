@@ -9,7 +9,7 @@ import { SignInResponse } from "#/models/Auth";
 
 const HomeScreen: React.FC = () => {
   const { authState } = useAuthMachine();
-  const user = authState?.context?.user as SignInResponse;
+  const user = authState?.context?.authResponse as SignInResponse;
 
   const USER_ROLE = user.role;
 

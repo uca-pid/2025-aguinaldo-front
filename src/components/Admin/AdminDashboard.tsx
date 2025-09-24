@@ -21,7 +21,7 @@ import "./AdminDashboard.css";
 
 export default function AdminDashboard() {
   const { authState } = useAuthMachine();
-  const user = authState.context.user as SignInResponse | null;
+  const user = authState.context.authResponse as SignInResponse | null;
   const { uiSend, adminUserState, adminUserSend } = useMachines();
   const adminContext = adminUserState.context;
 

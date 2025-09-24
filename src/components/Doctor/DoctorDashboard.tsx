@@ -23,7 +23,7 @@ const DoctorDashboard: React.FC = () => {
   const { uiSend, turnState, turnSend } = useMachines();
   const turnContext = turnState?.context;
   const authContext = useAuthMachine().authState?.context;
-  const user = authContext.user as SignInResponse;
+  const user = authContext.authResponse as SignInResponse;
 
   useEffect(() => {
     if (authContext.isAuthenticated && user.accessToken && user.id) {

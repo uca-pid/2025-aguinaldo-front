@@ -41,7 +41,6 @@ export function useStateMachine(machineId: string): UseStateMachineReturn {
       return;
     }
 
-    // Get initial snapshot immediately
     const initialSnapshot = machine.actor.getSnapshot();
     setSnapshot(initialSnapshot);
 
@@ -53,13 +52,6 @@ export function useStateMachine(machineId: string): UseStateMachineReturn {
       subscription?.unsubscribe();
     };
   }, [machineId, updateSnapshot]);
-
-  if (!snapshot) {
-    return {
-      state: null,
-      send
-    };
-  }
 
   return {
     state: snapshot,

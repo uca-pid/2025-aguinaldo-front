@@ -3,15 +3,8 @@ import { AUTH_MACHINE_ID, AUTH_MACHINE_EVENT_TYPES, authMachine } from '../machi
 import { orchestrator } from '#/core/Orchestrator';
 import { useStateMachine } from '#/hooks/useStateMachine';
 
-interface AuthMachineInstance {
-  authState: any;
-  authSend: (event: any) => void;
-}
-
-interface AuthProviderProps {
-  children: React.ReactNode;
-}
-
+interface AuthMachineInstance {authState: any; authSend: (event: any) => void;}
+interface AuthProviderProps {children: React.ReactNode;}
 const AuthMachineContext = createContext<AuthMachineInstance | null>(null);
 
 orchestrator.registerMachine({

@@ -16,7 +16,7 @@ const MotionCard = motion(Card);
 const ProfileScreen: React.FC = () => {
     const { authState, authSend } = useAuthMachine();
     const { uiState } = useMachines();
-    const user = authState?.context?.user as SignInResponse | null;
+    const user = authState?.context?.authResponse as SignInResponse | null;
     const profile = authState?.context?.profile;
     const uiContext = uiState?.context || {};
 

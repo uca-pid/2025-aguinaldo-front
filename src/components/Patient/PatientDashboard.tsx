@@ -21,7 +21,7 @@ import "./PatientDashboard.css";
 const PatientDashboard: React.FC = () => {
   const { uiSend, turnState, turnSend } = useMachines();
   const { authState } = useAuthMachine();
-  const user: SignInResponse = authState?.context?.user || {};
+  const user: SignInResponse = authState?.context?.authResponse || {};
   const authContext = authState?.context || {};
   const turnContext = turnState?.context || {};
 

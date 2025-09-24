@@ -25,7 +25,7 @@ import "./PendingScreen.css";
 
 export default function PendingScreen() {
   const { authState } = useAuthMachine();
-  const user = authState.context.user as SignInResponse | null;
+  const user = authState.context.authResponse as SignInResponse | null;
   const { adminUserState, adminUserSend, uiSend } = useMachines();
   const adminContext = adminUserState.context;
 

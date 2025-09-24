@@ -17,7 +17,7 @@ const ViewTurns: React.FC = () => {
   const { uiSend, turnState, turnSend } = useMachines();
   const { authState } = useAuthMachine();
   const authContext = authState?.context;
-  const user = authContext?.user as SignInResponse;
+  const user = authContext?.authResponse as SignInResponse;
 
   const [cancellingTurnId, setCancellingTurnId] = useState<string | null>(null);
   const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);

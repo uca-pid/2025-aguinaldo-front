@@ -3,7 +3,6 @@ import { Routes, Route, useNavigate } from 'react-router-dom'
 import HomeScreen from './components/HomeScreen/HomeScreen'
 import { useAuthMachine } from './providers/AuthProvider'
 import { Avatar, Box, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material'
-import { SignInResponse } from './models/Auth'
 import { useMachines } from './providers/MachineProvider'
 import { Logout, Person } from '@mui/icons-material'
 import PendingScreen from './components/Admin/PendingScreen/PendingScreen'
@@ -18,14 +17,13 @@ import DoctorViewTurns from './components/Doctor/DoctorViewTurns'
 function AppContent() {
   const navigate = useNavigate();
   const { authState, authSend } = useAuthMachine();
-  const user = authState.context.user as SignInResponse;
   const authContext = authState.context;
 
   const { uiState, uiSend } = useMachines();
   const uiContext = uiState.context;
-  
-  const userName = authContext.profile?.name || user.name;
-  const userRole = authContext.profile?.role || user.role;
+
+  const userName = authContext.authResponse?.name || '';
+  const userRole = authContext.authResponse?.role || '';
 
   const open = Boolean(uiContext.toggleStates?.["userMenu"]);
 

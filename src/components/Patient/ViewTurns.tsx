@@ -14,7 +14,7 @@ import "./ViewTurns.css";
 const ViewTurns: React.FC = () => {
   const { uiSend, turnState, turnSend } = useMachines();
   const { authState } = useAuthMachine();
-  const user: SignInResponse = authState?.context?.user || {};
+  const user: SignInResponse = authState?.context?.authResponse || {};
   const authContext = authState?.context || {};
 
   const [cancellingTurnId, setCancellingTurnId] = useState<string | null>(null);
