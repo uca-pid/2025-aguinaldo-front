@@ -35,10 +35,9 @@ const EnableHours: React.FC = () => {
     const totalRanges = availability.reduce((total: any, day: any) => total + (day.enabled ? day.ranges.length : 0), 0);
 
     useEffect(() => {
-        if (doctorContext.accessToken && doctorContext.doctorId) {
-            doctorSend({ type: "LOAD_AVAILABILITY" });
-        }
-    }, [doctorSend, doctorContext.accessToken, doctorContext.doctorId]);
+        // Initialize availability page - this will only load once when component mounts
+        doctorSend({ type: "INIT_AVAILABILITY_PAGE" });
+    }, [doctorSend]);
 
     const handleBack = () => {
         uiSend({ type: "NAVIGATE", to: "/dashboard" });

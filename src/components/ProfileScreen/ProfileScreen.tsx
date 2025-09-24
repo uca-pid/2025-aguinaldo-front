@@ -31,10 +31,9 @@ const ProfileScreen: React.FC = () => {
 ;
     
     useEffect(() => {
-    if (user?.accessToken && user?.id) {
-      profileSend({ type: "SAVE_PROFILE" });
-    }
-    }, [user, profileSend]);
+        // Initialize profile page - this will load the profile if authenticated
+        profileSend({ type: "INIT_PROFILE_PAGE" });
+    }, [profileSend]);
 
  
     return (

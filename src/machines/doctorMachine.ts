@@ -13,7 +13,10 @@ export const DOCTOR_MACHINE_EVENT_TYPES = [
   "REMOVE_RANGE",
   "UPDATE_RANGE",
   "SAVE_AVAILABILITY",
-  "LOAD_AVAILABILITY"
+  "LOAD_AVAILABILITY",
+  "SET_PATIENT_SEARCH",
+  "INIT_AVAILABILITY_PAGE",
+  "INIT_PATIENTS_PAGE"
 ];
 
 interface Range {
@@ -33,6 +36,7 @@ export interface DoctorMachineContext {
   patientsError: string | null;
   accessToken: string | null;
   doctorId: string | null;
+  patientSearchTerm: string;
   
   availability: DayAvailability[];
   isSavingAvailability: boolean;
@@ -50,7 +54,10 @@ export type DoctorMachineEvent =
   | { type: "REMOVE_RANGE"; dayIndex: number; rangeIndex: number }
   | { type: "UPDATE_RANGE"; dayIndex: number; rangeIndex: number; field: "start" | "end"; value: string }
   | { type: "SAVE_AVAILABILITY" }
-  | { type: "LOAD_AVAILABILITY" };
+  | { type: "LOAD_AVAILABILITY" }
+  | { type: "SET_PATIENT_SEARCH"; searchTerm: string }
+  | { type: "INIT_AVAILABILITY_PAGE" }
+  | { type: "INIT_PATIENTS_PAGE" };
 
 const doctorMachine = createMachine({
   id: "doctor",
@@ -62,6 +69,7 @@ const doctorMachine = createMachine({
     patientsError: null,
     accessToken: null,
     doctorId: null,
+    patientSearchTerm: "",
     
     availability: [
       { day: "Lunes", enabled: false, ranges: [{ start: "", end: "" }] },
@@ -331,6 +339,25 @@ const doctorMachine = createMachine({
         accessToken: ({ event }) => event.accessToken,
         doctorId: ({ event }) => event.userId, // For doctors, userId is the same as doctorId
       }),
+    },
+    SET_PATIENT_SEARCH: {
+      actions: assign({
+        patientSearchTerm: ({ event }) => event.searchTerm,
+      }),
+    },
+    INIT_AVAILABILITY_PAGE: {
+      actions: ({ context, self }) => {
+        if (context.accessToken && context.doctorId) {
+          self.send({ type: "LOAD_AVAILABILITY" });
+        }
+      },
+    },
+    INIT_PATIENTS_PAGE: {
+      actions: ({ context, self }) => {
+        if (context.accessToken && context.doctorId) {
+          self.send({ type: "LOAD_PATIENTS" });
+        }
+      },
     },
   },
 });

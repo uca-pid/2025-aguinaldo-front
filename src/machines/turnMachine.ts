@@ -1,6 +1,6 @@
 import { createMachine, assign, fromPromise } from "xstate";
 import { Dayjs } from "dayjs";
-import { reserveTurn, createTurn } from "../utils/turnMachineUtils";
+import { reserveTurn, createTurn, cancelTurn } from "../utils/turnMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { Doctor, TurnResponse } from "../models/Turn";
 import { DATA_MACHINE_ID } from "./dataMachine";
@@ -16,6 +16,8 @@ export const TURN_MACHINE_EVENT_TYPES = [
   "DATA_LOADED",
   "RESERVE_TURN",
   "CREATE_TURN",
+  "CANCEL_TURN",
+  "CLEAR_CANCEL_SUCCESS",
   "API_SUCCESS",
   "API_ERROR"
 ];
@@ -27,9 +29,12 @@ export interface TurnMachineContext {
   
   isCreatingTurn: boolean;
   isReservingTurn: boolean;
+  isCancellingTurn: boolean;
+  cancellingTurnId: string | null;
   
   error: string | null;
   reserveError: string | null;
+  cancelSuccess: string | null;
   
   takeTurn: {
     professionSelected: string;
@@ -59,6 +64,8 @@ export type TurnMachineEvent =
   | { type: "DATA_LOADED" }
   | { type: "RESERVE_TURN"; turnId: string }
   | { type: "CREATE_TURN" }
+  | { type: "CANCEL_TURN"; turnId: string }
+  | { type: "CLEAR_CANCEL_SUCCESS" }
   | { type: "API_SUCCESS"; data: any; action: string }
   | { type: "API_ERROR"; error: string; action: string };
 
@@ -72,9 +79,12 @@ export const turnMachine = createMachine({
     
     isCreatingTurn: false,
     isReservingTurn: false,
+    isCancellingTurn: false,
+    cancellingTurnId: null,
     
     error: null,
     reserveError: null,
+    cancelSuccess: null,
     
     takeTurn: {
       professionSelected: "",
@@ -276,7 +286,51 @@ export const turnMachine = createMachine({
             },
           },
         },
+        cancellingTurn: {
+          entry: assign({
+            isCancellingTurn: true,
+          }),
+          invoke: {
+            src: fromPromise(async ({ input }: { input: { accessToken: string; turnId: string } }) => {
+              return await cancelTurn(input);
+            }),
+            input: ({ context }) => ({
+              accessToken: context.accessToken!,
+              turnId: context.cancellingTurnId!
+            }),
+            onDone: {
+              target: "idle",
+              actions: assign({
+                isCancellingTurn: false,
+                cancellingTurnId: null,
+                cancelSuccess: "Turno cancelado exitosamente",
+              }),
+            },
+            onError: {
+              target: "idle",
+              actions: assign({
+                isCancellingTurn: false,
+                cancellingTurnId: null,
+                error: ({ event }) => (event.error as Error)?.message || "Error al cancelar el turno",
+              }),
+            },
+          },
+        },
       },
+    },
+  },
+  
+  on: {
+    CANCEL_TURN: {
+      target: ".dataManagement.cancellingTurn",
+      actions: assign({
+        cancellingTurnId: ({ event }) => event.turnId,
+      }),
+    },
+    CLEAR_CANCEL_SUCCESS: {
+      actions: assign({
+        cancelSuccess: null,
+      }),
     },
   },
 });

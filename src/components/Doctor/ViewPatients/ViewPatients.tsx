@@ -13,30 +13,24 @@ import {
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { useMachines } from "#/providers/MachineProvider"
-import { useAuthMachine } from "#/providers/AuthProvider"
 import { PeopleOutlined, SearchOutlined, PersonOutlined, BadgeOutlined, ArrowBack } from '@mui/icons-material'
-import { useState, useEffect } from 'react'
-import { SignInResponse } from "#/models/Auth"
+import { useEffect } from 'react'
 import { Patient, calculateAge } from "#/models/Doctor"
 import './ViewPatients.css'
 
 const ViewPatients: React.FC = () => {
     const { uiSend, doctorState, doctorSend } = useMachines();
-    const { authState } = useAuthMachine();
-    const user: SignInResponse | null = authState?.context?.authResponse || null;
-
-    const [searchTerm, setSearchTerm] = useState('');
 
     const doctorContext = doctorState.context;
     const patients: Patient[] = doctorContext.patients;
     const isLoading = doctorContext.isLoadingPatients;
     const error = doctorContext.patientsError;
+    const searchTerm = doctorContext.patientSearchTerm;
 
     useEffect(() => {
-        if (user?.accessToken && user?.id) {
-            doctorSend({ type: "LOAD_PATIENTS" });
-        }
-    }, [user?.accessToken, user?.id, doctorSend]);
+        // Initialize patients page - this will load patients if authenticated
+        doctorSend({ type: "INIT_PATIENTS_PAGE" });
+    }, [doctorSend]);
 
     const handleBack = () => {
         uiSend({ type: "NAVIGATE", to: "/dashboard" });
@@ -101,7 +95,7 @@ const ViewPatients: React.FC = () => {
                             className="viewpatients-search-field"
                             placeholder="Buscar por nombre o DNI..."
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => doctorSend({ type: "SET_PATIENT_SEARCH", searchTerm: e.target.value })}
                             disabled={isLoading}
                             InputProps={{
                                 startAdornment: (

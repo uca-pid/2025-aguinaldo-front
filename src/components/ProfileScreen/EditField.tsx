@@ -22,25 +22,20 @@ const EditField :React.FC<EditFieldProps>= ({label, value, isEditing, toggleKey,
     const { uiSend, profileState, profileSend } = useMachines();
     const profileContext = profileState?.context;
 
-    const [localValue, setLocalValue] = React.useState(value ?? "");
+    // Use machine's formValues instead of local state
+    const currentValue = isEditing ? (profileContext?.formValues?.[fieldKey as keyof typeof profileContext.formValues] ?? value) : value;
     const isUpdating = profileContext?.updatingProfile;
 
-    React.useEffect(() => {
-      setLocalValue(value ?? ""); 
-    }, [value]);
-
     const handleSave = () => {
-      // Actualizar el valor en el contexto de profile
-      onChange(localValue);
-      // Llamar a la API para actualizar el perfil
+      // The value is already in machine's formValues from onChange calls
+      // Just call UPDATE_PROFILE to save
       profileSend({ type: "UPDATE_PROFILE" });
       // Cerrar el modo de edición
       uiSend({type: "TOGGLE", key: toggleKey});
     };
 
     const handleCancel = () => {
-      // Revertir al valor original
-      setLocalValue(value ?? "");
+      // Revertir al valor original en la máquina
       profileSend({ type: "CANCEL_PROFILE_EDIT", key: fieldKey });
       // Cerrar el modo de edición
       uiSend({type: "TOGGLE", key: toggleKey});
@@ -66,8 +61,8 @@ const EditField :React.FC<EditFieldProps>= ({label, value, isEditing, toggleKey,
               sx={{ flex: 1, mr: 1 }}>
                 <TextField
                   label={label}
-                  value={localValue}
-                  onChange={(e) => setLocalValue(e.target.value)}
+                  value={currentValue}
+                  onChange={(e) => onChange(e.target.value)}
                   size="small"
                   fullWidth
                 />

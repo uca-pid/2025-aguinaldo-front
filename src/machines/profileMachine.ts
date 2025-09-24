@@ -7,11 +7,13 @@ export const PROFILE_MACHINE_ID = "profile";
 export const PROFILE_MACHINE_EVENT_TYPES = [
   "SET_AUTH",
   "LOGOUT",
+  "LOAD_PROFILE",
   "SAVE_PROFILE",
   "UPDATE_PROFILE", 
   "CANCEL_PROFILE_EDIT",
   "DEACTIVATE_ACCOUNT",
   "UPDATE_FORM",
+  "INIT_PROFILE_PAGE",
   "CLEAR_ERROR"
 ];
 
@@ -60,11 +62,13 @@ export const ProfileMachineDefaultContext: ProfileMachineContext = {
 export type ProfileMachineEvent =
   | { type: "SET_AUTH"; accessToken: string; userId: string; userRole?: string }
   | { type: "LOGOUT" }
+  | { type: "LOAD_PROFILE" }
   | { type: "SAVE_PROFILE" }
   | { type: "UPDATE_PROFILE" }
   | { type: "CANCEL_PROFILE_EDIT"; key: string }
   | { type: "DEACTIVATE_ACCOUNT" }
   | { type: "UPDATE_FORM"; key: string; value: any }
+  | { type: "INIT_PROFILE_PAGE" }
   | { type: "CLEAR_ERROR" };
 
 export const profileMachine = createMachine({
@@ -89,8 +93,12 @@ export const profileMachine = createMachine({
             ...ProfileMachineDefaultContext,
           })),
         },
-        SAVE_PROFILE: {
+        LOAD_PROFILE: {
           target: "savingProfile",
+          guard: ({ context }) => !!context.accessToken && !!context.userId,
+        },
+        SAVE_PROFILE: {
+          target: "savingProfile", 
           guard: ({ context }) => !!context.accessToken && !!context.userId,
         },
         UPDATE_PROFILE: {
@@ -282,6 +290,16 @@ export const profileMachine = createMachine({
             error: ({ event }) => (event.error as Error).message,
           }),
         },
+      },
+    },
+  },
+
+  on: {
+    INIT_PROFILE_PAGE: {
+      actions: ({ context, self }) => {
+        if (context.accessToken && context.userId) {
+          self.send({ type: "LOAD_PROFILE" });
+        }
       },
     },
   },

@@ -18,6 +18,11 @@ export interface CreateTurnParams {
   scheduledAt: string;
 }
 
+export interface CancelTurnParams {
+  accessToken: string;
+  turnId: string;
+}
+
 /**
  * Reserve an existing turn
  */
@@ -40,4 +45,22 @@ export const createTurn = async ({ accessToken, userId, doctorId, scheduledAt }:
     },
     accessToken
   );
+};
+
+/**
+ * Cancel a turn
+ */
+export const cancelTurn = async ({ accessToken, turnId }: CancelTurnParams): Promise<void> => {
+  const response = await fetch(`/api/turns/${turnId}/cancel`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    throw new Error(`Failed to cancel turn: ${errorData}`);
+  }
 };

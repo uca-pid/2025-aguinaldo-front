@@ -4,7 +4,6 @@ import {
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
-import { useState } from "react";
 import dayjs from "dayjs";
 import { SignInResponse } from "#/models/Auth";
 import ListAltIcon from "@mui/icons-material/ListAlt";
@@ -15,12 +14,10 @@ const ViewTurns: React.FC = () => {
   const { uiSend, turnState, turnSend } = useMachines();
   const { authState } = useAuthMachine();
   const user: SignInResponse = authState?.context?.authResponse || {};
-
-  const [cancellingTurnId, setCancellingTurnId] = useState<string | null>(null);
-  const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
   
   const turnContext = turnState.context;
   const showTurnsContext = turnContext.showTurns;
+  const { cancellingTurnId, cancelSuccess, isCancellingTurn } = turnContext;
 
   const filteredTurns = turnContext.myTurns.filter((turn: any) => {
     let matchesStatus = true;
@@ -32,31 +29,9 @@ const ViewTurns: React.FC = () => {
     return matchesStatus;
   });
 
-  const handleCancelTurn = async (turnId: string) => {
+  const handleCancelTurn = (turnId: string) => {
     if (!user.accessToken) return;
-    
-    setCancellingTurnId(turnId);
-    try {
-      const response = await fetch(`/api/turns/${turnId}/cancel`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${user.accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        setCancelSuccess('Turno cancelado exitosamente');
-        setTimeout(() => setCancelSuccess(null), 3000);
-      } else {
-        const errorData = await response.text();
-        console.error('Error cancelling turn:', errorData);
-      }
-    } catch (error) {
-      console.error('Error cancelling turn:', error);
-    } finally {
-      setCancellingTurnId(null);
-    }
+    turnSend({ type: "CANCEL_TURN", turnId });
   };
 
   const getStatusLabel = (status: string) => {
@@ -83,7 +58,7 @@ const ViewTurns: React.FC = () => {
   const handleClose = () => {
     uiSend({ type: "NAVIGATE", to: "/patient" });
     turnSend({ type: "RESET_SHOW_TURNS" });
-    setCancelSuccess(null);
+    turnSend({ type: "CLEAR_CANCEL_SUCCESS" });
   };
 
   return (
@@ -222,9 +197,9 @@ const ViewTurns: React.FC = () => {
                           size="small"
                           className="viewturns-cancel-btn"
                           onClick={() => handleCancelTurn(turn.id)}
-                          disabled={cancellingTurnId === turn.id}
+                          disabled={isCancellingTurn && cancellingTurnId === turn.id}
                         >
-                          {cancellingTurnId === turn.id ? (
+                          {isCancellingTurn && cancellingTurnId === turn.id ? (
                             <>
                               <CircularProgress size={16} sx={{ mr: 1 }} />
                               Cancelando...
