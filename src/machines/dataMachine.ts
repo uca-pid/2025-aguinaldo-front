@@ -195,12 +195,7 @@ export const dataMachine = createMachine({
           input: ({ context }) => ({ accessToken: context.accessToken! }),
           onDone: {
             actions: assign({
-              doctors: ({ event }) => {
-                orchestrator.send({
-                  type: "DATA_LOADED"
-                });
-                return event.output;
-              },
+              doctors: ({ event }) => event.output,
               loading: ({ context }) => ({ ...context.loading, doctors: false }),
             }),
           },
@@ -223,12 +218,7 @@ export const dataMachine = createMachine({
           input: ({ context }) => ({ accessToken: context.accessToken!, isAdmin: context.userRole === "ADMIN" }),
           onDone: {
             actions: assign({
-              pendingDoctors: ({ event }) => {
-                orchestrator.send({
-                  type: "DATA_LOADED"
-                });
-                return event.output;
-              },
+              pendingDoctors: ({ event }) => event.output,
               loading: ({ context }) => ({ ...context.loading, pendingDoctors: false }),
             }),
           },
@@ -251,12 +241,7 @@ export const dataMachine = createMachine({
           input: ({ context }) => ({ accessToken: context.accessToken!, isAdmin: context.userRole === "ADMIN" }),
           onDone: {
             actions: assign({
-              adminStats: ({ event }) => {
-                orchestrator.send({
-                  type: "DATA_LOADED"
-                });
-                return event.output;
-              },
+              adminStats: ({ event }) => event.output,
               loading: ({ context }) => ({ ...context.loading, adminStats: false }),
             }),
           },
@@ -283,6 +268,14 @@ export const dataMachine = createMachine({
     },
     
     ready: {
+      entry: () => {
+        // Use setTimeout to ensure all assign actions complete before broadcasting
+        setTimeout(() => {
+          orchestrator.send({
+            type: "DATA_LOADED"
+          });
+        }, 0);
+      },
       on: {
         SET_AUTH: {
           target: "loadingInitialData",
@@ -342,12 +335,7 @@ export const dataMachine = createMachine({
         onDone: {
           target: "ready",
           actions: assign({
-            doctors: ({ event }) => {
-              orchestrator.send({
-                type: "DATA_LOADED"
-              });
-              return event.output;
-            },
+            doctors: ({ event }) => event.output,
             loading: ({ context }) => ({ ...context.loading, doctors: false }),
           }),
         },
@@ -377,12 +365,7 @@ export const dataMachine = createMachine({
         onDone: {
           target: "ready",
           actions: assign({
-            pendingDoctors: ({ event }) => {
-              orchestrator.send({
-                type: "DATA_LOADED"
-              });
-              return event.output;
-            },
+            pendingDoctors: ({ event }) => event.output,
             loading: ({ context }) => ({ ...context.loading, pendingDoctors: false }),
           }),
         },
@@ -412,12 +395,7 @@ export const dataMachine = createMachine({
         onDone: {
           target: "ready",
           actions: assign({
-            adminStats: ({ event }) => {
-              orchestrator.send({
-                type: "DATA_LOADED"
-              });
-              return event.output;
-            },
+            adminStats: ({ event }) => event.output,
             loading: ({ context }) => ({ ...context.loading, adminStats: false }),
           }),
         },
@@ -451,12 +429,7 @@ export const dataMachine = createMachine({
         onDone: {
           target: "ready",
           actions: assign({
-            availableTurns: ({ event }) => {
-              orchestrator.send({
-                type: "DATA_LOADED"
-              });
-              return event.output;
-            },
+            availableTurns: ({ event }) => event.output,
             loading: ({ context }) => ({ ...context.loading, availableTurns: false }),
           }),
         },
@@ -489,12 +462,7 @@ export const dataMachine = createMachine({
         onDone: {
           target: "ready",
           actions: assign({
-            myTurns: ({ event }) => {
-              orchestrator.send({
-                type: "DATA_LOADED"
-              });
-              return event.output;
-            },
+            myTurns: ({ event }) => event.output,
             loading: ({ context }) => ({ ...context.loading, myTurns: false }),
           }),
         },
@@ -527,12 +495,7 @@ export const dataMachine = createMachine({
         onDone: {
           target: "ready",
           actions: assign({
-            doctorPatients: ({ event }) => {
-              orchestrator.send({
-                type: "DATA_LOADED"
-              });
-              return event.output;
-            },
+            doctorPatients: ({ event }) => event.output,
             loading: ({ context }) => ({ ...context.loading, doctorPatients: false }),
           }),
         },
@@ -565,12 +528,7 @@ export const dataMachine = createMachine({
         onDone: {
           target: "ready",
           actions: assign({
-            doctorAvailability: ({ event }) => {
-              orchestrator.send({
-                type: "DATA_LOADED"
-              });
-              return event.output;
-            },
+            doctorAvailability: ({ event }) => event.output,
             loading: ({ context }) => ({ ...context.loading, doctorAvailability: false }),
           }),
         },
