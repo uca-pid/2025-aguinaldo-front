@@ -3,6 +3,7 @@ import { approveDoctor, rejectDoctor } from "../utils/adminUserMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, DoctorApprovalResponse } from "#/models/Admin";
 import { DATA_MACHINE_ID } from "./dataMachine";
+import { UI_MACHINE_ID } from "./uiMachine";
 
 export const ADMIN_USER_MACHINE_ID = "adminUser";
 export const ADMIN_USER_MACHINE_EVENT_TYPES = [
@@ -124,41 +125,60 @@ export const adminUserMachine = createMachine({
         }),
         onDone: {
           target: "idle",
-          actions: assign(({ event, context }) => {
-            const approvalResponse = event.output as DoctorApprovalResponse;
-            const updatedPendingDoctors = context.pendingDoctors.filter(
-              doctor => doctor.id !== approvalResponse.doctorId
-            );
-            
-            return {
-              loading: false,
-              pendingDoctors: updatedPendingDoctors,
-              adminStats: {
-                ...context.adminStats,
-                pending: updatedPendingDoctors.length,
-                doctors: context.adminStats.doctors + 1
-              },
-              lastOperation: {
-                type: 'approve' as const,
-                doctorId: approvalResponse.doctorId,
-                success: true,
-                message: approvalResponse.message
-              },
-              selectedDoctor: null
-            };
-          })
+          actions: [
+            assign(({ event, context }) => {
+              const approvalResponse = event.output as DoctorApprovalResponse;
+              const updatedPendingDoctors = context.pendingDoctors.filter(
+                doctor => doctor.id !== approvalResponse.doctorId
+              );
+              return {
+                loading: false,
+                pendingDoctors: updatedPendingDoctors,
+                adminStats: {
+                  ...context.adminStats,
+                  pending: updatedPendingDoctors.length,
+                  doctors: context.adminStats.doctors + 1
+                },
+                lastOperation: {
+                  type: 'approve' as const,
+                  doctorId: approvalResponse.doctorId,
+                  success: true,
+                  message: approvalResponse.message
+                },
+                selectedDoctor: null
+              };
+            }),
+            ({ event }) => {
+              const approvalResponse = event.output as DoctorApprovalResponse;
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: `Doctor aprobado exitosamente: ${approvalResponse.message}`,
+                severity: "success"
+              });
+            }
+          ],
         },
         onError: {
           target: "idle",
-          actions: assign(({ event }) => ({
-            loading: false,
-            error: event.error instanceof Error ? event.error.message : 'Failed to approve doctor',
-            lastOperation: {
-              type: 'approve' as const,
-              success: false,
-              message: 'Failed to approve doctor'
+          actions: [
+            assign(({ event }) => ({
+              loading: false,
+              error: event.error instanceof Error ? event.error.message : 'Failed to approve doctor',
+              lastOperation: {
+                type: 'approve' as const,
+                success: false,
+                message: 'Failed to approve doctor'
+              }
+            })),
+            ({ event }) => {
+              const errorMessage = event.error instanceof Error ? event.error.message : 'Error al aprobar doctor';
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
             }
-          }))
+          ],
         }
       }
     },
@@ -178,41 +198,59 @@ export const adminUserMachine = createMachine({
         }),
         onDone: {
           target: "idle",
-          actions: assign(({ event, context }) => {
-            const rejectionResponse = event.output as DoctorApprovalResponse;
-            // Remove the rejected doctor from pending list
-            const updatedPendingDoctors = context.pendingDoctors.filter(
-              doctor => doctor.id !== rejectionResponse.doctorId
-            );
-            
-            return {
-              loading: false,
-              pendingDoctors: updatedPendingDoctors,
-              adminStats: {
-                ...context.adminStats,
-                pending: updatedPendingDoctors.length
-              },
-              lastOperation: {
-                type: 'reject' as const,
-                doctorId: rejectionResponse.doctorId,
-                success: true,
-                message: rejectionResponse.message
-              },
-              selectedDoctor: null
-            };
-          })
+          actions: [
+            assign(({ event, context }) => {
+              const rejectionResponse = event.output as DoctorApprovalResponse;
+              const updatedPendingDoctors = context.pendingDoctors.filter(
+                doctor => doctor.id !== rejectionResponse.doctorId
+              );
+              return {
+                loading: false,
+                pendingDoctors: updatedPendingDoctors,
+                adminStats: {
+                  ...context.adminStats,
+                  pending: updatedPendingDoctors.length
+                },
+                lastOperation: {
+                  type: 'reject' as const,
+                  doctorId: rejectionResponse.doctorId,
+                  success: true,
+                  message: rejectionResponse.message
+                },
+                selectedDoctor: null
+              };
+            }),
+            ({ event }) => {
+              const rejectionResponse = event.output as DoctorApprovalResponse;
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: `Doctor rechazado exitosamente: ${rejectionResponse.message}`,
+                severity: "success"
+              });
+            }
+          ],
         },
         onError: {
           target: "idle",
-          actions: assign(({ event }) => ({
-            loading: false,
-            error: event.error instanceof Error ? event.error.message : 'Failed to reject doctor',
-            lastOperation: {
-              type: 'reject' as const,
-              success: false,
-              message: 'Failed to reject doctor'
+          actions: [
+            assign(({ event }) => ({
+              loading: false,
+              error: event.error instanceof Error ? event.error.message : 'Failed to reject doctor',
+              lastOperation: {
+                type: 'reject' as const,
+                success: false,
+                message: 'Failed to reject doctor'
+              }
+            })),
+            ({ event }) => {
+              const errorMessage = event.error instanceof Error ? event.error.message : 'Error al rechazar doctor';
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
             }
-          }))
+          ],
         }
       }
     },

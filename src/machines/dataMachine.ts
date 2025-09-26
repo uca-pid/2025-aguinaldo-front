@@ -4,6 +4,7 @@ import { loadDoctorPatients, loadDoctorAvailability } from "../utils/doctorMachi
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, AdminStats } from "../models/Admin";
 import type { Doctor } from "../models/Turn";
+import { UI_MACHINE_ID } from "./uiMachine";
 
 export const DATA_MACHINE_ID = "data";
 export const DATA_MACHINE_EVENT_TYPES = [
@@ -210,13 +211,27 @@ export const dataMachine = createMachine({
             }),
           },
           onError: {
-            actions: assign({
-              loading: ({ context }) => ({ ...context.loading, doctors: false }),
-              errors: ({ context, event }) => ({ 
-                ...context.errors, 
-                doctors: (event.error as Error).message 
+            target: "idle",
+            actions: [
+              assign({
+                errors: ({ context, event }) => ({
+                  ...context.errors,
+                  doctors: event.error instanceof Error ? event.error.message : "Error al cargar doctores"
+                }),
+                loading: ({ context }) => ({
+                  ...context.loading,
+                  doctors: false
+                })
               }),
-            }),
+              ({ event }) => {
+                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar doctores";
+                orchestrator.sendToMachine(UI_MACHINE_ID, {
+                  type: "OPEN_SNACKBAR",
+                  message: errorMessage,
+                  severity: "error"
+                });
+              }
+            ],
           },
         },
         {
@@ -233,13 +248,27 @@ export const dataMachine = createMachine({
             }),
           },
           onError: {
-            actions: assign({
-              loading: ({ context }) => ({ ...context.loading, pendingDoctors: false }),
-              errors: ({ context, event }) => ({ 
-                ...context.errors, 
-                pendingDoctors: (event.error as Error).message 
+            target: "idle",
+            actions: [
+              assign({
+                errors: ({ context, event }) => ({
+                  ...context.errors,
+                  pendingDoctors: event.error instanceof Error ? event.error.message : "Error al cargar doctores pendientes"
+                }),
+                loading: ({ context }) => ({
+                  ...context.loading,
+                  pendingDoctors: false
+                })
               }),
-            }),
+              ({ event }) => {
+                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar doctores pendientes";
+                orchestrator.sendToMachine(UI_MACHINE_ID, {
+                  type: "OPEN_SNACKBAR",
+                  message: errorMessage,
+                  severity: "error"
+                });
+              }
+            ],
           },
         },
         {
@@ -256,13 +285,27 @@ export const dataMachine = createMachine({
             }),
           },
           onError: {
-            actions: assign({
-              loading: ({ context }) => ({ ...context.loading, adminStats: false }),
-              errors: ({ context, event }) => ({ 
-                ...context.errors, 
-                adminStats: (event.error as Error).message 
+            target: "idle",
+            actions: [
+              assign({
+                errors: ({ context, event }) => ({
+                  ...context.errors,
+                  adminStats: event.error instanceof Error ? event.error.message : "Error al cargar estadísticas"
+                }),
+                loading: ({ context }) => ({
+                  ...context.loading,
+                  adminStats: false
+                })
               }),
-            }),
+              ({ event }) => {
+                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar estadísticas";
+                orchestrator.sendToMachine(UI_MACHINE_ID, {
+                  type: "OPEN_SNACKBAR",
+                  message: errorMessage,
+                  severity: "error"
+                });
+              }
+            ],
           },
         },
         {
@@ -283,13 +326,27 @@ export const dataMachine = createMachine({
             }),
           },
           onError: {
-            actions: assign({
-              loading: ({ context }) => ({ ...context.loading, doctorAvailability: false }),
-              errors: ({ context, event }) => ({ 
-                ...context.errors, 
-                doctorAvailability: (event.error as Error).message 
+            target: "idle",
+            actions: [
+              assign({
+                errors: ({ context, event }) => ({
+                  ...context.errors,
+                  doctorAvailability: event.error instanceof Error ? event.error.message : "Error al cargar disponibilidad"
+                }),
+                loading: ({ context }) => ({
+                  ...context.loading,
+                  doctorAvailability: false
+                })
               }),
-            }),
+              ({ event }) => {
+                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar disponibilidad";
+                orchestrator.sendToMachine(UI_MACHINE_ID, {
+                  type: "OPEN_SNACKBAR",
+                  message: errorMessage,
+                  severity: "error"
+                });
+              }
+            ],
           },
         },
       ],
@@ -387,14 +444,27 @@ export const dataMachine = createMachine({
           }),
         },
         onError: {
-          target: "ready",
-          actions: assign({
-            loading: ({ context }) => ({ ...context.loading, doctors: false }),
-            errors: ({ context, event }) => ({ 
-              ...context.errors, 
-              doctors: (event.error as Error).message 
+          target: "idle",
+          actions: [
+            assign({
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                doctors: event.error instanceof Error ? event.error.message : "Error al cargar doctores"
+              }),
+              loading: ({ context }) => ({
+                ...context.loading,
+                doctors: false
+              })
             }),
-          }),
+            ({ event }) => {
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar doctores";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
+            }
+          ],
         },
       },
     },
@@ -417,14 +487,27 @@ export const dataMachine = createMachine({
           }),
         },
         onError: {
-          target: "ready",
-          actions: assign({
-            loading: ({ context }) => ({ ...context.loading, pendingDoctors: false }),
-            errors: ({ context, event }) => ({ 
-              ...context.errors, 
-              pendingDoctors: (event.error as Error).message 
+          target: "idle",
+          actions: [
+            assign({
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                pendingDoctors: event.error instanceof Error ? event.error.message : "Error al cargar doctores pendientes"
+              }),
+              loading: ({ context }) => ({
+                ...context.loading,
+                pendingDoctors: false
+              })
             }),
-          }),
+            ({ event }) => {
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar doctores pendientes";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
+            }
+          ],
         },
       },
     },
@@ -447,14 +530,27 @@ export const dataMachine = createMachine({
           }),
         },
         onError: {
-          target: "ready",
-          actions: assign({
-            loading: ({ context }) => ({ ...context.loading, adminStats: false }),
-            errors: ({ context, event }) => ({ 
-              ...context.errors, 
-              adminStats: (event.error as Error).message 
+          target: "idle",
+          actions: [
+            assign({
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                adminStats: event.error instanceof Error ? event.error.message : "Error al cargar estadísticas"
+              }),
+              loading: ({ context }) => ({
+                ...context.loading,
+                adminStats: false
+              })
             }),
-          }),
+            ({ event }) => {
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar estadísticas";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
+            }
+          ],
         },
       },
     },
@@ -481,14 +577,27 @@ export const dataMachine = createMachine({
           }),
         },
         onError: {
-          target: "ready",
-          actions: assign({
-            loading: ({ context }) => ({ ...context.loading, availableTurns: false }),
-            errors: ({ context, event }) => ({ 
-              ...context.errors, 
-              availableTurns: (event.error as Error).message 
+          target: "idle",
+          actions: [
+            assign({
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                availableTurns: event.error instanceof Error ? event.error.message : "Error al cargar turnos disponibles"
+              }),
+              loading: ({ context }) => ({
+                ...context.loading,
+                availableTurns: false
+              })
             }),
-          }),
+            ({ event }) => {
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar turnos disponibles";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
+            }
+          ],
         },
       },
     },
@@ -514,14 +623,27 @@ export const dataMachine = createMachine({
           }),
         },
         onError: {
-          target: "ready",
-          actions: assign({
-            loading: ({ context }) => ({ ...context.loading, myTurns: false }),
-            errors: ({ context, event }) => ({ 
-              ...context.errors, 
-              myTurns: (event.error as Error).message 
+          target: "idle",
+          actions: [
+            assign({
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                myTurns: event.error instanceof Error ? event.error.message : "Error al cargar mis turnos"
+              }),
+              loading: ({ context }) => ({
+                ...context.loading,
+                myTurns: false
+              })
             }),
-          }),
+            ({ event }) => {
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar mis turnos";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
+            }
+          ],
         },
       },
     },
@@ -547,14 +669,27 @@ export const dataMachine = createMachine({
           }),
         },
         onError: {
-          target: "ready",
-          actions: assign({
-            loading: ({ context }) => ({ ...context.loading, doctorPatients: false }),
-            errors: ({ context, event }) => ({ 
-              ...context.errors, 
-              doctorPatients: (event.error as Error).message 
+          target: "idle",
+          actions: [
+            assign({
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                doctorPatients: event.error instanceof Error ? event.error.message : "Error al cargar pacientes del doctor"
+              }),
+              loading: ({ context }) => ({
+                ...context.loading,
+                doctorPatients: false
+              })
             }),
-          }),
+            ({ event }) => {
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar pacientes del doctor";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
+            }
+          ],
         },
       },
     },
@@ -580,14 +715,27 @@ export const dataMachine = createMachine({
           }),
         },
         onError: {
-          target: "ready",
-          actions: assign({
-            loading: ({ context }) => ({ ...context.loading, doctorAvailability: false }),
-            errors: ({ context, event }) => ({ 
-              ...context.errors, 
-              doctorAvailability: (event.error as Error).message 
+          target: "idle",
+          actions: [
+            assign({
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                doctorAvailability: event.error instanceof Error ? event.error.message : "Error al cargar disponibilidad del doctor"
+              }),
+              loading: ({ context }) => ({
+                ...context.loading,
+                doctorAvailability: false
+              })
             }),
-          }),
+            ({ event }) => {
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar disponibilidad del doctor";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
+            }
+          ],
         },
       },
     },

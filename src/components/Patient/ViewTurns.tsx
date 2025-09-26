@@ -1,6 +1,5 @@
 import { 
-  Box, Button, Typography, CircularProgress, 
-  Alert, Chip, FormControl, InputLabel, Select, MenuItem, Avatar 
+  Box, Button, Typography, CircularProgress, Chip, FormControl, InputLabel, Select, MenuItem, Avatar 
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
@@ -17,7 +16,7 @@ const ViewTurns: React.FC = () => {
   
   const turnContext = turnState.context;
   const showTurnsContext = turnContext.showTurns;
-  const { cancellingTurnId, cancelSuccess, isCancellingTurn } = turnContext;
+  const { cancellingTurnId, isCancellingTurn } = turnContext;
 
   const filteredTurns = turnContext.myTurns.filter((turn: any) => {
     let matchesStatus = true;
@@ -94,18 +93,6 @@ const ViewTurns: React.FC = () => {
       </Box>
 
       <Box className="viewturns-content">
-        {/* Alerts */}
-        {turnContext.myTurnsError && (
-          <Alert severity="error" className="viewturns-alert">
-            Error al cargar turnos: {turnContext.myTurnsError}
-          </Alert>
-        )}
-
-        {cancelSuccess && (
-          <Alert severity="success" className="viewturns-alert">
-            {cancelSuccess}
-          </Alert>
-        )}
 
         {/* Filters Section */}
         <Box className="viewturns-filters-section">

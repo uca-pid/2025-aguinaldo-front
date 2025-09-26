@@ -96,11 +96,6 @@
   width: 180px !important; /* Match approximate button width */
 }
 
-.doctor-viewturns-alert {
-  margin-bottom: 16px !important;
-  border-radius: 8px !important;
-}
-
 .doctor-viewturns-content {
   max-width: 1200px !important;
   margin: 0 auto !important;

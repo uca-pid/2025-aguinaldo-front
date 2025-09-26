@@ -2,6 +2,7 @@ import { createMachine, assign, fromPromise } from "xstate";
 import { loadProfile, updateProfile, deactivateAccount } from "../utils/profileMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { ProfileResponse } from "../models/Auth";
+import { UI_MACHINE_ID } from "./uiMachine";
 
 export const PROFILE_MACHINE_ID = "profile";
 export const PROFILE_MACHINE_EVENT_TYPES = [
@@ -220,35 +221,54 @@ export const profileMachine = createMachine({
         }),
         onDone: {
           target: "idle",
-          actions: assign({
-            profile: ({ event }) => event.output,
-            updatingProfile: false,
-            formValues: ({ event }) => {
-              const profile = event.output as ProfileResponse;
-              return {
-                name: profile.name || "",
-                surname: profile.surname || "",
-                email: profile.email || "",
-                phone: profile.phone || "",
-                dni: profile.dni || "",
-                gender: profile.gender || "",
-                birthdate: profile.birthdate || null,
-                specialty: profile.specialty || null,
-                medicalLicense: profile.medicalLicense || null,
-                slotDurationMin: profile.slotDurationMin || null,
-              };
-            },
-          }),
+          actions: [
+            assign({
+              profile: ({ event }) => event.output,
+              updatingProfile: false,
+              formValues: ({ event }) => {
+                const profile = event.output as ProfileResponse;
+                return {
+                  name: profile.name || "",
+                  surname: profile.surname || "",
+                  email: profile.email || "",
+                  phone: profile.phone || "",
+                  dni: profile.dni || "",
+                  gender: profile.gender || "",
+                  birthdate: profile.birthdate || null,
+                  specialty: profile.specialty || null,
+                  medicalLicense: profile.medicalLicense || null,
+                  slotDurationMin: profile.slotDurationMin || null,
+                };
+              },
+            }),
+            () => {
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: "Perfil actualizado exitosamente",
+                severity: "success"
+              });
+            }
+          ],
         },
         onError: {
           target: "idle",
-          actions: assign({
-            updatingProfile: false,
-            error: ({ event }) =>
-              event.error instanceof Error
-                ? event.error.message
-                : "Failed to update profile",
-          }),
+          actions: [
+            assign({
+              updatingProfile: false,
+              error: ({ event }) =>
+                event.error instanceof Error
+                  ? event.error.message
+                  : "Failed to update profile",
+            }),
+            ({ event }) => {
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al actualizar el perfil";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
+            }
+          ],
         },
       },
     },
@@ -275,17 +295,31 @@ export const profileMachine = createMachine({
               };
             }),
             () => {
-              // Notify other machines about logout
               orchestrator.send({ type: "LOGOUT" });
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: "Cuenta desactivada exitosamente",
+                severity: "success"
+              });
             }
           ],
         },
         onError: {
           target: "idle",
-          actions: assign({
-            loading: false,
-            error: ({ event }) => (event.error as Error).message,
-          }),
+          actions: [
+            assign({
+              loading: false,
+              error: ({ event }) => (event.error as Error).message,
+            }),
+            ({ event }) => {
+              const errorMessage = (event.error as Error).message || "Error al desactivar la cuenta";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
+            }
+          ],
         },
       },
     },

@@ -2,6 +2,7 @@ import { createMachine, assign, fromPromise } from "xstate";
 import { saveDoctorAvailability } from "../utils/doctorMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import { DATA_MACHINE_ID } from "./dataMachine";
+import { UI_MACHINE_ID } from "./uiMachine";
 import type { Patient } from "../models/Doctor";
 
 export const DOCTOR_MACHINE_ID = "doctor";
@@ -242,29 +243,49 @@ const doctorMachine = createMachine({
 
             onDone: { 
               target: "idle",
-              actions: assign({
-                availabilityError: () => null,
-                isSavingAvailability: false
-              })
+              actions: [
+                assign({
+                  availabilityError: () => null,
+                  isSavingAvailability: false
+                }),
+                () => {
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: "Disponibilidad guardada exitosamente", 
+                    severity: "success" 
+                  });
+                }
+              ]
             },
             onError: { 
               target: "idle",
-              actions: assign({
-                availabilityError: ({ event }) => {
+              actions: [
+                assign({
+                  availabilityError: ({ event }) => {
+                    const error = event.error as Error;
+                    if (error?.message?.includes('Failed to fetch') || error?.message?.includes('fetch')) {
+                      return "No se pudo conectar con el servidor. Verifica tu conexión.";
+                    }
+                    if (error?.message?.includes('404')) {
+                      return "Servicio no disponible. Inténtalo más tarde.";
+                    }
+                    if (error?.message?.includes('401') || error?.message?.includes('403')) {
+                      return "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
+                    }
+                    return error?.message || "Error al guardar la disponibilidad. Inténtalo de nuevo.";
+                  },
+                  isSavingAvailability: false
+                }),
+                ({ event }) => {
                   const error = event.error as Error;
-                  if (error?.message?.includes('Failed to fetch') || error?.message?.includes('fetch')) {
-                    return "No se pudo conectar con el servidor. Verifica tu conexión.";
-                  }
-                  if (error?.message?.includes('404')) {
-                    return "Servicio no disponible. Inténtalo más tarde.";
-                  }
-                  if (error?.message?.includes('401') || error?.message?.includes('403')) {
-                    return "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
-                  }
-                  return error?.message || "Error al guardar la disponibilidad. Inténtalo de nuevo.";
-                },
-                isSavingAvailability: false
-              })
+                  const errorMessage = error?.message || "Error al guardar la disponibilidad. Inténtalo de nuevo.";
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: errorMessage, 
+                    severity: "error" 
+                  });
+                }
+              ]
             },
           },
         },

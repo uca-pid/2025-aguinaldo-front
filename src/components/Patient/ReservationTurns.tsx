@@ -1,6 +1,6 @@
 import { 
   Box, Button, FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, 
-  TextField, Typography, CircularProgress, Alert,
+  TextField, Typography, CircularProgress,
   Container 
 } from "@mui/material";
 import React from "react";
@@ -112,25 +112,6 @@ const ReservationTurns: React.FC = () => {
             </Typography>
           </Box>
         </Box>
-
-        {/* Error Alerts */}
-        {turnContext.doctorsError && (
-          <Alert severity="error" className="reservation-alert">
-            Error al cargar doctores: {turnContext.doctorsError}
-          </Alert>
-        )}
-        
-        {turnContext.availableError && (
-          <Alert severity="error" className="reservation-alert">
-            Error al cargar turnos disponibles: {turnContext.availableError}
-          </Alert>
-        )}
-        
-        {turnContext.error && (
-          <Alert severity="error" className="reservation-alert">
-            Error al crear turno: {turnContext.error}
-          </Alert>
-        )}
 
           {currentStep === "step1" && (
             <Box className="reservation-step1-container">

@@ -13,6 +13,7 @@ import ViewTurns from './components/Patient/ViewTurns'
 import EnableHours from './components/Doctor/EnableHours/EnableHours'
 import ViewPatients from './components/Doctor/ViewPatients/ViewPatients'
 import DoctorViewTurns from './components/Doctor/DoctorViewTurns/DoctorViewTurns'
+import SnackbarAlert from './components/shared/SnackbarAlert/SnackbarAlert'
 
 function AppContent() {
   const navigate = useNavigate();
@@ -138,6 +139,7 @@ function AppContent() {
           
           <Route path="/profile" element={<ProfileScreen />} />
         </Routes>
+        <SnackbarAlert />
       </Box>
   );
 }

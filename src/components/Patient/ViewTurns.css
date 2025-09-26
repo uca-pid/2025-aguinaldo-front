@@ -110,24 +110,6 @@
   gap: 32px !important;
 }
 
-/* Alert Styles */
-.viewturns-alert {
-  margin-bottom: 24px !important;
-  border-radius: 8px !important;
-}
-
-.viewturns-alert.MuiAlert-standardError {
-  background: #fef2f2 !important;
-  color: #991b1b !important;
-  border: 1px solid #fecaca !important;
-}
-
-.viewturns-alert.MuiAlert-standardSuccess {
-  background: #f0fdf4 !important;
-  color: #166534 !important;
-  border: 1px solid #bbf7d0 !important;
-}
-
 /* Filters Section - matching PendingScreen card style */
 .viewturns-filters-section {
   background: white !important;

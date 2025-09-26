@@ -4,6 +4,7 @@ import { reserveTurn, createTurn, cancelTurn } from "../utils/turnMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { Doctor, TurnResponse } from "../models/Turn";
 import { DATA_MACHINE_ID } from "./dataMachine";
+import { UI_MACHINE_ID } from "./uiMachine";
 
 export const TURN_MACHINE_ID = "turn";
 export const TURN_MACHINE_EVENT_TYPES = [
@@ -276,15 +277,30 @@ export const turnMachine = createMachine({
                 }),
                 () => {
                   orchestrator.sendToMachine(DATA_MACHINE_ID, { type: "LOAD_MY_TURNS" });
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: "Turno reservado exitosamente", 
+                    severity: "success" 
+                  });
                 }
               ],
             },
             onError: {
               target: "idle",
-              actions: assign({
-                isReservingTurn: false,
-                reserveError: ({ event }) => (event.error as Error)?.message || "Error reserving turn",
-              }),
+              actions: [
+                assign({
+                  isReservingTurn: false,
+                  reserveError: ({ event }) => (event.error as Error)?.message || "Error reserving turn",
+                }),
+                ({ event }) => {
+                  const errorMessage = (event.error as Error)?.message || "Error al reservar el turno";
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: errorMessage, 
+                    severity: "error" 
+                  });
+                }
+              ],
             },
           },
         },
@@ -316,15 +332,30 @@ export const turnMachine = createMachine({
                 }),
                 () => {
                   orchestrator.sendToMachine(DATA_MACHINE_ID, { type: "LOAD_MY_TURNS" });
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: "Turno creado exitosamente", 
+                    severity: "success" 
+                  });
                 }
               ],
             },
             onError: {
               target: "idle",
-              actions: assign({
-                isCreatingTurn: false,
-                error: ({ event }) => (event.error as Error)?.message || "Error creating turn",
-              }),
+              actions: [
+                assign({
+                  isCreatingTurn: false,
+                  error: ({ event }) => (event.error as Error)?.message || "Error creating turn",
+                }),
+                ({ event }) => {
+                  const errorMessage = (event.error as Error)?.message || "Error al crear el turno";
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: errorMessage, 
+                    severity: "error" 
+                  });
+                }
+              ],
             },
           },
         },
@@ -350,16 +381,31 @@ export const turnMachine = createMachine({
                 }),
                 () => {
                   orchestrator.sendToMachine(DATA_MACHINE_ID, { type: "LOAD_MY_TURNS" });
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: "Turno cancelado exitosamente", 
+                    severity: "success" 
+                  });
                 }
               ],
             },
             onError: {
               target: "idle",
-              actions: assign({
-                isCancellingTurn: false,
-                cancellingTurnId: null,
-                error: ({ event }) => (event.error as Error)?.message || "Error al cancelar el turno",
-              }),
+              actions: [
+                assign({
+                  isCancellingTurn: false,
+                  cancellingTurnId: null,
+                  error: ({ event }) => (event.error as Error)?.message || "Error al cancelar el turno",
+                }),
+                ({ event }) => {
+                  const errorMessage = (event.error as Error)?.message || "Error al cancelar el turno";
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: errorMessage, 
+                    severity: "error" 
+                  });
+                }
+              ],
             },
           },
         },

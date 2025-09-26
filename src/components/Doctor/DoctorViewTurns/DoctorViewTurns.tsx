@@ -1,7 +1,5 @@
 import { 
-  Box, Button, Typography, CircularProgress, 
-  Alert, Chip, FormControl, InputLabel, Select, MenuItem, Avatar,
-  IconButton
+  Box, Button, Typography, CircularProgress, Chip, FormControl, InputLabel, Select, MenuItem, Avatar,
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
@@ -10,7 +8,7 @@ import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import ScheduleIcon from "@mui/icons-material/Schedule";
-import { ArrowBack, Close as CloseIcon } from '@mui/icons-material';
+import { ArrowBack } from '@mui/icons-material';
 import "./DoctorViewTurns.css";
 
 const ViewTurns: React.FC = () => {
@@ -21,7 +19,7 @@ const ViewTurns: React.FC = () => {
   
   const turnContext = turnState.context;
   const showTurnsContext = turnContext.showTurns;
-  const { cancellingTurnId, cancelSuccess, isCancellingTurn } = turnContext;
+  const { cancellingTurnId, isCancellingTurn } = turnContext;
 
   const handleBack = () => {
     uiSend({ type: "NAVIGATE", to: "/dashboard" });
@@ -103,32 +101,6 @@ const ViewTurns: React.FC = () => {
               <Box className="viewturns-header-spacer"></Box>
             </Box>
           </Box>
-
-          {turnContext.myTurnsError && (
-            <Alert severity="error" className="doctor-viewturns-alert">
-              Error al cargar turnos: {turnContext.myTurnsError}
-            </Alert>
-          )}
-
-          {cancelSuccess && (
-            <Alert 
-              severity="success" 
-              className="doctor-viewturns-alert"
-              onClose={() => turnSend({ type: "CLEAR_CANCEL_SUCCESS" })}
-              action={
-                <IconButton
-                  aria-label="close"
-                  color="inherit"
-                  size="small"
-                  onClick={() => turnSend({ type: "CLEAR_CANCEL_SUCCESS" })}
-                >
-                  <CloseIcon fontSize="inherit" />
-                </IconButton>
-              }
-            >
-              {cancelSuccess}
-            </Alert>
-          )}
 
           <Box className="doctor-viewturns-content">
             <Box className="doctor-viewturns-filters-section">
