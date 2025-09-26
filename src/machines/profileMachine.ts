@@ -260,9 +260,7 @@ export const profileMachine = createMachine({
       }),
       invoke: {
         src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
-          console.log('Starting account deactivation from profile machine...');
           await deactivateAccount(input);
-          console.log('Account deactivation completed from profile machine');
           return { success: true };
         }),
         input: ({ context }) => ({
@@ -272,7 +270,6 @@ export const profileMachine = createMachine({
           target: "idle",
           actions: [
             assign(() => {
-              console.log('Clearing profile state after deactivation...');
               return {
                 ...ProfileMachineDefaultContext,
               };

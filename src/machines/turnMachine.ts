@@ -228,14 +228,19 @@ export const turnMachine = createMachine({
               actions: assign(() => {
                 try {
                   const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
-                  const dataContext = dataSnapshot.context;
+                  const dataContext = dataSnapshot.context
+                  
+                  const authSnapshot = orchestrator.getSnapshot('auth');
+                  const authContext = authSnapshot?.context;
+                  
                   return {
                     doctors: dataContext.doctors || [],
                     availableTurns: dataContext.availableTurns || [],
                     myTurns: dataContext.myTurns || [],
+                    accessToken: dataContext.accessToken || null,
+                    userId: dataContext.userId || authContext?.authResponse?.id || null,
                   };
                 } catch (error) {
-                  console.warn("Could not get dataMachine snapshot:", error);
                   return {};
                 }
               }),
@@ -264,10 +269,15 @@ export const turnMachine = createMachine({
             }),
             onDone: {
               target: "idle",
-              actions: assign({
-                isReservingTurn: false,
-                reserveError: null,
-              }),
+              actions: [
+                assign({
+                  isReservingTurn: false,
+                  reserveError: null,
+                }),
+                () => {
+                  orchestrator.sendToMachine(DATA_MACHINE_ID, { type: "LOAD_MY_TURNS" });
+                }
+              ],
             },
             onError: {
               target: "idle",
@@ -294,14 +304,20 @@ export const turnMachine = createMachine({
                 doctorId: context.takeTurn.doctorId,
                 scheduledAt: context.takeTurn.scheduledAt!
               };
+              
               return inputData;
             },
             onDone: {
               target: "idle",
-              actions: assign({
-                isCreatingTurn: false,
-                error: null,
-              }),
+              actions: [
+                assign({
+                  isCreatingTurn: false,
+                  error: null,
+                }),
+                () => {
+                  orchestrator.sendToMachine(DATA_MACHINE_ID, { type: "LOAD_MY_TURNS" });
+                }
+              ],
             },
             onError: {
               target: "idle",
@@ -326,11 +342,16 @@ export const turnMachine = createMachine({
             }),
             onDone: {
               target: "idle",
-              actions: assign({
-                isCancellingTurn: false,
-                cancellingTurnId: null,
-                cancelSuccess: "Turno cancelado exitosamente",
-              }),
+              actions: [
+                assign({
+                  isCancellingTurn: false,
+                  cancellingTurnId: null,
+                  cancelSuccess: "Turno cancelado exitosamente",
+                }),
+                () => {
+                  orchestrator.sendToMachine(DATA_MACHINE_ID, { type: "LOAD_MY_TURNS" });
+                }
+              ],
             },
             onError: {
               target: "idle",

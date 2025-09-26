@@ -233,7 +233,6 @@ export class AuthService {
     }
 
     static async deactivateAccount(accessToken: string): Promise<void> {
-      console.log('Iniciando desactivación de cuenta...');
       const url = buildApiUrl('/api/profile/me/deactivate');
 
       try {
@@ -241,8 +240,6 @@ export class AuthService {
           ...getAuthenticatedFetchOptions(accessToken),
           method: 'DELETE',
         });
-
-        console.log('Respuesta de desactivación:', response.status, response.statusText);
 
         if (!response.ok) {
           const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
@@ -254,7 +251,6 @@ export class AuthService {
           );
         }
 
-        console.log('Cuenta desactivada exitosamente');
         // Clear auth data immediately after successful deactivation
         this.clearAuthData();
       } catch (error) {

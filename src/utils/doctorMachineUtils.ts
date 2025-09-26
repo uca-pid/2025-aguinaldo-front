@@ -67,9 +67,7 @@ export const saveDoctorAvailability = async ({ accessToken, doctorId, availabili
     weeklyAvailability: availability.map((day: DayAvailability) => {
       const spanishDay = day.day.toUpperCase();
       const englishDay = dayMapping[spanishDay] || spanishDay;
-      
-      console.log(`Mapping day: ${day.day} -> ${spanishDay} -> ${englishDay}`);
-      
+            
       return {
         day: englishDay,
         enabled: day.enabled,
@@ -91,7 +89,6 @@ export const saveDoctorAvailability = async ({ accessToken, doctorId, availabili
     })
   };
 
-  console.log('Sending availability request:', JSON.stringify(availabilityRequest, null, 2));
   await DoctorService.saveAvailability(accessToken, doctorId, availabilityRequest);
   return "Availability saved successfully";
 };

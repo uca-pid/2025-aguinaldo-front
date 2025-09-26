@@ -93,7 +93,6 @@ const EnableHours: React.FC = () => {
             return;
         }
         
-        console.log("Guardando disponibilidad...", availability);
         doctorSend({ type: "SAVE_AVAILABILITY" });
     };
 

@@ -22,6 +22,7 @@ export const DATA_MACHINE_EVENT_TYPES = [
 export interface DataMachineContext {
   accessToken: string | null;
   userRole: string | null;
+  userId: string | null;
   doctorId: string | null;
   
   doctors: Doctor[];
@@ -56,6 +57,7 @@ export interface DataMachineContext {
 export const DataMachineDefaultContext: DataMachineContext = {
   accessToken: null,
   userRole: null,
+  userId: null,
   doctorId: null,
   
   doctors: [],
@@ -115,6 +117,7 @@ export const dataMachine = createMachine({
           actions: assign({
             accessToken: ({ event }) => event.accessToken,
             userRole: ({ event }) => event.userRole,
+            userId: ({ event }) => event.userId,
             doctorId: ({ event }) => event.userRole === "DOCTOR" ? event.userId : null,
           }),
         },
@@ -122,6 +125,7 @@ export const dataMachine = createMachine({
           actions: assign({
             accessToken: null,
             userRole: null,
+            userId: null,
             doctorId: null,
             doctors: [],
             pendingDoctors: [],
@@ -318,6 +322,7 @@ export const dataMachine = createMachine({
           actions: assign({
             accessToken: ({ event }) => event.accessToken,
             userRole: ({ event }) => event.userRole,
+            userId: ({ event }) => event.userId,
             doctorId: ({ event }) => event.userRole === "DOCTOR" ? event.userId : null,
           }),
         },
@@ -326,6 +331,7 @@ export const dataMachine = createMachine({
           actions: assign({
             accessToken: null,
             userRole: null,
+            userId: null,
             doctorId: null,
             doctors: [],
             pendingDoctors: [],

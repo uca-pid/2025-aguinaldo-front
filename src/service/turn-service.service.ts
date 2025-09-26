@@ -30,7 +30,6 @@ export class TurnService {
       const result: Doctor[] = await response.json();
       return result;
     } catch (error) {
-      console.error('Failed to fetch doctors:', error);
       throw error;
     }
   }
@@ -42,9 +41,6 @@ export class TurnService {
   ): Promise<string[]> {
     const url = buildApiUrl(`/api/turns/available?doctorId=${doctorId}&date=${date}`);
     
-    console.log('Fetching available turns from:', url);
-    console.log('Doctor ID:', doctorId, 'Date:', date);
-    
     try {
       const response = await fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
@@ -53,7 +49,6 @@ export class TurnService {
 
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
-        console.error('Error response:', errorData);
         throw new Error(
           errorData?.message || 
           errorData?.error ||
@@ -62,11 +57,9 @@ export class TurnService {
       }
 
       const availableTimes: string[] = await response.json();
-      console.log('Available times from backend:', availableTimes);
       
       return availableTimes;
     } catch (error) {
-      console.error('Failed to fetch available turns:', error);
       throw error;
     }
   }
@@ -77,9 +70,6 @@ export class TurnService {
   ): Promise<TurnResponse> {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.CREATE_TURN);
     
-    console.log('Creating turn with data:', data);
-    console.log('URL:', url);
-    
     try {
       const fetchOptions = {
         ...getAuthenticatedFetchOptions(accessToken),
@@ -87,13 +77,11 @@ export class TurnService {
         body: JSON.stringify(data),
       };
       
-      console.log('Fetch options:', fetchOptions);
-      console.log('Request body:', JSON.stringify(data, null, 2));
-      
       const response = await fetch(url, fetchOptions);
 
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        
         throw new Error(
           errorData?.message || 
           errorData?.error ||
@@ -102,9 +90,9 @@ export class TurnService {
       }
 
       const result: TurnResponse = await response.json();
+      
       return result;
     } catch (error) {
-      console.error('Failed to create turn:', error);
       throw error;
     }
   }
@@ -134,7 +122,6 @@ export class TurnService {
       const result: TurnResponse = await response.json();
       return result;
     } catch (error) {
-      console.error('Failed to reserve turn:', error);
       throw error;
     }
   }
@@ -165,7 +152,6 @@ export class TurnService {
       const result: TurnResponse[] = await response.json();
       return result;
     } catch (error) {
-      console.error('Failed to fetch my turns:', error);
       throw error;
     }
   }
@@ -197,7 +183,6 @@ export class TurnService {
       const result: TurnResponse[] = await response.json();
       return result;
     } catch (error) {
-      console.error('Failed to fetch patient turns:', error);
       throw error;
     }
   }
@@ -229,7 +214,6 @@ export class TurnService {
       const result: TurnResponse[] = await response.json();
       return result;
     } catch (error) {
-      console.error('Failed to fetch doctor turns:', error);
       throw error;
     }
   }
