@@ -135,14 +135,44 @@ export const turnMachine = createMachine({
           },
         },
         step2: {
+          entry: ({ context }) => {
+            // Load available turns for the next 30 days when entering step2
+            if (context.takeTurn.doctorId) {
+              const today = new Date();
+              for (let i = 0; i < 30; i++) {
+                const checkDate = new Date(today);
+                checkDate.setDate(today.getDate() + i);
+                const dateString = checkDate.toISOString().split('T')[0];
+                
+                orchestrator.send({
+                  type: "LOAD_AVAILABLE_TURNS",
+                  doctorId: context.takeTurn.doctorId,
+                  date: dateString
+                });
+              }
+            }
+          },
           on: {
             UPDATE_FORM_TAKE_TURN: {
-              actions: assign({
-                takeTurn: ({ context, event }) => ({
-                  ...context.takeTurn,
-                  [event.key]: event.value,
+              actions: [
+                assign({
+                  takeTurn: ({ context, event }) => ({
+                    ...context.takeTurn,
+                    [event.key]: event.value,
+                  }),
                 }),
-              }),
+                // Load available turns when date is selected
+                ({ context, event }) => {
+                  if (event.key === 'dateSelected' && event.value && context.takeTurn.doctorId) {
+                    const selectedDate = event.value.format('YYYY-MM-DD');
+                    orchestrator.send({
+                      type: "LOAD_AVAILABLE_TURNS",
+                      doctorId: context.takeTurn.doctorId,
+                      date: selectedDate
+                    });
+                  }
+                }
+              ],
             },
             BACK: "step1",
             RESET_TAKE_TURN: {

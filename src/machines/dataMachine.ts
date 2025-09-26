@@ -115,16 +115,21 @@ export const dataMachine = createMachine({
           actions: assign({
             accessToken: ({ event }) => event.accessToken,
             userRole: ({ event }) => event.userRole,
+            doctorId: ({ event }) => event.userRole === "DOCTOR" ? event.userId : null,
           }),
         },
         CLEAR_ACCESS_TOKEN: {
           actions: assign({
             accessToken: null,
+            userRole: null,
+            doctorId: null,
             doctors: [],
             pendingDoctors: [],
             adminStats: { patients: 0, doctors: 0, pending: 0 },
             availableTurns: [],
             myTurns: [],
+            doctorPatients: [],
+            doctorAvailability: [],
           }),
         },
         RELOAD_DOCTORS: {
@@ -165,6 +170,7 @@ export const dataMachine = createMachine({
     loadingInitialData: {
       entry: assign(({ context }) => {
         const isAdmin = context.userRole === "ADMIN";
+        const isDoctor = context.userRole === "DOCTOR";
         return {
           loading: {
             doctors: true,
@@ -173,7 +179,7 @@ export const dataMachine = createMachine({
             availableTurns: false,
             myTurns: false,
             doctorPatients: false,
-            doctorAvailability: false,
+            doctorAvailability: isDoctor,
           },
           errors: {
             doctors: null,
@@ -255,24 +261,54 @@ export const dataMachine = createMachine({
             }),
           },
         },
+        {
+          id: "loadDoctorAvailability",
+          src: fromPromise(async ({ input }: { input: { accessToken: string; isDoctor: boolean; doctorId: string | null } }) => {
+            if (!input.isDoctor || !input.doctorId) return null;
+            return await loadDoctorAvailability({ accessToken: input.accessToken, doctorId: input.doctorId });
+          }),
+          input: ({ context }) => ({ 
+            accessToken: context.accessToken!, 
+            isDoctor: context.userRole === "DOCTOR",
+            doctorId: context.doctorId
+          }),
+          onDone: {
+            actions: assign({
+              doctorAvailability: ({ event }) => event.output,
+              loading: ({ context }) => ({ ...context.loading, doctorAvailability: false }),
+            }),
+          },
+          onError: {
+            actions: assign({
+              loading: ({ context }) => ({ ...context.loading, doctorAvailability: false }),
+              errors: ({ context, event }) => ({ 
+                ...context.errors, 
+                doctorAvailability: (event.error as Error).message 
+              }),
+            }),
+          },
+        },
       ],
       always: {
         target: "ready",
         guard: ({ context }) => {
           const isAdmin = context.userRole === "ADMIN";
+          const isDoctor = context.userRole === "DOCTOR";
           return !context.loading.doctors && 
                  (!isAdmin || !context.loading.pendingDoctors) && 
-                 (!isAdmin || !context.loading.adminStats);
+                 (!isAdmin || !context.loading.adminStats) &&
+                 (!isDoctor || !context.loading.doctorAvailability);
         },
       },
     },
     
     ready: {
-      entry: () => {
+      entry: ({ context }) => {
         // Use setTimeout to ensure all assign actions complete before broadcasting
         setTimeout(() => {
           orchestrator.send({
-            type: "DATA_LOADED"
+            type: "DATA_LOADED",
+            doctorAvailability: context.doctorAvailability
           });
         }, 0);
       },
@@ -282,17 +318,22 @@ export const dataMachine = createMachine({
           actions: assign({
             accessToken: ({ event }) => event.accessToken,
             userRole: ({ event }) => event.userRole,
+            doctorId: ({ event }) => event.userRole === "DOCTOR" ? event.userId : null,
           }),
         },
         CLEAR_ACCESS_TOKEN: {
           target: "idle",
           actions: assign({
             accessToken: null,
+            userRole: null,
+            doctorId: null,
             doctors: [],
             pendingDoctors: [],
             adminStats: { patients: 0, doctors: 0, pending: 0 },
             availableTurns: [],
             myTurns: [],
+            doctorPatients: [],
+            doctorAvailability: [],
           }),
         },
         RELOAD_DOCTORS: {
