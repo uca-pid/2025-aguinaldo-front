@@ -76,7 +76,7 @@ const ReservationTurns: React.FC = () => {
           uiSend({ type: "NAVIGATE", to: "/patient" });
           turnSend({ type: "RESET_TAKE_TURN" });
         }
-      }, 1000);
+      }, 500);
     } catch (error) {
       console.error('Error creating turn:', error);
     }

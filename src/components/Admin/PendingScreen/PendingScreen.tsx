@@ -96,7 +96,7 @@ export default function PendingScreen() {
                             <strong>Especialidad:</strong> {doctor.specialty}
                           </Typography>
                           <Typography variant="body2" className="pending-doctor-info">
-                            <strong>Fecha de registro:</strong> {doctor.createdAt ? new Date(doctor.createdAt).toLocaleDateString('es-AR') : 'N/A'}
+                            <strong>Matricula:</strong> {doctor.medicalLicense}
                           </Typography>
                         </Box>
                       </Box>

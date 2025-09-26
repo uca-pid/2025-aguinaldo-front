@@ -134,17 +134,25 @@ export const authMachine = createMachine({
         input: ({ context }) => context,
         onDone: {
           target: "idle",
-          actions: assign(() => ({
+          actions: [assign(() => ({
             isAuthenticated: false,
             authResponse: null
-          }))
+          })),
+          () => {
+            orchestrator.send({ type: "NAVIGATE", to: "/" });
+          }
+          ],
         },
         onError: {
           target: "idle",
-          actions: assign(() => ({
+          actions: [assign(() => ({
             isAuthenticated: false,
             authResponse: null
-          }))
+          })),
+          () => {
+            orchestrator.send({ type: "NAVIGATE", to: "/" });
+          }
+          ],
         }
       }
     },
