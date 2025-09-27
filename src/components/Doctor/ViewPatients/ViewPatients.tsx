@@ -13,7 +13,8 @@ import {
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { useMachines } from "#/providers/MachineProvider"
-import { PeopleOutlined, SearchOutlined, PersonOutlined, BadgeOutlined, ArrowBack } from '@mui/icons-material'
+import HistoryIcon from '@mui/icons-material/History';
+import { PeopleOutlined, SearchOutlined, PersonOutlined, BadgeOutlined, ArrowBack, } from '@mui/icons-material'
 import { Patient, calculateAge } from "#/models/Doctor"
 import './ViewPatients.css'
 
@@ -25,6 +26,18 @@ const ViewPatients: React.FC = () => {
     const isLoading = doctorContext.isLoadingPatients;
     const error = doctorContext.patientsError;
     const searchTerm = doctorContext.patientSearchTerm;
+
+    // Initialize patients data if not already loaded and we have auth
+    if (!isLoading && patients.length === 0 && !error && doctorContext.accessToken && doctorContext.doctorId) {
+        console.log("ViewPatients: Initializing patients page", {
+            accessToken: !!doctorContext.accessToken,
+            doctorId: doctorContext.doctorId,
+            isLoading: isLoading,
+            patients: patients,
+            error: error
+        });
+        doctorSend({ type: "INIT_PATIENTS_PAGE" });
+    }
 
     const handleBack = () => {
         uiSend({ type: "NAVIGATE", to: "/dashboard" });
@@ -152,6 +165,10 @@ const ViewPatients: React.FC = () => {
                                                             <Typography className="viewpatients-patient-info-item">
                                                                 <BadgeOutlined fontSize="small" />
                                                                 DNI: {patient.dni}
+                                                            </Typography>
+                                                            <Typography className="viewpatients-patient-info-item">
+                                                                <HistoryIcon fontSize="small" />
+                                                                Historia clínica: {patient.medicalHistory ? 'Historial disponible' : 'Sin historial'}
                                                             </Typography>
                                                         </Box>
                                                     </Box>

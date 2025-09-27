@@ -738,10 +738,18 @@ export const dataMachine = createMachine({
         }),
         onDone: {
           target: "ready",
-          actions: assign({
-            doctorPatients: ({ event }) => event.output,
-            loading: ({ context }) => ({ ...context.loading, doctorPatients: false }),
-          }),
+          actions: [
+            assign({
+              doctorPatients: ({ event }) => event.output,
+              loading: ({ context }) => ({ ...context.loading, doctorPatients: false }),
+            }),
+            () => {
+              // Notify doctor machine that patients have been loaded
+              orchestrator.send({
+                type: "DATA_LOADED"
+              });
+            }
+          ],
         },
         onError: {
           target: "idle",

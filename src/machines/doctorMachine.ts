@@ -97,25 +97,36 @@ const doctorMachine = createMachine({
                 try {
                   const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
                   const dataContext = dataSnapshot.context;
+                  const error = dataContext.errors?.doctorPatients;
+                  
                   return {
-                    patients: dataContext.doctorPatients || [],
+                    patients: error ? [] : (dataContext.doctorPatients || []),
                     isLoadingPatients: false,
-                    patientsError: null,
+                    patientsError: error || null,
                   };
                 } catch (error) {
                   console.warn("Could not get dataMachine snapshot:", error);
-                  return {};
+                  return {
+                    isLoadingPatients: false,
+                    patientsError: "Error al conectar con el sistema de datos",
+                  };
                 }
               }),
             },
             RETRY: {
-              actions: ({ context }) => {
-                if (context.accessToken && context.doctorId) {
-                  orchestrator.send({
-                    type: "LOAD_DOCTOR_PATIENTS"
-                  });
+              actions: [
+                assign({
+                  isLoadingPatients: true,
+                  patientsError: null,
+                }),
+                ({ context }) => {
+                  if (context.accessToken && context.doctorId) {
+                    orchestrator.send({
+                      type: "LOAD_DOCTOR_PATIENTS"
+                    });
+                  }
                 }
-              },
+              ],
             },
             RESET: {
               actions: assign({
@@ -313,11 +324,27 @@ const doctorMachine = createMachine({
       },
     },
     INIT_PATIENTS_PAGE: {
-      actions: ({ context }) => {
-        if (context.accessToken && context.doctorId) {
-          orchestrator.send({ type: "LOAD_DOCTOR_PATIENTS" });
+      actions: [
+        assign({
+          isLoadingPatients: true,
+          patientsError: null,
+        }),
+        ({ context }) => {
+          console.log("DoctorMachine: INIT_PATIENTS_PAGE received", {
+            accessToken: !!context.accessToken,
+            doctorId: context.doctorId
+          });
+          if (context.accessToken && context.doctorId) {
+            console.log("DoctorMachine: Sending LOAD_DOCTOR_PATIENTS to orchestrator");
+            orchestrator.send({ type: "LOAD_DOCTOR_PATIENTS" });
+          } else {
+            console.warn("DoctorMachine: Missing accessToken or doctorId", {
+              accessToken: !!context.accessToken,
+              doctorId: context.doctorId
+            });
+          }
         }
-      },
+      ],
     },
   },
 });
