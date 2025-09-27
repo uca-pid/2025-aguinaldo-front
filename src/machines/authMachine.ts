@@ -115,12 +115,15 @@ export const authMachine = createMachine({
       entry: ({ context }) => {
         if (context.authResponse && "accessToken" in context.authResponse) {
           // Send to dataMachine and profileMachine
-          context.send({ 
-            type: "SET_AUTH", 
-            accessToken: context.authResponse.accessToken, 
-            userId: context.authResponse.id,
-            userRole: context.authResponse.role
-          });
+          setTimeout(() => {
+            const response = context.authResponse as SignInResponse;
+            context.send({ 
+              type: "SET_AUTH", 
+              accessToken: response.accessToken, 
+              userId: response.id,
+              userRole: response.role
+            });
+          }, 0);
         }
       }
     },

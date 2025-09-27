@@ -5,6 +5,7 @@ import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, AdminStats } from "../models/Admin";
 import type { Doctor } from "../models/Turn";
 import { UI_MACHINE_ID } from "./uiMachine";
+import { AUTH_MACHINE_ID } from "./authMachine";
 
 export const DATA_MACHINE_ID = "data";
 export const DATA_MACHINE_EVENT_TYPES = [
@@ -176,13 +177,14 @@ export const dataMachine = createMachine({
       entry: assign(({ context }) => {
         const isAdmin = context.userRole === "ADMIN";
         const isDoctor = context.userRole === "DOCTOR";
+        const isPatient = context.userRole === "PATIENT";
         return {
           loading: {
             doctors: true,
             pendingDoctors: isAdmin,
             adminStats: isAdmin,
             availableTurns: false,
-            myTurns: false,
+            myTurns: isPatient || isDoctor, // Load turns for patients and doctors
             doctorPatients: false,
             doctorAvailability: isDoctor,
           },
@@ -224,6 +226,9 @@ export const dataMachine = createMachine({
                 })
               }),
               ({ event }) => {
+                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+                }
                 const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar doctores";
                 orchestrator.sendToMachine(UI_MACHINE_ID, {
                   type: "OPEN_SNACKBAR",
@@ -261,6 +266,9 @@ export const dataMachine = createMachine({
                 })
               }),
               ({ event }) => {
+                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+                }
                 const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar doctores pendientes";
                 orchestrator.sendToMachine(UI_MACHINE_ID, {
                   type: "OPEN_SNACKBAR",
@@ -298,6 +306,9 @@ export const dataMachine = createMachine({
                 })
               }),
               ({ event }) => {
+                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+                }
                 const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar estadísticas";
                 orchestrator.sendToMachine(UI_MACHINE_ID, {
                   type: "OPEN_SNACKBAR",
@@ -339,7 +350,54 @@ export const dataMachine = createMachine({
                 })
               }),
               ({ event }) => {
+                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+                }
                 const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar disponibilidad";
+                orchestrator.sendToMachine(UI_MACHINE_ID, {
+                  type: "OPEN_SNACKBAR",
+                  message: errorMessage,
+                  severity: "error"
+                });
+              }
+            ],
+          },
+        },
+        {
+          id: "loadMyTurns",
+          src: fromPromise(async ({ input }: { input: { accessToken: string; isPatient: boolean; isDoctor: boolean } }) => {
+            if (!input.isPatient && !input.isDoctor) return [];
+            return await loadMyTurns({ accessToken: input.accessToken });
+          }),
+          input: ({ context }) => ({ 
+            accessToken: context.accessToken!, 
+            isPatient: context.userRole === "PATIENT",
+            isDoctor: context.userRole === "DOCTOR"
+          }),
+          onDone: {
+            actions: assign({
+              myTurns: ({ event }) => event.output,
+              loading: ({ context }) => ({ ...context.loading, myTurns: false }),
+            }),
+          },
+          onError: {
+            target: "idle",
+            actions: [
+              assign({
+                errors: ({ context, event }) => ({
+                  ...context.errors,
+                  myTurns: event.error instanceof Error ? event.error.message : "Error al cargar mis turnos"
+                }),
+                loading: ({ context }) => ({
+                  ...context.loading,
+                  myTurns: false
+                })
+              }),
+              ({ event }) => {
+                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+                }
+                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar mis turnos";
                 orchestrator.sendToMachine(UI_MACHINE_ID, {
                   type: "OPEN_SNACKBAR",
                   message: errorMessage,
@@ -355,10 +413,12 @@ export const dataMachine = createMachine({
         guard: ({ context }) => {
           const isAdmin = context.userRole === "ADMIN";
           const isDoctor = context.userRole === "DOCTOR";
+          const isPatient = context.userRole === "PATIENT";
           return !context.loading.doctors && 
                  (!isAdmin || !context.loading.pendingDoctors) && 
                  (!isAdmin || !context.loading.adminStats) &&
-                 (!isDoctor || !context.loading.doctorAvailability);
+                 (!isDoctor || !context.loading.doctorAvailability) &&
+                 (!(isPatient || isDoctor) || !context.loading.myTurns);
         },
       },
     },
@@ -457,6 +517,9 @@ export const dataMachine = createMachine({
               })
             }),
             ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+              }
               const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar doctores";
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",
@@ -500,6 +563,9 @@ export const dataMachine = createMachine({
               })
             }),
             ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+              }
               const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar doctores pendientes";
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",
@@ -543,6 +609,9 @@ export const dataMachine = createMachine({
               })
             }),
             ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+              }
               const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar estadísticas";
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",
@@ -590,6 +659,9 @@ export const dataMachine = createMachine({
               })
             }),
             ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+              }
               const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar turnos disponibles";
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",
@@ -636,6 +708,9 @@ export const dataMachine = createMachine({
               })
             }),
             ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+              }
               const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar mis turnos";
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",
@@ -659,7 +734,7 @@ export const dataMachine = createMachine({
         }),
         input: ({ context }) => ({ 
           accessToken: context.accessToken!,
-          doctorId: context.accessToken! // This should come from auth context - needs to be fixed
+          doctorId: context.doctorId!
         }),
         onDone: {
           target: "ready",
@@ -682,6 +757,9 @@ export const dataMachine = createMachine({
               })
             }),
             ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+              }
               const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar pacientes del doctor";
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",
@@ -705,7 +783,7 @@ export const dataMachine = createMachine({
         }),
         input: ({ context }) => ({ 
           accessToken: context.accessToken!,
-          doctorId: context.accessToken! // This should come from auth context - needs to be fixed
+          doctorId: context.doctorId!
         }),
         onDone: {
           target: "ready",
@@ -728,6 +806,9 @@ export const dataMachine = createMachine({
               })
             }),
             ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+              }
               const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar disponibilidad del doctor";
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",
