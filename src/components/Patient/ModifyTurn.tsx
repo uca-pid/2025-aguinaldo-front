@@ -10,7 +10,6 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { DateCalendar } from "@mui/x-date-pickers";
-import { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { SignInResponse } from "#/models/Auth";
@@ -63,52 +62,7 @@ const ModifyTurn: React.FC = () => {
     }
   }, [currentTurn?.doctorId, modifyTurnSend]);
 
-  const handleDateChange = (newValue: Dayjs | null) => {
-    modifyTurnSend({ 
-      type: "UPDATE_FORM", 
-      key: "selectedDate", 
-      value: newValue 
-    });
-    modifyTurnSend({ 
-      type: "UPDATE_FORM", 
-      key: "selectedTime", 
-      value: null 
-    });
-    
-    if (newValue && currentTurn?.doctorId) {
-      modifyTurnSend({
-        type: "LOAD_AVAILABLE_SLOTS",
-        doctorId: currentTurn.doctorId,
-        date: newValue.format('YYYY-MM-DD')
-      });
-    }
-  };
 
-  const handleTimeSelect = (timeSlot: string) => {
-    modifyTurnSend({ 
-      type: "UPDATE_FORM", 
-      key: "selectedTime", 
-      value: timeSlot 
-    });
-  };
-
-  const handleSubmitModification = () => {
-    if (!selectedTime || !currentTurn || !user.accessToken) return;
-    
-    if (reason.trim()) {
-      modifyTurnSend({ 
-        type: "UPDATE_FORM", 
-        key: "reason", 
-        value: reason 
-      });
-    }
-    
-    modifyTurnSend({ type: "SUBMIT_MODIFY_REQUEST" });
-  };
-
-  const handleGoBack = () => {
-    uiSend({ type: "NAVIGATE", to: "/patient/view-turns" });
-  };
 
   if (isLoadingTurnDetails) {
     return (
@@ -132,38 +86,40 @@ const ModifyTurn: React.FC = () => {
           </Typography>
           <Button 
             startIcon={<ArrowBackIcon />}
-            onClick={handleGoBack}
+            onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })}
             sx={{ mt: 2 }}
+            variant="outlined"
           >
             Volver a mis turnos
           </Button>
         </Box>
       </Container>
     );
+
   }
 
   return (
-    <Box className="modify-turn-container">
-      <Container maxWidth="lg" className="modify-turn-page-container">
-        <Box className="modify-turn-page-header">
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={handleGoBack}
-            className="modify-turn-back-button"
-            variant="outlined"
-          >
-            Volver a Mis Turnos
-          </Button>
-          
-          <Box className="modify-turn-title-section">
-            <Typography variant="h3" className="modify-turn-page-title">
-              Modificar Turno Médico
-            </Typography>
-            <Typography variant="h6" className="modify-turn-page-subtitle">
-              Selecciona una nueva fecha y horario para tu cita
-            </Typography>
-          </Box>
-        </Box>
+    <Container maxWidth="lg" className="modify-turn-page-container">
+      <Box className="modify-turn-page-header">
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })}
+          className="modify-turn-back-button"
+          variant="outlined"
+        >
+          Volver a Mis Turnos
+        </Button>
+        <Button 
+          onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })} 
+          className="modify-turn-btn-secondary"
+          variant="outlined"
+        >
+          Cancelar
+        </Button>
+        <Typography variant="h5" className="modify-turn-title">
+          Selecciona una nueva fecha y horario para tu cita
+        </Typography>
+      </Box>
 
         <Box className="modify-turn-current-info">
           <Typography variant="h6" className="modify-turn-section-title">
@@ -200,7 +156,17 @@ const ModifyTurn: React.FC = () => {
                     <DemoItem>
                       <DateCalendar
                         value={selectedDate}
-                        onChange={handleDateChange}
+                        onChange={newValue => {
+                          modifyTurnSend({ type: "UPDATE_FORM", key: "selectedDate", value: newValue });
+                          modifyTurnSend({ type: "UPDATE_FORM", key: "selectedTime", value: null });
+                          if (newValue && currentTurn?.doctorId) {
+                            modifyTurnSend({
+                              type: "LOAD_AVAILABLE_SLOTS",
+                              doctorId: currentTurn.doctorId,
+                              date: newValue.format('YYYY-MM-DD')
+                            });
+                          }
+                        }}
                         minDate={dayjs()}
                         shouldDisableDate={(date) => shouldDisableDate(date, availableDates)}
                       />
@@ -222,7 +188,7 @@ const ModifyTurn: React.FC = () => {
                   selectedDate={selectedDate}
                   availableSlots={availableSlots}
                   selectedTime={selectedTime}
-                  onTimeSelect={handleTimeSelect}
+                  onTimeSelect={timeSlot => modifyTurnSend({ type: "UPDATE_FORM", key: "selectedTime", value: timeSlot })}
                   isLoadingSlots={isLoadingAvailableSlots}
                 />
               </Box>
@@ -245,11 +211,7 @@ const ModifyTurn: React.FC = () => {
           </Typography>
           <textarea
             value={reason}
-            onChange={(e) => modifyTurnSend({ 
-              type: "UPDATE_FORM", 
-              key: "reason", 
-              value: e.target.value 
-            })}
+            onChange={e => modifyTurnSend({ type: "UPDATE_FORM", key: "reason", value: e.target.value })}
             placeholder="Describe brevemente el motivo de la modificación..."
             className="modify-turn-reason-textarea"
             rows={3}
@@ -259,14 +221,14 @@ const ModifyTurn: React.FC = () => {
 
         <Box className="modify-turn-actions">
           <Button 
-            onClick={handleGoBack} 
+            onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })} 
             className="modify-turn-btn-secondary"
             variant="outlined"
           >
             Cancelar
           </Button>
           <Button
-            onClick={handleSubmitModification}
+            onClick={() => modifyTurnSend({ type: "SUBMIT_MODIFY_REQUEST" })}
             variant="contained"
             className="modify-turn-btn-primary"
             disabled={!selectedTime || isModifyingTurn}
@@ -282,7 +244,6 @@ const ModifyTurn: React.FC = () => {
           </Button>
         </Box>
       </Container>
-    </Box>
   );
 };
 
