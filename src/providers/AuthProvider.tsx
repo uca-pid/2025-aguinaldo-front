@@ -1,45 +1,28 @@
 import React, { createContext, useContext } from 'react';
-import type { ReactNode } from 'react';
-import { useMachine } from '@xstate/react';
-import { authMachine } from '../machines/authMachine';
-import type { AuthMachineContext, AuthMachineEvent } from '../machines/authMachine';
-import { SignInResponse } from '../models/Auth';
-import { RegisterResponse } from '../models/Auth';
-import { ProfileResponse } from '../models/Auth';
+import { AUTH_MACHINE_ID, AUTH_MACHINE_EVENT_TYPES, authMachine } from '../machines/authMachine';
+import { orchestrator } from '#/core/Orchestrator';
+import { useStateMachine } from '#/hooks/useStateMachine';
 
-interface AuthMachineInstance {
-  auth: {
-    state: any;
-    send: (event: AuthMachineEvent) => void;
-    context: AuthMachineContext;
-    isAuthenticated: boolean;
-    authResponse?: RegisterResponse | SignInResponse |{ error: string | null } | null;
-    profile?: ProfileResponse|null;
-  };
-}
-
+interface AuthMachineInstance {authState: any; authSend: (event: any) => void;}
+interface AuthProviderProps {children: React.ReactNode;}
 const AuthMachineContext = createContext<AuthMachineInstance | null>(null);
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
+orchestrator.registerMachine({
+  id: AUTH_MACHINE_ID,
+  machine: authMachine,
+  eventTypes: AUTH_MACHINE_EVENT_TYPES,
+});
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [authState, authSend] = useMachine(authMachine);
+  const { state: authState, send: authSend } = useStateMachine(AUTH_MACHINE_ID);
 
-  const machines: AuthMachineInstance = {
-    auth: {
-      state: authState,
-      send: authSend,
-      context: authState.context,
-      isAuthenticated: authState.context.isAuthenticated,
-      authResponse: authState.context.authResponse,
-      profile: authState.context.profile,
-    },
+  const authMachine: AuthMachineInstance = {
+    authState: authState,
+    authSend: authSend
   };
 
   return (
-    <AuthMachineContext.Provider value={machines}>
+    <AuthMachineContext.Provider value={authMachine}>
       {children}
     </AuthMachineContext.Provider>
   );

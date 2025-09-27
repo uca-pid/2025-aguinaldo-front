@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Box, 
   Typography, 
@@ -19,27 +19,12 @@ import dayjs from "dayjs";
 import "./PatientDashboard.css";
 
 const PatientDashboard: React.FC = () => {
-  const { ui, turn } = useMachines();
-  const { auth } = useAuthMachine();
-  const { send: uiSend } = ui;
-  const authContext = auth.context;
-  const user = auth.authResponse as SignInResponse;
-  const { state: turnState, send: turnSend } = turn;
-  const turnContext = turnState.context;
+  const { uiSend, turnState } = useMachines();
+  const { authState } = useAuthMachine();
+  const user: SignInResponse = authState?.context?.authResponse || {};
+  const turnContext = turnState?.context || {};
 
-  useEffect(() => {
-    if (authContext.isAuthenticated && user.accessToken && user.id) {
-      turnSend({
-        type: "SET_AUTH",
-        accessToken: user.accessToken,
-        userId: user.id
-      });
-      
-      turnSend({ type: "LOAD_MY_TURNS" });
-    }
-  }, [authContext.isAuthenticated, user.accessToken, user.id, turnSend]);
-
-  const upcomingTurns = turnContext.myTurns
+  const upcomingTurns = (turnContext.myTurns || [])
     .filter((turn: any) => {
       const turnDate = dayjs(turn.scheduledAt);
       const now = dayjs();

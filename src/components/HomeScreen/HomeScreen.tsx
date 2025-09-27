@@ -2,14 +2,14 @@
 import React from "react";
 import { Box, Typography, Paper, Grid} from "@mui/material";
 import PatientDashboard from "../Patient/PatientDashboard";
-import DoctorDashboard from "../Doctor/DoctorDashboard";
+import DoctorDashboard from "../Doctor/DoctorDashboard/DoctorDashboard";
 import AdminDashboard from "../Admin/AdminDashboard";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
 
 const HomeScreen: React.FC = () => {
-  const { auth } = useAuthMachine();
-  const user = auth.authResponse as SignInResponse;
+  const { authState } = useAuthMachine();
+  const user = authState?.context?.authResponse as SignInResponse;
 
   const USER_ROLE = user.role;
 

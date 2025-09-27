@@ -1,63 +1,28 @@
 import { 
   Box, Button, FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, 
-  TextField, Typography, CircularProgress, Alert,
+  TextField, Typography, CircularProgress,
   Container 
 } from "@mui/material";
-import React, { useEffect } from "react";
+import React from "react";
 import { useMachines } from "#/providers/MachineProvider";
-import { useAuthMachine } from "#/providers/AuthProvider";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { DateCalendar } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
 import dayjs from "dayjs";
-import { SignInResponse } from "#/models/Auth";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import "./ReservationTurns.css";
 
 const ReservationTurns: React.FC = () => {
-  const { ui, turn } = useMachines();
-  const { auth } = useAuthMachine();
-  const { send: uiSend } = ui;
-  const { context: authContext, authResponse: authResponse } = auth;
-  const user = authResponse as SignInResponse
-  const { state: turnState, send: turnSend } = turn;
-  
+  const { uiSend, turnState, turnSend } = useMachines();  
   const turnContext = turnState.context;
   const formValues = turnContext.takeTurn;
 
   const currentStep = turnState.value.takeTurn;
 
-  useEffect(() => {
-    if (authContext.isAuthenticated && user.accessToken) {
-      turnSend({
-        type: "SET_AUTH",
-        accessToken: user.accessToken,
-        userId: user.id || ""
-      });
-      turnSend({ type: "LOAD_DOCTORS" });
-    }
-  }, [authContext.isAuthenticated, user.accessToken, turnSend]);
-
-  useEffect(() => {
-    if (formValues.doctorId && formValues.dateSelected && user.accessToken) {
-      const dateString = formValues.dateSelected.format('YYYY-MM-DD');
-      turnSend({
-        type: "LOAD_AVAILABLE_TURNS",
-        doctorId: formValues.doctorId,
-        date: dateString
-      });
-    }
-  }, [formValues.doctorId, formValues.dateSelected, user.accessToken, turnSend]);
-
   const isProfessionSelected = !!formValues.professionSelected;
   const isDoctorSelected = !!formValues.doctorId;
-
-  const specialties = Array.from(new Set(turnContext.doctors.map((doctor: any) => doctor.specialty))).map((specialty: unknown) => ({
-    value: specialty as string,
-    label: (specialty as string).charAt(0).toUpperCase() + (specialty as string).slice(1)
-  }));
 
   const filteredDoctors = isProfessionSelected
     ? turnContext.doctors.filter((doctor: any) => doctor.specialty.toLowerCase() === formValues.professionSelected.toLowerCase())
@@ -105,9 +70,8 @@ const ReservationTurns: React.FC = () => {
         if (!turnContext.error) {
           uiSend({ type: "NAVIGATE", to: "/patient" });
           turnSend({ type: "RESET_TAKE_TURN" });
-          turnSend({ type: "LOAD_MY_TURNS" });
         }
-      }, 1000);
+      }, 500);
     } catch (error) {
       console.error('Error creating turn:', error);
     }
@@ -144,25 +108,6 @@ const ReservationTurns: React.FC = () => {
           </Box>
         </Box>
 
-        {/* Error Alerts */}
-        {turnContext.doctorsError && (
-          <Alert severity="error" className="reservation-alert">
-            Error al cargar doctores: {turnContext.doctorsError}
-          </Alert>
-        )}
-        
-        {turnContext.availableError && (
-          <Alert severity="error" className="reservation-alert">
-            Error al cargar turnos disponibles: {turnContext.availableError}
-          </Alert>
-        )}
-        
-        {turnContext.error && (
-          <Alert severity="error" className="reservation-alert">
-            Error al crear turno: {turnContext.error}
-          </Alert>
-        )}
-
           {currentStep === "step1" && (
             <Box className="reservation-step1-container">
               <Box className="reservation-progress-indicator">
@@ -189,7 +134,7 @@ const ReservationTurns: React.FC = () => {
                     <MenuItem value="">
                       <em>Seleccione una especialidad</em>
                     </MenuItem>
-                    {specialties.map((specialty) => (
+                    {turnContext.specialties.map((specialty: { value: string; label: string }) => (
                       <MenuItem key={specialty.value} value={specialty.value}>
                         {specialty.label}
                       </MenuItem>
@@ -284,6 +229,11 @@ const ReservationTurns: React.FC = () => {
                             value={formValues.dateSelected}
                             onChange={handleDateChange}
                             minDate={dayjs()}
+                            shouldDisableDate={(date) => {
+                              const dateString = date.format('YYYY-MM-DD');
+                              const isDisabled = !turnContext.availableDates.includes(dateString);
+                              return isDisabled;
+                            }}
                           />
                         </DemoItem>
                       </DemoContainer>

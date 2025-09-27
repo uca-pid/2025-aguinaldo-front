@@ -1,11 +1,8 @@
 import { 
-  Box, Button, Typography, CircularProgress, 
-  Alert, Chip, FormControl, InputLabel, Select, MenuItem, Avatar,
-  Container 
+  Box, Button, Typography, CircularProgress, Chip, FormControl, InputLabel, Select, MenuItem, Avatar,
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
-import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -15,32 +12,18 @@ import { ArrowBack } from '@mui/icons-material';
 import "./DoctorViewTurns.css";
 
 const ViewTurns: React.FC = () => {
-  const { ui, turn } = useMachines();
-  const { auth } = useAuthMachine();
-  const { send: uiSend } = ui;
-  const { context: authContext, authResponse: authResponse } = auth;
-  const user = authResponse as SignInResponse
-  const { state: turnState, send: turnSend } = turn;
-  const [cancellingTurnId, setCancellingTurnId] = useState<string | null>(null);
-  const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
+  const { uiSend, turnState, turnSend } = useMachines();
+  const { authState } = useAuthMachine();
+  const authContext = authState?.context;
+  const user = authContext?.authResponse as SignInResponse;
   
   const turnContext = turnState.context;
   const showTurnsContext = turnContext.showTurns;
+  const { cancellingTurnId, isCancellingTurn } = turnContext;
 
   const handleBack = () => {
     uiSend({ type: "NAVIGATE", to: "/dashboard" });
   };
-
-  useEffect(() => {
-    if (authContext.isAuthenticated && user.accessToken) {
-      turnSend({
-        type: "SET_AUTH",
-        accessToken: user.accessToken,
-        userId: user.id || ""
-      });
-      turnSend({ type: "LOAD_MY_TURNS" });
-    }
-  }, [authContext.isAuthenticated, user.accessToken, turnSend]);
 
   const filteredTurns = turnContext.myTurns.filter((turn: any) => {
     let matchesStatus = true;
@@ -59,32 +42,9 @@ const ViewTurns: React.FC = () => {
     return matchesStatus && matchesDate;
   });
 
-  const handleCancelTurn = async (turnId: string) => {
+  const handleCancelTurn = (turnId: string) => {
     if (!user.accessToken) return;
-    
-    setCancellingTurnId(turnId);
-    try {
-      const response = await fetch(`/api/turns/${turnId}/cancel`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${user.accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        setCancelSuccess('Turno cancelado exitosamente');
-        turnSend({ type: "LOAD_MY_TURNS" });
-        setTimeout(() => setCancelSuccess(null), 3000);
-      } else {
-        const errorData = await response.text();
-        console.error('Error cancelling turn:', errorData);
-      }
-    } catch (error) {
-      console.error('Error cancelling turn:', error);
-    } finally {
-      setCancellingTurnId(null);
-    }
+    turnSend({ type: "CANCEL_TURN", turnId });
   };
 
   const getStatusLabel = (status: string) => {
@@ -141,18 +101,6 @@ const ViewTurns: React.FC = () => {
               <Box className="viewturns-header-spacer"></Box>
             </Box>
           </Box>
-
-          {turnContext.myTurnsError && (
-            <Alert severity="error" className="doctor-viewturns-alert">
-              Error al cargar turnos: {turnContext.myTurnsError}
-            </Alert>
-          )}
-
-          {cancelSuccess && (
-            <Alert severity="success" className="doctor-viewturns-alert">
-              {cancelSuccess}
-            </Alert>
-          )}
 
           <Box className="doctor-viewturns-content">
             <Box className="doctor-viewturns-filters-section">
@@ -245,9 +193,9 @@ const ViewTurns: React.FC = () => {
                             size="small"
                             className="doctor-viewturns-cancel-btn"
                             onClick={() => handleCancelTurn(turn.id)}
-                            disabled={cancellingTurnId === turn.id}
+                            disabled={isCancellingTurn && cancellingTurnId === turn.id}
                           >
-                            {cancellingTurnId === turn.id ? (
+                            {isCancellingTurn && cancellingTurnId === turn.id ? (
                               <>
                                 <CircularProgress size={16} sx={{ mr: 1 }} />
                                 Cancelando...

@@ -1,8 +1,20 @@
 import { createMachine, assign, fromPromise } from "xstate";
 import {validateField, checkFormValidation} from "../utils/authFormValidation";
+import { checkStoredAuth, submitAuthentication, logoutUser } from "../utils/authMachineUtils";
 import { AuthService } from "../service/auth-service.service";
 import { RegisterResponse, SignInResponse, ApiErrorResponse } from "../models/Auth";
-import { ProfileResponse } from "../models/Auth";
+import { orchestrator } from "#/core/Orchestrator";
+
+export const AUTH_MACHINE_ID = "auth";
+export const AUTH_MACHINE_EVENT_TYPES = [
+  'USER_AUTHENTICATED',
+  'LOGOUT',
+  'UPDATE_FORM',
+  'TOGGLE_USER_TYPE',
+  'TOGGLE_MODE',
+  'SUBMIT',
+  'CHECK_AUTH'
+];
 
 export interface AuthMachineContext {
   mode: "login" | "register";
@@ -10,7 +22,6 @@ export interface AuthMachineContext {
   hasErrorsOrEmpty: boolean;
   isAuthenticated: boolean;
   loading: boolean;
-  updatingProfile: boolean;
   formValues: {
     // Login fields
     email: string;
@@ -31,7 +42,7 @@ export interface AuthMachineContext {
     [key: string]: string;
   };
   authResponse?: RegisterResponse | SignInResponse | ApiErrorResponse | null;
-  profile?:ProfileResponse|null;
+  send: (event: any) => void;
 }
 
 export const AuthMachineDefaultContext = {
@@ -40,12 +51,9 @@ export const AuthMachineDefaultContext = {
     hasErrorsOrEmpty: true,
     isAuthenticated: false,
     loading: false,
-    updatingProfile: false,
     formValues: {
-      // Login fields
       email: "",
       password: "",
-      // Register fields
       name: "", 
       surname: "", 
       dni: "", 
@@ -59,7 +67,7 @@ export const AuthMachineDefaultContext = {
     },
     formErrors: {},
     authResponse: null,
-    profile:null,
+    send: (event: any) => { orchestrator.send(event);}
   } as AuthMachineContext;
 
 export type AuthMachineEvent =
@@ -67,14 +75,8 @@ export type AuthMachineEvent =
   | { type: "TOGGLE_USER_TYPE"; isPatient: boolean }
   | { type: "TOGGLE_MODE"; mode: "login" | "register" }
   | { type: "SUBMIT" }
-  | { type: "API_SUCCESS"; data: any }
-  | { type: "API_ERROR"; error: any }
   | { type: "LOGOUT" }
-  | { type: "CHECK_AUTH" }
-  | { type: "SAVE_PROFILE" }
-  | { type: "UPDATE_PROFILE" }
-  | { type: "CANCEL_PROFILE_EDIT"; key: string }
-  | { type: "DEACTIVATE_ACCOUNT" }; 
+  | { type: "CHECK_AUTH" }; 
 
 
 export const authMachine = createMachine({
@@ -88,10 +90,10 @@ export const authMachine = createMachine({
   states: {
     checkingAuth: {
       entry: assign(() => {
-        const authData = AuthService.getStoredAuthData();
+        const { authData, isAuthenticated } = checkStoredAuth();
         return {
           authResponse: authData,
-          isAuthenticated: !!(authData?.accessToken && authData?.refreshToken)
+          isAuthenticated
         };
       }),
       always: [
@@ -108,233 +110,52 @@ export const authMachine = createMachine({
       on: {
         LOGOUT: {
           target: "loggingOut"
-        },
-        SAVE_PROFILE:{
-          target:"savingProfile"
-        },
-        UPDATE_PROFILE: {
-          target: "updatingProfile"
-        },
-        DEACTIVATE_ACCOUNT: {
-          target: "deactivatingAccount"
-        },
-        UPDATE_FORM: {
-          actions: assign(({ context, event }) => {
-            return {
-              ...context,
-              formValues: {
-                ...context.formValues,
-                [event.key]: event.value
-              }
-            };
-          })
-        },
-        CANCEL_PROFILE_EDIT: {
-          actions: assign(({ context, event }) => {
-            if (!context.profile) return context;
-            return {
-              ...context,
-              formValues: {
-                ...context.formValues,
-                [event.key]: (context.profile as any)[event.key] || ""
-              }
-            };
-          })
+        }
+      },
+      entry: ({ context }) => {
+        if (context.authResponse && "accessToken" in context.authResponse) {
+          // Send to dataMachine and profileMachine
+          setTimeout(() => {
+            const response = context.authResponse as SignInResponse;
+            context.send({ 
+              type: "SET_AUTH", 
+              accessToken: response.accessToken, 
+              userId: response.id,
+              userRole: response.role
+            });
+          }, 0);
         }
       }
     },
-    savingProfile: {
-      invoke: {
-        src: fromPromise(async ({ input }: { input: AuthMachineContext }) => {
-          if (!input.authResponse || !("accessToken" in input.authResponse)) {
-            throw new Error("No access token available");
-          }
 
-          const accessToken = input.authResponse.accessToken;
-          const profileId = input.authResponse.id; 
-
-          const profile = await AuthService.getProfile(accessToken, profileId);
-          return profile;
-        }),
-        input: ({ context }) => context,
-        onDone: {
-          target: "authenticated",
-          actions: assign(({ event, context }) => {
-            return {
-              ...context,
-              profile: event.output, 
-            };
-          }),
-        },
-        onError: {
-          target: "authenticated", 
-          actions: assign(({ event, context }) => {
-            return {
-              ...context,
-              profile: null,
-              authResponse: {
-                error:
-                  event.error instanceof Error
-                    ? event.error.message
-                    : "Failed to fetch profile",
-              },
-            };
-          }),
-        },
-      },
-    },
-
-    updatingProfile: {
-      entry: assign(({ context }) => ({
-        ...context,
-        updatingProfile: true
-      })),
-      invoke: {
-        src: fromPromise(async ({ input }: { input: AuthMachineContext }) => {
-          if (!input.authResponse || !("accessToken" in input.authResponse)) {
-            throw new Error("No access token available");
-          }
-
-          const accessToken = input.authResponse.accessToken;
-          const profileId = input.authResponse.id;
-
-          // Construir el objeto de datos a actualizar usando formValues
-          const updateData: any = {};
-          
-          // Mapear formValues a los campos del perfil
-          Object.keys(input.formValues).forEach(key => {
-            const value = input.formValues[key as keyof typeof input.formValues];
-            if (value !== null && value !== undefined && value !== "") {
-              updateData[key] = value;
-            }
-          });
-
-          const updatedProfile = await AuthService.updateProfile(accessToken, profileId, updateData);
-          return updatedProfile;
-        }),
-        input: ({ context }) => context,
-        onDone: {
-          target: "authenticated",
-          actions: assign(({ event, context }) => {
-            // Actualizar tanto el profile como el authResponse con los nuevos datos
-            const updatedProfile = event.output;
-            const updatedAuthResponse = context.authResponse && "accessToken" in context.authResponse 
-              ? {
-                  ...context.authResponse,
-                  name: updatedProfile.name,
-                  surname: updatedProfile.surname,
-                  email: updatedProfile.email,
-                  phone: updatedProfile.phone
-                }
-              : context.authResponse;
-
-            return {
-              ...context,
-              profile: updatedProfile,
-              authResponse: updatedAuthResponse,
-              updatingProfile: false
-            };
-          }),
-        },
-        onError: {
-          target: "authenticated",
-          actions: assign(({ event, context }) => {
-            console.error("Failed to update profile:", event.error);
-            return {
-              ...context,
-              updatingProfile: false,
-              authResponse: {
-                error:
-                  event.error instanceof Error
-                    ? event.error.message
-                    : "Failed to update profile",
-              },
-            };
-          }),
-        },
-      },
-    },
-
-    deactivatingAccount: {
-      invoke: {
-        src: fromPromise(async ({ input }: { input: AuthMachineContext }) => {
-          try {
-            if (!input.authResponse || !("accessToken" in input.authResponse)) {
-              throw new Error("No access token available");
-            }
-            
-            const accessToken = input.authResponse.accessToken;
-            console.log('Iniciando desactivación desde máquina de estado...');
-            await AuthService.deactivateAccount(accessToken);
-            console.log('Desactivación completada desde máquina de estado');
-            return { success: true };
-          } catch (error) {
-            console.error('Error en desactivación desde máquina de estado:', error);
-            throw error;
-          }
-        }),
-        input: ({ context }) => context,
-        onDone: {
-          target: "idle",
-          actions: assign(() => {
-            console.log('Limpiando estado después de desactivación...');
-            
-            return {
-              token: null,
-              profile: null,
-              formValues: { ...AuthMachineDefaultContext.formValues },
-              error: null,
-              isAuthenticated: false,
-              authResponse: null,
-              updatingProfile: false
-            };
-          })
-        },
-        onError: {
-          target: "authenticated",
-          actions: assign(({ event, context }) => {
-            console.error('Error en desactivación, volviendo a authenticated:', event.error);
-            return {
-              ...context,
-              authResponse: {
-                error: (event.error as Error).message
-              }
-            };
-          })
-        }
-      }
-    },
 
     loggingOut: {
       invoke: {
         src: fromPromise(async () => {
-          try {
-            const authData = AuthService.getStoredAuthData();
-            if (authData?.refreshToken) {
-              await AuthService.signOut(authData.refreshToken);
-            }
-            AuthService.clearAuthData();
-            return true;
-          } catch (error) {
-            console.warn('Logout API call failed, but clearing local data:', error);
-            AuthService.clearAuthData();
-            return true;
-          }
+          return await logoutUser();
         }),
         input: ({ context }) => context,
         onDone: {
           target: "idle",
-          actions: assign(() => ({
+          actions: [assign(() => ({
             isAuthenticated: false,
             authResponse: null
-          }))
+          })),
+          () => {
+            orchestrator.send({ type: "NAVIGATE", to: "/" });
+          }
+          ],
         },
         onError: {
           target: "idle",
-          actions: assign(() => ({
+          actions: [assign(() => ({
             isAuthenticated: false,
             authResponse: null
-          }))
+          })),
+          () => {
+            orchestrator.send({ type: "NAVIGATE", to: "/" });
+          }
+          ],
         }
       }
     },
@@ -459,24 +280,7 @@ export const authMachine = createMachine({
       })),
       invoke: {
         src: fromPromise(async ({ input }: { input: AuthMachineContext }) => {
-          try {
-            let response;
-            
-            if (input.mode === "login") {
-              response = await AuthService.signIn({
-                email: input.formValues.email,
-                password: input.formValues.password
-              });
-            } else {
-              response = input.isPatient
-                ? await AuthService.registerPatient(input.formValues)
-                : await AuthService.registerDoctor(input.formValues);
-            }
-            
-            return response;
-          } catch (error) {
-            throw error;
-          }
+          return await submitAuthentication({ context: input });
         }),
         input: ({context}) => context,
         onDone: [

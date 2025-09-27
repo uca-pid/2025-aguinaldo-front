@@ -1,5 +1,4 @@
 import { useMachines } from "#/providers/MachineProvider";
-import { useAuthMachine } from "#/providers/AuthProvider";
 import { Box, Divider, IconButton, ListItem, ListItemText, TextField, CircularProgress } from "@mui/material"
 
 import CheckIcon from '@mui/icons-material/Check';
@@ -20,31 +19,24 @@ type EditFieldProps={
 const MotionBox = motion(Box);
 
 const EditField :React.FC<EditFieldProps>= ({label, value, isEditing, toggleKey, fieldKey, onChange})=>{
-    const {ui}= useMachines()
-    const { send: uiSend } = ui;
-    const { auth } = useAuthMachine();
-    const { send: authSend, context: authContext } = auth;
+    const { uiSend, profileState, profileSend } = useMachines();
+    const profileContext = profileState?.context;
 
-    const [localValue, setLocalValue] = React.useState(value ?? "");
-    const isUpdating = authContext.updatingProfile;
-
-    React.useEffect(() => {
-      setLocalValue(value ?? ""); 
-    }, [value]);
+    // Use machine's formValues instead of local state
+    const currentValue = isEditing ? (profileContext?.formValues?.[fieldKey as keyof typeof profileContext.formValues] ?? value) : value;
+    const isUpdating = profileContext?.updatingProfile;
 
     const handleSave = () => {
-      // Actualizar el valor en el contexto de auth
-      onChange(localValue);
-      // Llamar a la API para actualizar el perfil
-      authSend({ type: "UPDATE_PROFILE" });
+      // The value is already in machine's formValues from onChange calls
+      // Just call UPDATE_PROFILE to save
+      profileSend({ type: "UPDATE_PROFILE" });
       // Cerrar el modo de edición
       uiSend({type: "TOGGLE", key: toggleKey});
     };
 
     const handleCancel = () => {
-      // Revertir al valor original
-      setLocalValue(value ?? "");
-      authSend({ type: "CANCEL_PROFILE_EDIT", key: fieldKey });
+      // Revertir al valor original en la máquina
+      profileSend({ type: "CANCEL_PROFILE_EDIT", key: fieldKey });
       // Cerrar el modo de edición
       uiSend({type: "TOGGLE", key: toggleKey});
     };
@@ -69,8 +61,8 @@ const EditField :React.FC<EditFieldProps>= ({label, value, isEditing, toggleKey,
               sx={{ flex: 1, mr: 1 }}>
                 <TextField
                   label={label}
-                  value={localValue}
-                  onChange={(e) => setLocalValue(e.target.value)}
+                  value={currentValue}
+                  onChange={(e) => onChange(e.target.value)}
                   size="small"
                   fullWidth
                 />

@@ -14,35 +14,26 @@ const MotionCard = motion(Card);
 
 
 const ProfileScreen: React.FC = () => {
-    
+    const { authState } = useAuthMachine();
+    const { uiState, profileState, profileSend } = useMachines();
+    const user = authState?.context?.authResponse as SignInResponse | null;
+    const profile = profileState?.context?.profile;
+    const uiContext = uiState?.context || {};
 
-    const { auth } = useAuthMachine();
-    const { context: authContext, send: authSend } = auth;
-    const user = auth.authResponse as SignInResponse;
-    
-    const profile = authContext.profile;
-
-    const {ui}= useMachines()
-    const { context: uiContext } = ui;
     const formContext = uiContext.toggleStates || {};
     const name= formContext["editName"] ?? false;
     const surname= formContext["editSurname"] ?? false;
-    const email= formContext["editEmail"] ?? false;
     const phone= formContext["editNumberPhone"] ?? false;
     const speciality= formContext["editSpeciality"]??false;
     const minutes= formContext["editMinutes"] ?? false;
-    const dni= formContext["editDni"] ?? false;
     const gender= formContext["editGender"] ?? false;
     const birthdate= formContext["editBirthdate"] ?? false;
-
-    
 ;
     
     useEffect(() => {
-    if (user?.accessToken && user?.id) {
-      authSend({ type: "SAVE_PROFILE" });
-    }
-    }, [user, authSend]);
+        // Initialize profile page - this will load the profile if authenticated
+        profileSend({ type: "INIT_PROFILE_PAGE" });
+    }, [profileSend]);
 
  
     return (
@@ -94,31 +85,31 @@ const ProfileScreen: React.FC = () => {
                     </Typography>
                     ) : (
                         <List disablePadding>
-                            <EditField  key="name" label="Nombre" value={profile.name} isEditing={name} toggleKey="editName" fieldKey="name" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "name", value: val })}/>
-                            <EditField  key= "surname" label="Apellido" value={profile.surname} isEditing={surname} toggleKey="editSurname" fieldKey="surname" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "surname", value: val })} />
-                            {/*<EditField key="email" label="Email" value={profile.email} isEditing={email} toggleKey="editEmail" fieldKey="email" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "email", value: val })}/>*/}
+                            <EditField  key="name" label="Nombre" value={profile.name} isEditing={name} toggleKey="editName" fieldKey="name" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "name", value: val })}/>
+                            <EditField  key= "surname" label="Apellido" value={profile.surname} isEditing={surname} toggleKey="editSurname" fieldKey="surname" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "surname", value: val })} />
+                            {/*<EditField key="email" label="Email" value={profile.email} isEditing={email} toggleKey="editEmail" fieldKey="email" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "email", value: val })}/>*/}
                             <ListItem>
                                 <ListItemText primary={`Email `}  secondary={profile.email}/>
                             </ListItem>
                             <Divider component="li" />
-                            <EditField key="phone" label="Telefono" value={profile.phone} isEditing={phone} toggleKey="editNumberPhone" fieldKey="phone" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "phone", value: val })}/>
-                            {/*<EditField key="dni" label="DNI" value={profile.dni} isEditing={dni} toggleKey="editDni" fieldKey="dni" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "dni", value: val })}/>*/}
+                            <EditField key="phone" label="Telefono" value={profile.phone} isEditing={phone} toggleKey="editNumberPhone" fieldKey="phone" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "phone", value: val })}/>
+                            {/*<EditField key="dni" label="DNI" value={profile.dni} isEditing={dni} toggleKey="editDni" fieldKey="dni" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "dni", value: val })}/>*/}
                             <ListItem>
                                 <ListItemText primary={`DNI `}  secondary={profile.dni}/>
                             </ListItem>
                             <Divider component="li" />
-                            <EditField key ="gender" label="Género" value={profile.gender} isEditing={gender} toggleKey="editGender" fieldKey="gender" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "gender", value: val })}/>
-                            <EditField key="birthdate" label="Fecha de nacimiento" value={profile.birthdate} isEditing={birthdate} toggleKey="editBirthdate" fieldKey="birthdate" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "birthdate", value: val })}/>
+                            <EditField key ="gender" label="Género" value={profile.gender} isEditing={gender} toggleKey="editGender" fieldKey="gender" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "gender", value: val })}/>
+                            <EditField key="birthdate" label="Fecha de nacimiento" value={profile.birthdate} isEditing={birthdate} toggleKey="editBirthdate" fieldKey="birthdate" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "birthdate", value: val })}/>
 
-                            {user.role === 'DOCTOR' && (
+                            {user?.role === 'DOCTOR' && (
                             <>
 
                                 <ListItem>
                                 <ListItemText primary={`Matrícula Nacional `}  secondary={profile.medicalLicense}/>
                                 </ListItem>
                                 <Divider component="li" />
-                                <EditField key="speciality" label="Especialidad" value={profile.specialty} isEditing={speciality} toggleKey="editSpeciality" fieldKey="specialty" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "specialty", value: val })}/>
-                                <EditField key="slotDurationMin"label="Minutos por turno" value={profile.slotDurationMin} isEditing={minutes} toggleKey="editMinutes" fieldKey="slotDurationMin" onChange={(val) => authSend({ type: "UPDATE_FORM", key: "slotDurationMin", value: val })}/>
+                                <EditField key="speciality" label="Especialidad" value={profile.specialty} isEditing={speciality} toggleKey="editSpeciality" fieldKey="specialty" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "specialty", value: val })}/>
+                                <EditField key="slotDurationMin"label="Minutos por turno" value={profile.slotDurationMin} isEditing={minutes} toggleKey="editMinutes" fieldKey="slotDurationMin" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "slotDurationMin", value: val })}/>
 
 
                                 </>
@@ -150,7 +141,7 @@ const ProfileScreen: React.FC = () => {
                             }}
                             onClick={() => {
                                 if (window.confirm('¿Estás seguro de que quieres dar de baja tu cuenta? Esta acción no se puede deshacer.')) {
-                                    authSend({ type: "DEACTIVATE_ACCOUNT" });
+                                    profileSend({ type: "DEACTIVATE_ACCOUNT" });
                                 }
                             }}
                             >

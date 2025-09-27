@@ -8,11 +8,12 @@ import AuthScreen from "./components/AuthScreen/AuthScreen";
 import { useAuthMachine } from "./providers/AuthProvider";
 import { CircularProgress, Box } from "@mui/material";
 import { BrowserRouter } from "react-router-dom";
+import { DataProvider } from "./providers/DataProvider";
 
 const AppRouter = () => {
-  const { auth } = useAuthMachine();
-  
-  if (auth.context.loading) {
+  const { authState } = useAuthMachine();
+
+  if (authState?.context?.loading) {
     return (
       <Box 
         display="flex" 
@@ -27,19 +28,21 @@ const AppRouter = () => {
       </Box>
     );
   }
-  
-  return auth.isAuthenticated ? <App /> : <AuthScreen />;
+
+  return authState?.context.isAuthenticated ? <App /> : <AuthScreen />;
 };
 
 const Root = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <MachineProvider>
-          <StrictMode>
-            <AppRouter />
-          </StrictMode>
-        </MachineProvider>
+        <DataProvider>
+          <MachineProvider>
+            <StrictMode>
+              <AppRouter />
+            </StrictMode>
+          </MachineProvider>
+        </DataProvider>
       </AuthProvider>
     </BrowserRouter>
   );

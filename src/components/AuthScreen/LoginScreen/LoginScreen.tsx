@@ -24,11 +24,12 @@ import { useAuthMachine } from "#/providers/AuthProvider";
 import "./LoginScreen.css";
 
 function LoginScreen() {
-  const { auth } = useAuthMachine();
-  const { ui } = useMachines();
-  const { context: uiContext, send: uiSend} = ui;
-  const { context: authContext, send: authSend } = auth;
-  const authResponse = authContext.authResponse;
+  const { uiState, uiSend } = useMachines();
+  const { authState, authSend } = useAuthMachine();
+
+  const uiContext = uiState?.context || {};
+  const authContext = authState?.context || {};
+  const authResponse = authContext.authResponse || null;
 
   const formContext = uiContext.toggleStates || {};
   const showPassword = formContext["showPassword"] ?? false;

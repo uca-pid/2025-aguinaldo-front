@@ -29,8 +29,8 @@ import "./RegisterScreen.css";
 dayjs.locale('es');
 
 function RegisterScreen() {
-  const { auth } = useAuthMachine();
-  const { context: authContext, send: authSend } = auth;
+  const { authState, authSend } = useAuthMachine();
+  const authContext = authState.context;
 
   const isPatient = authContext.isPatient;
   

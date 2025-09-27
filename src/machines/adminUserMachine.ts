@@ -1,6 +1,20 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { AdminService } from "#/service/admin-service.service";
+import { approveDoctor, rejectDoctor } from "../utils/adminUserMachineUtils";
+import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, DoctorApprovalResponse } from "#/models/Admin";
+import { DATA_MACHINE_ID } from "./dataMachine";
+import { UI_MACHINE_ID } from "./uiMachine";
+
+export const ADMIN_USER_MACHINE_ID = "adminUser";
+export const ADMIN_USER_MACHINE_EVENT_TYPES = [
+  'DATA_LOADED',
+  'APPROVE_DOCTOR', 
+  'REJECT_DOCTOR',
+  'SELECT_DOCTOR',
+  'CLEAR_SELECTION',
+  'CLEAR_ERROR',
+  'RETRY_LAST_OPERATION'
+];
 
 export interface AdminUserMachineContext {
   loading: boolean;
@@ -12,7 +26,7 @@ export interface AdminUserMachineContext {
     pending: number;
   };
   lastOperation: {
-    type: 'approve' | 'reject' | 'fetch' | null;
+    type: 'approve' | 'reject' | null;
     doctorId?: string;
     success?: boolean;
     message?: string;
@@ -34,8 +48,7 @@ export const AdminUserMachineDefaultContext: AdminUserMachineContext = {
 };
 
 export type AdminUserMachineEvent =
-  | { type: "FETCH_PENDING_DOCTORS"; accessToken: string }
-  | { type: "FETCH_ADMIN_STATS"; accessToken: string }
+  | { type: "DATA_LOADED" }
   | { type: "APPROVE_DOCTOR"; doctorId: string; accessToken: string }
   | { type: "REJECT_DOCTOR"; doctorId: string; accessToken: string }
   | { type: "SELECT_DOCTOR"; doctor: PendingDoctor }
@@ -54,11 +67,20 @@ export const adminUserMachine = createMachine({
   states: {
     idle: {
       on: {
-        FETCH_PENDING_DOCTORS: {
-          target: "fetchingPendingDoctors"
-        },
-        FETCH_ADMIN_STATS: {
-          target: "fetchingAdminStats"
+        DATA_LOADED: {
+          actions: assign(() => {
+            try {
+              const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
+              const dataContext = dataSnapshot.context;
+              return {
+                pendingDoctors: dataContext.pendingDoctors || [],
+                adminStats: dataContext.adminStats || { patients: 0, doctors: 0, pending: 0 }
+              };
+            } catch (error) {
+              console.warn("Could not get dataMachine snapshot:", error);
+              return {};
+            }
+          })
         },
         APPROVE_DOCTOR: {
           target: "approvingDoctor"
@@ -88,88 +110,6 @@ export const adminUserMachine = createMachine({
       }
     },
 
-    fetchingPendingDoctors: {
-      entry: assign(() => ({
-        loading: true,
-        error: null
-      })),
-      invoke: {
-        src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
-          return await AdminService.getPendingDoctors(input.accessToken);
-        }),
-        input: ({ event }) => ({
-          accessToken: (event as any).accessToken
-        }),
-        onDone: {
-          target: "idle",
-          actions: assign(({ event, context }) => ({
-            loading: false,
-            pendingDoctors: event.output,
-            adminStats: {
-              ...context.adminStats,
-              pending: event.output.length
-            },
-            lastOperation: {
-              type: 'fetch' as const,
-              success: true,
-              message: `Found ${event.output.length} pending doctors`
-            }
-          }))
-        },
-        onError: {
-          target: "idle",
-          actions: assign(({ event }) => ({
-            loading: false,
-            error: event.error instanceof Error ? event.error.message : 'Failed to fetch pending doctors',
-            lastOperation: {
-              type: 'fetch' as const,
-              success: false,
-              message: 'Failed to fetch pending doctors'
-            }
-          }))
-        }
-      }
-    },
-
-    fetchingAdminStats: {
-      entry: assign(() => ({
-        loading: true,
-        error: null
-      })),
-      invoke: {
-        src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
-          return await AdminService.getAdminStats(input.accessToken);
-        }),
-        input: ({ event }) => ({
-          accessToken: (event as any).accessToken
-        }),
-        onDone: {
-          target: "idle",
-          actions: assign(({ event }) => ({
-            loading: false,
-            adminStats: event.output,
-            lastOperation: {
-              type: 'fetch' as const,
-              success: true,
-              message: 'Statistics updated successfully'
-            }
-          }))
-        },
-        onError: {
-          target: "idle",
-          actions: assign(({ event }) => ({
-            loading: false,
-            error: event.error instanceof Error ? event.error.message : 'Failed to fetch admin statistics',
-            lastOperation: {
-              type: 'fetch' as const,
-              success: false,
-              message: 'Failed to fetch admin statistics'
-            }
-          }))
-        }
-      }
-    },
-
     approvingDoctor: {
       entry: assign(() => ({
         loading: true,
@@ -177,7 +117,7 @@ export const adminUserMachine = createMachine({
       })),
       invoke: {
         src: fromPromise(async ({ input }: { input: { doctorId: string; accessToken: string } }) => {
-          return await AdminService.approveDoctor(input.doctorId, input.accessToken);
+          return await approveDoctor(input);
         }),
         input: ({ event }) => ({
           doctorId: (event as any).doctorId,
@@ -185,41 +125,60 @@ export const adminUserMachine = createMachine({
         }),
         onDone: {
           target: "idle",
-          actions: assign(({ event, context }) => {
-            const approvalResponse = event.output as DoctorApprovalResponse;
-            const updatedPendingDoctors = context.pendingDoctors.filter(
-              doctor => doctor.id !== approvalResponse.doctorId
-            );
-            
-            return {
-              loading: false,
-              pendingDoctors: updatedPendingDoctors,
-              adminStats: {
-                ...context.adminStats,
-                pending: updatedPendingDoctors.length,
-                doctors: context.adminStats.doctors + 1
-              },
-              lastOperation: {
-                type: 'approve' as const,
-                doctorId: approvalResponse.doctorId,
-                success: true,
-                message: approvalResponse.message
-              },
-              selectedDoctor: null
-            };
-          })
+          actions: [
+            assign(({ event, context }) => {
+              const approvalResponse = event.output as DoctorApprovalResponse;
+              const updatedPendingDoctors = context.pendingDoctors.filter(
+                doctor => doctor.id !== approvalResponse.doctorId
+              );
+              return {
+                loading: false,
+                pendingDoctors: updatedPendingDoctors,
+                adminStats: {
+                  ...context.adminStats,
+                  pending: updatedPendingDoctors.length,
+                  doctors: context.adminStats.doctors + 1
+                },
+                lastOperation: {
+                  type: 'approve' as const,
+                  doctorId: approvalResponse.doctorId,
+                  success: true,
+                  message: approvalResponse.message
+                },
+                selectedDoctor: null
+              };
+            }),
+            ({ event }) => {
+              const approvalResponse = event.output as DoctorApprovalResponse;
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: `Doctor aprobado exitosamente: ${approvalResponse.message}`,
+                severity: "success"
+              });
+            }
+          ],
         },
         onError: {
           target: "idle",
-          actions: assign(({ event }) => ({
-            loading: false,
-            error: event.error instanceof Error ? event.error.message : 'Failed to approve doctor',
-            lastOperation: {
-              type: 'approve' as const,
-              success: false,
-              message: 'Failed to approve doctor'
+          actions: [
+            assign(({ event }) => ({
+              loading: false,
+              error: event.error instanceof Error ? event.error.message : 'Failed to approve doctor',
+              lastOperation: {
+                type: 'approve' as const,
+                success: false,
+                message: 'Failed to approve doctor'
+              }
+            })),
+            ({ event }) => {
+              const errorMessage = event.error instanceof Error ? event.error.message : 'Error al aprobar doctor';
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
             }
-          }))
+          ],
         }
       }
     },
@@ -231,7 +190,7 @@ export const adminUserMachine = createMachine({
       })),
       invoke: {
         src: fromPromise(async ({ input }: { input: { doctorId: string; accessToken: string } }) => {
-          return await AdminService.rejectDoctor(input.doctorId, input.accessToken);
+          return await rejectDoctor(input);
         }),
         input: ({ event }) => ({
           doctorId: (event as any).doctorId,
@@ -239,41 +198,59 @@ export const adminUserMachine = createMachine({
         }),
         onDone: {
           target: "idle",
-          actions: assign(({ event, context }) => {
-            const rejectionResponse = event.output as DoctorApprovalResponse;
-            // Remove the rejected doctor from pending list
-            const updatedPendingDoctors = context.pendingDoctors.filter(
-              doctor => doctor.id !== rejectionResponse.doctorId
-            );
-            
-            return {
-              loading: false,
-              pendingDoctors: updatedPendingDoctors,
-              adminStats: {
-                ...context.adminStats,
-                pending: updatedPendingDoctors.length
-              },
-              lastOperation: {
-                type: 'reject' as const,
-                doctorId: rejectionResponse.doctorId,
-                success: true,
-                message: rejectionResponse.message
-              },
-              selectedDoctor: null
-            };
-          })
+          actions: [
+            assign(({ event, context }) => {
+              const rejectionResponse = event.output as DoctorApprovalResponse;
+              const updatedPendingDoctors = context.pendingDoctors.filter(
+                doctor => doctor.id !== rejectionResponse.doctorId
+              );
+              return {
+                loading: false,
+                pendingDoctors: updatedPendingDoctors,
+                adminStats: {
+                  ...context.adminStats,
+                  pending: updatedPendingDoctors.length
+                },
+                lastOperation: {
+                  type: 'reject' as const,
+                  doctorId: rejectionResponse.doctorId,
+                  success: true,
+                  message: rejectionResponse.message
+                },
+                selectedDoctor: null
+              };
+            }),
+            ({ event }) => {
+              const rejectionResponse = event.output as DoctorApprovalResponse;
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: `Doctor rechazado exitosamente: ${rejectionResponse.message}`,
+                severity: "success"
+              });
+            }
+          ],
         },
         onError: {
           target: "idle",
-          actions: assign(({ event }) => ({
-            loading: false,
-            error: event.error instanceof Error ? event.error.message : 'Failed to reject doctor',
-            lastOperation: {
-              type: 'reject' as const,
-              success: false,
-              message: 'Failed to reject doctor'
+          actions: [
+            assign(({ event }) => ({
+              loading: false,
+              error: event.error instanceof Error ? event.error.message : 'Failed to reject doctor',
+              lastOperation: {
+                type: 'reject' as const,
+                success: false,
+                message: 'Failed to reject doctor'
+              }
+            })),
+            ({ event }) => {
+              const errorMessage = event.error instanceof Error ? event.error.message : 'Error al rechazar doctor';
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
             }
-          }))
+          ],
         }
       }
     },
@@ -284,10 +261,6 @@ export const adminUserMachine = createMachine({
         error: null
       })),
       always: [
-        {
-          target: "fetchingPendingDoctors",
-          guard: ({ context }) => context.lastOperation?.type === 'fetch'
-        },
         {
           target: "approvingDoctor",
           guard: ({ context }) => context.lastOperation?.type === 'approve' && !!context.lastOperation?.doctorId

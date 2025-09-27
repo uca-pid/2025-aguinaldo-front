@@ -3,7 +3,6 @@ import { Routes, Route, useNavigate } from 'react-router-dom'
 import HomeScreen from './components/HomeScreen/HomeScreen'
 import { useAuthMachine } from './providers/AuthProvider'
 import { Avatar, Box, Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material'
-import { SignInResponse } from './models/Auth'
 import { useMachines } from './providers/MachineProvider'
 import { Logout, Person } from '@mui/icons-material'
 import PendingScreen from './components/Admin/PendingScreen/PendingScreen'
@@ -11,33 +10,30 @@ import ProfileScreen from './components/ProfileScreen/ProfileScreen'
 import { useEffect } from 'react'
 import ReservationTurns from './components/Patient/ReservationTurns'
 import ViewTurns from './components/Patient/ViewTurns'
-import EnableHours from './components/Doctor/EnableHours'
-import ViewPatients from './components/Doctor/ViewPatients'
-import DoctorViewTurns from './components/Doctor/DoctorViewTurns'
+import EnableHours from './components/Doctor/EnableHours/EnableHours'
+import ViewPatients from './components/Doctor/ViewPatients/ViewPatients'
+import DoctorViewTurns from './components/Doctor/DoctorViewTurns/DoctorViewTurns'
+import SnackbarAlert from './components/shared/SnackbarAlert/SnackbarAlert'
 
 function AppContent() {
   const navigate = useNavigate();
-  const { auth } = useAuthMachine();
-  const { authResponse, context: authContext } = auth;
-  const {ui} = useMachines();
-  const { context: uiContext, send: uiSend } = ui;
-  const user = authResponse as SignInResponse;
-  
-  // Usar el perfil actualizado si está disponible, sino usar authResponse
-  const userName = authContext.profile?.name || user.name;
-  const userRole = authContext.profile?.role || user.role;
+  const { authState, authSend } = useAuthMachine();
+  const authContext = authState.context;
+
+  const { uiState, uiSend } = useMachines();
+  const uiContext = uiState.context;
+
+  const userName = authContext.authResponse?.name || '';
+  const userRole = authContext.authResponse?.role || '';
 
   const open = Boolean(uiContext.toggleStates?.["userMenu"]);
 
   useEffect(() => {
-    if (uiContext.navigationRequested) {
-      navigate(uiContext.navigationRequested);
-      uiSend({ type: "NAVIGATE", to: null });
-    }
-  }, [uiContext.navigationRequested, navigate, uiSend]);
+    uiSend({ type: "ADD_NAVIGATE_HOOK", navigate, initialPath: window.location.pathname });
+  }, [uiSend, navigate]);
 
   const handleLogout = () => {
-    auth.send({ type: 'LOGOUT' });
+    authSend({ type: 'LOGOUT' });
   };
 
   const handleNavigateToProfile = () => {
@@ -143,6 +139,7 @@ function AppContent() {
           
           <Route path="/profile" element={<ProfileScreen />} />
         </Routes>
+        <SnackbarAlert />
       </Box>
   );
 }

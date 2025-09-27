@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback } from "react";
 import { 
   Avatar, 
   Box, 
@@ -27,26 +27,19 @@ import './EnableHours.css'
 const RangeRow = motion(Box);
 
 const EnableHours: React.FC = () => {
-    const { ui, turn } = useMachines();
-    const { send: uiSend } = ui;
-    const { context: turnContext, send: turnSend } = turn;
+    const { uiSend, doctorState, doctorSend } = useMachines();
+    const doctorContext = doctorState.context;
 
-    const availability = turnContext.availability || [];
-    const enabledDays = availability.filter(day => day.enabled).length;
-    const totalRanges = availability.reduce((total, day) => total + (day.enabled ? day.ranges.length : 0), 0);
-
-    useEffect(() => {
-        if (turnContext.accessToken && turnContext.userId) {
-            turnSend({ type: "LOAD_AVAILABILITY" });
-        }
-    }, [turnSend, turnContext.accessToken, turnContext.userId]);
+    const availability = doctorContext.availability || [];
+    const enabledDays = availability.filter((day: any) => day.enabled).length;
+    const totalRanges = availability.reduce((total: any, day: any) => total + (day.enabled ? day.ranges.length : 0), 0);
 
     const handleBack = () => {
         uiSend({ type: "NAVIGATE", to: "/dashboard" });
     };
 
     const saveAvailability = () => {
-        if (!turnContext.accessToken || !turnContext.userId) {
+        if (!doctorContext.accessToken || !doctorContext.doctorId) {
             console.error("Authentication required to save availability");
             return;
         }
@@ -55,12 +48,12 @@ const EnableHours: React.FC = () => {
         let hasValidData = false;
         const errors: string[] = [];
         
-        availability.forEach((day) => {
+        availability.forEach((day: any) => {
             if (day.enabled) {
                 if (!day.ranges || day.ranges.length === 0) {
                     errors.push(`${day.day}: No hay rangos de horarios configurados`);
                 } else {
-                    day.ranges.forEach((range, rangeIndex) => {
+                    day.ranges.forEach((range: any, rangeIndex: number) => {
                         if (!range.start || !range.end) {
                             errors.push(`${day.day} - Rango ${rangeIndex + 1}: Falta hora de inicio o fin`);
                         } else {
@@ -90,41 +83,40 @@ const EnableHours: React.FC = () => {
         
         if (errors.length > 0) {
             console.error("Errores de validación:", errors);
-            alert("Errores encontrados:\n" + errors.join("\n"));
+            uiSend({type: "OPEN_SNACKBAR", message: "Errores encontrados:\n" + errors.join("\n"), severity: "error"});
             return;
         }
         
         if (!hasValidData) {
             console.warn("No hay días habilitados con horarios válidos configurados");
-            alert("Debe configurar al menos un día con horarios válidos");
+            uiSend({type: "OPEN_SNACKBAR", message: "Debe configurar al menos un día con horarios válidos", severity: "warning"});
             return;
         }
         
-        console.log("Guardando disponibilidad...", availability);
-        turnSend({ type: "SAVE_AVAILABILITY" });
+        doctorSend({ type: "SAVE_AVAILABILITY" });
     };
 
     const handleToggleDay = useCallback((dayIndex: number) => {
-        turnSend({ type: "TOGGLE_DAY", index: dayIndex });
-    }, [turnSend]);
+        doctorSend({ type: "TOGGLE_DAY", index: dayIndex });
+    }, [doctorSend]);
 
     const handleAddRange = useCallback((dayIndex: number) => {
-        turnSend({ type: "ADD_RANGE", dayIndex });
-    }, [turnSend]);
+        doctorSend({ type: "ADD_RANGE", dayIndex });
+    }, [doctorSend]);
 
     const handleRemoveRange = useCallback((dayIndex: number, rangeIndex: number) => {
-        turnSend({ type: "REMOVE_RANGE", dayIndex, rangeIndex });
-    }, [turnSend]);
+        doctorSend({ type: "REMOVE_RANGE", dayIndex, rangeIndex });
+    }, [doctorSend]);
 
     const handleUpdateRange = useCallback((dayIndex: number, rangeIndex: number, field: "start" | "end", value: string) => {
-        turnSend({
+        doctorSend({
             type: "UPDATE_RANGE",
             dayIndex,
             rangeIndex,
             field,
             value,
         });
-    }, [turnSend]);
+    }, [doctorSend]);
     
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -159,9 +151,9 @@ const EnableHours: React.FC = () => {
                     </Box>
 
                     {/* Error Alert */}
-                    {turnContext.error && (
+                    {doctorContext.availabilityError && (
                         <Alert severity="error" sx={{ mt: 2, maxWidth: '1000px', margin: '16px auto 0' }}>
-                            {turnContext.error}
+                            {doctorContext.availabilityError}
                         </Alert>
                     )}
                 </Box>
@@ -169,7 +161,7 @@ const EnableHours: React.FC = () => {
                 <Box className="enablehours-content">
                     {/* Days Configuration */}
                     <Box className="enablehours-days-container">
-                        {availability.map((day, dayIndex) => (
+                        {availability.map((day: any, dayIndex: number) => (
                             <Box key={day.day} className="enablehours-day-container">
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -195,7 +187,7 @@ const EnableHours: React.FC = () => {
                                                     </Box>
                                                     {day.enabled && day.ranges.length > 0 && (
                                                         <Box className="enablehours-ranges-preview">
-                                                            {day.ranges.map((range, idx) => (
+                                                            {day.ranges.map((range: any, idx: number) => (
                                                                 <Typography key={idx} variant="body2" color="text.secondary">
                                                                     {range.start && range.end ? `${range.start} - ${range.end}` : 'Sin configurar'}
                                                                 </Typography>
@@ -240,7 +232,7 @@ const EnableHours: React.FC = () => {
                                                                 </Box>
                                                             ) : (
                                                                 <>
-                                                                    {day.ranges.map((range, rangeIndex) => (
+                                                                    {day.ranges.map((range: any, rangeIndex: number) => (
                                                                         <RangeRow
                                                                             key={rangeIndex}
                                                                             initial={{ opacity: 0, x: -10 }}
@@ -318,10 +310,10 @@ const EnableHours: React.FC = () => {
                             onClick={saveAvailability}
                             size="large"
                             startIcon={<CheckCircle />}
-                            disabled={enabledDays === 0 || totalRanges === 0 || turnContext.isSavingAvailability}
+                            disabled={enabledDays === 0 || totalRanges === 0 || doctorContext.isSavingAvailability}
                             className="enablehours-save-button"
                         >
-                            {turnContext.isSavingAvailability ? 'Guardando...' : 'Guardar Disponibilidad'}
+                            {doctorContext.isSavingAvailability ? 'Guardando...' : 'Guardar Disponibilidad'}
                         </Button>
                     </Box>
 
