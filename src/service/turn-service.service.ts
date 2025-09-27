@@ -256,4 +256,42 @@ export class TurnService {
       throw error;
     }
   }
+
+  static async createModifyRequest(
+    data: { turnId: string; newScheduledAt: string }, 
+    accessToken: string
+  ): Promise<any> {
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.MODIFY_TURN_REQUEST);
+    
+    try {
+      const response = await fetch(url, {
+        ...getAuthenticatedFetchOptions(accessToken),
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData?.message || 
+          errorData?.error ||
+          `Failed to create modify request! Status: ${response.status}`
+        );
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async getDoctorAvailability(doctorId: string, accessToken: string): Promise<any> {
+    try {
+      const availableDates = await TurnService.getAvailableDates(doctorId, accessToken);
+      return { availableDates };
+    } catch (error) {
+      throw error;
+    }
+  }
 }

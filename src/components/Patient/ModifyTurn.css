@@ -1,0 +1,210 @@
+/* ModifyTurn.css */
+
+.modify-turn-container {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.modify-turn-page-container {
+  max-width: 1200px !important;
+}
+
+.modify-turn-loading, .modify-turn-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  color: white;
+}
+
+.modify-turn-page-header {
+  margin-bottom: 2rem;
+}
+
+.modify-turn-back-button {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+
+.modify-turn-back-button:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.modify-turn-title-section {
+  text-align: center;
+  color: white;
+  margin-bottom: 2rem;
+}
+
+.modify-turn-page-title {
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 0.5rem !important;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.modify-turn-page-subtitle {
+  font-weight: 400 !important;
+  opacity: 0.9;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.modify-turn-current-info {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+
+.modify-turn-selection-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+
+.modify-turn-calendar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.modify-turn-calendar-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  padding: 1rem;
+}
+
+.modify-turn-time-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 350px;
+}
+
+.modify-turn-empty-state {
+  text-align: center;
+  color: #666;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.modify-turn-time-slots {
+  width: 100%;
+  max-width: 400px;
+}
+
+.modify-turn-time-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.modify-turn-time-slot-button {
+  min-height: 48px !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+  font-weight: 600 !important;
+}
+
+.modify-turn-time-slot-button:not(.selected) {
+  border-color: #1976d2 !important;
+  color: #1976d2 !important;
+  background-color: white !important;
+}
+
+.modify-turn-time-slot-button:not(.selected):hover {
+  background-color: #e3f2fd !important;
+}
+
+.modify-turn-time-slot-button.selected {
+  background-color: #1976d2 !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3) !important;
+}
+
+.modify-turn-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.modify-turn-btn-secondary {
+  padding: 12px 32px !important;
+  border-radius: 25px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  border: 2px solid rgba(255, 255, 255, 0.8) !important;
+  color: white !important;
+  background-color: transparent !important;
+  transition: all 0.3s ease !important;
+}
+
+.modify-turn-btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: white !important;
+}
+
+.modify-turn-btn-primary {
+  padding: 12px 32px !important;
+  border-radius: 25px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  background: linear-gradient(45deg, #4caf50, #8bc34a) !important;
+  border: none !important;
+  color: white !important;
+  box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4) !important;
+  transition: all 0.3s ease !important;
+}
+
+.modify-turn-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(76, 175, 80, 0.5) !important;
+}
+
+.modify-turn-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: 0 2px 10px rgba(76, 175, 80, 0.2) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modify-turn-selection-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .modify-turn-page-title {
+    font-size: 2rem !important;
+  }
+  
+  .modify-turn-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .modify-turn-btn-secondary,
+  .modify-turn-btn-primary {
+    width: 100%;
+    max-width: 300px;
+  }
+}

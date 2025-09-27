@@ -16,6 +16,9 @@ export const API_CONFIG = {
     GET_DOCTOR_TURNS: '/api/turns/doctor',
     GET_PATIENT_TURNS: '/api/turns/patient',
     
+    MODIFY_TURN_REQUEST: '/api/turns/modify-requests',
+    GET_MY_MODIFY_REQUESTS: '/api/turns/modify-requests/my-requests',
+    
     GET_DOCTORS: '/api/doctors',
     GET_DOCTOR_PATIENTS: '/api/doctors/patients',
     

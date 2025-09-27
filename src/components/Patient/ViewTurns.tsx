@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import { SignInResponse } from "#/models/Auth";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import EditIcon from "@mui/icons-material/Edit";
 import "./ViewTurns.css";
 
 const ViewTurns: React.FC = () => {
@@ -33,6 +34,11 @@ const ViewTurns: React.FC = () => {
     turnSend({ type: "CANCEL_TURN", turnId });
   };
 
+  const handleModifyTurn = (turnId: string) => {
+    console.log("Modificando turno:", turnId);
+    uiSend({ type: "NAVIGATE", to: `/patient/modify-turn/${turnId}` });
+  };
+
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'SCHEDULED':
@@ -51,6 +57,10 @@ const ViewTurns: React.FC = () => {
   };
 
   const canCancelTurn = (turn: any) => {
+    return turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt);
+  };
+
+  const canModifyTurn = (turn: any) => {
     return turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt);
   };
 
@@ -178,6 +188,22 @@ const ViewTurns: React.FC = () => {
                         className={`viewturns-status-chip status-${turn.status.toLowerCase()}`}
                         size="small"
                       />
+                      {canModifyTurn(turn) && (
+                        <Button 
+                          variant="outlined" 
+                          size="small"
+                          startIcon={<EditIcon />}
+                          onClick={() => handleModifyTurn(turn.id)}
+                          sx={{ 
+                            mr: 1,
+                            fontSize: '0.75rem',
+                            minWidth: 'auto',
+                            padding: '4px 8px'
+                          }}
+                        >
+                          Cambiar fecha/horario
+                        </Button>
+                      )}
                       {canCancelTurn(turn) && (
                         <Button 
                           variant="contained" 

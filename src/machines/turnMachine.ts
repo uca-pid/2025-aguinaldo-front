@@ -20,6 +20,8 @@ export const TURN_MACHINE_EVENT_TYPES = [
   "CREATE_TURN",
   "CANCEL_TURN",
   "CLEAR_CANCEL_SUCCESS",
+  "MODIFY_TURN",
+  "LOAD_TURN_DETAILS",
 ];
 
 export interface TurnMachineContext {
@@ -69,6 +71,8 @@ export type TurnMachineEvent =
   | { type: "CREATE_TURN" }
   | { type: "CANCEL_TURN"; turnId: string }
   | { type: "CLEAR_CANCEL_SUCCESS" }
+  | { type: "MODIFY_TURN"; data: { turnId: string; newScheduledAt: string } }
+  | { type: "LOAD_TURN_DETAILS"; turnId: string }
 
 export const turnMachine = createMachine({
   id: "turnMachine",
