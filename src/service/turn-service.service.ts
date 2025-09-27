@@ -1,3 +1,31 @@
+// Wrapper para fetch con manejo automático de refresh token
+async function fetchWithRefresh(url: string, options: RequestInit): Promise<Response> {
+  let response = await fetch(url, options);
+  if (response.status === 401) {
+    const authData = JSON.parse(localStorage.getItem('authData') || '{}');
+    if (authData.refreshToken) {
+      try {
+        const { AuthService } = await import('./auth-service.service');
+        const refreshed = await AuthService.refreshToken(authData.refreshToken);
+        if (refreshed.accessToken) {
+          localStorage.setItem('authData', JSON.stringify(refreshed));
+          // Actualizar el header Authorization
+          const newOptions = {
+            ...options,
+            headers: {
+              ...options.headers,
+              'Authorization': `Bearer ${refreshed.accessToken}`,
+            },
+          };
+          response = await fetch(url, newOptions);
+        }
+      } catch (refreshError) {
+        throw new Error('Sesión expirada. Por favor, vuelve a iniciar sesión.');
+      }
+    }
+  }
+  return response;
+}
 import { API_CONFIG, buildApiUrl, getAuthenticatedFetchOptions } from '../../config/api';
 import type {
   Doctor,
@@ -6,8 +34,32 @@ import type {
   TurnResponse,
   ApiErrorResponse
 } from '../models/Turn';
+import type { TurnModifyRequest } from '../models/TurnModifyRequest';
 
 export class TurnService {
+  static async getMyModifyRequests(accessToken: string): Promise<TurnModifyRequest[]> {
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_MY_MODIFY_REQUESTS);
+    try {
+      const response = await fetch(url, {
+        ...getAuthenticatedFetchOptions(accessToken),
+        method: 'GET',
+      });
+      if (!response.ok) {
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        console.error('[TurnService] getMyModifyRequests - Error:', errorData);
+        throw new Error(
+          errorData?.message || 
+          errorData?.error ||
+          `Failed to fetch modify requests! Status: ${response.status}`
+        );
+      }
+      const result: TurnModifyRequest[] = await response.json();
+      return result;
+    } catch (error) {
+      console.error('[TurnService] getMyModifyRequests - Exception:', error);
+      throw error;
+    }
+  }
   
   static async getDoctors(accessToken: string): Promise<Doctor[]> {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTORS);
@@ -42,11 +94,10 @@ export class TurnService {
     const url = buildApiUrl(`/api/turns/available?doctorId=${doctorId}&date=${date}`);
     
     try {
-      const response = await fetch(url, {
+      const response = await fetchWithRefresh(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
       });
-
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
         throw new Error(
@@ -55,9 +106,7 @@ export class TurnService {
           `Failed to fetch available turns! Status: ${response.status}`
         );
       }
-
       const availableTimes: string[] = await response.json();
-      
       return availableTimes;
     } catch (error) {
       throw error;
@@ -133,25 +182,44 @@ export class TurnService {
     const url = status 
       ? `${buildApiUrl(API_CONFIG.ENDPOINTS.GET_MY_TURNS)}?status=${status}`
       : buildApiUrl(API_CONFIG.ENDPOINTS.GET_MY_TURNS);
-    
     try {
-      const response = await fetch(url, {
+      let response = await fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
       });
-
+      if (response.status === 401) {
+        // Intentar refresh token
+        const authData = JSON.parse(localStorage.getItem('authData') || '{}');
+        if (authData.refreshToken) {
+          try {
+            const { AuthService } = await import('./auth-service.service');
+            const refreshed = await AuthService.refreshToken(authData.refreshToken);
+            if (refreshed.accessToken) {
+              localStorage.setItem('authData', JSON.stringify(refreshed));
+              response = await fetch(url, {
+                ...getAuthenticatedFetchOptions(refreshed.accessToken),
+                method: 'GET',
+              });
+            }
+          } catch (refreshError) {
+            console.error('[TurnService] getMyTurns - Refresh token failed:', refreshError);
+            throw new Error('Sesión expirada. Por favor, vuelve a iniciar sesión.');
+          }
+        }
+      }
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        console.error('[TurnService] getMyTurns - Error:', errorData);
         throw new Error(
           errorData?.message || 
           errorData?.error ||
           `Failed to fetch my turns! Status: ${response.status}`
         );
       }
-
       const result: TurnResponse[] = await response.json();
       return result;
     } catch (error) {
+        console.error('[TurnService] getMyTurns - Exception:', error);
       throw error;
     }
   }
@@ -226,11 +294,10 @@ export class TurnService {
     const url = buildApiUrl(`/api/doctors/${doctorId}/available-slots?fromDate=${fromDate}&toDate=${toDate}`);
     
     try {
-      const response = await fetch(url, {
+      const response = await fetchWithRefresh(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
       });
-
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
         throw new Error(
@@ -239,9 +306,7 @@ export class TurnService {
           `Failed to fetch available slots! Status: ${response.status}`
         );
       }
-
       const slots: any[] = await response.json();
-      
       // Extract unique dates from slots
       const dateSet = new Set<string>();
       slots.forEach(slot => {
@@ -249,7 +314,6 @@ export class TurnService {
           dateSet.add(slot.date);
         }
       });
-      
       const dates: string[] = Array.from(dateSet).sort();
       return dates;
     } catch (error) {
@@ -264,12 +328,11 @@ export class TurnService {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.MODIFY_TURN_REQUEST);
     
     try {
-      const response = await fetch(url, {
+      const response = await fetchWithRefresh(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'POST',
         body: JSON.stringify(data),
       });
-
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
         throw new Error(
@@ -278,7 +341,6 @@ export class TurnService {
           `Failed to create modify request! Status: ${response.status}`
         );
       }
-
       const result = await response.json();
       return result;
     } catch (error) {

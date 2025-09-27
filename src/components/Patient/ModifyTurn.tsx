@@ -41,7 +41,7 @@ const ModifyTurn: React.FC = () => {
 
   useEffect(() => {
     if (user.accessToken && user.id) {
-      modifyTurnSend({ type: "DATA_LOADED" }); 
+      modifyTurnSend({ type: "DATA_LOADED" });
     }
   }, [user.accessToken, user.id, modifyTurnSend]);
 
@@ -99,58 +99,50 @@ const ModifyTurn: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="lg" className="modify-turn-page-container">
-      <Box className="modify-turn-page-header">
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })}
-          className="modify-turn-back-button"
-          variant="outlined"
-        >
-          Volver a Mis Turnos
-        </Button>
-        <Button 
-          onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })} 
-          className="modify-turn-btn-secondary"
-          variant="outlined"
-        >
-          Cancelar
-        </Button>
-        <Typography variant="h5" className="modify-turn-title">
-          Selecciona una nueva fecha y horario para tu cita
-        </Typography>
-      </Box>
-
-        <Box className="modify-turn-current-info">
-          <Typography variant="h6" className="modify-turn-section-title">
-            📋 Información del Turno Actual
-          </Typography>
-          <Box className="modify-turn-info-card">
-            <Typography variant="body1">
-              <strong>Doctor:</strong> {currentTurn.doctorName}
+    <Box className="reservation-container">
+      <Container maxWidth="lg" className="reservation-page-container">
+        <Box className="reservation-page-header">
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })}
+            className="reservation-back-button"
+            variant="outlined"
+          >
+            Volver a Mis Turnos
+          </Button>
+          <Box className="reservation-title-section">
+            <Typography variant="h3" className="reservation-page-title">
+              Modificar Turno Médico
             </Typography>
-            <Typography variant="body1">
-              <strong>Especialidad:</strong> {currentTurn.doctorSpecialty}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Fecha y Hora Actual:</strong> {formatDateTime(currentTurn.scheduledAt)}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Estado:</strong> 
-              <span className={`modify-turn-status ${currentTurn.status?.toLowerCase()}`}>
-                {currentTurn.status}
-              </span>
+            <Typography variant="h6" className="reservation-page-subtitle">
+              Selecciona una nueva fecha y horario para tu cita
             </Typography>
           </Box>
         </Box>
 
-        <Box className="modify-turn-step2-container">
-          <Box className="modify-turn-step2-content">
-            <Box className="modify-turn-calendar-section">
-              <Typography variant="h6" className="modify-turn-section-title">
-                📅 Nueva Fecha
+        <Box className="reservation-step1-container">
+          <Box className="reservation-form-section">
+            <Typography variant="h6" className="reservation-section-title">
+              📋 Información del Turno Actual
+            </Typography>
+            <Box className="reservation-info-card">
+              <Typography variant="body1">
+                <strong>Doctor:</strong> {currentTurn.doctorName}
               </Typography>
-              <Box className="modify-turn-calendar-container">
+              <Typography variant="body1">
+                <strong>Especialidad:</strong> {currentTurn.doctorSpecialty}
+              </Typography>
+              <Typography variant="body1">
+                <strong>Fecha y Hora Actual:</strong> {formatDateTime(currentTurn.scheduledAt)}
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        <Box className="reservation-step2-container">
+          <Box className="reservation-step2-content">
+            <Box className="reservation-calendar-section">
+              <Box className="reservation-calendar-container">
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DemoContainer components={['DateCalendar']}>
                     <DemoItem>
@@ -178,12 +170,8 @@ const ModifyTurn: React.FC = () => {
                 👨‍⚕️ {currentTurn.doctorName}
               </Typography>
             </Box>
-
-            <Box className="modify-turn-time-section">
-              <Typography variant="h6" className="modify-turn-section-title">
-                🕐 Nuevo Horario
-              </Typography>
-              <Box className="modify-turn-time-slots">
+            <Box className="reservation-time-section">
+              <Box className="reservation-time-slots">
                 <TimeSlotSelector
                   selectedDate={selectedDate}
                   availableSlots={availableSlots}
@@ -197,32 +185,18 @@ const ModifyTurn: React.FC = () => {
         </Box>
         
         {modifyError && (
-          <Box className="modify-turn-error-message">
+          <Box className="reservation-error-message">
             <Typography color="error" variant="body2">
               {modifyError}
             </Typography>
           </Box>
         )}
 
-        {/* Campo para razón de la modificación */}
-        <Box className="modify-turn-reason-section" sx={{ mt: 3, mb: 2 }}>
-          <Typography variant="h6" className="modify-turn-section-title" sx={{ mb: 2 }}>
-            💬 Motivo de la modificación (opcional)
-          </Typography>
-          <textarea
-            value={reason}
-            onChange={e => modifyTurnSend({ type: "UPDATE_FORM", key: "reason", value: e.target.value })}
-            placeholder="Describe brevemente el motivo de la modificación..."
-            className="modify-turn-reason-textarea"
-            rows={3}
-            maxLength={500}
-          />
-        </Box>
 
-        <Box className="modify-turn-actions">
+        <Box className="reservation-actions">
           <Button 
             onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })} 
-            className="modify-turn-btn-secondary"
+            className="reservation-btn-secondary"
             variant="outlined"
           >
             Cancelar
@@ -230,8 +204,9 @@ const ModifyTurn: React.FC = () => {
           <Button
             onClick={() => modifyTurnSend({ type: "SUBMIT_MODIFY_REQUEST" })}
             variant="contained"
-            className="modify-turn-btn-primary"
+            className="reservation-btn-primary"
             disabled={!selectedTime || isModifyingTurn}
+            sx={{ ml: 2 }}
           >
             {isModifyingTurn ? (
               <>
@@ -244,6 +219,7 @@ const ModifyTurn: React.FC = () => {
           </Button>
         </Box>
       </Container>
+    </Box>
   );
 };
 

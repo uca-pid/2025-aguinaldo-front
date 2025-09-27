@@ -1,3 +1,57 @@
+
+/* Paridad visual con ReservationTurns */
+.reservation-step1-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.reservation-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reservation-info-card {
+  background: var(--white) !important;
+  border-radius: 16px !important;
+  padding: 24px !important;
+  border: 1px solid var(--verdigris) !important;
+}
+
+
+.reservation-step2-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 800px;
+  margin: 32px auto 0 auto;
+}
+
+.reservation-step2-content {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.reservation-calendar-section {
+  flex: 1;
+  min-width: 320px;
+}
+
+.reservation-time-section {
+  flex: 1;
+  min-width: 320px;
+}
+
+.reservation-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 32px;
+}
 /* ModifyTurn Component Styles */
 
 .modify-turn-container {
@@ -116,10 +170,11 @@
 .modify-turn-calendar-container {
   background: var(--white) !important;
   border-radius: 12px !important;
-  padding: 16px !important;
+  padding: 8px !important;
   border: 1px solid #e0e7ff !important;
   display: flex;
   justify-content: center;
+  margin-bottom: 8px !important;
 }
 
 .modify-turn-calendar-container .MuiDateCalendar-root {
@@ -130,19 +185,36 @@
 .modify-turn-time-section {
   background: var(--white) !important;
   border-radius: 16px !important;
-  padding: 24px !important;
+  padding: 16px 24px !important;
   border: 1px solid var(--verdigris) !important;
   box-shadow: 0 4px 15px rgba(34, 87, 122, 0.1) !important;
   height: fit-content;
+  min-width: 400px;
+  max-width: 600px;
 }
 
 .modify-turn-time-slots {
   background: #f8fafc !important;
   border-radius: 12px !important;
-  padding: 20px !important;
+  padding: 24px !important;
   border: 1px solid #e0e7ff !important;
-  max-height: 400px;
+  max-height: 500px;
   overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .modify-turn-time-slots {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .modify-turn-time-slots {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Action Buttons */
@@ -244,9 +316,6 @@
   background: var(--white);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e2e8f0;
-}
 
 .modify-turn-reason-textarea {
   width: 100%;
@@ -278,4 +347,20 @@
   .modify-turn-reason-section {
     padding: 20px;
   }
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .modify-turn-time-slots {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .modify-turn-time-slots {
+    grid-template-columns: 1fr;
+  }
+}
 }

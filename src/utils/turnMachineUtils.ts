@@ -102,7 +102,7 @@ export const createModifyTurnRequest = async ({ accessToken, turnId, newSchedule
  */
 export const loadTurnDetails = async ({ turnId, accessToken }: { turnId: string; accessToken: string }): Promise<TurnResponse | null> => {
   try {
-    const response = await fetch('/api/turns/my-turns', {
+    let response = await fetch('/api/turns/my-turns', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -110,17 +110,38 @@ export const loadTurnDetails = async ({ turnId, accessToken }: { turnId: string;
       }
     });
 
-    if (!response.ok) {
-      throw new Error(`Failed to load my turns: ${response.statusText}`);
+    if (response.status === 401) {
+      // Intentar refresh token
+      const authData = JSON.parse(localStorage.getItem('authData') || '{}');
+      if (authData.refreshToken) {
+        try {
+          const { AuthService } = await import('../service/auth-service.service');
+          const refreshed = await AuthService.refreshToken(authData.refreshToken);
+          if (refreshed.accessToken) {
+            localStorage.setItem('authData', JSON.stringify(refreshed));
+            response = await fetch('/api/turns/my-turns', {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${refreshed.accessToken}`,
+                'Content-Type': 'application/json'
+              }
+            });
+          }
+        } catch (refreshError) {
+          console.error('Error al refrescar el token en loadTurnDetails:', refreshError);
+          throw new Error('Sesión expirada. Por favor, vuelve a iniciar sesión.');
+        }
+      }
     }
-
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(`Failed to load my turns: ${response.statusText} - ${errorData}`);
+    }
     const myTurns: TurnResponse[] = await response.json();
     const turn = myTurns.find((turn: TurnResponse) => turn.id === turnId);
-    
     if (!turn) {
       throw new Error(`Turn with ID ${turnId} not found in your turns`);
     }
-
     return turn;
   } catch (error) {
     console.error('Error loading turn details:', error);

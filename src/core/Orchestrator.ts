@@ -36,7 +36,10 @@ export class Orchestrator {
     const { id, machine, eventTypes, input } = registration;
 
     if (this.machines.has(id)) {
-      throw new Error(`Machine with id "${id}" is already registered`);
+      if (this.debug) {
+        console.warn(`[Orchestrator] Machine with id "${id}" is already registered. Skipping registration.`);
+      }
+      return;
     }
 
     let actor: AnyActor;
