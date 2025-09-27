@@ -7,6 +7,7 @@ import { turnMachine, TURN_MACHINE_ID, TURN_MACHINE_EVENT_TYPES, type TurnMachin
 import doctorMachine, { DOCTOR_MACHINE_ID, DOCTOR_MACHINE_EVENT_TYPES, type DoctorMachineEvent } from '../machines/doctorMachine';
 import { adminUserMachine, ADMIN_USER_MACHINE_ID, ADMIN_USER_MACHINE_EVENT_TYPES } from '#/machines/adminUserMachine';
 import { profileMachine, PROFILE_MACHINE_ID, PROFILE_MACHINE_EVENT_TYPES, type ProfileMachineEvent } from '../machines/profileMachine';
+import { modifyTurnMachine, MODIFY_TURN_MACHINE_ID, MODIFY_TURN_MACHINE_EVENT_TYPES } from '../machines/modifyTurnMachine';
 
 interface MachineInstances {
     uiState: any;
@@ -19,6 +20,8 @@ interface MachineInstances {
     adminUserSend: (event: any) => void;
     profileState: any;
     profileSend: (event: ProfileMachineEvent) => void;
+    modifyTurnState: any;
+    modifyTurnSend: (event: any) => void;
 }
 
 interface MachineProviderProps {
@@ -57,12 +60,19 @@ orchestrator.registerMachine({
   eventTypes: PROFILE_MACHINE_EVENT_TYPES
 });
 
+orchestrator.registerMachine({
+  id: MODIFY_TURN_MACHINE_ID,
+  machine: modifyTurnMachine,
+  eventTypes: [...MODIFY_TURN_MACHINE_EVENT_TYPES]
+});
+
 export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) => {
   const { state: uiState, send: uiSend } = useStateMachine(UI_MACHINE_ID);
   const { state: turnState, send: turnSend } = useStateMachine(TURN_MACHINE_ID);
   const { state: doctorState, send: doctorSend } = useStateMachine(DOCTOR_MACHINE_ID);
   const { state: adminUserState, send: adminUserSend } = useStateMachine(ADMIN_USER_MACHINE_ID);
   const { state: profileState, send: profileSend } = useStateMachine(PROFILE_MACHINE_ID);
+  const { state: modifyTurnState, send: modifyTurnSend } = useStateMachine(MODIFY_TURN_MACHINE_ID);
 
   const machines: MachineInstances = {
       uiState: uiState,
@@ -74,7 +84,9 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       adminUserState: adminUserState,
       adminUserSend: adminUserSend,
       profileState: profileState,
-      profileSend: profileSend
+      profileSend: profileSend,
+      modifyTurnState: modifyTurnState,
+      modifyTurnSend: modifyTurnSend
   };
 
   return (

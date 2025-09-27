@@ -23,6 +23,28 @@ export interface CancelTurnParams {
   turnId: string;
 }
 
+export interface ModifyTurnParams {
+  accessToken: string;
+  turnId: string;
+  newScheduledAt: string;
+}
+
+export interface LoadTurnDetailsParams {
+  turnId: string;
+  accessToken: string;
+}
+
+export interface LoadDoctorAvailabilityParams {
+  accessToken: string;
+  doctorId: string;
+}
+
+export interface LoadAvailableSlotsParams {
+  accessToken: string;
+  doctorId: string;
+  date: string;
+}
+
 /**
  * Reserve an existing turn
  */
@@ -63,4 +85,61 @@ export const cancelTurn = async ({ accessToken, turnId }: CancelTurnParams): Pro
     const errorData = await response.text();
     throw new Error(`Failed to cancel turn: ${errorData}`);
   }
+};
+
+/**
+ * Create a modify turn request
+ */
+export const createModifyTurnRequest = async ({ accessToken, turnId, newScheduledAt }: ModifyTurnParams): Promise<any> => {
+  return await TurnService.createModifyRequest({
+    turnId,
+    newScheduledAt
+  }, accessToken);
+};
+
+/**
+ * Load turn details from my-turns API
+ */
+export const loadTurnDetails = async ({ turnId, accessToken }: { turnId: string; accessToken: string }): Promise<TurnResponse | null> => {
+  try {
+    const response = await fetch('/api/turns/my-turns', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to load my turns: ${response.statusText}`);
+    }
+
+    const myTurns: TurnResponse[] = await response.json();
+    const turn = myTurns.find((turn: TurnResponse) => turn.id === turnId);
+    
+    if (!turn) {
+      throw new Error(`Turn with ID ${turnId} not found in your turns`);
+    }
+
+    return turn;
+  } catch (error) {
+    console.error('Error loading turn details:', error);
+    throw error;
+  }
+};
+
+/**
+ * Load doctor availability dates
+ */
+export const loadDoctorAvailability = async ({ accessToken, doctorId }: LoadDoctorAvailabilityParams): Promise<string[]> => {
+  const availability = await TurnService.getDoctorAvailability(doctorId, accessToken);
+  return availability?.availableDates || [];
+};
+
+/**
+ * Load available time slots for a specific date and doctor
+ */
+export const loadAvailableSlots = async ({ accessToken, doctorId, date }: LoadAvailableSlotsParams): Promise<string[]> => {
+  const slots = await TurnService.getAvailableTurns(doctorId, date, accessToken);
+  return slots || [];
 };

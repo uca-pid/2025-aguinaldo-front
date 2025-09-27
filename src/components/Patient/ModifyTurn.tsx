@@ -2,7 +2,7 @@ import {
   Box, Button, Typography, CircularProgress,
   Container 
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { useParams } from 'react-router-dom';
@@ -14,156 +14,141 @@ import { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { SignInResponse } from "#/models/Auth";
-import { TurnService } from "#/service/turn-service.service";
+import { 
+  formatDateTime, 
+  shouldDisableDate 
+} from "#/utils/dateTimeUtils";
+import TimeSlotSelector from "#/components/shared/TimeSlotSelector/TimeSlotSelector";
 import "./ModifyTurn.css";
 
 const ModifyTurn: React.FC = () => {
   const { turnId } = useParams<{ turnId: string }>();
-  const { uiSend, turnState, turnSend } = useMachines();
+  const { uiSend, modifyTurnState, modifyTurnSend } = useMachines();
   const { authState } = useAuthMachine();
   const user: SignInResponse = authState?.context?.authResponse || {};
   
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
-  const [currentTurn, setCurrentTurn] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [availableDates, setAvailableDates] = useState<string[]>([]);
-  
+  const { 
+    currentTurn, 
+    selectedDate, 
+    selectedTime, 
+    availableSlots, 
+    availableDates,
+    reason,
+    isLoadingTurnDetails, 
+    isLoadingAvailableSlots, 
+    isModifyingTurn,
+    modifyError 
+  } = modifyTurnState.context;
+
+  useEffect(() => {
+    if (user.accessToken && user.id) {
+      modifyTurnSend({ type: "DATA_LOADED" }); 
+    }
+  }, [user.accessToken, user.id, modifyTurnSend]);
+
   useEffect(() => {
     if (turnId && user.accessToken) {
-      loadTurnData();
+      modifyTurnSend({ type: "RESET" });
+      modifyTurnSend({ type: "LOAD_TURN_DETAILS", turnId });
     }
-  }, [turnId, user.accessToken]);
-  
-  const loadTurnData = async () => {
-    try {
-      setIsLoading(true);
-      // Buscar el turno en el contexto actual
-      const turn = turnState.context.myTurns.find((t: any) => t.id === turnId);
-      if (turn) {
-        setCurrentTurn(turn);
-        // Cargar disponibilidad del doctor
-        await loadDoctorAvailability(turn.doctorId);
-      } else {
-        // Si no está en el contexto, cargar los turnos
-        turnSend({ type: "DATA_LOADED" });
-      }
-    } catch (error) {
-      console.error('Error loading turn data:', error);
-    } finally {
-      setIsLoading(false);
+  }, [turnId, user.accessToken, user.id, modifyTurnSend]);
+
+  useEffect(() => {
+    if (currentTurn?.doctorId) {
+      modifyTurnSend({ 
+        type: "LOAD_DOCTOR_AVAILABILITY", 
+        doctorId: currentTurn.doctorId,
+        date: dayjs().format('YYYY-MM-DD')
+      });
     }
-  };
-  
-  const loadDoctorAvailability = async (doctorId: string) => {
-    try {
-      if (!user.accessToken) return;
-      
-      const availability = await TurnService.getDoctorAvailability(doctorId, user.accessToken);
-      
-      if (availability && availability.availableDates) {
-        setAvailableDates(availability.availableDates);
-      }
-    } catch (error) {
-      console.error('Error loading doctor availability:', error);
-    }
-  };
-  
-  const loadAvailableSlots = async (date: Dayjs) => {
-    if (!currentTurn || !user.accessToken) return;
-    
-    try {
-      const dateString = date.format('YYYY-MM-DD');
-      const slots = await TurnService.getAvailableTurns(currentTurn.doctorId, dateString, user.accessToken);
-      setAvailableSlots(slots || []);
-    } catch (error) {
-      console.error('Error loading available slots:', error);
-      setAvailableSlots([]);
-    }
-  };
+  }, [currentTurn?.doctorId, modifyTurnSend]);
 
   const handleDateChange = (newValue: Dayjs | null) => {
-    setSelectedDate(newValue);
-    setSelectedTime(null);
-    if (newValue) {
-      loadAvailableSlots(newValue);
-    } else {
-      setAvailableSlots([]);
+    modifyTurnSend({ 
+      type: "UPDATE_FORM", 
+      key: "selectedDate", 
+      value: newValue 
+    });
+    modifyTurnSend({ 
+      type: "UPDATE_FORM", 
+      key: "selectedTime", 
+      value: null 
+    });
+    
+    if (newValue && currentTurn?.doctorId) {
+      modifyTurnSend({
+        type: "LOAD_AVAILABLE_SLOTS",
+        doctorId: currentTurn.doctorId,
+        date: newValue.format('YYYY-MM-DD')
+      });
     }
   };
 
   const handleTimeSelect = (timeSlot: string) => {
-    setSelectedTime(timeSlot);
+    modifyTurnSend({ 
+      type: "UPDATE_FORM", 
+      key: "selectedTime", 
+      value: timeSlot 
+    });
   };
 
-  const handleSubmitModification = async () => {
+  const handleSubmitModification = () => {
     if (!selectedTime || !currentTurn || !user.accessToken) return;
     
-    try {
-      setIsSubmitting(true);
-      
-      await TurnService.createModifyRequest({
-        turnId: currentTurn.id,
-        newScheduledAt: selectedTime
-      }, user.accessToken);
-      
-      // Mostrar mensaje de éxito y volver
-      alert('Solicitud de modificación enviada exitosamente. El doctor deberá aprobar el cambio.');
-      handleClose();
-      
-    } catch (error: any) {
-      console.error('Error submitting modification:', error);
-      alert(error.message || 'Error al enviar la solicitud de modificación');
-    } finally {
-      setIsSubmitting(false);
+    if (reason.trim()) {
+      modifyTurnSend({ 
+        type: "UPDATE_FORM", 
+        key: "reason", 
+        value: reason 
+      });
     }
+    
+    modifyTurnSend({ type: "SUBMIT_MODIFY_REQUEST" });
   };
 
-  const handleClose = () => {
+  const handleGoBack = () => {
     uiSend({ type: "NAVIGATE", to: "/patient/view-turns" });
   };
 
-  if (isLoading) {
+  if (isLoadingTurnDetails) {
     return (
-      <Box className="modify-turn-container">
-        <Container maxWidth="lg" className="modify-turn-loading">
-          <CircularProgress />
-          <Typography>Cargando información del turno...</Typography>
-        </Container>
-      </Box>
+      <Container maxWidth="md" className="modify-turn-container">
+        <Box className="modify-turn-loading">
+          <CircularProgress size={40} />
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            Cargando detalles del turno...
+          </Typography>
+        </Box>
+      </Container>
     );
   }
 
   if (!currentTurn) {
     return (
-      <Box className="modify-turn-container">
-        <Container maxWidth="lg" className="modify-turn-error">
+      <Container maxWidth="md" className="modify-turn-container">
+        <Box className="modify-turn-error">
           <Typography variant="h6" color="error">
-            Turno no encontrado
+            No se pudo cargar la información del turno
           </Typography>
-          <Button
+          <Button 
             startIcon={<ArrowBackIcon />}
-            onClick={handleClose}
-            variant="outlined"
+            onClick={handleGoBack}
             sx={{ mt: 2 }}
           >
-            Volver a Mis Turnos
+            Volver a mis turnos
           </Button>
-        </Container>
-      </Box>
+        </Box>
+      </Container>
     );
   }
 
   return (
     <Box className="modify-turn-container">
       <Container maxWidth="lg" className="modify-turn-page-container">
-        {/* Page Header */}
         <Box className="modify-turn-page-header">
           <Button
             startIcon={<ArrowBackIcon />}
-            onClick={handleClose}
+            onClick={handleGoBack}
             className="modify-turn-back-button"
             variant="outlined"
           >
@@ -180,115 +165,101 @@ const ModifyTurn: React.FC = () => {
           </Box>
         </Box>
 
-        {/* Current Turn Info */}
         <Box className="modify-turn-current-info">
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Información del turno actual:
+          <Typography variant="h6" className="modify-turn-section-title">
+            📋 Información del Turno Actual
           </Typography>
-          <Box sx={{ 
-            p: 2, 
-            backgroundColor: '#f5f5f5', 
-            borderRadius: 2,
-            mb: 3 
-          }}>
-            <Typography>
-              <strong>Doctor:</strong> Dr. {currentTurn.doctorName}
+          <Box className="modify-turn-info-card">
+            <Typography variant="body1">
+              <strong>Doctor:</strong> {currentTurn.doctorName}
             </Typography>
-            <Typography>
+            <Typography variant="body1">
               <strong>Especialidad:</strong> {currentTurn.doctorSpecialty}
             </Typography>
-            <Typography>
-              <strong>Fecha y hora actual:</strong> {dayjs(currentTurn.scheduledAt).format('DD/MM/YYYY HH:mm')}
+            <Typography variant="body1">
+              <strong>Fecha y Hora Actual:</strong> {formatDateTime(currentTurn.scheduledAt)}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Estado:</strong> 
+              <span className={`modify-turn-status ${currentTurn.status?.toLowerCase()}`}>
+                {currentTurn.status}
+              </span>
             </Typography>
           </Box>
         </Box>
 
-        {/* Date and Time Selection */}
-        <Box className="modify-turn-selection-container">
-          <Box className="modify-turn-calendar-section">
-            <Box className="modify-turn-calendar-container">
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DemoContainer components={['DateCalendar']}>
-                  <DemoItem>
-                    <DateCalendar
-                      value={selectedDate}
-                      onChange={handleDateChange}
-                      minDate={dayjs()}
-                      shouldDisableDate={(date) => {
-                        const dateString = date.format('YYYY-MM-DD');
-                        return !availableDates.includes(dateString);
-                      }}
-                    />
-                  </DemoItem>
-                </DemoContainer>
-              </LocalizationProvider>
+        <Box className="modify-turn-step2-container">
+          <Box className="modify-turn-step2-content">
+            <Box className="modify-turn-calendar-section">
+              <Typography variant="h6" className="modify-turn-section-title">
+                📅 Nueva Fecha
+              </Typography>
+              <Box className="modify-turn-calendar-container">
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DemoContainer components={['DateCalendar']}>
+                    <DemoItem>
+                      <DateCalendar
+                        value={selectedDate}
+                        onChange={handleDateChange}
+                        minDate={dayjs()}
+                        shouldDisableDate={(date) => shouldDisableDate(date, availableDates)}
+                      />
+                    </DemoItem>
+                  </DemoContainer>
+                </LocalizationProvider>
+              </Box>
+              <Typography variant="body2" color="text.secondary" textAlign="center" mt={2}>
+                👨‍⚕️ {currentTurn.doctorName}
+              </Typography>
             </Box>
-            <Typography variant="body2" color="text.secondary" textAlign="center" mt={2}>
-              👨‍⚕️ Dr. {currentTurn.doctorName}
-            </Typography>
-          </Box>
 
-          <Box className="modify-turn-time-section">
-            {!selectedDate ? (
-              <Box className="modify-turn-empty-state">
-                <Typography>
-                  📅 Primero selecciona una fecha
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1, opacity: 0.7 }}>
-                  Elige una fecha en el calendario para ver los horarios disponibles
-                </Typography>
-              </Box>
-            ) : availableSlots.length > 0 ? (
+            <Box className="modify-turn-time-section">
+              <Typography variant="h6" className="modify-turn-section-title">
+                🕐 Nuevo Horario
+              </Typography>
               <Box className="modify-turn-time-slots">
-                <Typography variant="body2" sx={{ mb: 2, textAlign: 'center', color: '#1e3a8a', fontWeight: 600 }}>
-                  {selectedDate.format("DD/MM/YYYY")}
-                </Typography>
-                <Box className="modify-turn-time-grid">
-                  {availableSlots
-                    .filter((timeSlot: string) => {
-                      const slotDateTime = dayjs(timeSlot);
-                      const now = dayjs();
-                      
-                      if (slotDateTime.isSame(now, 'day')) {
-                        return slotDateTime.isAfter(now);
-                      }
-                      
-                      return slotDateTime.isAfter(now, 'day');
-                    })
-                    .map((timeSlot: string, index: number) => (
-                      <Button
-                        key={index}
-                        className={`modify-turn-time-slot-button ${selectedTime === timeSlot ? 'selected' : ''}`}
-                        onClick={() => handleTimeSelect(timeSlot)}
-                        variant={selectedTime === timeSlot ? 'contained' : 'outlined'}
-                      >
-                        <Typography variant="body1" component="span" sx={{ fontWeight: 600 }}>
-                          {dayjs(timeSlot).format('HH:mm')}
-                        </Typography>
-                      </Button>
-                    ))}
-                </Box>
+                <TimeSlotSelector
+                  selectedDate={selectedDate}
+                  availableSlots={availableSlots}
+                  selectedTime={selectedTime}
+                  onTimeSelect={handleTimeSelect}
+                  isLoadingSlots={isLoadingAvailableSlots}
+                />
               </Box>
-            ) : (
-              <Box className="modify-turn-empty-state">
-                <Typography>
-                  😔 No hay horarios disponibles
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1, opacity: 0.7 }}>
-                  {selectedDate.format("DD/MM/YYYY")}
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1, opacity: 0.7 }}>
-                  El doctor no tiene horarios disponibles para esta fecha
-                </Typography>
-              </Box>
-            )}
+            </Box>
           </Box>
         </Box>
         
-        {/* Action Buttons */}
+        {modifyError && (
+          <Box className="modify-turn-error-message">
+            <Typography color="error" variant="body2">
+              {modifyError}
+            </Typography>
+          </Box>
+        )}
+
+        {/* Campo para razón de la modificación */}
+        <Box className="modify-turn-reason-section" sx={{ mt: 3, mb: 2 }}>
+          <Typography variant="h6" className="modify-turn-section-title" sx={{ mb: 2 }}>
+            💬 Motivo de la modificación (opcional)
+          </Typography>
+          <textarea
+            value={reason}
+            onChange={(e) => modifyTurnSend({ 
+              type: "UPDATE_FORM", 
+              key: "reason", 
+              value: e.target.value 
+            })}
+            placeholder="Describe brevemente el motivo de la modificación..."
+            className="modify-turn-reason-textarea"
+            rows={3}
+            maxLength={500}
+          />
+        </Box>
+
         <Box className="modify-turn-actions">
           <Button 
-            onClick={handleClose} 
+            onClick={handleGoBack} 
             className="modify-turn-btn-secondary"
             variant="outlined"
           >
@@ -298,9 +269,9 @@ const ModifyTurn: React.FC = () => {
             onClick={handleSubmitModification}
             variant="contained"
             className="modify-turn-btn-primary"
-            disabled={!selectedTime || isSubmitting}
+            disabled={!selectedTime || isModifyingTurn}
           >
-            {isSubmitting ? (
+            {isModifyingTurn ? (
               <>
                 <CircularProgress size={20} sx={{ mr: 1 }} />
                 Enviando solicitud...

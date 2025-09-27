@@ -1,5 +1,6 @@
 import { createMachine, assign, fromPromise } from "xstate";
 import { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import { reserveTurn, createTurn, cancelTurn } from "../utils/turnMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { Doctor, TurnResponse } from "../models/Turn";
@@ -11,10 +12,12 @@ export const TURN_MACHINE_ID = "turn";
 export const TURN_MACHINE_EVENT_TYPES = [
   "UPDATE_FORM_TAKE_TURN",
   "UPDATE_FORM_SHOW_TURNS",
+  "UPDATE_FORM_MODIFY_TURN",
   "NEXT",
   "BACK",
   "RESET_TAKE_TURN",
   "RESET_SHOW_TURNS",
+  "RESET_MODIFY_TURN",
   "DATA_LOADED",
   "RESERVE_TURN",
   "CREATE_TURN",
@@ -22,6 +25,9 @@ export const TURN_MACHINE_EVENT_TYPES = [
   "CLEAR_CANCEL_SUCCESS",
   "MODIFY_TURN",
   "LOAD_TURN_DETAILS",
+  "LOAD_DOCTOR_AVAILABILITY",
+  "LOAD_AVAILABLE_SLOTS",
+  "SUBMIT_MODIFY_REQUEST",
 ];
 
 export interface TurnMachineContext {
@@ -34,9 +40,15 @@ export interface TurnMachineContext {
   isCancellingTurn: boolean;
   cancellingTurnId: string | null;
   
+  // Estados para modificación de turnos
+  isModifyingTurn: boolean;
+  isLoadingTurnDetails: boolean;
+  isLoadingAvailableSlots: boolean;
+  
   error: string | null;
   reserveError: string | null;
   cancelSuccess: string | null;
+  modifyError: string | null;
   
   takeTurn: {
     professionSelected: string;
@@ -51,6 +63,15 @@ export interface TurnMachineContext {
     dateSelected: Dayjs | null;
     statusFilter: string;
   };
+  modifyTurn: {
+    turnId: string | null;
+    currentTurn: any | null;
+    selectedDate: Dayjs | null;
+    selectedTime: string | null;
+    availableSlots: string[];
+    availableDates: string[];
+    reason: string;
+  };
   
   accessToken: string | null;
   userId: string | null;
@@ -62,10 +83,12 @@ export interface TurnMachineContext {
 export type TurnMachineEvent =
   | { type: "UPDATE_FORM_TAKE_TURN"; key: string; value: any }
   | { type: "UPDATE_FORM_SHOW_TURNS"; key: string; value: any }
+  | { type: "UPDATE_FORM_MODIFY_TURN"; key: string; value: any }
   | { type: "NEXT" }
   | { type: "BACK" }
   | { type: "RESET_TAKE_TURN" }
   | { type: "RESET_SHOW_TURNS" }
+  | { type: "RESET_MODIFY_TURN" }
   | { type: "DATA_LOADED" }
   | { type: "RESERVE_TURN"; turnId: string }
   | { type: "CREATE_TURN" }
@@ -73,6 +96,9 @@ export type TurnMachineEvent =
   | { type: "CLEAR_CANCEL_SUCCESS" }
   | { type: "MODIFY_TURN"; data: { turnId: string; newScheduledAt: string } }
   | { type: "LOAD_TURN_DETAILS"; turnId: string }
+  | { type: "LOAD_DOCTOR_AVAILABILITY"; doctorId: string; date: string }
+  | { type: "LOAD_AVAILABLE_SLOTS"; doctorId: string; date: string }
+  | { type: "SUBMIT_MODIFY_REQUEST" }
 
 export const turnMachine = createMachine({
   id: "turnMachine",
@@ -87,9 +113,15 @@ export const turnMachine = createMachine({
     isCancellingTurn: false,
     cancellingTurnId: null,
     
+    // Estados para modificación de turnos
+    isModifyingTurn: false,
+    isLoadingTurnDetails: false,
+    isLoadingAvailableSlots: false,
+    
     error: null,
     reserveError: null,
     cancelSuccess: null,
+    modifyError: null,
     
     takeTurn: {
       professionSelected: "",
@@ -103,6 +135,15 @@ export const turnMachine = createMachine({
     showTurns: {
       dateSelected: null,
       statusFilter: "",
+    },
+    modifyTurn: {
+      turnId: null,
+      currentTurn: null,
+      selectedDate: null,
+      selectedTime: null,
+      availableSlots: [],
+      availableDates: [],
+      reason: "",
     },
     
     accessToken: null,
@@ -431,6 +472,223 @@ export const turnMachine = createMachine({
                     type: "OPEN_SNACKBAR", 
                     message: errorMessage, 
                     severity: "error" 
+                  });
+                }
+              ],
+            },
+          },
+        },
+      },
+    },
+    modifyTurn: {
+      initial: "idle",
+      states: {
+        idle: {
+          on: {
+            UPDATE_FORM_MODIFY_TURN: {
+              actions: assign({
+                modifyTurn: ({ context, event }) => ({
+                  ...context.modifyTurn,
+                  [event.key]: event.value,
+                }),
+              }),
+            },
+            LOAD_TURN_DETAILS: {
+              target: "loadingTurnDetails",
+              actions: assign({
+                modifyTurn: ({ context, event }) => ({
+                  ...context.modifyTurn,
+                  turnId: event.turnId,
+                }),
+              }),
+            },
+            LOAD_DOCTOR_AVAILABILITY: {
+              target: "loadingDoctorAvailability",
+            },
+            LOAD_AVAILABLE_SLOTS: {
+              target: "loadingAvailableSlots",
+            },
+            SUBMIT_MODIFY_REQUEST: {
+              target: "submittingModifyRequest",
+            },
+            RESET_MODIFY_TURN: {
+              actions: assign({
+                modifyTurn: {
+                  turnId: null,
+                  currentTurn: null,
+                  selectedDate: null,
+                  selectedTime: null,
+                  availableSlots: [],
+                  availableDates: [],
+                  reason: "",
+                },
+                modifyError: null,
+              }),
+            },
+          },
+        },
+        loadingTurnDetails: {
+          entry: assign({ isLoadingTurnDetails: true }),
+          invoke: {
+            src: fromPromise(async ({ input }: { input: { turnId: string; accessToken: string } }) => {
+              const { loadTurnDetails } = await import("../utils/turnMachineUtils");
+              return await loadTurnDetails(input);
+            }),
+            input: ({ context }) => ({
+              turnId: context.modifyTurn.turnId!,
+              accessToken: context.accessToken!,
+            }),
+            onDone: {
+              target: "idle",
+              actions: assign({
+                isLoadingTurnDetails: false,
+                modifyTurn: ({ context, event }) => ({
+                  ...context.modifyTurn,
+                  currentTurn: event.output,
+                }),
+              }),
+            },
+            onError: {
+              target: "idle",
+              actions: [
+                assign({
+                  isLoadingTurnDetails: false,
+                  modifyError: ({ event }) => (event.error as Error)?.message || "Error al cargar detalles del turno",
+                }),
+                ({ event }) => {
+                  const errorMessage = (event.error as Error)?.message || "Error al cargar detalles del turno";
+                  orchestrator.sendToMachine(UI_MACHINE_ID, {
+                    type: "OPEN_SNACKBAR",
+                    message: errorMessage,
+                    severity: "error"
+                  });
+                }
+              ],
+            },
+          },
+        },
+        loadingDoctorAvailability: {
+          invoke: {
+            src: fromPromise(async ({ input }: { input: { doctorId: string; date: string; accessToken: string } }) => {
+              const { loadDoctorAvailability } = await import("../utils/turnMachineUtils");
+              return await loadDoctorAvailability(input);
+            }),
+            input: ({ context, event }) => ({
+              doctorId: context.modifyTurn.currentTurn?.doctor?.id || (event as any).doctorId,
+              date: (event as any).date,
+              accessToken: context.accessToken!,
+            }),
+            onDone: {
+              target: "idle",
+              actions: assign({
+                modifyTurn: ({ context, event }) => ({
+                  ...context.modifyTurn,
+                  availableDates: event.output,
+                }),
+              }),
+            },
+            onError: {
+              target: "idle",
+              actions: [
+                assign({
+                  modifyError: ({ event }) => (event.error as Error)?.message || "Error al cargar disponibilidad",
+                }),
+                ({ event }) => {
+                  const errorMessage = (event.error as Error)?.message || "Error al cargar disponibilidad";
+                  orchestrator.sendToMachine(UI_MACHINE_ID, {
+                    type: "OPEN_SNACKBAR",
+                    message: errorMessage,
+                    severity: "error"
+                  });
+                }
+              ],
+            },
+          },
+        },
+        loadingAvailableSlots: {
+          entry: assign({ isLoadingAvailableSlots: true }),
+          invoke: {
+            src: fromPromise(async ({ input }: { input: { doctorId: string; date: string; accessToken: string } }) => {
+              const { loadAvailableSlots } = await import("../utils/turnMachineUtils");
+              return await loadAvailableSlots(input);
+            }),
+            input: ({ context, event }) => ({
+              doctorId: context.modifyTurn.currentTurn?.doctor?.id || (event as any).doctorId,
+              date: (event as any).date,
+              accessToken: context.accessToken!,
+            }),
+            onDone: {
+              target: "idle",
+              actions: assign({
+                isLoadingAvailableSlots: false,
+                modifyTurn: ({ context, event }) => ({
+                  ...context.modifyTurn,
+                  availableSlots: event.output,
+                }),
+              }),
+            },
+            onError: {
+              target: "idle",
+              actions: [
+                assign({
+                  isLoadingAvailableSlots: false,
+                  modifyError: ({ event }) => (event.error as Error)?.message || "Error al cargar horarios disponibles",
+                }),
+                ({ event }) => {
+                  const errorMessage = (event.error as Error)?.message || "Error al cargar horarios disponibles";
+                  orchestrator.sendToMachine(UI_MACHINE_ID, {
+                    type: "OPEN_SNACKBAR",
+                    message: errorMessage,
+                    severity: "error"
+                  });
+                }
+              ],
+            },
+          },
+        },
+        submittingModifyRequest: {
+          entry: assign({ isModifyingTurn: true }),
+          invoke: {
+            src: fromPromise(async ({ input }: { input: { turnId: string; newScheduledAt: string; reason: string; accessToken: string } }) => {
+              const { createModifyTurnRequest } = await import("../utils/turnMachineUtils");
+              return await createModifyTurnRequest(input);
+            }),
+            input: ({ context }) => ({
+              turnId: context.modifyTurn.turnId!,
+              newScheduledAt: `${context.modifyTurn.selectedDate!.format('YYYY-MM-DD')}T${dayjs(context.modifyTurn.selectedTime).format('HH:mm:ss')}${dayjs(context.modifyTurn.selectedTime).format('Z')}`,
+              reason: context.modifyTurn.reason,
+              accessToken: context.accessToken!,
+            }),
+            onDone: {
+              target: "idle",
+              actions: [
+                assign({
+                  isModifyingTurn: false,
+                  modifyError: null,
+                }),
+                () => {
+                  orchestrator.sendToMachine(UI_MACHINE_ID, {
+                    type: "OPEN_SNACKBAR",
+                    message: "Solicitud de modificación enviada exitosamente",
+                    severity: "success"
+                  });
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { type: "NAVIGATE", to: "/patient/view-turns" });
+                }
+              ],
+            },
+            onError: {
+              target: "idle",
+              actions: [
+                assign({
+                  isModifyingTurn: false,
+                  modifyError: ({ event }) => (event.error as Error)?.message || "Error al enviar solicitud de modificación",
+                }),
+                ({ event }) => {
+                  const errorMessage = (event.error as Error)?.message || "Error al enviar solicitud de modificación";
+                  orchestrator.sendToMachine(UI_MACHINE_ID, {
+                    type: "OPEN_SNACKBAR",
+                    message: errorMessage,
+                    severity: "error"
                   });
                 }
               ],

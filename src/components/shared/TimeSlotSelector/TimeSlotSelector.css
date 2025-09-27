@@ -1,0 +1,52 @@
+/* TimeSlotSelector.css */
+
+.time-slot-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.time-slot-empty-state, .time-slot-loading {
+  text-align: center;
+  color: #666;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  width: 100%;
+}
+
+.time-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.time-slot-button {
+  min-height: 48px !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+  font-weight: 600 !important;
+}
+
+.time-slot-button:not(.selected) {
+  border-color: #1976d2 !important;
+  color: #1976d2 !important;
+  background-color: white !important;
+}
+
+.time-slot-button:not(.selected):hover {
+  background-color: #e3f2fd !important;
+}
+
+.time-slot-button.selected {
+  background-color: #1976d2 !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3) !important;
+}
