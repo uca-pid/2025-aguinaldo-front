@@ -3,7 +3,10 @@ import {
   Box, 
   Button, 
   List, 
-  ListItem, 
+  ListItem,
+  ListItemButton,
+  ListItemAvatar,
+  ListItemText,
   Typography,
   TextField,
   InputAdornment,
@@ -13,13 +16,12 @@ import {
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { useMachines } from "#/providers/MachineProvider"
-import HistoryIcon from '@mui/icons-material/History';
-import { PeopleOutlined, SearchOutlined, PersonOutlined, BadgeOutlined, ArrowBack, } from '@mui/icons-material'
-import { Patient, calculateAge } from "#/models/Doctor"
+import { PeopleOutlined, SearchOutlined, ArrowBack, ChevronRight } from '@mui/icons-material'
+import { Patient } from "#/models/Doctor"
 import './ViewPatients.css'
 
 const ViewPatients: React.FC = () => {
-    const { uiSend, doctorState, doctorSend } = useMachines();
+    const { uiSend, doctorState, doctorSend, patientDetailsSend } = useMachines();
 
     const doctorContext = doctorState.context;
     const patients: Patient[] = doctorContext.patients;
@@ -27,15 +29,7 @@ const ViewPatients: React.FC = () => {
     const error = doctorContext.patientsError;
     const searchTerm = doctorContext.patientSearchTerm;
 
-    // Initialize patients data if not already loaded and we have auth
     if (!isLoading && patients.length === 0 && !error && doctorContext.accessToken && doctorContext.doctorId) {
-        console.log("ViewPatients: Initializing patients page", {
-            accessToken: !!doctorContext.accessToken,
-            doctorId: doctorContext.doctorId,
-            isLoading: isLoading,
-            patients: patients,
-            error: error
-        });
         doctorSend({ type: "INIT_PATIENTS_PAGE" });
     }
 
@@ -47,10 +41,14 @@ const ViewPatients: React.FC = () => {
         doctorSend({ type: "RETRY" });
     };
 
+    const handlePatientClick = (patient: Patient) => {
+        patientDetailsSend({ type: "SELECT_PATIENT", patient });
+        uiSend({ type: "NAVIGATE", to: `/patient-detail` });
+    };
+
     const filteredPatients = patients.filter(patient =>
         patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        patient.surname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        patient.dni.toString().includes(searchTerm)
+        patient.surname.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const getInitials = (name: string, surname: string) => {
@@ -100,7 +98,7 @@ const ViewPatients: React.FC = () => {
                     <Box className="viewpatients-search-container">
                         <TextField
                             className="viewpatients-search-field"
-                            placeholder="Buscar por nombre o DNI..."
+                            placeholder="Buscar por nombre..."
                             value={searchTerm}
                             onChange={(e) => doctorSend({ type: "SET_PATIENT_SEARCH", searchTerm: e.target.value })}
                             disabled={isLoading}
@@ -148,31 +146,35 @@ const ViewPatients: React.FC = () => {
                                 <Box className="viewpatients-list-container">
                                     <List>
                                         {filteredPatients.map((patient) => (
-                                            <ListItem key={patient.id} className="viewpatients-patient-card">
-                                                <Box className="viewpatients-patient-info">
-                                                    <Avatar className="viewpatients-patient-avatar">
-                                                        {getInitials(patient.name, patient.surname)}
-                                                    </Avatar>
-                                                    <Box className="viewpatients-patient-details">
-                                                        <Typography className="viewpatients-patient-name">
-                                                            {getFullName(patient.name, patient.surname)}
-                                                        </Typography>
-                                                        <Box className="viewpatients-patient-info-row">
-                                                            <Typography className="viewpatients-patient-info-item">
-                                                                <PersonOutlined fontSize="small" />
-                                                                {calculateAge(patient.birthdate) ? `${calculateAge(patient.birthdate)} años` : 'Edad no disponible'}
+                                            <ListItem key={patient.id} disablePadding>
+                                                <ListItemButton 
+                                                    onClick={() => handlePatientClick(patient)}
+                                                    className="viewpatients-patient-card"
+                                                    sx={{
+                                                        borderRadius: 2,
+                                                        mb: 1,
+                                                        border: '1px solid #e0e0e0',
+                                                        '&:hover': {
+                                                            backgroundColor: '#f5f5f5',
+                                                            borderColor: '#2196f3'
+                                                        }
+                                                    }}
+                                                >
+                                                    <ListItemAvatar>
+                                                        <Avatar className="viewpatients-patient-avatar">
+                                                            {getInitials(patient.name, patient.surname)}
+                                                        </Avatar>
+                                                    </ListItemAvatar>
+                                                    <ListItemText 
+                                                        primary={
+                                                            <Typography className="viewpatients-patient-name">
+                                                                {getFullName(patient.name, patient.surname)}
                                                             </Typography>
-                                                            <Typography className="viewpatients-patient-info-item">
-                                                                <BadgeOutlined fontSize="small" />
-                                                                DNI: {patient.dni}
-                                                            </Typography>
-                                                            <Typography className="viewpatients-patient-info-item">
-                                                                <HistoryIcon fontSize="small" />
-                                                                Historia clínica: {patient.medicalHistory ? 'Historial disponible' : 'Sin historial'}
-                                                            </Typography>
-                                                        </Box>
-                                                    </Box>
-                                                </Box>
+                                                        }
+                                                        secondary="Ver detalles del paciente"
+                                                    />
+                                                    <ChevronRight color="action" />
+                                                </ListItemButton>
                                             </ListItem>
                                         ))}
                                     </List>

@@ -1,0 +1,295 @@
+/* PatientDetails.css */
+
+:root {
+  --gunmetal: #0d2230;
+  --indigo-dye: #1f4f6f;
+  --lapis-lazuli: #22577a;
+  --cerulean: #286a85;
+  --cerulean-2: #2d7d90;
+  --verdigris: #38a3a5;
+  --emerald: #57cc99;
+  --light-green: #80ed99;
+  --tea-green: #c7f9cc;
+  --tea-green-2: #ccfad1;
+  --white: #ffffff;
+  --black: #000000;
+}
+
+.patient-details-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.patient-details-header {
+  margin-bottom: 24px;
+}
+
+.patient-details-back-button {
+  border: 2px solid var(--lapis-lazuli) !important;
+  color: var(--lapis-lazuli) !important;
+  background: transparent !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.3s ease !important;
+  transform: translateY(0) !important;
+}
+
+.patient-details-back-button:hover {
+  border-color: var(--indigo-dye) !important;
+  background-color: var(--lapis-lazuli) !important;
+  color: white !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(34, 87, 122, 0.3) !important;
+}
+
+.patient-details-main-card {
+  border-radius: 12px !important;
+  border: 1px solid #e0e0e0 !important;
+  transition: all 0.3s ease !important;
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  animation: slideInLeft 0.5s ease-out 0.1s both;
+}
+
+.patient-details-main-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+  border-color: var(--verdigris) !important;
+}
+
+.patient-details-header-info {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 0;
+}
+
+.patient-details-avatar {
+  background: linear-gradient(135deg, var(--verdigris) 0%, var(--emerald) 100%) !important;
+  box-shadow: 0 4px 12px rgba(56, 163, 165, 0.3) !important;
+  transition: all 0.3s ease !important;
+  transform: scale(1) !important;
+  animation: bounceIn 0.6s ease-out 0.3s both;
+}
+
+.patient-details-avatar:hover {
+  transform: scale(1.05) !important;
+  box-shadow: 0 6px 16px rgba(56, 163, 165, 0.4) !important;
+}
+
+.patient-details-basic-info {
+  flex: 1;
+}
+
+.patient-details-name {
+  color: #1a1a1a;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.patient-details-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.patient-details-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: default;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.patient-details-info-item:hover {
+  background-color: rgba(56, 163, 165, 0.05);
+  transform: translateX(4px);
+}
+
+.patient-details-label {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+.patient-details-value {
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-left: 24px;
+}
+
+.patient-details-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.patient-details-no-history {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 24px;
+  border: 2px dashed #e0e0e0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .patient-details-container {
+    padding: 16px;
+  }
+  
+  .patient-details-header-info {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  
+  .patient-details-avatar {
+    width: 64px !important;
+    height: 64px !important;
+    font-size: 1.5rem !important;
+  }
+  
+  .patient-details-name {
+    font-size: 1.75rem !important;
+  }
+}
+
+/* Paper sections animations */
+.patient-details-info-paper {
+  transition: all 0.3s ease !important;
+  transform: translateY(0) !important;
+  animation: slideInRight 0.5s ease-out;
+}
+
+.patient-details-info-paper:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.patient-details-medical-history-paper {
+  transition: all 0.3s ease !important;
+  transform: translateY(0) !important;
+  animation: slideInRight 0.5s ease-out 0.1s both;
+}
+
+.patient-details-medical-history-paper:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Status chip colors with animations */
+.MuiChip-colorSuccess {
+  background-color: rgba(87, 204, 153, 0.15) !important;
+  color: var(--emerald) !important;
+  transition: all 0.2s ease !important;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.MuiChip-colorWarning {
+  background-color: #fff8e1 !important;
+  color: #f57c00 !important;
+  transition: all 0.2s ease !important;
+}
+
+.MuiChip-colorDefault {
+  background-color: #f5f5f5 !important;
+  color: #616161 !important;
+  transition: all 0.2s ease !important;
+}
+
+.MuiChip-root:hover {
+  transform: scale(1.05) !important;
+}
+
+/* Keyframe Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+/* Loading state animations */
+.patient-details-loading {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.patient-details-loading .MuiCircularProgress-root {
+  animation: pulse 1.5s ease-in-out infinite;
+}
