@@ -217,4 +217,43 @@ export class TurnService {
       throw error;
     }
   }
+
+  static async getAvailableDates(doctorId: string, accessToken: string): Promise<string[]> {
+    // Use available-slots endpoint with a 60-day range and extract unique dates
+    const fromDate = new Date().toISOString().split('T')[0];
+    const toDate = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    const url = buildApiUrl(`/api/doctors/${doctorId}/available-slots?fromDate=${fromDate}&toDate=${toDate}`);
+    
+    try {
+      const response = await fetch(url, {
+        ...getAuthenticatedFetchOptions(accessToken),
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData?.message || 
+          errorData?.error ||
+          `Failed to fetch available slots! Status: ${response.status}`
+        );
+      }
+
+      const slots: any[] = await response.json();
+      
+      // Extract unique dates from slots
+      const dateSet = new Set<string>();
+      slots.forEach(slot => {
+        if (slot.date) {
+          dateSet.add(slot.date);
+        }
+      });
+      
+      const dates: string[] = Array.from(dateSet).sort();
+      return dates;
+    } catch (error) {
+      throw error;
+    }
+  }
 }

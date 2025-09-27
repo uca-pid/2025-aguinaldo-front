@@ -24,11 +24,6 @@ const ReservationTurns: React.FC = () => {
   const isProfessionSelected = !!formValues.professionSelected;
   const isDoctorSelected = !!formValues.doctorId;
 
-  const specialties = Array.from(new Set(turnContext.doctors.map((doctor: any) => doctor.specialty))).map((specialty: unknown) => ({
-    value: specialty as string,
-    label: (specialty as string).charAt(0).toUpperCase() + (specialty as string).slice(1)
-  }));
-
   const filteredDoctors = isProfessionSelected
     ? turnContext.doctors.filter((doctor: any) => doctor.specialty.toLowerCase() === formValues.professionSelected.toLowerCase())
     : [];
@@ -139,7 +134,7 @@ const ReservationTurns: React.FC = () => {
                     <MenuItem value="">
                       <em>Seleccione una especialidad</em>
                     </MenuItem>
-                    {specialties.map((specialty) => (
+                    {turnContext.specialties.map((specialty: { value: string; label: string }) => (
                       <MenuItem key={specialty.value} value={specialty.value}>
                         {specialty.label}
                       </MenuItem>
@@ -234,6 +229,11 @@ const ReservationTurns: React.FC = () => {
                             value={formValues.dateSelected}
                             onChange={handleDateChange}
                             minDate={dayjs()}
+                            shouldDisableDate={(date) => {
+                              const dateString = date.format('YYYY-MM-DD');
+                              const isDisabled = !turnContext.availableDates.includes(dateString);
+                              return isDisabled;
+                            }}
                           />
                         </DemoItem>
                       </DemoContainer>

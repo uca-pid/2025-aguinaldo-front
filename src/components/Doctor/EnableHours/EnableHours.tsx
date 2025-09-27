@@ -83,13 +83,13 @@ const EnableHours: React.FC = () => {
         
         if (errors.length > 0) {
             console.error("Errores de validación:", errors);
-            alert("Errores encontrados:\n" + errors.join("\n"));
+            uiSend({type: "OPEN_SNACKBAR", message: "Errores encontrados:\n" + errors.join("\n"), severity: "error"});
             return;
         }
         
         if (!hasValidData) {
             console.warn("No hay días habilitados con horarios válidos configurados");
-            alert("Debe configurar al menos un día con horarios válidos");
+            uiSend({type: "OPEN_SNACKBAR", message: "Debe configurar al menos un día con horarios válidos", severity: "warning"});
             return;
         }
         

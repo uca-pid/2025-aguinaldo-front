@@ -5,6 +5,7 @@ import { orchestrator } from "#/core/Orchestrator";
 import type { Doctor, TurnResponse } from "../models/Turn";
 import { DATA_MACHINE_ID } from "./dataMachine";
 import { UI_MACHINE_ID } from "./uiMachine";
+import { TurnService } from '../service/turn-service.service';
 
 export const TURN_MACHINE_ID = "turn";
 export const TURN_MACHINE_EVENT_TYPES = [
@@ -51,6 +52,9 @@ export interface TurnMachineContext {
   
   accessToken: string | null;
   userId: string | null;
+  specialties: { value: string; label: string }[];
+  availableDates: string[];
+  isLoadingAvailableDates: boolean;
 }
 
 export type TurnMachineEvent =
@@ -99,6 +103,9 @@ export const turnMachine = createMachine({
     
     accessToken: null,
     userId: null,
+    specialties: [],
+    availableDates: [],
+    isLoadingAvailableDates: false,
   } as TurnMachineContext,
   types: {
     context: {} as TurnMachineContext,
@@ -131,27 +138,34 @@ export const turnMachine = createMachine({
                   scheduledAt: null,
                   reason: "",
                 },
+                availableDates: [],
+                isLoadingAvailableDates: false,
               }),
             },
           },
         },
         step2: {
-          entry: ({ context }) => {
-            // Load available turns for the next 30 days when entering step2
-            if (context.takeTurn.doctorId) {
-              const today = new Date();
-              for (let i = 0; i < 30; i++) {
-                const checkDate = new Date(today);
-                checkDate.setDate(today.getDate() + i);
-                const dateString = checkDate.toISOString().split('T')[0];
-                
-                orchestrator.send({
-                  type: "LOAD_AVAILABLE_TURNS",
-                  doctorId: context.takeTurn.doctorId,
-                  date: dateString
-                });
-              }
-            }
+          entry: assign({ isLoadingAvailableDates: true }),
+          invoke: {
+            src: fromPromise(async ({ input }) => {
+              return await TurnService.getAvailableDates(input.doctorId, input.accessToken);
+            }),
+            input: ({ context }) => ({
+              doctorId: context.takeTurn.doctorId,
+              accessToken: context.accessToken,
+            }),
+            onDone: {
+              actions: assign({
+                availableDates: ({ event }) => event.output,
+                isLoadingAvailableDates: false,
+              }),
+            },
+            onError: {
+              actions: assign({
+                isLoadingAvailableDates: false,
+                error: 'Failed to load available dates',
+              }),
+            },
           },
           on: {
             UPDATE_FORM_TAKE_TURN: {
@@ -188,6 +202,8 @@ export const turnMachine = createMachine({
                   scheduledAt: null,
                   reason: "",
                 },
+                availableDates: [],
+                isLoadingAvailableDates: false,
               }),
             },
           },
@@ -234,12 +250,20 @@ export const turnMachine = createMachine({
                   const authSnapshot = orchestrator.getSnapshot('auth');
                   const authContext = authSnapshot?.context;
                   
+                  const doctors = dataContext.doctors || [];
+                  
+                  const specialties = Array.from(new Set(doctors.map((doctor: any) => doctor.specialty))).map((specialty: unknown) => ({
+                    value: specialty as string,
+                    label: (specialty as string).charAt(0).toUpperCase() + (specialty as string).slice(1)
+                  }));
+                  
                   return {
-                    doctors: dataContext.doctors || [],
+                    doctors,
                     availableTurns: dataContext.availableTurns || [],
                     myTurns: dataContext.myTurns || [],
                     accessToken: dataContext.accessToken || null,
                     userId: dataContext.userId || authContext?.authResponse?.id || null,
+                    specialties,
                   };
                 } catch (error) {
                   return {};

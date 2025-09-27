@@ -32,23 +32,16 @@ interface DayAvailability {
   ranges: Range[];
 }
 
-/**
- * Load doctor's patients
- */
+
 export const loadDoctorPatients = async ({ accessToken, doctorId }: LoadPatientsParams): Promise<Patient[]> => {
   return await DoctorService.getDoctorPatients(accessToken, doctorId);
 };
 
-/**
- * Load doctor's availability configuration
- */
+
 export const loadDoctorAvailability = async ({ accessToken, doctorId }: LoadAvailabilityParams) => {
   return await DoctorService.getAvailability(accessToken, doctorId);
 };
 
-/**
- * Save doctor's availability configuration
- */
 export const saveDoctorAvailability = async ({ accessToken, doctorId, availability }: SaveAvailabilityParams): Promise<string> => {
   const dayMapping: { [key: string]: string } = {
     "LUNES": "MONDAY",
