@@ -6,6 +6,8 @@ import { Avatar, Box, Divider, ListItemIcon, Menu, MenuItem, Typography } from '
 import { useMachines } from './providers/MachineProvider'
 import { Logout, Person } from '@mui/icons-material'
 import PendingScreen from './components/Admin/PendingScreen/PendingScreen'
+import AdminPatients from './components/Admin/AdminPatients'
+import AdminDoctors from './components/Admin/AdminDoctors'
 import ProfileScreen from './components/ProfileScreen/ProfileScreen'
 import { useEffect } from 'react'
 import ReservationTurns from './components/Patient/ReservationTurns'
@@ -51,8 +53,8 @@ function AppContent() {
   const renderAdminRoutes = () => (
     <>
       <Route path="/admin/pending" element={<PendingScreen />} />
-      <Route path="/admin/patients" element={<div>Admin Patients Page - To be implemented</div>} />
-      <Route path="/admin/doctors" element={<div>Admin Doctors Page - To be implemented</div>} />
+      <Route path="/admin/patients" element={<AdminPatients />} />
+      <Route path="/admin/doctors" element={<AdminDoctors />} />
     </>
   );
 
