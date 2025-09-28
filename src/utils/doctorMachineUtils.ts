@@ -5,6 +5,13 @@ import type { Patient } from "../models/Doctor";
  * Utility functions for doctorMachine service calls
  */
 
+export interface UpdateMedicalHistoryParams {
+  accessToken: string;
+  doctorId: string;
+  patientId: string;
+  medicalHistory: string;
+}
+
 export interface LoadPatientsParams {
   accessToken: string;
   doctorId: string;
@@ -41,6 +48,10 @@ export const loadDoctorPatients = async ({ accessToken, doctorId }: LoadPatients
 export const loadDoctorAvailability = async ({ accessToken, doctorId }: LoadAvailabilityParams) => {
   return await DoctorService.getAvailability(accessToken, doctorId);
 };
+
+export const updateMedicalHistory = async ({accessToken, doctorId, patientId, medicalHistory}: UpdateMedicalHistoryParams): Promise<void> => {
+  return await DoctorService.updateMedicalHistory(accessToken, doctorId, patientId, medicalHistory);
+}
 
 export const saveDoctorAvailability = async ({ accessToken, doctorId, availability }: SaveAvailabilityParams): Promise<string> => {
   const dayMapping: { [key: string]: string } = {

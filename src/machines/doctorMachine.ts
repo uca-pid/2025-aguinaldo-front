@@ -1,5 +1,5 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { saveDoctorAvailability } from "../utils/doctorMachineUtils";
+import { saveDoctorAvailability, updateMedicalHistory } from "../utils/doctorMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import { DATA_MACHINE_ID } from "./dataMachine";
 import { UI_MACHINE_ID } from "./uiMachine";
@@ -20,8 +20,7 @@ export const DOCTOR_MACHINE_EVENT_TYPES = [
   "CLEAR_PATIENT_SELECTION",
   "START_EDIT_HISTORY",
   "UPDATE_HISTORY",
-  "SAVE_HISTORY",
-  "HISTORY_SAVED"
+  "SAVE_HISTORY"
 ];
 
 interface Range {
@@ -40,7 +39,7 @@ export interface DoctorMachineContext {
   doctorId: string | null;
   patientSearchTerm: string;
   
-  // Patient selection and medical history editing/saving
+
   selectedPatient: Patient | null;
   editedHistory: string;
   isSavingHistory: boolean;
@@ -65,8 +64,7 @@ export type DoctorMachineEvent =
   | { type: "CLEAR_PATIENT_SELECTION" }
   | { type: "START_EDIT_HISTORY" }
   | { type: "UPDATE_HISTORY"; value: string }
-  | { type: "SAVE_HISTORY" }
-  | { type: "HISTORY_SAVED" };
+  | { type: "SAVE_HISTORY" };
 
 const doctorMachine = createMachine({
   id: "doctor",
@@ -77,7 +75,7 @@ const doctorMachine = createMachine({
     doctorId: null,
     patientSearchTerm: "",
     
-  // Patient selection and medical history editing/saving
+
   selectedPatient: null,
   editedHistory: '',
   isSavingHistory: false,    availability: [
@@ -132,28 +130,88 @@ const doctorMachine = createMachine({
                 editedHistory: ({ event }) => event.value,
               }),
             },
-            SAVE_HISTORY: {
+            SAVE_HISTORY: "savingHistory",
+          },
+        },
+        
+        savingHistory: {
+          entry: assign({
+            isSavingHistory: true,
+          }),
+          
+          invoke: {
+            src: fromPromise(async ({ input }: { 
+              input: { 
+                accessToken: string; 
+                doctorId: string; 
+                patientId: string; 
+                medicalHistory: string; 
+              } 
+            }) => {
+              return await updateMedicalHistory(input);
+            }),
+
+            input: ({ context }) => ({
+              accessToken: context.accessToken!,
+              doctorId: context.doctorId!,
+              patientId: context.selectedPatient!.id,
+              medicalHistory: context.editedHistory
+            }),
+
+            onDone: {
+              target: "idle",
               actions: [
-                assign({ isSavingHistory: true }),
-                ({ context, self }: { context: DoctorMachineContext; self: any }) => {
-                  // In real implementation, this would call an API with context.editedHistory
-                  setTimeout(() => {
-                    console.log('Medical history saved:', context.editedHistory);
-                    // Send completion event to self
-                    self.send({ type: "HISTORY_SAVED" });
-                  }, 1000);
+                assign({
+                  isSavingHistory: false,
+                  editedHistory: '',
+                  selectedPatient: ({ context }) => 
+                    context.selectedPatient 
+                      ? { ...context.selectedPatient, medicalHistory: context.editedHistory }
+                      : null,
+                }),
+                () => {
+
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: "Historial médico actualizado exitosamente", 
+                    severity: "success" 
+                  });
+
+   
+                  orchestrator.sendToMachine(DATA_MACHINE_ID, {
+                    type: "RETRY_DOCTOR_PATIENTS"
+                  });
                 }
-              ],
+              ]
             },
-            HISTORY_SAVED: {
-              actions: assign({
-                isSavingHistory: false,
-                editedHistory: '',
-                selectedPatient: ({ context }) => 
-                  context.selectedPatient 
-                    ? { ...context.selectedPatient, medicalHistory: context.editedHistory }
-                    : null,
-              }),
+            
+            onError: {
+              target: "idle",
+              actions: [
+                assign({
+                  isSavingHistory: false,
+                }),
+                ({ event }) => {
+                  const error = event.error as Error;
+                  let errorMessage = "Error al actualizar el historial médico. Inténtalo de nuevo.";
+                  
+                  if (error?.message?.includes('Failed to fetch') || error?.message?.includes('fetch')) {
+                    errorMessage = "No se pudo conectar con el servidor. Verifica tu conexión.";
+                  } else if (error?.message?.includes('404')) {
+                    errorMessage = "Paciente no encontrado.";
+                  } else if (error?.message?.includes('401') || error?.message?.includes('403')) {
+                    errorMessage = "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
+                  } else if (error?.message) {
+                    errorMessage = error.message;
+                  }
+                  
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: errorMessage, 
+                    severity: "error" 
+                  });
+                }
+              ]
             },
           },
         },
@@ -329,7 +387,7 @@ const doctorMachine = createMachine({
     SET_AUTH: {
       actions: assign({
         accessToken: ({ event }) => event.accessToken,
-        doctorId: ({ event }) => event.userId, // For doctors, userId is the same as doctorId
+        doctorId: ({ event }) => event.userId, 
       }),
     },
     SET_PATIENT_SEARCH: {
