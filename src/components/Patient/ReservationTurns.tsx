@@ -5,6 +5,8 @@ import {
 } from "@mui/material";
 import React from "react";
 import { useMachines } from "#/providers/MachineProvider";
+import { orchestrator } from "#/core/Orchestrator";
+import { DATA_MACHINE_ID } from "#/machines/dataMachine";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
@@ -47,12 +49,34 @@ const ReservationTurns: React.FC = () => {
     const selectedDoctor = turnContext.doctors.find((doctor: any) => doctor.id === event.target.value);
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "doctorId"], value: event.target.value });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "profesionalSelected"], value: selectedDoctor ? `${selectedDoctor.name} ${selectedDoctor.surname}` : "" });
+    
+    // Limpiar fecha y hora seleccionadas cuando cambia el doctor
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "dateSelected"], value: null });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "timeSelected"], value: null });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "scheduledAt"], value: null });
+    
+    // Cargar fechas disponibles para el doctor seleccionado
+    if (event.target.value) {
+      orchestrator.sendToMachine(DATA_MACHINE_ID, { 
+        type: "LOAD_AVAILABLE_DATES", 
+        doctorId: event.target.value 
+      });
+    }
   };
 
   const handleDateChange = (newValue: Dayjs | null) => {
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "dateSelected"], value: newValue });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "timeSelected"], value: null });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "scheduledAt"], value: null });
+    
+    // Cargar turnos disponibles para el doctor seleccionado en la fecha seleccionada
+    if (newValue && formValues.doctorId) {
+      orchestrator.sendToMachine(DATA_MACHINE_ID, { 
+        type: "LOAD_AVAILABLE_TURNS", 
+        doctorId: formValues.doctorId, 
+        date: newValue.format('YYYY-MM-DD') 
+      });
+    }
   };
 
   const handleTimeSelect = (timeSlot: string) => {

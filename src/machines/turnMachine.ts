@@ -21,6 +21,7 @@ export const TURN_MACHINE_EVENT_TYPES = [
   "CANCEL_TURN",
   "CLEAR_CANCEL_SUCCESS",
   "SUBMIT_MODIFY_REQUEST",
+  "LOAD_MODIFY_AVAILABLE_SLOTS",
   "NAVIGATE",
 ];
 
@@ -57,6 +58,7 @@ export interface TurnMachineContext {
     currentTurn?: TurnResponse | null;
     selectedDate?: Dayjs | null;
     selectedTime?: string | null;
+    availableSlots?: string[];
     availableDates?: string[];
     reason?: string;
   };
@@ -66,6 +68,7 @@ export interface TurnMachineContext {
   userId: string | null;
   specialties: { value: string; label: string }[];
   isLoadingAvailableDates: boolean;
+  isLoadingAvailableSlots: boolean;
 }
 
 export type TurnMachineEvent =
@@ -80,6 +83,7 @@ export type TurnMachineEvent =
   | { type: "CANCEL_TURN"; turnId: string }
   | { type: "CLEAR_CANCEL_SUCCESS" }
   | { type: "SUBMIT_MODIFY_REQUEST" }
+  | { type: "LOAD_MODIFY_AVAILABLE_SLOTS"; doctorId: string; date: string }
   | { type: "NAVIGATE"; to: string | null };
 
 export const turnMachine = createMachine({
@@ -122,6 +126,7 @@ export const turnMachine = createMachine({
       currentTurn: null,
       selectedDate: null,
       selectedTime: null,
+      availableSlots: [],
       availableDates: [],
       reason: "",
     },
@@ -283,6 +288,9 @@ export const turnMachine = createMachine({
             },
           },
           on: {
+            LOAD_MODIFY_AVAILABLE_SLOTS: {
+              target: "loadingModifySlots"
+            },
             SUBMIT_MODIFY_REQUEST: "submittingModifyRequest",
             NAVIGATE: { 
               target: "idle",
@@ -299,6 +307,42 @@ export const turnMachine = createMachine({
               })
             }
           }
+        },
+        loadingModifySlots: {
+          entry: assign({ isLoadingAvailableSlots: true }),
+          invoke: {
+            src: fromPromise(async ({ input }) => {
+              return await TurnService.getAvailableTurns(input.doctorId, input.date, input.accessToken);
+            }),
+            input: ({ context, event }) => ({
+              doctorId: (event as any).doctorId,
+              date: (event as any).date,
+              accessToken: context.accessToken,
+            }),
+            onDone: {
+              target: "modifying",
+              actions: [
+                assign({
+                  modifyTurn: ({ context, event }) => {
+                    return {
+                      ...context.modifyTurn,
+                      availableSlots: event.output,
+                    }
+                  },
+                  isLoadingAvailableSlots: false,
+                })
+              ],
+            },
+            onError: {
+              target: "modifying",
+              actions: [
+                assign({
+                  error: 'Failed to load available slots',
+                  isLoadingAvailableSlots: false,
+                })
+              ],
+            },
+          },
         },
         submittingModifyRequest: {
           invoke: {

@@ -20,10 +20,10 @@ import "./ModifyTurn.css";
 const ModifyTurn: React.FC = () => {
   const { uiSend, turnState, turnSend } = useMachines();
 
-  const { isLoadingTurnDetails, isModifyingTurn, isLoadingAvailableSlots, modifyError, availableTurns } = turnState.context;
-  const { currentTurn, selectedDate, selectedTime, availableDates } = turnState.context.modifyTurn;
+  const { isLoadingTurnDetails, isModifyingTurn, isLoadingAvailableSlots, modifyError } = turnState.context;
+  const { currentTurn, selectedDate, selectedTime, availableSlots, availableDates } = turnState.context.modifyTurn;
 
-  console.log("Available Turns:", availableTurns);
+  console.log("Available Slots for modification:", availableSlots);
 
   if (isLoadingTurnDetails) {
     return (
@@ -112,6 +112,13 @@ const ModifyTurn: React.FC = () => {
                         onChange={(newValue) => {
                           turnSend({ type: "UPDATE_FORM", path: ["modifyTurn", "selectedDate"], value: newValue });
                           turnSend({ type: "UPDATE_FORM", path: ["modifyTurn", "selectedTime"], value: null });
+                          if (newValue && currentTurn?.doctorId) {
+                            turnSend({ 
+                              type: "LOAD_MODIFY_AVAILABLE_SLOTS", 
+                              doctorId: currentTurn.doctorId, 
+                              date: newValue.format('YYYY-MM-DD') 
+                            });
+                          }
                         }}
                         minDate={dayjs()}
                         shouldDisableDate={(date) => shouldDisableDate(date, availableDates)}
@@ -128,7 +135,7 @@ const ModifyTurn: React.FC = () => {
               <Box className="reservation-time-slots">
                 <TimeSlotSelector
                   selectedDate={selectedDate ? dayjs(selectedDate) : null}
-                  availableSlots={availableTurns}
+                  availableSlots={availableSlots}
                   selectedTime={selectedTime}
                   onTimeSelect={(timeSlot) => turnSend({ type: "UPDATE_FORM", path: ["modifyTurn", "selectedTime"], value: timeSlot })}
                   isLoadingSlots={isLoadingAvailableSlots}

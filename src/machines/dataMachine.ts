@@ -101,7 +101,7 @@ export type DataMachineEvent =
   | { type: "LOAD_AVAILABLE_TURNS"; doctorId: string; date: string }
   | { type: "LOAD_MY_TURNS"; status?: string }
   | { type: "LOAD_DOCTOR_PATIENTS" }
-  | { type: "LOAD_DOCTOR_AVAILABILITY" }
+  | { type: "LOAD_DOCTOR_AVAILABILITY"; doctorId?: string }
 
 export const dataMachine = createMachine({
   id: "data",
@@ -838,9 +838,9 @@ export const dataMachine = createMachine({
         src: fromPromise(async ({ input }: { input: { accessToken: string; doctorId: string } }) => {
           return await loadDoctorAvailability(input);
         }),
-        input: ({ context }) => ({ 
+        input: ({ context, event }) => ({ 
           accessToken: context.accessToken!,
-          doctorId: context.doctorId!
+          doctorId: (event as any).doctorId || context.doctorId!
         }),
         onDone: {
           target: "ready",
