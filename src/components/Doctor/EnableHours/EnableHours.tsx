@@ -29,7 +29,6 @@ const RangeRow = motion(Box);
 const EnableHours: React.FC = () => {
     const { uiSend, doctorState, doctorSend } = useMachines();
     const doctorContext = doctorState.context;
-
     const availability = doctorContext.availability || [];
     const enabledDays = availability.filter((day: any) => day.enabled).length;
     const totalRanges = availability.reduce((total: any, day: any) => total + (day.enabled ? day.ranges.length : 0), 0);

@@ -235,7 +235,7 @@ export const turnMachine = createMachine({
         idle: {
           on: {
             NAVIGATE: {
-              actions: assign({
+              actions: [assign({
                 modifyTurn: ({ context, event }) => {
                   if (event.to?.includes('/patient/modify-turn')) {
                     const url = new URL(window.location.href);
@@ -255,6 +255,10 @@ export const turnMachine = createMachine({
                   return context.modifyTurn;
                 }
               }),
+              ({context}) => {
+                orchestrator.sendToMachine(DATA_MACHINE_ID, { type: "LOAD_AVAILABLE_TURNS", doctorId: context.modifyTurn?.currentTurn?.doctorId, date: context.modifyTurn?.selectedDate?.format('YYYY-MM-DD') });
+              }
+            ],
               target: "modifying"
             },
           },
@@ -289,60 +293,50 @@ export const turnMachine = createMachine({
           },
           on: {
             LOAD_MODIFY_AVAILABLE_SLOTS: {
-              target: "loadingModifySlots"
+              actions: [
+                ({context}) => {
+                  orchestrator.sendToMachine(DATA_MACHINE_ID, { type: "LOAD_AVAILABLE_TURNS", doctorId: context.modifyTurn?.currentTurn?.doctorId, date: context.modifyTurn?.selectedDate?.format('YYYY-MM-DD') });
+                }
+              ]
             },
             SUBMIT_MODIFY_REQUEST: "submittingModifyRequest",
-            NAVIGATE: { 
-              target: "idle",
-              actions: assign({
-                modifyTurn: () => ({
-                  turnId: null,
-                  currentTurn: null,
-                  selectedDate: null,
-                  selectedTime: null,
-                  availableSlots: [],
-                  availableDates: [],
-                  reason: "",
-                })
-              })
-            }
-          }
-        },
-        loadingModifySlots: {
-          entry: assign({ isLoadingAvailableSlots: true }),
-          invoke: {
-            src: fromPromise(async ({ input }) => {
-              return await TurnService.getAvailableTurns(input.doctorId, input.date, input.accessToken);
-            }),
-            input: ({ context, event }) => ({
-              doctorId: (event as any).doctorId,
-              date: (event as any).date,
-              accessToken: context.accessToken,
-            }),
-            onDone: {
-              target: "modifying",
-              actions: [
-                assign({
-                  modifyTurn: ({ context, event }) => {
+            NAVIGATE: [
+              {
+                guard: ({ event }) => !!event.to?.includes('/patient/modify-turn'),
+                actions: assign({
+                  modifyTurn: ({ context }) => {
+                    const url = new URL(window.location.href);
+                    const turnId = url.searchParams.get('turnId');
+                    const currentTurn = context.myTurns.find(turn => turn.id === turnId) || null;
+                    const scheduledAt = currentTurn ? dayjs(currentTurn.scheduledAt) : null;
                     return {
-                      ...context.modifyTurn,
-                      availableSlots: event.output,
-                    }
-                  },
-                  isLoadingAvailableSlots: false,
-                })
-              ],
-            },
-            onError: {
-              target: "modifying",
-              actions: [
-                assign({
-                  error: 'Failed to load available slots',
-                  isLoadingAvailableSlots: false,
-                })
-              ],
-            },
-          },
+                      turnId,
+                      currentTurn,
+                      selectedDate: scheduledAt,
+                      selectedTime: currentTurn?.scheduledAt || null,
+                      availableSlots: [],
+                      availableDates: [],
+                      reason: "",
+                    };
+                  }
+                }),
+              },
+              {
+                target: "idle",
+                actions: assign({
+                  modifyTurn: {
+                    turnId: null,
+                    currentTurn: null,
+                    selectedDate: null,
+                    selectedTime: null,
+                    availableSlots: [],
+                    availableDates: [],
+                    reason: "",
+                  }
+                }),
+              }
+            ],
+          }
         },
         submittingModifyRequest: {
           invoke: {
