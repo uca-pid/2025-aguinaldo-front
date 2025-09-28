@@ -119,15 +119,20 @@ export const authMachine = createMachine({
       },
       entry: ({ context }) => {
         if (context.authResponse && "accessToken" in context.authResponse) {
-          // Broadcast SET_AUTH to all machines via orchestrator
+
           setTimeout(() => {
             const response = context.authResponse as SignInResponse;
+            if (response.status!=='ACTIVE'){
+              orchestrator.send({ 
+                type: "NAVIGATE", to: "/pending-activation"});
+            }
+            else{
             orchestrator.send({ 
               type: "SET_AUTH", 
               accessToken: response.accessToken, 
               userId: response.id,
               userRole: response.role
-            });
+            });}
           }, 0);
         }
       }

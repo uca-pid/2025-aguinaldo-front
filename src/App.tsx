@@ -16,6 +16,7 @@ import ViewPatients from './components/Doctor/ViewPatients/ViewPatients'
 import DoctorViewTurns from './components/Doctor/DoctorViewTurns/DoctorViewTurns'
 import PatientDetails from './components/Doctor/PatientDetails/PatientDetails'
 import SnackbarAlert from './components/shared/SnackbarAlert/SnackbarAlert'
+import PendingActivation from './components/Doctor/PendingActivation/PendingActivation'
 
 function AppContent() {
   const navigate = useNavigate();
@@ -27,8 +28,12 @@ function AppContent() {
 
   const userName = authContext.authResponse?.name || '';
   const userRole = authContext.authResponse?.role || '';
+  const userStatus = authContext.authResponse?.status || '';
 
   const open = Boolean(uiContext.toggleStates?.["userMenu"]);
+  
+  // Hide header when user status is not ACTIVE (showing pending activation)
+  const shouldHideHeader = userStatus !== "ACTIVE";
 
   useEffect(() => {
     uiSend({ type: "ADD_NAVIGATE_HOOK", navigate, initialPath: window.location.pathname });
@@ -57,6 +62,7 @@ function AppContent() {
       <Route path="/doctor/view-patients" element={<ViewPatients />} />
       <Route path="/doctor/view-turns" element={<DoctorViewTurns />} />
       <Route path="/patient-detail" element={<PatientDetails />} />
+      
     </>
   );
 
@@ -70,69 +76,73 @@ function AppContent() {
 
   return (
       <Box>
-        <Box className="app-header">
-          <Box>
-            <h2>MediBook</h2>
-          </Box>
-          <Box className="app-user-section">
-          <Avatar
-            className="app-avatar"
-            onClick={() =>
-              uiSend({
-                type: "TOGGLE",
-                key: "userMenu",
-              })
-            }
-          >
-            {userName.charAt(0)}
-          </Avatar>
-          <Typography
-            variant="subtitle1"
-            className="app-username"
-            onClick={() =>
-              uiSend({
-                type: "TOGGLE",
-                key: "userMenu",
-              })
-            }
-          >
-            {userName}
-          </Typography>
-        </Box>
+        {!shouldHideHeader && (
+          <>
+            <Box className="app-header">
+              <Box>
+                <h2>MediBook</h2>
+              </Box>
+              <Box className="app-user-section">
+              <Avatar
+                className="app-avatar"
+                onClick={() =>
+                  uiSend({
+                    type: "TOGGLE",
+                    key: "userMenu",
+                  })
+                }
+              >
+                {userName.charAt(0)}
+              </Avatar>
+              <Typography
+                variant="subtitle1"
+                className="app-username"
+                onClick={() =>
+                  uiSend({
+                    type: "TOGGLE",
+                    key: "userMenu",
+                  })
+                }
+              >
+                {userName}
+              </Typography>
+            </Box>
 
-        <Menu
-          open={open}
-          onClose={() => uiSend({ type: "TOGGLE", key: "userMenu" })}
-          anchorOrigin={{ horizontal: "right", vertical: "top" }}
-          transformOrigin={{ horizontal: "right", vertical: "top" }}
-          PaperProps={{
-            elevation: 4,
-            className: "app-menu"
-          }}
-        >
-          <MenuItem onClick={handleNavigateToProfile}>
-            <ListItemIcon>
-              <Person fontSize="small" />
-            </ListItemIcon>
-            Mi perfil
-          </MenuItem>
+            <Menu
+              open={open}
+              onClose={() => uiSend({ type: "TOGGLE", key: "userMenu" })}
+              anchorOrigin={{ horizontal: "right", vertical: "top" }}
+              transformOrigin={{ horizontal: "right", vertical: "top" }}
+              PaperProps={{
+                elevation: 4,
+                className: "app-menu"
+              }}
+            >
+              <MenuItem onClick={handleNavigateToProfile}>
+                <ListItemIcon>
+                  <Person fontSize="small" />
+                </ListItemIcon>
+                Mi perfil
+              </MenuItem>
 
-          <Divider />
+              <Divider />
 
-          <MenuItem
-            onClick={() => {
-              uiSend({ type: "TOGGLE", key: "userMenu" });
-              handleLogout();
-            }}
-            className="app-menu-item-error"
-          >
-            <ListItemIcon>
-              <Logout fontSize="small" color="error" />
-            </ListItemIcon>
-            Cerrar sesión
-          </MenuItem>
-        </Menu>
-        </Box>
+              <MenuItem
+                onClick={() => {
+                  uiSend({ type: "TOGGLE", key: "userMenu" });
+                  handleLogout();
+                }}
+                className="app-menu-item-error"
+              >
+                <ListItemIcon>
+                  <Logout fontSize="small" color="error" />
+                </ListItemIcon>
+                Cerrar sesión
+              </MenuItem>
+            </Menu>
+            </Box>
+          </>
+        )}
 
         <Routes>
           <Route path="*" element={<HomeScreen />} />
@@ -142,6 +152,7 @@ function AppContent() {
           {userRole === 'PATIENT' && renderPatientRoutes()}
           
           <Route path="/profile" element={<ProfileScreen />} />
+          <Route path="/pending-activation" element={<PendingActivation />} />
         </Routes>
         <SnackbarAlert />
       </Box>
