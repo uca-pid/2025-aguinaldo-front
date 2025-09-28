@@ -241,8 +241,8 @@ function RegisterScreen() {
                         fullWidth
                         onChange={(e) => authSend({ type: "UPDATE_FORM", key: "gender", value: e.target.value })}
                       >
-                        <MenuItem value={"Masculino"}>Masculino</MenuItem>
-                        <MenuItem value={"Femenino"}>Femenino</MenuItem>
+                        <MenuItem value={"MALE"}>Masculino</MenuItem>
+                        <MenuItem value={"FEMALE"}>Femenino</MenuItem>
                       </Select>
                       <FormHelperText>
                         {authContext.formErrors?.gender}
