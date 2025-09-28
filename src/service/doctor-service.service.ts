@@ -132,4 +132,31 @@ export class DoctorService {
       throw error;
     }
   }
+
+
+  static async updateMedicalHistory(accessToken: string, doctorId: string, patientId: string, medicalHistory: string): Promise<void> {
+    const url = buildApiUrl(`/api/doctors/${doctorId}/patients/medical-history`);
+
+    try {
+      const response = await fetch(url, {
+        ...getAuthenticatedFetchOptions(accessToken),
+        method: 'PUT',
+        body: JSON.stringify({ patientId, medicalHistory }),
+      });
+
+      if (!response.ok) {
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData?.message || 
+          errorData?.error ||
+          `Failed to update medical history! Status: ${response.status}`
+        );
+      }
+    } catch (error) {
+      console.error('Failed to update medical history:', error);
+      throw error;
+    }
+  }
+
+
 }

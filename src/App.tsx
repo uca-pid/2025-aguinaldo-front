@@ -13,6 +13,7 @@ import ViewTurns from './components/Patient/ViewTurns'
 import EnableHours from './components/Doctor/EnableHours/EnableHours'
 import ViewPatients from './components/Doctor/ViewPatients/ViewPatients'
 import DoctorViewTurns from './components/Doctor/DoctorViewTurns/DoctorViewTurns'
+import PatientDetails from './components/Doctor/PatientDetails/PatientDetails'
 import SnackbarAlert from './components/shared/SnackbarAlert/SnackbarAlert'
 
 function AppContent() {
@@ -54,6 +55,7 @@ function AppContent() {
       <Route path="/doctor/enable-hours" element={<EnableHours />} />
       <Route path="/doctor/view-patients" element={<ViewPatients />} />
       <Route path="/doctor/view-turns" element={<DoctorViewTurns />} />
+      <Route path="/patient-detail" element={<PatientDetails />} />
     </>
   );
 

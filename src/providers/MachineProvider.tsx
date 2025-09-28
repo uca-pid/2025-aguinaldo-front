@@ -18,7 +18,7 @@ interface MachineInstances {
     adminUserState: any;
     adminUserSend: (event: any) => void;
     profileState: any;
-    profileSend: (event: ProfileMachineEvent) => void;
+    profileSend: (event: ProfileMachineEvent) => void
 }
 
 interface MachineProviderProps {
@@ -42,7 +42,7 @@ orchestrator.registerMachine({
 orchestrator.registerMachine({
   id: DOCTOR_MACHINE_ID,
   machine: doctorMachine,
-  eventTypes: DOCTOR_MACHINE_EVENT_TYPES
+    eventTypes: DOCTOR_MACHINE_EVENT_TYPES
 });
 
 orchestrator.registerMachine({
@@ -74,7 +74,7 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       adminUserState: adminUserState,
       adminUserSend: adminUserSend,
       profileState: profileState,
-      profileSend: profileSend
+      profileSend: profileSend,
   };
 
   return (
