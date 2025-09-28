@@ -33,6 +33,8 @@ const EnableHours: React.FC = () => {
     const enabledDays = availability.filter((day: any) => day.enabled).length;
     const totalRanges = availability.reduce((total: any, day: any) => total + (day.enabled ? day.ranges.length : 0), 0);
 
+
+
     const handleBack = () => {
         uiSend({ type: "NAVIGATE", to: "/dashboard" });
     };
@@ -158,6 +160,44 @@ const EnableHours: React.FC = () => {
                 </Box>
 
                 <Box className="enablehours-content">
+                 
+                    {enabledDays === 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <Card className="enablehours-no-config-card">
+                                <CardContent className="enablehours-no-config-content">
+                                    <Box className="enablehours-no-config-icon">
+                                        <CalendarMonthOutlined className="enablehours-no-config-calendar" />
+                                    </Box>
+                                    <Typography variant="h5" className="enablehours-no-config-title">
+                                        ¡Configura tu disponibilidad!
+                                    </Typography>
+                                    <Typography variant="body1" className="enablehours-no-config-description">
+                                        Actualmente no tienes días configurados para atender pacientes.
+                                        Activa al menos un día y configura tus horarios para comenzar a recibir citas.
+                                    </Typography>
+                                    <Box className="enablehours-no-config-steps">
+                                        <Typography variant="body2" className="enablehours-step-item">
+                                            <span className="enablehours-step-number">1</span>
+                                            Activa el interruptor de los días que quieras trabajar
+                                        </Typography>
+                                        <Typography variant="body2" className="enablehours-step-item">
+                                            <span className="enablehours-step-number">2</span>
+                                            Configura los horarios de inicio y fin
+                                        </Typography>
+                                        <Typography variant="body2" className="enablehours-step-item">
+                                            <span className="enablehours-step-number">3</span>
+                                            Guarda tu disponibilidad
+                                        </Typography>
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    )}
+
                     {/* Days Configuration */}
                     <Box className="enablehours-days-container">
                         {availability.map((day: any, dayIndex: number) => (

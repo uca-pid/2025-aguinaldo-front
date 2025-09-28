@@ -11,7 +11,7 @@ import {
 import "./DashboardCard.css";
 
 type CardType = 'admin' | 'patient' | 'doctor' | 'dashboard';
-type CardVariant = 'primary' | 'secondary' | 'accent';
+type CardVariant = 'primary' | 'secondary' | 'accent' | 'warning';
 
 interface DashboardCardProps {
   type: CardType;
@@ -24,6 +24,7 @@ interface DashboardCardProps {
   disabled?: boolean;
   loading?: boolean;
   badge?: number;
+  warning?: boolean;
 }
 
 const DashboardCard: React.FC<DashboardCardProps> = ({
@@ -36,7 +37,8 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   onClick,
   disabled = false,
   loading = false,
-  badge
+  badge,
+  warning = false
 }) => {
   const getClassNames = () => {
     const baseClasses = {
@@ -57,8 +59,9 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
 
   return (
     <div className={classes.item}>
-      <Card className={classes.card} onClick={!disabled ? onClick : undefined}>
+      <Card className={`${classes.card} ${warning ? 'dashboard-card-warning' : ''}`} onClick={!disabled ? onClick : undefined}>
         <CardContent className={classes.content}>
+          {warning && <div className="dashboard-card-warning-indicator"></div>}
           <Avatar className={classes.avatar}>
             {icon}
             {badge && badge > 0 && (

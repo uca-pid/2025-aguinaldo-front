@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import PersonIcon from "@mui/icons-material/Person";
 import { useMachines } from "#/providers/MachineProvider";
@@ -20,10 +21,14 @@ import dayjs from "dayjs";
 import "./DoctorDashboard.css";
 
 const DoctorDashboard: React.FC = () => {
-  const { uiSend, turnState } = useMachines();
+  const { uiSend, turnState, doctorState } = useMachines();
   const turnContext = turnState?.context;
+  const doctorContext = doctorState?.context;
   const authContext = useAuthMachine().authState?.context;
   const user = authContext.authResponse as SignInResponse;
+
+  const availability = doctorContext?.availability || [];
+  const hasConfiguredDays = availability.some((day: any) => day.enabled && day.ranges?.length > 0);
 
   const upcomingTurns = turnContext?.myTurns || []
     .filter((turn: any) => {
@@ -88,12 +93,13 @@ const DoctorDashboard: React.FC = () => {
 
             <DashboardCard
               type="doctor"
-              variant="accent"
-              icon={<EventAvailableIcon className="doctor-action-icon" />}
+              variant={hasConfiguredDays ? "accent" : "warning"}
+              icon={hasConfiguredDays ? <EventAvailableIcon className="doctor-action-icon" /> : <ErrorOutlineIcon className="doctor-action-icon" />}
               title="Disponibilidad"
-              description="Define los horarios disponibles para reservas"
-              buttonText="Configurar"
+              description={hasConfiguredDays ? "Define los horarios disponibles para reservas" : "⚠️ No tienes horarios configurados"}
+              buttonText={hasConfiguredDays ? "Configurar" : "Configurar Ahora"}
               onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/enable-hours" })}
+              warning={!hasConfiguredDays}
             />
           </Box>
         </Container>
