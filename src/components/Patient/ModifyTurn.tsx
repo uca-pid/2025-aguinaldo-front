@@ -1,8 +1,8 @@
-import { 
+import {
   Box, Button, Typography, CircularProgress,
-  Container 
+  Container
 } from "@mui/material";
-import React, { useEffect } from "react";
+import React from "react";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { useLocation } from 'react-router-dom';
@@ -13,9 +13,9 @@ import { DateCalendar } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { SignInResponse } from "#/models/Auth";
-import { 
-  formatDateTime, 
-  shouldDisableDate 
+import {
+  formatDateTime,
+  shouldDisableDate
 } from "#/utils/dateTimeUtils";
 import TimeSlotSelector from "#/components/shared/TimeSlotSelector/TimeSlotSelector";
 import "./ModifyTurn.css";
@@ -23,52 +23,29 @@ import "./ModifyTurn.css";
 const ModifyTurn: React.FC = () => {
   const location = useLocation();
   const { turnId } = location.state as { turnId: string } || {};
-  const { uiSend, modifyTurnState, modifyTurnSend } = useMachines();
+
+  const { uiSend, modifyTurnsState, modifyTurnsSend } = useMachines();
   const { authState } = useAuthMachine();
+
   const user: SignInResponse = authState?.context?.authResponse || {};
-  
-  const { 
-    currentTurn, 
-    selectedDate, 
-    selectedTime, 
-    availableSlots, 
+
+  const {
+    currentTurn,
+    selectedDate,
+    selectedTime,
+    availableSlots,
     availableDates,
     isLoadingTurnDetails,
     isLoadingAvailableSlots,
     isModifyingTurn,
     modifyError
-  } = modifyTurnState.context;
+  } = modifyTurnsState.context;
 
-  useEffect(() => {
-    if (user.accessToken && user.id) {
-      modifyTurnSend({ type: "DATA_LOADED" });
-    }
-  }, [user.accessToken, user.id, modifyTurnSend]);
-
-  useEffect(() => {
-    if (turnId) {
-      modifyTurnSend({ type: "SET_TURN_ID", turnId });
-    }
-  }, [turnId, modifyTurnSend]);
-
-  useEffect(() => {
+  React.useEffect(() => {
     if (turnId && user.accessToken) {
-      modifyTurnSend({ type: "RESET" });
-      modifyTurnSend({ type: "LOAD_TURN_DETAILS", turnId });
+      modifyTurnsSend({ type: "INITIALIZE", turnId });
     }
-  }, [turnId, user.accessToken, user.id, modifyTurnSend]);
-
-  useEffect(() => {
-    if (currentTurn?.doctorId) {
-      modifyTurnSend({ 
-        type: "LOAD_DOCTOR_AVAILABILITY", 
-        doctorId: currentTurn.doctorId,
-        date: dayjs().format('YYYY-MM-DD')
-      });
-    }
-  }, [currentTurn?.doctorId, modifyTurnSend]);
-
-
+  }, [turnId, user.accessToken, modifyTurnsSend]);
 
   if (isLoadingTurnDetails) {
     return (
@@ -90,7 +67,7 @@ const ModifyTurn: React.FC = () => {
           <Typography variant="h6" color="error">
             No se pudo cargar la información del turno
           </Typography>
-          <Button 
+          <Button
             startIcon={<ArrowBackIcon />}
             onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })}
             sx={{ mt: 2 }}
@@ -101,7 +78,6 @@ const ModifyTurn: React.FC = () => {
         </Box>
       </Container>
     );
-
   }
 
   return (
@@ -136,7 +112,7 @@ const ModifyTurn: React.FC = () => {
                 <strong>Doctor:</strong> {currentTurn.doctorName}
               </Typography>
               <Typography variant="body1">
-                <strong>Especialidad:</strong> {currentTurn.doctorSpecialty}
+                <strong>Especialidad:</strong> {currentTurn.doctorSpecialty || 'No especificada'}
               </Typography>
               <Typography variant="body1">
                 <strong>Fecha y Hora Actual:</strong> {formatDateTime(currentTurn.scheduledAt)}
@@ -150,15 +126,15 @@ const ModifyTurn: React.FC = () => {
             <Box className="reservation-calendar-section">
               <Box className="reservation-calendar-container">
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DemoContainer components={['DateCalendar']}>
+                  <DemoContainer components={['DateCalendar']} sx={{ width: '100%' }}>
                     <DemoItem>
                       <DateCalendar
                         value={selectedDate}
-                        onChange={newValue => {
-                          modifyTurnSend({ type: "UPDATE_FORM", key: "selectedDate", value: newValue });
-                          modifyTurnSend({ type: "UPDATE_FORM", key: "selectedTime", value: null });
+                        onChange={(newValue) => {
+                          modifyTurnsSend({ type: "UPDATE_FORM", key: "selectedDate", value: newValue });
+                          modifyTurnsSend({ type: "UPDATE_FORM", key: "selectedTime", value: null });
                           if (newValue && currentTurn?.doctorId) {
-                            modifyTurnSend({
+                            modifyTurnsSend({
                               type: "LOAD_AVAILABLE_SLOTS",
                               doctorId: currentTurn.doctorId,
                               date: newValue.format('YYYY-MM-DD')
@@ -182,14 +158,14 @@ const ModifyTurn: React.FC = () => {
                   selectedDate={selectedDate}
                   availableSlots={availableSlots}
                   selectedTime={selectedTime}
-                  onTimeSelect={timeSlot => modifyTurnSend({ type: "UPDATE_FORM", key: "selectedTime", value: timeSlot })}
+                  onTimeSelect={(timeSlot) => modifyTurnsSend({ type: "UPDATE_FORM", key: "selectedTime", value: timeSlot })}
                   isLoadingSlots={isLoadingAvailableSlots}
                 />
               </Box>
             </Box>
           </Box>
         </Box>
-        
+
         {modifyError && (
           <Box className="reservation-error-message">
             <Typography color="error" variant="body2">
@@ -198,20 +174,19 @@ const ModifyTurn: React.FC = () => {
           </Box>
         )}
 
-
         <Box className="reservation-actions">
-          <Button 
-            onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })} 
+          <Button
+            onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })}
             className="reservation-btn-secondary"
             variant="outlined"
           >
             Cancelar
           </Button>
           <Button
-            onClick={() => modifyTurnSend({ type: "SUBMIT_MODIFY_REQUEST" })}
+            onClick={() => modifyTurnsSend({ type: "SUBMIT_MODIFY_REQUEST" })}
             variant="contained"
             className="reservation-btn-primary"
-            disabled={!selectedTime || isModifyingTurn}
+            disabled={!selectedDate || !selectedTime || isModifyingTurn}
             sx={{ ml: 2 }}
           >
             {isModifyingTurn ? (

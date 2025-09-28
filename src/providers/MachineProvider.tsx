@@ -7,7 +7,8 @@ import { turnMachine, TURN_MACHINE_ID, TURN_MACHINE_EVENT_TYPES, type TurnMachin
 import doctorMachine, { DOCTOR_MACHINE_ID, DOCTOR_MACHINE_EVENT_TYPES, type DoctorMachineEvent } from '../machines/doctorMachine';
 import { adminUserMachine, ADMIN_USER_MACHINE_ID, ADMIN_USER_MACHINE_EVENT_TYPES } from '#/machines/adminUserMachine';
 import { profileMachine, PROFILE_MACHINE_ID, PROFILE_MACHINE_EVENT_TYPES, type ProfileMachineEvent } from '../machines/profileMachine';
-import { modifyTurnMachine, MODIFY_TURN_MACHINE_ID, MODIFY_TURN_MACHINE_EVENT_TYPES } from '../machines/modifyTurnMachine';
+import { dataMachine, DATA_MACHINE_ID, DATA_MACHINE_EVENT_TYPES } from '../machines/dataMachine';
+import { modifyTurnsMachine, MODIFY_TURNS_MACHINE_ID, MODIFY_TURNS_MACHINE_EVENT_TYPES } from '../machines/modifyTurnsMachine';
 
 interface MachineInstances {
     uiState: any;
@@ -20,8 +21,10 @@ interface MachineInstances {
     adminUserSend: (event: any) => void;
     profileState: any;
     profileSend: (event: ProfileMachineEvent) => void;
-    modifyTurnState: any;
-    modifyTurnSend: (event: any) => void;
+    dataState: any;
+    dataSend: (event: any) => void;
+    modifyTurnsState: any;
+    modifyTurnsSend: (event: any) => void;
 }
 
 interface MachineProviderProps {
@@ -61,9 +64,9 @@ orchestrator.registerMachine({
 });
 
 orchestrator.registerMachine({
-  id: MODIFY_TURN_MACHINE_ID,
-  machine: modifyTurnMachine,
-  eventTypes: [...MODIFY_TURN_MACHINE_EVENT_TYPES]
+  id: MODIFY_TURNS_MACHINE_ID,
+  machine: modifyTurnsMachine,
+  eventTypes: [...MODIFY_TURNS_MACHINE_EVENT_TYPES]
 });
 
 export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) => {
@@ -72,7 +75,8 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
   const { state: doctorState, send: doctorSend } = useStateMachine(DOCTOR_MACHINE_ID);
   const { state: adminUserState, send: adminUserSend } = useStateMachine(ADMIN_USER_MACHINE_ID);
   const { state: profileState, send: profileSend } = useStateMachine(PROFILE_MACHINE_ID);
-  const { state: modifyTurnState, send: modifyTurnSend } = useStateMachine(MODIFY_TURN_MACHINE_ID);
+  const { state: dataState, send: dataSend } = useStateMachine(DATA_MACHINE_ID);
+  const { state: modifyTurnsState, send: modifyTurnsSend } = useStateMachine(MODIFY_TURNS_MACHINE_ID);
 
   const machines: MachineInstances = {
       uiState: uiState,
@@ -85,8 +89,10 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       adminUserSend: adminUserSend,
       profileState: profileState,
       profileSend: profileSend,
-      modifyTurnState: modifyTurnState,
-      modifyTurnSend: modifyTurnSend
+      dataState: dataState,
+      dataSend: dataSend,
+      modifyTurnsState: modifyTurnsState,
+      modifyTurnsSend: modifyTurnsSend
   };
 
   return (
