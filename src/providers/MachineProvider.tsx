@@ -48,7 +48,7 @@ orchestrator.registerMachine({
 orchestrator.registerMachine({
   id: DOCTOR_MACHINE_ID,
   machine: doctorMachine,
-  eventTypes: DOCTOR_MACHINE_EVENT_TYPES
+    eventTypes: DOCTOR_MACHINE_EVENT_TYPES
 });
 
 orchestrator.registerMachine({

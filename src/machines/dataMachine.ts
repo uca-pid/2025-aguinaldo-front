@@ -101,7 +101,7 @@ export type DataMachineEvent =
   | { type: "LOAD_AVAILABLE_TURNS"; doctorId: string; date: string }
   | { type: "LOAD_MY_TURNS"; status?: string }
   | { type: "LOAD_DOCTOR_PATIENTS" }
-  | { type: "LOAD_DOCTOR_AVAILABILITY" };
+  | { type: "LOAD_DOCTOR_AVAILABILITY" }
 
 export const dataMachine = createMachine({
   id: "data",
@@ -117,7 +117,10 @@ export const dataMachine = createMachine({
         SET_AUTH: {
           target: "loadingInitialData",
           actions: assign({
-            accessToken: ({ event }) => event.accessToken,
+            accessToken: ({ event }) => {
+            
+              return event.accessToken;
+            },
             userRole: ({ event }) => event.userRole,
             userId: ({ event }) => event.userId,
             doctorId: ({ event }) => event.userRole === "DOCTOR" ? event.userId : null,
@@ -169,7 +172,7 @@ export const dataMachine = createMachine({
         LOAD_DOCTOR_AVAILABILITY: {
           target: "fetchingDoctorAvailability",
           guard: ({ context }) => !!context.accessToken,
-        },
+        }
       },
     },
     
@@ -184,7 +187,7 @@ export const dataMachine = createMachine({
             pendingDoctors: isAdmin,
             adminStats: isAdmin,
             availableTurns: false,
-            myTurns: isPatient || isDoctor, // Load turns for patients and doctors
+            myTurns: isPatient || isDoctor,
             doctorPatients: false,
             doctorAvailability: isDoctor,
           },
@@ -407,6 +410,52 @@ export const dataMachine = createMachine({
             ],
           },
         },
+        {
+          id: "loadDoctorPatients",
+          src: fromPromise(async ({ input }: { input: { accessToken: string; isDoctor: boolean; doctorId: string | null } }) => {
+            if (!input.isDoctor || !input.doctorId) return [];
+            return await loadDoctorPatients({ accessToken: input.accessToken, doctorId: input.doctorId });
+          }),
+          input: ({ context }) => ({
+            accessToken: context.accessToken!,
+            isDoctor: context.userRole === "DOCTOR",
+            doctorId: context.doctorId
+          }),
+          onDone: {
+            actions:
+              assign({
+                doctorPatients: ({ event }) => event.output,
+                loading: ({ context }) => ({ ...context.loading, doctorPatients: false }),
+              })
+            ,
+          },
+          onError: {
+            target: "idle",
+            actions: [
+              assign({
+                errors: ({ context, event }) => ({
+                  ...context.errors,
+                  doctorPatients: event.error instanceof Error ? event.error.message : "Error al cargar pacientes del doctor"
+                }),
+                loading: ({ context }) => ({
+                  ...context.loading,
+                  doctorPatients: false
+                })
+              }),
+              ({ event }) => {
+                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+                }
+                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar pacientes del doctor";
+                orchestrator.sendToMachine(UI_MACHINE_ID, {
+                  type: "OPEN_SNACKBAR",
+                  message: errorMessage,
+                  severity: "error"
+                });
+              }
+            ],
+          },
+        }
       ],
       always: {
         target: "ready",
@@ -482,7 +531,7 @@ export const dataMachine = createMachine({
         },
         LOAD_DOCTOR_AVAILABILITY: {
           target: "fetchingDoctorAvailability",
-        },
+        }
       },
     },
     
@@ -738,10 +787,18 @@ export const dataMachine = createMachine({
         }),
         onDone: {
           target: "ready",
-          actions: assign({
-            doctorPatients: ({ event }) => event.output,
-            loading: ({ context }) => ({ ...context.loading, doctorPatients: false }),
-          }),
+          actions: [
+            assign({
+              doctorPatients: ({ event }) => event.output,
+              loading: ({ context }) => ({ ...context.loading, doctorPatients: false }),
+            }),
+            () => {
+              // Notify doctor machine that patients have been loaded
+              orchestrator.send({
+                type: "DATA_LOADED"
+              });
+            }
+          ],
         },
         onError: {
           target: "idle",

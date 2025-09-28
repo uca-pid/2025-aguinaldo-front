@@ -8,6 +8,7 @@ export interface Patient {
   birthdate?: string;
   gender?: string;
   status: string;
+  medicalHistory?: string;
 }
 
 export interface ApiErrorResponse {

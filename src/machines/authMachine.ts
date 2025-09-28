@@ -119,10 +119,10 @@ export const authMachine = createMachine({
       },
       entry: ({ context }) => {
         if (context.authResponse && "accessToken" in context.authResponse) {
-          // Send to dataMachine and profileMachine
+          // Broadcast SET_AUTH to all machines via orchestrator
           setTimeout(() => {
             const response = context.authResponse as SignInResponse;
-            context.send({ 
+            orchestrator.send({ 
               type: "SET_AUTH", 
               accessToken: response.accessToken, 
               userId: response.id,
