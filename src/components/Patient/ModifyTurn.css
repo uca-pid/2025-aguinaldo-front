@@ -1,0 +1,366 @@
+
+/* Paridad visual con ReservationTurns */
+.reservation-step1-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.reservation-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reservation-info-card {
+  background: var(--white) !important;
+  border-radius: 16px !important;
+  padding: 24px !important;
+  border: 1px solid var(--verdigris) !important;
+}
+
+
+.reservation-step2-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 800px;
+  margin: 32px auto 0 auto;
+}
+
+.reservation-step2-content {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.reservation-calendar-section {
+  flex: 1;
+  min-width: 320px;
+}
+
+.reservation-time-section {
+  flex: 1;
+  min-width: 320px;
+}
+
+.reservation-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 32px;
+}
+/* ModifyTurn Component Styles */
+
+.modify-turn-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--white) 0%, #f8fafc 100%);
+  padding: 40px 0;
+}
+
+.modify-turn-page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Page Header */
+.modify-turn-page-header {
+  margin-bottom: 40px;
+}
+
+.modify-turn-back-button {
+  color: var(--indigo-dye) !important;
+  border-color: var(--verdigris) !important;
+  border-radius: 8px !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  padding: 8px 16px !important;
+  margin-bottom: 24px !important;
+}
+
+.modify-turn-back-button:hover {
+  background: var(--tea-green) !important;
+  border-color: var(--emerald) !important;
+}
+
+.modify-turn-title-section {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.modify-turn-page-title {
+  font-weight: 700 !important;
+  color: var(--gunmetal) !important;
+  margin-bottom: 12px !important;
+  line-height: 1.2 !important;
+}
+
+.modify-turn-page-subtitle {
+  color: var(--indigo-dye) !important;
+  font-weight: 400 !important;
+  margin-bottom: 0 !important;
+  line-height: 1.4 !important;
+}
+
+/* Current Turn Info */
+.modify-turn-current-info {
+  background: var(--white) !important;
+  border-radius: 16px !important;
+  padding: 32px !important;
+  margin-bottom: 32px !important;
+  border: 1px solid var(--verdigris) !important;
+  box-shadow: 0 4px 15px rgba(34, 87, 122, 0.1) !important;
+}
+
+.modify-turn-section-title {
+  color: var(--gunmetal) !important;
+  font-weight: 600 !important;
+  margin-bottom: 16px !important;
+}
+
+.modify-turn-info-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modify-turn-status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.modify-turn-status.confirmed {
+  background: var(--tea-green);
+  color: var(--lapis-lazuli);
+}
+
+/* Step 2 Styles */
+.modify-turn-step2-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  margin-bottom: 32px;
+}
+
+.modify-turn-step2-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.modify-turn-calendar-section {
+  background: var(--white) !important;
+  border-radius: 16px !important;
+  padding: 24px !important;
+  border: 1px solid var(--verdigris) !important;
+  box-shadow: 0 4px 15px rgba(34, 87, 122, 0.1) !important;
+  height: fit-content;
+}
+
+.modify-turn-calendar-container {
+  background: var(--white) !important;
+  border-radius: 12px !important;
+  padding: 8px !important;
+  border: 1px solid #e0e7ff !important;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px !important;
+}
+
+.modify-turn-calendar-container .MuiDateCalendar-root {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.modify-turn-time-section {
+  background: var(--white) !important;
+  border-radius: 16px !important;
+  padding: 16px 24px !important;
+  border: 1px solid var(--verdigris) !important;
+  box-shadow: 0 4px 15px rgba(34, 87, 122, 0.1) !important;
+  height: fit-content;
+  min-width: 400px;
+  max-width: 600px;
+}
+
+.modify-turn-time-slots {
+  background: #f8fafc !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  border: 1px solid #e0e7ff !important;
+  max-height: 500px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .modify-turn-time-slots {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .modify-turn-time-slots {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Action Buttons */
+.modify-turn-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+  padding: 0 24px;
+}
+
+.modify-turn-btn-primary {
+  background: linear-gradient(135deg, var(--emerald) 0%, var(--verdigris) 100%) !important;
+  color: var(--white) !important;
+  font-weight: 600 !important;
+  padding: 12px 32px !important;
+  border-radius: 8px !important;
+  text-transform: none !important;
+  box-shadow: 0 4px 15px rgba(87, 204, 153, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.modify-turn-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(87, 204, 153, 0.4) !important;
+}
+
+.modify-turn-btn-primary:disabled {
+  background: #9ca3af !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.modify-turn-btn-secondary {
+  color: var(--indigo-dye) !important;
+  border-color: var(--verdigris) !important;
+  background: var(--white) !important;
+  font-weight: 600 !important;
+  padding: 12px 32px !important;
+  border-radius: 8px !important;
+  text-transform: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.modify-turn-btn-secondary:hover {
+  background: var(--tea-green) !important;
+  border-color: var(--emerald) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Error Messages */
+.modify-turn-error-message {
+  background: #fef2f2 !important;
+  border: 1px solid #fecaca !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  margin: 16px 0 !important;
+  text-align: center;
+}
+
+/* Loading States */
+.modify-turn-loading, .modify-turn-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modify-turn-step2-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .modify-turn-page-title {
+    font-size: 2rem !important;
+  }
+  
+  .modify-turn-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .modify-turn-actions button {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .modify-turn-container {
+    padding: 20px 0;
+  }
+}
+
+/* Reason Section */
+.modify-turn-reason-section {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 24px;
+
+.modify-turn-reason-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--gunmetal);
+  background: var(--white);
+  resize: vertical;
+  transition: all 0.2s ease;
+}
+
+.modify-turn-reason-textarea:focus {
+  outline: none;
+  border-color: var(--verdigris);
+  box-shadow: 0 0 0 3px rgba(104, 148, 141, 0.1);
+}
+
+.modify-turn-reason-textarea::placeholder {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .modify-turn-reason-section {
+    padding: 20px;
+  }
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .modify-turn-time-slots {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .modify-turn-time-slots {
+    grid-template-columns: 1fr;
+  }
+}
+}

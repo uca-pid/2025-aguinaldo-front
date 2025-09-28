@@ -5,14 +5,33 @@ import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import dayjs from "dayjs";
 import { SignInResponse } from "#/models/Auth";
+import { useEffect, useState } from "react";
+import { TurnService } from "#/service/turn-service.service";
+import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import EditIcon from "@mui/icons-material/Edit";
 import "./ViewTurns.css";
+import { orchestrator } from "#/core/Orchestrator";
 
 const ViewTurns: React.FC = () => {
   const { uiSend, turnState, turnSend } = useMachines();
   const { authState } = useAuthMachine();
   const user: SignInResponse = authState?.context?.authResponse || {};
+
+  const [pendingModifyRequests, setPendingModifyRequests] = useState<TurnModifyRequest[]>([]);
+  useEffect(() => {
+    const fetchPendingRequests = async () => {
+      if (!user.accessToken) return;
+      try {
+        const requests = await TurnService.getMyModifyRequests(user.accessToken);
+        setPendingModifyRequests(requests.filter(r => r.status === "PENDING"));
+      } catch {
+        setPendingModifyRequests([]);
+      }
+    };
+    fetchPendingRequests();
+  }, [user.accessToken]);
   
   const turnContext = turnState.context;
   const showTurnsContext = turnContext.showTurns;
@@ -31,6 +50,10 @@ const ViewTurns: React.FC = () => {
   const handleCancelTurn = (turnId: string) => {
     if (!user.accessToken) return;
     turnSend({ type: "CANCEL_TURN", turnId });
+  };
+
+  const handleModifyTurn = (turnId: string) => {
+    orchestrator.send({ type: "NAVIGATE", to: '/patient/modify-turn?turnId=' + turnId });
   };
 
   const getStatusLabel = (status: string) => {
@@ -52,6 +75,14 @@ const ViewTurns: React.FC = () => {
 
   const canCancelTurn = (turn: any) => {
     return turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt);
+  };
+
+  const hasPendingModifyRequest = (turnId: string) => {
+    return pendingModifyRequests.some(r => r.turnId === turnId);
+  };
+
+  const canModifyTurn = (turn: any) => {
+    return turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt) && !hasPendingModifyRequest(turn.id);
   };
 
   const handleClose = () => {
@@ -107,8 +138,8 @@ const ViewTurns: React.FC = () => {
                   value={showTurnsContext.statusFilter}
                   label="Estado del turno"
                   onChange={(e) => turnSend({
-                    type: "UPDATE_FORM_SHOW_TURNS",
-                    key: "statusFilter",
+                    type: "UPDATE_FORM",
+                    path: ["statusFilter"],
                     value: e.target.value
                   })}
                 >
@@ -122,8 +153,8 @@ const ViewTurns: React.FC = () => {
                 <Button
                   variant="outlined"
                   onClick={() => turnSend({
-                    type: "UPDATE_FORM_SHOW_TURNS",
-                    key: "statusFilter",
+                    type: "UPDATE_FORM",
+                    path: ["statusFilter"],
                     value: ""
                   })}
                   className="viewturns-clear-filter-btn"
@@ -150,18 +181,26 @@ const ViewTurns: React.FC = () => {
                 <Box key={turn.id || index} className="viewturns-turn-item">
                   <Box className="viewturns-turn-content">
                     <Box className="viewturns-turn-info">
-                      <Typography variant="h6" className="viewturns-turn-datetime">
+                      <Typography variant="h6" className="viewturns-turn-datetime" style={{display: 'flex', alignItems: 'center', gap: 8}}>
                         {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
                         {turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt) && (
                           <Chip 
                             label="Vencido" 
                             size="small" 
-                            sx={{ 
-                              ml: 1, 
-                              backgroundColor: '#fbbf24', 
-                              color: '#92400e',
-                              fontSize: '0.75rem'
-                            }} 
+                            sx={{ ml: 1, backgroundColor: '#fbbf24', color: '#92400e', fontSize: '0.75rem' }} 
+                          />
+                        )}
+                        <Chip
+                          label={getStatusLabel(turn.status)}
+                          className={`viewturns-status-chip status-${turn.status.toLowerCase()}`}
+                          size="small"
+                          sx={{ ml: 1 }}
+                        />
+                        {hasPendingModifyRequest(turn.id) && (
+                          <Chip
+                            label="Cambio pendiente de aceptación"
+                            size="small"
+                            sx={{ ml: 1, backgroundColor: '#fffc58ff', color: '#222222ff', fontSize: '0.75rem' }}
                           />
                         )}
                       </Typography>
@@ -173,29 +212,37 @@ const ViewTurns: React.FC = () => {
                       </Typography>
                     </Box>
                     <Box className="viewturns-turn-actions">
-                      <Chip
-                        label={getStatusLabel(turn.status)}
-                        className={`viewturns-status-chip status-${turn.status.toLowerCase()}`}
-                        size="small"
-                      />
-                      {canCancelTurn(turn) && (
-                        <Button 
-                          variant="contained" 
-                          size="small"
-                          className="viewturns-cancel-btn"
-                          onClick={() => handleCancelTurn(turn.id)}
-                          disabled={isCancellingTurn && cancellingTurnId === turn.id}
-                        >
-                          {isCancellingTurn && cancellingTurnId === turn.id ? (
-                            <>
-                              <CircularProgress size={16} sx={{ mr: 1 }} />
-                              Cancelando...
-                            </>
-                          ) : (
-                            'Cancelar turno'
-                          )}
-                        </Button>
-                      )}
+                      <Box style={{display: 'flex', gap: 16}}>
+                        {canModifyTurn(turn) && (
+                          <Button
+                            variant="contained"
+                            size="small"
+                            startIcon={<EditIcon />}
+                            onClick={() => handleModifyTurn(turn.id)}
+                            className="viewturns-modify-btn"
+                          >
+                            Cambiar fecha/horario
+                          </Button>
+                        )}
+                        {canCancelTurn(turn) && (
+                          <Button 
+                            variant="contained" 
+                            size="small"
+                            className="viewturns-cancel-btn"
+                            onClick={() => handleCancelTurn(turn.id)}
+                            disabled={isCancellingTurn && cancellingTurnId === turn.id}
+                          >
+                            {isCancellingTurn && cancellingTurnId === turn.id ? (
+                              <>
+                                <CircularProgress size={16} sx={{ mr: 1 }} />
+                                Cancelando...
+                              </>
+                            ) : (
+                              'Cancelar turno'
+                            )}
+                          </Button>
+                        )}
+                      </Box>
                     </Box>
                   </Box>
                 </Box>

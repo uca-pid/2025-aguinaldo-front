@@ -222,7 +222,7 @@
 .viewturns-turn-actions {
   display: flex !important;
   gap: 16px !important;
-  align-items: center !important;
+  align-items: flex-end !important;
 }
 
 /* Status Chips */
@@ -264,6 +264,26 @@
 }
 
 .viewturns-cancel-btn:disabled {
+  background-color: var(--tea-green) !important;
+  color: var(--indigo-dye) !important;
+}
+
+/* Modify Button - new styles for 'Cambiar fecha/horario' button */
+.viewturns-modify-btn {
+  background-color: var(--lapis-lazuli) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.viewturns-modify-btn:hover:not(:disabled) {
+  background-color: var(--indigo-dye) !important;
+}
+
+.viewturns-modify-btn:disabled {
   background-color: var(--tea-green) !important;
   color: var(--indigo-dye) !important;
 }

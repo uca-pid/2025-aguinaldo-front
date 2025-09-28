@@ -18,7 +18,7 @@ interface MachineInstances {
     adminUserState: any;
     adminUserSend: (event: any) => void;
     profileState: any;
-    profileSend: (event: ProfileMachineEvent) => void
+    profileSend: (event: ProfileMachineEvent) => void;
 }
 
 interface MachineProviderProps {

@@ -19,7 +19,8 @@ export const DOCTOR_MACHINE_EVENT_TYPES = [
   "CLEAR_PATIENT_SELECTION",
   "START_EDIT_HISTORY",
   "UPDATE_HISTORY",
-  "SAVE_HISTORY"
+  "SAVE_HISTORY",
+  "DATA_LOADED"
 ];
 
 interface Range {
@@ -62,7 +63,8 @@ export type DoctorMachineEvent =
   | { type: "CLEAR_PATIENT_SELECTION" }
   | { type: "START_EDIT_HISTORY" }
   | { type: "UPDATE_HISTORY"; value: string }
-  | { type: "SAVE_HISTORY" };
+  | { type: "SAVE_HISTORY" }
+  | { type: "DATA_LOADED" };
 
 const doctorMachine = createMachine({
   id: "doctor",
