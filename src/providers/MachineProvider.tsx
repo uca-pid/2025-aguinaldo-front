@@ -7,7 +7,8 @@ import { turnMachine, TURN_MACHINE_ID, TURN_MACHINE_EVENT_TYPES, type TurnMachin
 import doctorMachine, { DOCTOR_MACHINE_ID, DOCTOR_MACHINE_EVENT_TYPES, type DoctorMachineEvent } from '../machines/doctorMachine';
 import { adminUserMachine, ADMIN_USER_MACHINE_ID, ADMIN_USER_MACHINE_EVENT_TYPES } from '#/machines/adminUserMachine';
 import { profileMachine, PROFILE_MACHINE_ID, PROFILE_MACHINE_EVENT_TYPES, type ProfileMachineEvent } from '../machines/profileMachine';
-import patientDetailsMachine, { PATIENT_DETAILS_MACHINE_ID, PATIENT_DETAILS_MACHINE_EVENT_TYPES, type PatientDetailsMachineEvent } from '../machines/patientDetailsMachine';
+import { DATA_MACHINE_ID,  type DataMachineEvent } from '../machines/dataMachine';
+
 
 interface MachineInstances {
     uiState: any;
@@ -20,8 +21,8 @@ interface MachineInstances {
     adminUserSend: (event: any) => void;
     profileState: any;
     profileSend: (event: ProfileMachineEvent) => void;
-    patientDetailsState: any;
-    patientDetailsSend: (event: PatientDetailsMachineEvent) => void;
+    dataState: any;
+    dataSend: (event: DataMachineEvent) => void;
 }
 
 interface MachineProviderProps {
@@ -60,11 +61,8 @@ orchestrator.registerMachine({
   eventTypes: PROFILE_MACHINE_EVENT_TYPES
 });
 
-orchestrator.registerMachine({
-  id: PATIENT_DETAILS_MACHINE_ID,
-  machine: patientDetailsMachine,
-  eventTypes: PATIENT_DETAILS_MACHINE_EVENT_TYPES
-});
+
+
 
 export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) => {
   const { state: uiState, send: uiSend } = useStateMachine(UI_MACHINE_ID);
@@ -72,7 +70,8 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
   const { state: doctorState, send: doctorSend } = useStateMachine(DOCTOR_MACHINE_ID);
   const { state: adminUserState, send: adminUserSend } = useStateMachine(ADMIN_USER_MACHINE_ID);
   const { state: profileState, send: profileSend } = useStateMachine(PROFILE_MACHINE_ID);
-  const { state: patientDetailsState, send: patientDetailsSend } = useStateMachine(PATIENT_DETAILS_MACHINE_ID);
+  const { state: dataState, send: dataSend } = useStateMachine(DATA_MACHINE_ID);
+
 
   const machines: MachineInstances = {
       uiState: uiState,
@@ -85,8 +84,8 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       adminUserSend: adminUserSend,
       profileState: profileState,
       profileSend: profileSend,
-      patientDetailsState: patientDetailsState,
-      patientDetailsSend: patientDetailsSend
+      dataState: dataState,
+      dataSend: dataSend
   };
 
   return (

@@ -1,4 +1,4 @@
-/* PatientDetails.css */
+
 
 :root {
   --gunmetal: #0d2230;
@@ -145,7 +145,7 @@
   border: 2px dashed #e0e0e0;
 }
 
-/* Responsive adjustments */
+
 @media (max-width: 768px) {
   .patient-details-container {
     padding: 16px;
@@ -168,7 +168,7 @@
   }
 }
 
-/* Paper sections animations */
+
 .patient-details-info-paper {
   transition: all 0.3s ease !important;
   transform: translateY(0) !important;
@@ -285,11 +285,132 @@
   }
 }
 
-/* Loading state animations */
 .patient-details-loading {
   animation: fadeInUp 0.4s ease-out;
 }
 
 .patient-details-loading .MuiCircularProgress-root {
   animation: pulse 1.5s ease-in-out infinite;
+}
+
+
+.patient-details-edit-container {
+  animation: fadeInUp 0.4s ease-out !important;
+}
+
+.patient-details-history-input {
+  animation: slideInLeft 0.3s ease-out !important;
+}
+
+.patient-details-edit-button {
+  animation: bounceIn 0.5s ease-out !important;
+  position: relative !important;
+  overflow: hidden !important;
+  transition: all 0.3s ease !important;
+  transform: translateY(0) !important;
+}
+
+.patient-details-edit-button::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  transition: width 0.6s, height 0.6s !important;
+}
+
+.patient-details-edit-button:hover::before {
+  width: 300px !important;
+  height: 300px !important;
+}
+
+.patient-details-save-button,
+.patient-details-cancel-button {
+  animation: slideInRight 0.3s ease-out !important;
+  transition: all 0.3s ease !important;
+  transform: translateY(0) !important;
+}
+
+.patient-details-history-content {
+  animation: fadeInUp 0.3s ease-out !important;
+}
+
+
+.patient-details-edit-button:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(34, 87, 122, 0.4) !important;
+}
+
+.patient-details-save-button:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(87, 204, 153, 0.4) !important;
+}
+
+.patient-details-cancel-button:hover:not(:disabled) {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25) !important;
+}
+
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+
+.patient-details-medical-history-paper * {
+  transition: all 0.3s ease !important;
+}
+
+
+.patient-details-history-input .MuiOutlinedInput-root {
+  font-family: inherit !important;
+  font-size: 0.95rem !important;
+  line-height: 1.6 !important;
+}
+
+.patient-details-history-input .MuiOutlinedInput-root:hover {
+  border-color: var(--verdigris) !important;
+}
+
+.patient-details-history-input .MuiOutlinedInput-root.Mui-focused {
+  border-color: var(--lapis-lazuli) !important;
+}
+
+.patient-details-edit-container > div:last-child {
+  animation: slideInUp 0.4s ease-out 0.1s both !important;
+}
+
+@keyframes slideInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.patient-details-history-input .MuiOutlinedInput-root textarea {
+  color: var(--gunmetal) !important;
+}
+
+.patient-details-history-input .MuiInputLabel-root {
+  color: var(--indigo-dye) !important;
+}
+
+.patient-details-history-input .MuiInputLabel-root.Mui-focused {
+  color: var(--lapis-lazuli) !important;
 }

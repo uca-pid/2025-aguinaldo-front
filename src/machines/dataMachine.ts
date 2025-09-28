@@ -18,7 +18,9 @@ export const DATA_MACHINE_EVENT_TYPES = [
   "LOAD_AVAILABLE_TURNS",
   "LOAD_MY_TURNS",
   "LOAD_DOCTOR_PATIENTS",
-  "LOAD_DOCTOR_AVAILABILITY"
+  "LOAD_DOCTOR_AVAILABILITY",
+  "INIT_PATIENTS_PAGE",
+  "RETRY_DOCTOR_PATIENTS"
 ];
 
 export interface DataMachineContext {
@@ -101,7 +103,9 @@ export type DataMachineEvent =
   | { type: "LOAD_AVAILABLE_TURNS"; doctorId: string; date: string }
   | { type: "LOAD_MY_TURNS"; status?: string }
   | { type: "LOAD_DOCTOR_PATIENTS" }
-  | { type: "LOAD_DOCTOR_AVAILABILITY" };
+  | { type: "LOAD_DOCTOR_AVAILABILITY" }
+  | { type: "INIT_PATIENTS_PAGE" }
+  | { type: "RETRY_DOCTOR_PATIENTS" };
 
 export const dataMachine = createMachine({
   id: "data",
@@ -117,7 +121,10 @@ export const dataMachine = createMachine({
         SET_AUTH: {
           target: "loadingInitialData",
           actions: assign({
-            accessToken: ({ event }) => event.accessToken,
+            accessToken: ({ event }) => {
+              console.log('[DataMachine] Received SET_AUTH:', event);
+              return event.accessToken;
+            },
             userRole: ({ event }) => event.userRole,
             userId: ({ event }) => event.userId,
             doctorId: ({ event }) => event.userRole === "DOCTOR" ? event.userId : null,
@@ -168,6 +175,29 @@ export const dataMachine = createMachine({
         },
         LOAD_DOCTOR_AVAILABILITY: {
           target: "fetchingDoctorAvailability",
+          guard: ({ context }) => !!context.accessToken,
+        },
+        INIT_PATIENTS_PAGE: [
+          {
+            target: "fetchingDoctorPatients",
+            guard: ({ context }) => {
+              console.log('[DataMachine] INIT_PATIENTS_PAGE guard check:', {
+                hasAccessToken: !!context.accessToken,
+                accessToken: context.accessToken,
+                doctorId: context.doctorId,
+                currentState: context
+              });
+              return !!context.accessToken;
+            },
+          },
+          {
+            actions: () => {
+              console.log('[DataMachine] INIT_PATIENTS_PAGE received but guard failed');
+            }
+          }
+        ],
+        RETRY_DOCTOR_PATIENTS: {
+          target: "fetchingDoctorPatients",
           guard: ({ context }) => !!context.accessToken,
         },
       },
@@ -482,6 +512,18 @@ export const dataMachine = createMachine({
         },
         LOAD_DOCTOR_AVAILABILITY: {
           target: "fetchingDoctorAvailability",
+        },
+        INIT_PATIENTS_PAGE: {
+          target: "fetchingDoctorPatients",
+          actions: () => {
+            console.log('[DataMachine] INIT_PATIENTS_PAGE received in ready state');
+          }
+        },
+        RETRY_DOCTOR_PATIENTS: {
+          target: "fetchingDoctorPatients",
+          actions: () => {
+            console.log('[DataMachine] RETRY_DOCTOR_PATIENTS received in ready state');
+          }
         },
       },
     },

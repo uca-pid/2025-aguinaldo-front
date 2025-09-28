@@ -18,31 +18,45 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { useMachines } from "#/providers/MachineProvider"
 import { PeopleOutlined, SearchOutlined, ArrowBack, ChevronRight } from '@mui/icons-material'
 import { Patient } from "#/models/Doctor"
+import { useEffect } from 'react'
 import './ViewPatients.css'
 
 const ViewPatients: React.FC = () => {
-    const { uiSend, doctorState, doctorSend, patientDetailsSend } = useMachines();
+    const { uiSend, doctorState, doctorSend, dataState, dataSend } = useMachines();
 
     const doctorContext = doctorState.context;
-    const patients: Patient[] = doctorContext.patients;
-    const isLoading = doctorContext.isLoadingPatients;
-    const error = doctorContext.patientsError;
+    const dataContext = dataState.context;
+    
+    const patients: Patient[] = dataContext.doctorPatients || [];
+    const isLoading = dataContext.loading.doctorPatients;
+    const error = dataContext.errors.doctorPatients;
     const searchTerm = doctorContext.patientSearchTerm;
 
-    if (!isLoading && patients.length === 0 && !error && doctorContext.accessToken && doctorContext.doctorId) {
-        doctorSend({ type: "INIT_PATIENTS_PAGE" });
-    }
+    // Debug logging
+    console.log('ViewPatients Debug:', {
+        isLoading,
+        patientsLength: patients.length,
+        error,
+        accessToken: !!dataContext.accessToken,
+        doctorId: dataContext.doctorId,
+        dataContext: dataContext
+    });
 
-    const handleBack = () => {
-        uiSend({ type: "NAVIGATE", to: "/dashboard" });
-    };
+    // Use useEffect to handle initialization properly
+    useEffect(() => {
+        if (!isLoading && patients.length === 0 && !error && dataContext.accessToken && dataContext.doctorId) {
+            console.log('Sending INIT_PATIENTS_PAGE event via useEffect');
+            dataSend({ type: "INIT_PATIENTS_PAGE" });
+        }
+    }, [dataContext.accessToken, dataContext.doctorId]); // Only depend on auth data, not on loading states
+
 
     const handleRetry = () => {
-        doctorSend({ type: "RETRY" });
+        dataSend({ type: "RETRY_DOCTOR_PATIENTS" });
     };
 
     const handlePatientClick = (patient: Patient) => {
-        patientDetailsSend({ type: "SELECT_PATIENT", patient });
+        doctorSend({ type: "SELECT_PATIENT", patient });
         uiSend({ type: "NAVIGATE", to: `/patient-detail` });
     };
 
@@ -61,22 +75,16 @@ const ViewPatients: React.FC = () => {
     
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-
             <Box className="viewpatients-container">
-
                 <Box className="viewpatients-header">
                     <Box className="viewpatients-header-layout">
                         <Box className="viewpatients-back-button-container">
-                            <Button
-                                startIcon={<ArrowBack />}
-                                onClick={handleBack}
-                                className="viewpatients-back-button"
-                                variant="outlined"
-                            >
+                            <Button startIcon={<ArrowBack />} onClick={() => {uiSend({ type: "NAVIGATE", to: "/dashboard" })}} 
+                            className="viewpatients-back-button" variant="outlined">
                                 Volver al Dashboard
                             </Button>
                         </Box>
-                        
+
                         <Box className="viewpatients-header-content">
                             <Avatar className="viewpatients-header-icon">
                                 <PeopleOutlined sx={{ fontSize: 28 }} />
@@ -96,10 +104,7 @@ const ViewPatients: React.FC = () => {
 
                 <Box className="viewpatients-content">
                     <Box className="viewpatients-search-container">
-                        <TextField
-                            className="viewpatients-search-field"
-                            placeholder="Buscar por nombre..."
-                            value={searchTerm}
+                        <TextField className="viewpatients-search-field" placeholder="Buscar por nombre..." value={searchTerm}
                             onChange={(e) => doctorSend({ type: "SET_PATIENT_SEARCH", searchTerm: e.target.value })}
                             disabled={isLoading}
                             InputProps={{

@@ -8,8 +8,6 @@ import type { Patient } from "../models/Doctor";
 export const DOCTOR_MACHINE_ID = "doctor";
 export const DOCTOR_MACHINE_EVENT_TYPES = [
   "SET_AUTH",
-  "DATA_LOADED",
-  "RETRY",
   "RESET",
   "TOGGLE_DAY",
   "ADD_RANGE",
@@ -18,7 +16,12 @@ export const DOCTOR_MACHINE_EVENT_TYPES = [
   "SAVE_AVAILABILITY",
   "SET_PATIENT_SEARCH",
   "INIT_AVAILABILITY_PAGE",
-  "INIT_PATIENTS_PAGE"
+  "SELECT_PATIENT",
+  "CLEAR_PATIENT_SELECTION",
+  "START_EDIT_HISTORY",
+  "UPDATE_HISTORY",
+  "SAVE_HISTORY",
+  "HISTORY_SAVED"
 ];
 
 interface Range {
@@ -33,12 +36,14 @@ interface DayAvailability {
 }
 
 export interface DoctorMachineContext {
-  patients: Patient[];
-  isLoadingPatients: boolean;
-  patientsError: string | null;
   accessToken: string | null;
   doctorId: string | null;
   patientSearchTerm: string;
+  
+  // Patient selection and medical history editing/saving
+  selectedPatient: Patient | null;
+  editedHistory: string;
+  isSavingHistory: boolean;
   
   availability: DayAvailability[];
   isSavingAvailability: boolean;
@@ -48,8 +53,6 @@ export interface DoctorMachineContext {
 
 export type DoctorMachineEvent =
   | { type: "SET_AUTH"; accessToken: string; userId: string; userRole?: string }
-  | { type: "DATA_LOADED" }
-  | { type: "RETRY" }
   | { type: "RESET" }
   | { type: "TOGGLE_DAY"; index: number }
   | { type: "ADD_RANGE"; dayIndex: number }
@@ -58,21 +61,26 @@ export type DoctorMachineEvent =
   | { type: "SAVE_AVAILABILITY" }
   | { type: "SET_PATIENT_SEARCH"; searchTerm: string }
   | { type: "INIT_AVAILABILITY_PAGE" }
-  | { type: "INIT_PATIENTS_PAGE" };
+  | { type: "SELECT_PATIENT"; patient: Patient }
+  | { type: "CLEAR_PATIENT_SELECTION" }
+  | { type: "START_EDIT_HISTORY" }
+  | { type: "UPDATE_HISTORY"; value: string }
+  | { type: "SAVE_HISTORY" }
+  | { type: "HISTORY_SAVED" };
 
 const doctorMachine = createMachine({
   id: "doctor",
   type: "parallel",
 
   context: {
-    patients: [],
-    isLoadingPatients: false,
-    patientsError: null,
     accessToken: null,
     doctorId: null,
     patientSearchTerm: "",
     
-    availability: [
+  // Patient selection and medical history editing/saving
+  selectedPatient: null,
+  editedHistory: '',
+  isSavingHistory: false,    availability: [
       { day: "Lunes", enabled: false, ranges: [{ start: "", end: "" }] },
       { day: "Martes", enabled: false, ranges: [{ start: "", end: "" }] },
       { day: "Miércoles", enabled: false, ranges: [{ start: "", end: "" }] },
@@ -92,46 +100,59 @@ const doctorMachine = createMachine({
       states: {
         idle: {
           on: {
-            DATA_LOADED: {
-              actions: assign(() => {
-                try {
-                  const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
-                  const dataContext = dataSnapshot.context;
-                  const error = dataContext.errors?.doctorPatients;
-                  
-                  return {
-                    patients: error ? [] : (dataContext.doctorPatients || []),
-                    isLoadingPatients: false,
-                    patientsError: error || null,
-                  };
-                } catch (error) {
-                  console.warn("Could not get dataMachine snapshot:", error);
-                  return {
-                    isLoadingPatients: false,
-                    patientsError: "Error al conectar con el sistema de datos",
-                  };
-                }
+            RESET: {
+              actions: assign({
+                selectedPatient: null,
+                editedHistory: '',
+                isSavingHistory: false,
               }),
             },
-            RETRY: {
+            SELECT_PATIENT: {
+              actions: assign({
+                selectedPatient: ({ event }) => event.patient,
+                editedHistory: '',
+                isSavingHistory: false,
+              }),
+            },
+            CLEAR_PATIENT_SELECTION: {
+              actions: assign({
+                selectedPatient: null,
+                editedHistory: '',
+                isSavingHistory: false,
+              }),
+            },
+
+            START_EDIT_HISTORY: {
+              actions: assign({
+                editedHistory: ({ context }) => context.selectedPatient?.medicalHistory || '',
+              }),
+            },
+            UPDATE_HISTORY: {
+              actions: assign({
+                editedHistory: ({ event }) => event.value,
+              }),
+            },
+            SAVE_HISTORY: {
               actions: [
-                assign({
-                  isLoadingPatients: true,
-                  patientsError: null,
-                }),
-                ({ context }) => {
-                  if (context.accessToken && context.doctorId) {
-                    orchestrator.send({
-                      type: "LOAD_DOCTOR_PATIENTS"
-                    });
-                  }
+                assign({ isSavingHistory: true }),
+                ({ context, self }: { context: DoctorMachineContext; self: any }) => {
+                  // In real implementation, this would call an API with context.editedHistory
+                  setTimeout(() => {
+                    console.log('Medical history saved:', context.editedHistory);
+                    // Send completion event to self
+                    self.send({ type: "HISTORY_SAVED" });
+                  }, 1000);
                 }
               ],
             },
-            RESET: {
+            HISTORY_SAVED: {
               actions: assign({
-                patients: [],
-                patientsError: null,
+                isSavingHistory: false,
+                editedHistory: '',
+                selectedPatient: ({ context }) => 
+                  context.selectedPatient 
+                    ? { ...context.selectedPatient, medicalHistory: context.editedHistory }
+                    : null,
               }),
             },
           },
@@ -323,29 +344,7 @@ const doctorMachine = createMachine({
         }
       },
     },
-    INIT_PATIENTS_PAGE: {
-      actions: [
-        assign({
-          isLoadingPatients: true,
-          patientsError: null,
-        }),
-        ({ context }) => {
-          console.log("DoctorMachine: INIT_PATIENTS_PAGE received", {
-            accessToken: !!context.accessToken,
-            doctorId: context.doctorId
-          });
-          if (context.accessToken && context.doctorId) {
-            console.log("DoctorMachine: Sending LOAD_DOCTOR_PATIENTS to orchestrator");
-            orchestrator.send({ type: "LOAD_DOCTOR_PATIENTS" });
-          } else {
-            console.warn("DoctorMachine: Missing accessToken or doctorId", {
-              accessToken: !!context.accessToken,
-              doctorId: context.doctorId
-            });
-          }
-        }
-      ],
-    },
+
   },
 });
 
