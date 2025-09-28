@@ -113,7 +113,7 @@ const ViewPatients: React.FC = () => {
                                     Reintentar
                                 </Button>
                             }
-                            sx={{ mb: 2 }}
+                            className="viewpatients-error-alert"
                         >
                             {error}
                         </Alert>
@@ -121,8 +121,8 @@ const ViewPatients: React.FC = () => {
 
                     {isLoading ? (
                         <Box className="viewpatients-empty-state">
-                            <CircularProgress size={40} />
-                            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                            <CircularProgress size={40} className="viewpatients-loading-progress" />
+                            <Typography variant="h6" gutterBottom>
                                 Cargando pacientes...
                             </Typography>
                         </Box>
@@ -142,16 +142,7 @@ const ViewPatients: React.FC = () => {
                                             <ListItem key={patient.id} disablePadding>
                                                 <ListItemButton 
                                                     onClick={() => handlePatientClick(patient)}
-                                                    className="viewpatients-patient-card"
-                                                    sx={{
-                                                        borderRadius: 2,
-                                                        mb: 1,
-                                                        border: '1px solid #e0e0e0',
-                                                        '&:hover': {
-                                                            backgroundColor: '#f5f5f5',
-                                                            borderColor: '#2196f3'
-                                                        }
-                                                    }}
+                                                    className="viewpatients-patient-card viewpatients-patient-card-hover"
                                                 >
                                                     <ListItemAvatar>
                                                         <Avatar className="viewpatients-patient-avatar">
