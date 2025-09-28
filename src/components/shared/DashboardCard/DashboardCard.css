@@ -156,6 +156,64 @@
   right: -8px;
 }
 
+/* Warning styles */
+.admin-avatar-warning,
+.patient-avatar-warning,
+.doctor-avatar-warning {
+  background: #f59e0b !important;
+  animation: warning-pulse 2s ease-in-out infinite;
+}
+
+.admin-button-warning,
+.patient-button-warning,
+.doctor-button-warning {
+  background: #f59e0b !important;
+}
+
+.admin-button-warning:hover,
+.patient-button-warning:hover,
+.doctor-button-warning:hover {
+  background: #d97706 !important;
+}
+
+.dashboard-card-warning {
+  border: 2px solid #f59e0b !important;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+  position: relative !important;
+}
+
+.dashboard-card-warning:hover {
+  border-color: #d97706 !important;
+  box-shadow: 0 12px 30px rgba(245, 158, 11, 0.3) !important;
+}
+
+.dashboard-card-warning-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #f59e0b, #f97316, #ea580c);
+  border-radius: 16px 16px 0 0;
+  animation: warning-shimmer 2s ease-in-out infinite alternate;
+}
+
+@keyframes warning-pulse {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+  50% { 
+    transform: scale(1.02);
+    box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+  }
+}
+
+@keyframes warning-shimmer {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .dashboard-card-item {
