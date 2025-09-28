@@ -5,7 +5,7 @@ import {
 import React, { useEffect } from "react";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
-import { useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
@@ -21,7 +21,8 @@ import TimeSlotSelector from "#/components/shared/TimeSlotSelector/TimeSlotSelec
 import "./ModifyTurn.css";
 
 const ModifyTurn: React.FC = () => {
-  const { turnId } = useParams<{ turnId: string }>();
+  const location = useLocation();
+  const { turnId } = location.state as { turnId: string } || {};
   const { uiSend, modifyTurnState, modifyTurnSend } = useMachines();
   const { authState } = useAuthMachine();
   const user: SignInResponse = authState?.context?.authResponse || {};
@@ -32,11 +33,10 @@ const ModifyTurn: React.FC = () => {
     selectedTime, 
     availableSlots, 
     availableDates,
-    reason,
-    isLoadingTurnDetails, 
-    isLoadingAvailableSlots, 
+    isLoadingTurnDetails,
+    isLoadingAvailableSlots,
     isModifyingTurn,
-    modifyError 
+    modifyError
   } = modifyTurnState.context;
 
   useEffect(() => {
@@ -44,6 +44,12 @@ const ModifyTurn: React.FC = () => {
       modifyTurnSend({ type: "DATA_LOADED" });
     }
   }, [user.accessToken, user.id, modifyTurnSend]);
+
+  useEffect(() => {
+    if (turnId) {
+      modifyTurnSend({ type: "SET_TURN_ID", turnId });
+    }
+  }, [turnId, modifyTurnSend]);
 
   useEffect(() => {
     if (turnId && user.accessToken) {

@@ -62,7 +62,7 @@ function AppContent() {
     <>
       <Route path="/patient/reservation-turns" element={<ReservationTurns />} />
       <Route path="/patient/view-turns" element={<ViewTurns />} />
-      <Route path="/patient/modify-turn/:turnId" element={<ModifyTurn />} />
+      <Route path="/patient/modify-turn" element={<ModifyTurn />} />
     </>
   );
 

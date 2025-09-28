@@ -40,7 +40,7 @@ export class TurnService {
   static async getMyModifyRequests(accessToken: string): Promise<TurnModifyRequest[]> {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_MY_MODIFY_REQUESTS);
     try {
-      const response = await fetch(url, {
+      const response = await fetchWithRefresh(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
       });
@@ -65,7 +65,7 @@ export class TurnService {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTORS);
     
     try {
-      const response = await fetch(url, {
+      const response = await fetchWithRefresh(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
       });
@@ -126,7 +126,7 @@ export class TurnService {
         body: JSON.stringify(data),
       };
       
-      const response = await fetch(url, fetchOptions);
+      const response = await fetchWithRefresh(url, fetchOptions);
 
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
@@ -153,7 +153,7 @@ export class TurnService {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.RESERVE_TURN);
     
     try {
-      const response = await fetch(url, {
+      const response = await fetchWithRefresh(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'POST',
         body: JSON.stringify(data),
@@ -173,9 +173,7 @@ export class TurnService {
     } catch (error) {
       throw error;
     }
-  }
-
-  static async getMyTurns(
+  }  static async getMyTurns(
     accessToken: string,
     status?: string
   ): Promise<TurnResponse[]> {
@@ -183,30 +181,10 @@ export class TurnService {
       ? `${buildApiUrl(API_CONFIG.ENDPOINTS.GET_MY_TURNS)}?status=${status}`
       : buildApiUrl(API_CONFIG.ENDPOINTS.GET_MY_TURNS);
     try {
-      let response = await fetch(url, {
+      const response = await fetchWithRefresh(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
       });
-      if (response.status === 401) {
-        // Intentar refresh token
-        const authData = JSON.parse(localStorage.getItem('authData') || '{}');
-        if (authData.refreshToken) {
-          try {
-            const { AuthService } = await import('./auth-service.service');
-            const refreshed = await AuthService.refreshToken(authData.refreshToken);
-            if (refreshed.accessToken) {
-              localStorage.setItem('authData', JSON.stringify(refreshed));
-              response = await fetch(url, {
-                ...getAuthenticatedFetchOptions(refreshed.accessToken),
-                method: 'GET',
-              });
-            }
-          } catch (refreshError) {
-            console.error('[TurnService] getMyTurns - Refresh token failed:', refreshError);
-            throw new Error('Sesión expirada. Por favor, vuelve a iniciar sesión.');
-          }
-        }
-      }
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
         console.error('[TurnService] getMyTurns - Error:', errorData);
@@ -234,7 +212,7 @@ export class TurnService {
       : `${buildApiUrl(API_CONFIG.ENDPOINTS.GET_PATIENT_TURNS)}/${patientId}`;
     
     try {
-      const response = await fetch(url, {
+      const response = await fetchWithRefresh(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
       });
@@ -265,7 +243,7 @@ export class TurnService {
       : `${buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTOR_TURNS)}/${doctorId}`;
     
     try {
-      const response = await fetch(url, {
+      const response = await fetchWithRefresh(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
       });

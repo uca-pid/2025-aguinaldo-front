@@ -10,6 +10,7 @@ export const MODIFY_TURN_MACHINE_ID = "modifyTurn";
 
 export const MODIFY_TURN_MACHINE_EVENT_TYPES = [
   "UPDATE_FORM",
+  "SET_TURN_ID",
   "LOAD_TURN_DETAILS",
   "LOAD_DOCTOR_AVAILABILITY", 
   "LOAD_AVAILABLE_SLOTS",
@@ -19,7 +20,6 @@ export const MODIFY_TURN_MACHINE_EVENT_TYPES = [
 ] as const;
 
 interface ModifyTurnContext {
-  accessToken: string | null;
   turnId: string | null;
   currentTurn: TurnResponse | null;
   selectedDate: Dayjs | null;
@@ -35,6 +35,7 @@ interface ModifyTurnContext {
 
 type ModifyTurnEvent =
   | { type: "UPDATE_FORM"; key: string; value: any }
+  | { type: "SET_TURN_ID"; turnId: string }
   | { type: "LOAD_TURN_DETAILS"; turnId: string }
   | { type: "LOAD_DOCTOR_AVAILABILITY"; doctorId: string; date: string }
   | { type: "LOAD_AVAILABLE_SLOTS"; doctorId: string; date: string }
@@ -43,7 +44,6 @@ type ModifyTurnEvent =
   | { type: "DATA_LOADED" };
 
 const initialContext: ModifyTurnContext = {
-  accessToken: null,
   turnId: null,
   currentTurn: null,
   selectedDate: null,
@@ -76,6 +76,14 @@ export const modifyTurnMachine = createMachine({
             } as Partial<ModifyTurnContext>;
           }),
         },
+        SET_TURN_ID: [
+          {
+            target: "loadingTurnDetails",
+            actions: assign({
+              turnId: ({ event }) => event.turnId,
+            }),
+          }
+        ],
         LOAD_TURN_DETAILS: {
           target: "loadingTurnDetails",
           actions: assign({
@@ -94,18 +102,16 @@ export const modifyTurnMachine = createMachine({
         RESET: {
           actions: assign(initialContext)
         },
-        DATA_LOADED: {
-          actions: assign({
-            accessToken: () => {
-              try {
-                const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
-                return dataSnapshot?.context?.accessToken || null;
-              } catch {
-                return null;
-              }
-            }
-          })
-        }
+        DATA_LOADED: [
+          {
+            target: "loadingTurnDetails",
+            guard: ({ context }) => !!context.turnId,
+            actions: []
+          },
+          {
+            actions: []
+          }
+        ]
       }
     },
 
@@ -116,19 +122,38 @@ export const modifyTurnMachine = createMachine({
           const { loadTurnDetails } = await import("../utils/turnMachineUtils");
           return await loadTurnDetails({ turnId: input.turnId, accessToken: input.accessToken });
         }),
-        input: ({ context, event }) => ({
+        input: ({ event }) => ({
           turnId: (event as any).turnId,
-          accessToken: context.accessToken!,
+          accessToken: (() => {
+            try {
+              const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
+              return dataSnapshot?.context?.accessToken || null;
+            } catch {
+              return null;
+            }
+          })(),
         }),
-        onDone: {
-          target: "idle",
-          actions: [
-            assign({
-              isLoadingTurnDetails: false,
-              currentTurn: ({ event }) => event.output
-            })
-          ]
-        },
+        onDone: [
+          {
+            target: "loadingDoctorAvailability",
+            guard: ({ event }) => !!event.output?.doctorId,
+            actions: [
+              assign({
+                isLoadingTurnDetails: false,
+                currentTurn: ({ event }) => event.output
+              })
+            ]
+          },
+          {
+            target: "idle",
+            actions: [
+              assign({
+                isLoadingTurnDetails: false,
+                currentTurn: ({ event }) => event.output
+              })
+            ]
+          }
+        ],
         onError: {
           target: "idle",
           actions: [
@@ -155,9 +180,16 @@ export const modifyTurnMachine = createMachine({
           return await loadDoctorAvailability(input);
         }),
         input: ({ context, event }) => ({
-          doctorId: (event as any).doctorId,
-          date: (event as any).date,
-          accessToken: context.accessToken!,
+          doctorId: (event as any).doctorId || context.currentTurn?.doctorId,
+          date: (event as any).date || dayjs().format('YYYY-MM-DD'),
+          accessToken: (() => {
+            try {
+              const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
+              return dataSnapshot?.context?.accessToken || null;
+            } catch {
+              return null;
+            }
+          })(),
         }),
         onDone: {
           target: "idle",
@@ -192,10 +224,17 @@ export const modifyTurnMachine = createMachine({
           const { loadAvailableSlots } = await import("../utils/turnMachineUtils");
           return await loadAvailableSlots(input);
         }),
-        input: ({ context, event }) => ({
+        input: ({ event }) => ({
           doctorId: (event as any).doctorId,
           date: (event as any).date,
-          accessToken: context.accessToken!,
+          accessToken: (() => {
+            try {
+              const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
+              return dataSnapshot?.context?.accessToken || null;
+            } catch {
+              return null;
+            }
+          })(),
         }),
         onDone: {
           target: "idle",
@@ -236,7 +275,14 @@ export const modifyTurnMachine = createMachine({
           turnId: context.turnId!,
           newScheduledAt: `${context.selectedDate!.format('YYYY-MM-DD')}T${dayjs(context.selectedTime).format('HH:mm:ss')}${dayjs(context.selectedTime).format('Z')}`,
           reason: context.reason,
-          accessToken: context.accessToken!,
+          accessToken: (() => {
+            try {
+              const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
+              return dataSnapshot?.context?.accessToken || null;
+            } catch {
+              return null;
+            }
+          })(),
         }),
         onDone: {
           target: "idle",

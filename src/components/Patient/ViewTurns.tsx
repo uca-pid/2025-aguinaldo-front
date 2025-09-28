@@ -11,6 +11,7 @@ import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
+import { useNavigate } from 'react-router-dom';
 import "./ViewTurns.css";
 
 const ViewTurns: React.FC = () => {
@@ -18,6 +19,7 @@ const ViewTurns: React.FC = () => {
   const { authState } = useAuthMachine();
   const user: SignInResponse = authState?.context?.authResponse || {};
   const [pendingModifyRequests, setPendingModifyRequests] = useState<TurnModifyRequest[]>([]);
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchPendingRequests = async () => {
       if (!user.accessToken) return;
@@ -51,10 +53,8 @@ const ViewTurns: React.FC = () => {
   };
 
   const handleModifyTurn = (turnId: string) => {
-  uiSend({ type: "NAVIGATE", to: `/patient/modify-turn/${turnId}` });
-  };
-
-  const getStatusLabel = (status: string) => {
+    navigate('/patient/modify-turn', { state: { turnId } });
+  };  const getStatusLabel = (status: string) => {
     switch (status) {
       case 'SCHEDULED':
         return 'Programado';
