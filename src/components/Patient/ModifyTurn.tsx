@@ -4,15 +4,12 @@ import {
 } from "@mui/material";
 import React from "react";
 import { useMachines } from "#/providers/MachineProvider";
-import { useAuthMachine } from "#/providers/AuthProvider";
-import { useLocation } from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { DateCalendar } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { SignInResponse } from "#/models/Auth";
 import {
   formatDateTime,
   shouldDisableDate
@@ -21,31 +18,12 @@ import TimeSlotSelector from "#/components/shared/TimeSlotSelector/TimeSlotSelec
 import "./ModifyTurn.css";
 
 const ModifyTurn: React.FC = () => {
-  const location = useLocation();
-  const { turnId } = location.state as { turnId: string } || {};
+  const { uiSend, turnState, turnSend } = useMachines();
 
-  const { uiSend, modifyTurnsState, modifyTurnsSend } = useMachines();
-  const { authState } = useAuthMachine();
+  const { isLoadingTurnDetails, isModifyingTurn, isLoadingAvailableSlots, modifyError, availableTurns } = turnState.context;
+  const { currentTurn, selectedDate, selectedTime, availableDates } = turnState.context.modifyTurn;
 
-  const user: SignInResponse = authState?.context?.authResponse || {};
-
-  const {
-    currentTurn,
-    selectedDate,
-    selectedTime,
-    availableSlots,
-    availableDates,
-    isLoadingTurnDetails,
-    isLoadingAvailableSlots,
-    isModifyingTurn,
-    modifyError
-  } = modifyTurnsState.context;
-
-  React.useEffect(() => {
-    if (turnId && user.accessToken) {
-      modifyTurnsSend({ type: "INITIALIZE", turnId });
-    }
-  }, [turnId, user.accessToken, modifyTurnsSend]);
+  console.log("Available Turns:", availableTurns);
 
   if (isLoadingTurnDetails) {
     return (
@@ -61,6 +39,7 @@ const ModifyTurn: React.FC = () => {
   }
 
   if (!currentTurn) {
+    console.error("No current turn found in context:", turnState.context.modifyTurn);
     return (
       <Container maxWidth="md" className="modify-turn-container">
         <Box className="modify-turn-error">
@@ -129,17 +108,10 @@ const ModifyTurn: React.FC = () => {
                   <DemoContainer components={['DateCalendar']} sx={{ width: '100%' }}>
                     <DemoItem>
                       <DateCalendar
-                        value={selectedDate}
+                        value={selectedDate ? dayjs(selectedDate) : null}
                         onChange={(newValue) => {
-                          modifyTurnsSend({ type: "UPDATE_FORM", key: "selectedDate", value: newValue });
-                          modifyTurnsSend({ type: "UPDATE_FORM", key: "selectedTime", value: null });
-                          if (newValue && currentTurn?.doctorId) {
-                            modifyTurnsSend({
-                              type: "LOAD_AVAILABLE_SLOTS",
-                              doctorId: currentTurn.doctorId,
-                              date: newValue.format('YYYY-MM-DD')
-                            });
-                          }
+                          turnSend({ type: "UPDATE_FORM", path: ["modifyTurn", "selectedDate"], value: newValue });
+                          turnSend({ type: "UPDATE_FORM", path: ["modifyTurn", "selectedTime"], value: null });
                         }}
                         minDate={dayjs()}
                         shouldDisableDate={(date) => shouldDisableDate(date, availableDates)}
@@ -155,10 +127,10 @@ const ModifyTurn: React.FC = () => {
             <Box className="reservation-time-section">
               <Box className="reservation-time-slots">
                 <TimeSlotSelector
-                  selectedDate={selectedDate}
-                  availableSlots={availableSlots}
+                  selectedDate={selectedDate ? dayjs(selectedDate) : null}
+                  availableSlots={availableTurns}
                   selectedTime={selectedTime}
-                  onTimeSelect={(timeSlot) => modifyTurnsSend({ type: "UPDATE_FORM", key: "selectedTime", value: timeSlot })}
+                  onTimeSelect={(timeSlot) => turnSend({ type: "UPDATE_FORM", path: ["modifyTurn", "selectedTime"], value: timeSlot })}
                   isLoadingSlots={isLoadingAvailableSlots}
                 />
               </Box>
@@ -183,7 +155,7 @@ const ModifyTurn: React.FC = () => {
             Cancelar
           </Button>
           <Button
-            onClick={() => modifyTurnsSend({ type: "SUBMIT_MODIFY_REQUEST" })}
+            onClick={() => turnSend({ type: "SUBMIT_MODIFY_REQUEST" })}
             variant="contained"
             className="reservation-btn-primary"
             disabled={!selectedDate || !selectedTime || isModifyingTurn}

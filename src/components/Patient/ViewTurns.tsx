@@ -11,15 +11,15 @@ import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
-import { useNavigate } from 'react-router-dom';
 import "./ViewTurns.css";
+import { orchestrator } from "#/core/Orchestrator";
 
 const ViewTurns: React.FC = () => {
   const { uiSend, turnState, turnSend } = useMachines();
   const { authState } = useAuthMachine();
   const user: SignInResponse = authState?.context?.authResponse || {};
+
   const [pendingModifyRequests, setPendingModifyRequests] = useState<TurnModifyRequest[]>([]);
-  const navigate = useNavigate();
   useEffect(() => {
     const fetchPendingRequests = async () => {
       if (!user.accessToken) return;
@@ -53,8 +53,10 @@ const ViewTurns: React.FC = () => {
   };
 
   const handleModifyTurn = (turnId: string) => {
-    navigate('/patient/modify-turn', { state: { turnId } });
-  };  const getStatusLabel = (status: string) => {
+    orchestrator.send({ type: "NAVIGATE", to: '/patient/modify-turn?turnId=' + turnId });
+  };
+
+  const getStatusLabel = (status: string) => {
     switch (status) {
       case 'SCHEDULED':
         return 'Programado';
@@ -136,8 +138,8 @@ const ViewTurns: React.FC = () => {
                   value={showTurnsContext.statusFilter}
                   label="Estado del turno"
                   onChange={(e) => turnSend({
-                    type: "UPDATE_FORM_SHOW_TURNS",
-                    key: "statusFilter",
+                    type: "UPDATE_FORM",
+                    path: ["statusFilter"],
                     value: e.target.value
                   })}
                 >
@@ -151,8 +153,8 @@ const ViewTurns: React.FC = () => {
                 <Button
                   variant="outlined"
                   onClick={() => turnSend({
-                    type: "UPDATE_FORM_SHOW_TURNS",
-                    key: "statusFilter",
+                    type: "UPDATE_FORM",
+                    path: ["statusFilter"],
                     value: ""
                   })}
                   className="viewturns-clear-filter-btn"

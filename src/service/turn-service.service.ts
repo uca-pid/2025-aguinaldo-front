@@ -3,7 +3,6 @@ import { orchestrator } from '#/core/Orchestrator';
 import type {
   Doctor,
   TurnCreateRequest,
-  TurnReserveRequest,
   TurnResponse,
   ApiErrorResponse
 } from '../models/Turn';
@@ -136,35 +135,8 @@ export class TurnService {
       throw error;
     }
   }
-
-  static async reserveTurn(
-    data: TurnReserveRequest, 
-    accessToken: string
-  ): Promise<TurnResponse> {
-    const url = buildApiUrl(API_CONFIG.ENDPOINTS.RESERVE_TURN);
-    
-    try {
-      const response = await fetch(url, {
-        ...getAuthenticatedFetchOptions(accessToken),
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData?.message || 
-          errorData?.error ||
-          `Failed to reserve turn! Status: ${response.status}`
-        );
-      }
-
-      const result: TurnResponse = await response.json();
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }  static async getMyTurns(
+  
+  static async getMyTurns(
     accessToken: string,
     status?: string
   ): Promise<TurnResponse[]> {

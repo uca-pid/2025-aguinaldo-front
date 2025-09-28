@@ -31,11 +31,6 @@ export interface TurnCreateRequest {
   scheduledAt: string; 
 }
 
-export interface TurnReserveRequest {
-  turnId: string;
-  patientId: string;
-}
-
 export interface TurnResponse {
   id: string;
   doctorId: string;

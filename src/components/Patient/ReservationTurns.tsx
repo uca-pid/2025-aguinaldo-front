@@ -34,31 +34,31 @@ const ReservationTurns: React.FC = () => {
   };
 
   const handleReasonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "reason", value: e.target.value });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "reason"], value: e.target.value });
   };    
 
   const handleProfessionChange = (event: SelectChangeEvent) => {
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "professionSelected", value: event.target.value });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "doctorId", value: "" });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "profesionalSelected", value: "" });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "professionSelected"], value: event.target.value });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "doctorId"], value: "" });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "profesionalSelected"], value: "" });
   };
   
   const handleDoctorChange = (event: SelectChangeEvent) => {
     const selectedDoctor = turnContext.doctors.find((doctor: any) => doctor.id === event.target.value);
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "doctorId", value: event.target.value });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "profesionalSelected", value: selectedDoctor ? `${selectedDoctor.name} ${selectedDoctor.surname}` : "" });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "doctorId"], value: event.target.value });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "profesionalSelected"], value: selectedDoctor ? `${selectedDoctor.name} ${selectedDoctor.surname}` : "" });
   };
 
   const handleDateChange = (newValue: Dayjs | null) => {
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "dateSelected", value: newValue });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "timeSelected", value: null });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "scheduledAt", value: null });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "dateSelected"], value: newValue });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "timeSelected"], value: null });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "scheduledAt"], value: null });
   };
 
   const handleTimeSelect = (timeSlot: string) => {
     const selectedDateTime = dayjs(timeSlot);
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "timeSelected", value: selectedDateTime });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "scheduledAt", value: timeSlot });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "timeSelected"], value: selectedDateTime });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "scheduledAt"], value: timeSlot });
   };
 
   const handleReserve = async () => {
@@ -78,8 +78,8 @@ const ReservationTurns: React.FC = () => {
   };
 
   const handleNext = () => {
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "dateSelected", value: null });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "scheduledAt", value: null });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "dateSelected"], value: null });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "scheduledAt"], value: null });
     
     turnSend({ type: "NEXT" });
   };
