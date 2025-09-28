@@ -15,7 +15,6 @@ export const DOCTOR_MACHINE_EVENT_TYPES = [
   "UPDATE_RANGE",
   "SAVE_AVAILABILITY",
   "SET_PATIENT_SEARCH",
-  "INIT_AVAILABILITY_PAGE",
   "SELECT_PATIENT",
   "CLEAR_PATIENT_SELECTION",
   "START_EDIT_HISTORY",
@@ -39,7 +38,7 @@ export interface DoctorMachineContext {
   doctorId: string | null;
   patientSearchTerm: string;
   
-
+  patients: Patient[];
   selectedPatient: Patient | null;
   editedHistory: string;
   isSavingHistory: boolean;
@@ -59,7 +58,6 @@ export type DoctorMachineEvent =
   | { type: "UPDATE_RANGE"; dayIndex: number; rangeIndex: number; field: "start" | "end"; value: string }
   | { type: "SAVE_AVAILABILITY" }
   | { type: "SET_PATIENT_SEARCH"; searchTerm: string }
-  | { type: "INIT_AVAILABILITY_PAGE" }
   | { type: "SELECT_PATIENT"; patient: Patient }
   | { type: "CLEAR_PATIENT_SELECTION" }
   | { type: "START_EDIT_HISTORY" }
@@ -119,11 +117,10 @@ const doctorMachine = createMachine({
                 isSavingHistory: false,
               }),
             },
-
             START_EDIT_HISTORY: {
-              actions: assign({
+              actions: [assign({
                 editedHistory: ({ context }) => context.selectedPatient?.medicalHistory || '',
-              }),
+              })],
             },
             UPDATE_HISTORY: {
               actions: assign({
@@ -272,45 +269,6 @@ const doctorMachine = createMachine({
               }),
             },
             SAVE_AVAILABILITY: "saving",
-            DATA_LOADED: {
-              actions: assign(() => {
-                try {
-                  const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
-                  const dataContext = dataSnapshot.context;
-                  
-                  const dayMapping: { [key: string]: string } = {
-                    "MONDAY": "Lunes",
-                    "TUESDAY": "Martes", 
-                    "WEDNESDAY": "Miércoles",
-                    "THURSDAY": "Jueves",
-                    "FRIDAY": "Viernes",
-                    "SATURDAY": "Sábado",
-                    "SUNDAY": "Domingo"
-                  };
-                  
-                  const availabilityData = dataContext.doctorAvailability as any;
-                  if (availabilityData && availabilityData.weeklyAvailability && availabilityData.weeklyAvailability.length > 0) {
-                    return {
-                      availability: availabilityData.weeklyAvailability.map((day: any) => ({
-                        day: dayMapping[day.day] || day.day,
-                        enabled: day.enabled,
-                        ranges: day.ranges || [{ start: "", end: "" }]
-                      })),
-                      isLoadingAvailability: false,
-                      availabilityError: null,
-                    };
-                  }
-                  
-                  return {
-                    isLoadingAvailability: false,
-                    availabilityError: null,
-                  };
-                } catch (error) {
-                  console.warn("Could not get dataMachine snapshot:", error);
-                  return {};
-                }
-              }),
-            },
           },
         },
         
@@ -395,14 +353,47 @@ const doctorMachine = createMachine({
         patientSearchTerm: ({ event }) => event.searchTerm,
       }),
     },
-    INIT_AVAILABILITY_PAGE: {
-      actions: ({ context }) => {
-        if (context.accessToken && context.doctorId) {
-          orchestrator.send({ type: "LOAD_DOCTOR_AVAILABILITY" });
+    DATA_LOADED: {
+      actions: assign(() => {
+        try {
+          const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
+          const dataContext = dataSnapshot.context;
+          
+          const dayMapping: { [key: string]: string } = {
+            "MONDAY": "Lunes",
+            "TUESDAY": "Martes", 
+            "WEDNESDAY": "Miércoles",
+            "THURSDAY": "Jueves",
+            "FRIDAY": "Viernes",
+            "SATURDAY": "Sábado",
+            "SUNDAY": "Domingo"
+          };
+          
+          const availabilityData = dataContext.doctorAvailability as any;
+          if (availabilityData && availabilityData.weeklyAvailability && availabilityData.weeklyAvailability.length > 0) {
+            return {
+              availability: availabilityData.weeklyAvailability.map((day: any) => ({
+                day: dayMapping[day.day] || day.day,
+                enabled: day.enabled,
+                ranges: day.ranges || [{ start: "", end: "" }]
+              })),
+              patients: dataContext.doctorPatients || [],
+              isLoadingAvailability: false,
+              availabilityError: null,
+            };
+          }
+          
+          return {
+            patients: dataContext.doctorPatients || [],
+            isLoadingAvailability: false,
+            availabilityError: null,
+          };
+        } catch (error) {
+          console.warn("Could not get dataMachine snapshot:", error);
+          return {};
         }
-      },
+      }),
     },
-
   },
 });
 

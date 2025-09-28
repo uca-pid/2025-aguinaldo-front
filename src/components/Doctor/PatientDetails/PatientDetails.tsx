@@ -6,9 +6,11 @@ import { ArrowBack, PersonOutlined, BadgeOutlined, EmailOutlined,PhoneOutlined,C
   FiberManualRecordOutlined,Edit,Save,Cancel} from '@mui/icons-material'
 import { calculateAge } from "#/models/Doctor"
 import './PatientDetails.css'
+import { useDataMachine } from "#/providers/DataProvider"
 
 const PatientDetails: React.FC = () => {
-  const { uiState, uiSend, doctorState, doctorSend, dataState, dataSend } = useMachines();
+  const { dataState, dataSend } = useDataMachine();
+  const { uiState, uiSend, doctorState, doctorSend } = useMachines();
 
   const doctorContext = doctorState.context;
   const dataContext = dataState.context;

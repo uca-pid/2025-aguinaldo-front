@@ -18,11 +18,12 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { useMachines } from "#/providers/MachineProvider"
 import { PeopleOutlined, SearchOutlined, ArrowBack, ChevronRight } from '@mui/icons-material'
 import { Patient } from "#/models/Doctor"
-import { useEffect } from 'react'
 import './ViewPatients.css'
+import { useDataMachine } from "#/providers/DataProvider"
 
 const ViewPatients: React.FC = () => {
-    const { uiSend, doctorState, doctorSend, dataState, dataSend } = useMachines();
+    const { dataState, dataSend } = useDataMachine();
+    const { uiSend, doctorState, doctorSend } = useMachines();
 
     const doctorContext = doctorState.context;
     const dataContext = dataState.context;
@@ -31,17 +32,6 @@ const ViewPatients: React.FC = () => {
     const isLoading = dataContext.loading.doctorPatients;
     const error = dataContext.errors.doctorPatients;
     const searchTerm = doctorContext.patientSearchTerm;
-
-    useEffect(() => {
-        if (!isLoading && patients.length === 0 && !error && dataContext.accessToken && dataContext.doctorId) {
-            dataSend({ type: "INIT_PATIENTS_PAGE" });
-        }
-    }, [dataContext.accessToken, dataContext.doctorId]); 
-
-
-    const handleRetry = () => {
-        dataSend({ type: "RETRY_DOCTOR_PATIENTS" });
-    };
 
     const handlePatientClick = (patient: Patient) => {
         doctorSend({ type: "SELECT_PATIENT", patient });
@@ -109,7 +99,7 @@ const ViewPatients: React.FC = () => {
                         <Alert 
                             severity="error" 
                             action={
-                                <Button color="inherit" size="small" onClick={handleRetry}>
+                                <Button color="inherit" size="small" onClick={() => dataSend({ type: "LOAD_DOCTOR_PATIENTS" })}>
                                     Reintentar
                                 </Button>
                             }

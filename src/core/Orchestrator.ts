@@ -9,8 +9,8 @@ interface EventSubscription {
 interface MachineRegistration {
   id: string;
   machine: AnyStateMachine;
-  eventTypes: string[]; // Event types this machine can handle
-  input?: any; // Initial input for the machine
+  eventTypes: string[];
+  input?: any;
 }
 
 interface RegisteredMachine {
@@ -29,11 +29,6 @@ export class Orchestrator {
 
   constructor(options?: { debug?: boolean }) {
     this.debug = options?.debug || false;
-  }
-
-
-  isRegistered(id: string): boolean {
-    return this.machines.has(id);
   }
 
   registerMachine(registration: MachineRegistration): void {

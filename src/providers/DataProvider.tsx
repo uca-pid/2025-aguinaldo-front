@@ -10,13 +10,11 @@ interface DataMachineInstance {
 interface DataProviderProps {children: React.ReactNode;}
 const DataMachineContext = createContext<DataMachineInstance | null>(null);
 
-if (!orchestrator.isRegistered(DATA_MACHINE_ID)) {
-  orchestrator.registerMachine({
-    id: DATA_MACHINE_ID,
-    machine: dataMachine,
-    eventTypes: DATA_MACHINE_EVENT_TYPES,
-  });
-}
+orchestrator.registerMachine({
+  id: DATA_MACHINE_ID,
+  machine: dataMachine,
+  eventTypes: DATA_MACHINE_EVENT_TYPES,
+});
 
 export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const { state: dataState, send: dataSend } = useStateMachine(DATA_MACHINE_ID);
