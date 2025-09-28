@@ -7,7 +7,7 @@ import { turnMachine, TURN_MACHINE_ID, TURN_MACHINE_EVENT_TYPES, type TurnMachin
 import doctorMachine, { DOCTOR_MACHINE_ID, DOCTOR_MACHINE_EVENT_TYPES, type DoctorMachineEvent } from '../machines/doctorMachine';
 import { adminUserMachine, ADMIN_USER_MACHINE_ID, ADMIN_USER_MACHINE_EVENT_TYPES } from '#/machines/adminUserMachine';
 import { profileMachine, PROFILE_MACHINE_ID, PROFILE_MACHINE_EVENT_TYPES, type ProfileMachineEvent } from '../machines/profileMachine';
-import { DATA_MACHINE_ID,  type DataMachineEvent } from '../machines/dataMachine';
+import { dataMachine, DATA_MACHINE_ID, DATA_MACHINE_EVENT_TYPES, type DataMachineEvent } from '../machines/dataMachine';
 
 
 interface MachineInstances {
@@ -31,35 +31,54 @@ interface MachineProviderProps {
 
 const MachineContext = createContext<MachineInstances | null>(null);
 
-orchestrator.registerMachine({
-  id: UI_MACHINE_ID,
-  machine: uiMachine,
-  eventTypes: UI_MACHINE_EVENT_TYPES
-});
+// Register machines only if not already registered (prevents hot reload duplicates)
+if (!orchestrator.isRegistered(UI_MACHINE_ID)) {
+  orchestrator.registerMachine({
+    id: UI_MACHINE_ID,
+    machine: uiMachine,
+    eventTypes: UI_MACHINE_EVENT_TYPES
+  });
+}
 
-orchestrator.registerMachine({
-  id: TURN_MACHINE_ID,
-  machine: turnMachine,
-  eventTypes: TURN_MACHINE_EVENT_TYPES
-});
+if (!orchestrator.isRegistered(TURN_MACHINE_ID)) {
+  orchestrator.registerMachine({
+    id: TURN_MACHINE_ID,
+    machine: turnMachine,
+    eventTypes: TURN_MACHINE_EVENT_TYPES
+  });
+}
 
-orchestrator.registerMachine({
-  id: DOCTOR_MACHINE_ID,
-  machine: doctorMachine,
-  eventTypes: DOCTOR_MACHINE_EVENT_TYPES
-});
+if (!orchestrator.isRegistered(DOCTOR_MACHINE_ID)) {
+  orchestrator.registerMachine({
+    id: DOCTOR_MACHINE_ID,
+    machine: doctorMachine,
+    eventTypes: DOCTOR_MACHINE_EVENT_TYPES
+  });
+}
 
-orchestrator.registerMachine({
-  id: ADMIN_USER_MACHINE_ID,
-  machine: adminUserMachine,
-  eventTypes: ADMIN_USER_MACHINE_EVENT_TYPES
-});
+if (!orchestrator.isRegistered(ADMIN_USER_MACHINE_ID)) {
+  orchestrator.registerMachine({
+    id: ADMIN_USER_MACHINE_ID,
+    machine: adminUserMachine,
+    eventTypes: ADMIN_USER_MACHINE_EVENT_TYPES
+  });
+}
 
-orchestrator.registerMachine({
-  id: PROFILE_MACHINE_ID,
-  machine: profileMachine,
-  eventTypes: PROFILE_MACHINE_EVENT_TYPES
-});
+if (!orchestrator.isRegistered(PROFILE_MACHINE_ID)) {
+  orchestrator.registerMachine({
+    id: PROFILE_MACHINE_ID,
+    machine: profileMachine,
+    eventTypes: PROFILE_MACHINE_EVENT_TYPES
+  });
+}
+
+if (!orchestrator.isRegistered(DATA_MACHINE_ID)) {
+  orchestrator.registerMachine({
+    id: DATA_MACHINE_ID,
+    machine: dataMachine,
+    eventTypes: DATA_MACHINE_EVENT_TYPES
+  });
+}
 
 
 

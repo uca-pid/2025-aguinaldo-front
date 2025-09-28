@@ -122,7 +122,7 @@ export const dataMachine = createMachine({
           target: "loadingInitialData",
           actions: assign({
             accessToken: ({ event }) => {
-              console.log('[DataMachine] Received SET_AUTH:', event);
+            
               return event.accessToken;
             },
             userRole: ({ event }) => event.userRole,
@@ -181,12 +181,8 @@ export const dataMachine = createMachine({
           {
             target: "fetchingDoctorPatients",
             guard: ({ context }) => {
-              console.log('[DataMachine] INIT_PATIENTS_PAGE guard check:', {
-                hasAccessToken: !!context.accessToken,
-                accessToken: context.accessToken,
-                doctorId: context.doctorId,
-                currentState: context
-              });
+             
+            
               return !!context.accessToken;
             },
           },

@@ -32,6 +32,10 @@ export class Orchestrator {
   }
 
 
+  isRegistered(id: string): boolean {
+    return this.machines.has(id);
+  }
+
   registerMachine(registration: MachineRegistration): void {
     const { id, machine, eventTypes, input } = registration;
 

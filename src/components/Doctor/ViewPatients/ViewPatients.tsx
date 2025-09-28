@@ -32,23 +32,11 @@ const ViewPatients: React.FC = () => {
     const error = dataContext.errors.doctorPatients;
     const searchTerm = doctorContext.patientSearchTerm;
 
-    // Debug logging
-    console.log('ViewPatients Debug:', {
-        isLoading,
-        patientsLength: patients.length,
-        error,
-        accessToken: !!dataContext.accessToken,
-        doctorId: dataContext.doctorId,
-        dataContext: dataContext
-    });
-
-    // Use useEffect to handle initialization properly
     useEffect(() => {
         if (!isLoading && patients.length === 0 && !error && dataContext.accessToken && dataContext.doctorId) {
-            console.log('Sending INIT_PATIENTS_PAGE event via useEffect');
             dataSend({ type: "INIT_PATIENTS_PAGE" });
         }
-    }, [dataContext.accessToken, dataContext.doctorId]); // Only depend on auth data, not on loading states
+    }, [dataContext.accessToken, dataContext.doctorId]); 
 
 
     const handleRetry = () => {
