@@ -159,7 +159,7 @@ export const dataMachine = createMachine({
         },
         LOAD_AVAILABLE_TURNS: {
           target: "fetchingAvailableTurns",
-          guard: ({ context }) => !!context.accessToken,
+          guard: ({ context, event }) => !!context.accessToken && !!(event as any).doctorId && !!(event as any).date,
         },
         LOAD_MY_TURNS: {
           target: "fetchingMyTurns",
@@ -522,6 +522,7 @@ export const dataMachine = createMachine({
         },
         LOAD_AVAILABLE_TURNS: {
           target: "fetchingAvailableTurns",
+          guard: ({ context, event }) => !!context.accessToken && !!(event as any).doctorId && !!(event as any).date,
         },
         LOAD_MY_TURNS: {
           target: "fetchingMyTurns",

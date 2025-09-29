@@ -18,7 +18,7 @@ export const API_CONFIG = {
     
     MODIFY_TURN_REQUEST: '/api/turns/modify-requests',
     GET_MY_MODIFY_REQUESTS: '/api/turns/modify-requests/my-requests',
-    GET_DOCTOR_MODIFY_REQUESTS: '/api/turns/modify-requests/pending',
+    GET_DOCTOR_MODIFY_REQUESTS: '/api/turns/modify-requests/pending?doctorId={doctorId}',
     DOCTOR_MODIFY_REQUEST: '/api/turns/modify-requests',
     
     GET_DOCTORS: '/api/doctors',

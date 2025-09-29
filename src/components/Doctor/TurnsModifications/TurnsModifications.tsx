@@ -38,7 +38,7 @@ const TurnsModifications: React.FC = () => {
     const fetchPendingRequests = async () => {
       if (!user.accessToken) return;
       try {
-        const requests = await TurnService.getDoctorModifyRequests(user.accessToken);
+        const requests = await TurnService.getDoctorModifyRequests(user.id, user.accessToken);
         setPendingModifyRequests(requests.filter(r => r.status === "PENDING"));
       } catch {
         setPendingModifyRequests([]);
@@ -59,7 +59,7 @@ const TurnsModifications: React.FC = () => {
     try {
       await TurnService.approveModifyRequest(requestId, user.accessToken);
       // Refrescar la lista
-      const requests = await TurnService.getDoctorModifyRequests(user.accessToken);
+      const requests = await TurnService.getDoctorModifyRequests(user.id, user.accessToken);
       setPendingModifyRequests(requests.filter(r => r.status === "PENDING"));
       uiSend({type: "OPEN_SNACKBAR", message: "Solicitud aprobada correctamente", severity: "success"});
     } catch (error) {
@@ -76,7 +76,7 @@ const TurnsModifications: React.FC = () => {
     try {
       await TurnService.rejectModifyRequest(requestId, user.accessToken);
       // Refrescar la lista
-      const requests = await TurnService.getDoctorModifyRequests(user.accessToken);
+      const requests = await TurnService.getDoctorModifyRequests(user.id, user.accessToken);
       setPendingModifyRequests(requests.filter(r => r.status === "PENDING"));
       uiSend({type: "OPEN_SNACKBAR", message: "Solicitud rechazada correctamente", severity: "success"});
     } catch (error) {

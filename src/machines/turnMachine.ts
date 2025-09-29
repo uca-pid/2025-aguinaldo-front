@@ -267,6 +267,9 @@ export const turnMachine = createMachine({
           entry: assign({ isLoadingAvailableDates: true }),
           invoke: {
             src: fromPromise(async ({ input }) => {
+              if (!input.doctorId) {
+                return [];
+              }
               return await TurnService.getAvailableDates(input.doctorId, input.accessToken);
             }),
             input: ({ context }) => ({

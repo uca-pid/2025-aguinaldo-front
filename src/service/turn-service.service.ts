@@ -50,8 +50,9 @@ export class TurnService {
     }
   }
 
-  static async getDoctorModifyRequests( accessToken: string): Promise<TurnModifyRequest[]> {
-    const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTOR_MODIFY_REQUESTS);
+  static async getDoctorModifyRequests(doctorId: string, accessToken: string): Promise<TurnModifyRequest[]> {
+    let url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTOR_MODIFY_REQUESTS);
+    url = url.replace('{doctorId}', doctorId);
     try {
       const response = await fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
