@@ -31,7 +31,7 @@ export const iconMap = {
 export const getDoctorMenuItems = (handleLogout: () => void): MenuItem[] => [
   {
     id: 'dashboard',
-    title: 'Dashboard',
+    title: 'Inicio',
     iconComponent: DashboardIcon,
     path: '/'
   },
@@ -77,7 +77,7 @@ export const getDoctorMenuItems = (handleLogout: () => void): MenuItem[] => [
 export const getPatientMenuItems = (handleLogout: () => void): MenuItem[] => [
   {
     id: 'dashboard',
-    title: 'Dashboard',
+    title: 'Inicio',
     iconComponent: DashboardIcon,
     path: '/'
   },
@@ -111,7 +111,7 @@ export const getPatientMenuItems = (handleLogout: () => void): MenuItem[] => [
 export const getAdminMenuItems = (handleLogout: () => void): MenuItem[] => [
   {
     id: 'dashboard',
-    title: 'Dashboard',
+    title: 'Inicio',
     iconComponent: DashboardIcon,
     path: '/'
   },
@@ -149,7 +149,7 @@ export const getAdminMenuItems = (handleLogout: () => void): MenuItem[] => [
 ];
 
 export const getMenuItems = (
-  userRole: 'DOCTOR' | 'PATIENT' | 'ADMIN' | undefined,
+  userRole: 'DOCTOR' | 'PATIENT' | 'ADMIN',
   handleLogout: () => void
 ): MenuItem[] => {
   switch (userRole) {
