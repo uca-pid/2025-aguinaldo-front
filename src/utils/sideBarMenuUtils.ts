@@ -1,8 +1,180 @@
 
+import {
+  Dashboard as DashboardIcon,
+  People as PeopleIcon,
+  CalendarToday as CalendarIcon,
+  Schedule as ScheduleIcon,
+  Notifications as NotificationsIcon,
+  Person as PersonIcon,
+  ExitToApp as ExitIcon
+} from '@mui/icons-material';
+
 export interface MenuItem {
   id: string;
   title: string;
-  icon: React.ReactElement;
+  iconComponent: any; 
   path: string;
   action?: () => void;
 }
+
+
+export const iconMap = {
+  Dashboard: DashboardIcon,
+  People: PeopleIcon,
+  CalendarToday: CalendarIcon,
+  Schedule: ScheduleIcon,
+  Notifications: NotificationsIcon,
+  Person: PersonIcon,
+  ExitToApp: ExitIcon,
+};
+
+export const getDoctorMenuItems = (handleLogout: () => void): MenuItem[] => [
+  {
+    id: 'dashboard',
+    title: 'Dashboard',
+    iconComponent: DashboardIcon,
+    path: '/'
+  },
+  {
+    id: 'patients',
+    title: 'Pacientes',
+    iconComponent: PeopleIcon,
+    path: '/doctor/view-patients'
+  },
+  {
+    id: 'turns',
+    title: 'Mis Turnos',
+    iconComponent: CalendarIcon,
+    path: '/doctor/view-turns'
+  },
+  {
+    id: 'availability',
+    title: 'Disponibilidad',
+    iconComponent: ScheduleIcon,
+    path: '/doctor/enable-hours'
+  },
+  {
+    id: 'requests',
+    title: 'Solicitudes',
+    iconComponent: NotificationsIcon,
+    path: '/doctor/turns-modifications'
+  },
+  {
+    id: 'profile',
+    title: 'Mi Perfil',
+    iconComponent: PersonIcon,
+    path: '/profile'
+  },
+  {
+    id: 'logout',
+    title: 'Cerrar Sesión',
+    iconComponent: ExitIcon,
+    path: '',
+    action: handleLogout
+  }
+];
+
+export const getPatientMenuItems = (handleLogout: () => void): MenuItem[] => [
+  {
+    id: 'dashboard',
+    title: 'Dashboard',
+    iconComponent: DashboardIcon,
+    path: '/'
+  },
+  {
+    id: 'reservation',
+    title: 'Reservar Turno',
+    iconComponent: CalendarIcon,
+    path: '/patient/reservation-turns'
+  },
+  {
+    id: 'turns',
+    title: 'Mis Turnos',
+    iconComponent: CalendarIcon,
+    path: '/patient/view-turns'
+  },
+  {
+    id: 'profile',
+    title: 'Mi Perfil',
+    iconComponent: PersonIcon,
+    path: '/profile'
+  },
+  {
+    id: 'logout',
+    title: 'Cerrar Sesión',
+    iconComponent: ExitIcon,
+    path: '',
+    action: handleLogout
+  }
+];
+
+export const getAdminMenuItems = (handleLogout: () => void): MenuItem[] => [
+  {
+    id: 'dashboard',
+    title: 'Dashboard',
+    iconComponent: DashboardIcon,
+    path: '/'
+  },
+  {
+    id: 'pending',
+    title: 'Solicitudes Pendientes',
+    iconComponent: NotificationsIcon,
+    path: '/admin/pending'
+  },
+  {
+    id: 'patients',
+    title: 'Pacientes',
+    iconComponent: PeopleIcon,
+    path: '/admin/patients'
+  },
+  {
+    id: 'doctors',
+    title: 'Doctores',
+    iconComponent: PersonIcon,
+    path: '/admin/doctors'
+  },
+  {
+    id: 'profile',
+    title: 'Mi Perfil',
+    iconComponent: PersonIcon,
+    path: '/profile'
+  },
+  {
+    id: 'logout',
+    title: 'Cerrar Sesión',
+    iconComponent: ExitIcon,
+    path: '',
+    action: handleLogout
+  }
+];
+
+export const getMenuItems = (
+  userRole: 'DOCTOR' | 'PATIENT' | 'ADMIN' | undefined,
+  handleLogout: () => void
+): MenuItem[] => {
+  switch (userRole) {
+    case 'PATIENT':
+      return getPatientMenuItems(handleLogout);
+    case 'ADMIN':
+      return getAdminMenuItems(handleLogout);
+    case 'DOCTOR':
+    default:
+      return getDoctorMenuItems(handleLogout);
+  }
+};
+
+
+export const getUserDisplayName = (user: any): string => {
+  const name = user.name;
+  const role = user.role;
+  
+  switch (role) {
+    case 'DOCTOR':
+      return `Dr. ${name}`;
+    case 'ADMIN':
+      return `Admin ${name}`;
+    case 'PATIENT':
+    default:
+      return name;
+  }
+};

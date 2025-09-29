@@ -1,14 +1,12 @@
 import './App.css'
-import { Routes, Route, useNavigate } from 'react-router-dom'
+import { Routes, Route, } from 'react-router-dom'
 import HomeScreen from './components/HomeScreen/HomeScreen'
 import { useAuthMachine } from './providers/AuthProvider'
-import { Box, Typography } from '@mui/material'
-import { useMachines } from './providers/MachineProvider'
+import { Box } from '@mui/material'
 import PendingScreen from './components/Admin/PendingScreen/PendingScreen'
 import AdminPatients from './components/Admin/AdminPatients'
 import AdminDoctors from './components/Admin/AdminDoctors'
 import ProfileScreen from './components/ProfileScreen/ProfileScreen'
-import { useEffect } from 'react'
 import ReservationTurns from './components/Patient/ReservationTurns'
 import ViewTurns from './components/Patient/ViewTurns'
 import ModifyTurn from './components/Patient/ModifyTurn'
@@ -22,22 +20,13 @@ import TurnsModifications from './components/Doctor/TurnsModifications/TurnsModi
 import FloatingMenu from './components/shared/FloatingMenu/FloatingMenu'
 
 function AppContent() {
-  const navigate = useNavigate();
   const { authState } = useAuthMachine();
   const authContext = authState.context;
-
-  const { uiSend } = useMachines();
-
 
   const userRole = authContext.authResponse?.role || '';
   const userStatus = authContext.authResponse?.status || '';
   
   const shouldHideHeader = userStatus !== "ACTIVE";
-
-  useEffect(() => {
-    uiSend({ type: "ADD_NAVIGATE_HOOK", navigate, initialPath: window.location.pathname });
-  }, [uiSend, navigate]);
-
 
   const renderAdminRoutes = () => (
     <>
@@ -68,7 +57,7 @@ function AppContent() {
   return (
       <Box>
       
-        <FloatingMenu userRole={userRole as 'DOCTOR' | 'PATIENT' | 'ADMIN'} />
+        <FloatingMenu />
         
         {!shouldHideHeader && (
           <>
