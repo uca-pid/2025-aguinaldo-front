@@ -103,7 +103,7 @@ const ViewTurns: React.FC = () => {
               onClick={handleClose}
               className="viewturns-back-button"
             >
-              Volver al Dashboard
+              Volver
             </Button>
           </Box>
           <Box className="viewturns-header-content">

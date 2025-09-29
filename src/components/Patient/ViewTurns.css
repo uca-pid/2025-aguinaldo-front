@@ -27,13 +27,13 @@
   min-height: 100vh !important;
 }
 
-/* Header Section - matching PendingScreen */
+/* Header Section - matching ViewPatients */
 .viewturns-header {
   background: linear-gradient(135deg, var(--white) 0%, var(--white) 100%) !important;
   border-radius: 0 !important;
   margin-bottom: 32px !important;
   box-shadow: 0 4px 12px rgba(13, 34, 48, 0.15) !important;
-  padding: 32px 0 !important;
+  padding: 20px 0 !important;
 }
 
 .viewturns-header-layout {
@@ -44,23 +44,26 @@
   max-width: 1200px !important;
   margin: 0 auto !important;
   padding: 0 24px !important;
+  gap: 24px !important;
 }
 
 .viewturns-back-button-container {
   flex-shrink: 0 !important;
+  min-width: 120px !important;
 }
 
 .viewturns-header-content {
-  position: absolute !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
+  flex: 1 !important;
   display: flex !important;
   align-items: center !important;
+  justify-content: center !important;
+  max-width: 600px !important;
+  margin: 0 auto !important;
 }
 
 .viewturns-header-spacer {
   flex-shrink: 0 !important;
-  width: 180px !important; /* Match approximate button width */
+  min-width: 120px !important;
 }
 
 /* Back Button - matching PendingScreen */
@@ -86,18 +89,20 @@
   width: 56px !important;
   height: 56px !important;
   margin-right: 24px !important;
-  box-shadow: 0 2px 8px rgba(56, 163, 165, 0.3) !important;
 }
 
 .viewturns-header-title {
-  font-weight: 600 !important;
-  margin-bottom: 4px !important;
-  color: var(--black) !important;
+  font-weight: 700 !important;
+  color: #0d2230 !important;
+  margin: 0 !important;
+  line-height: 1.2;
 }
 
 .viewturns-header-subtitle {
-  color: var(--black) !important;
+  color: #64748b !important;
   font-weight: 400 !important;
+  margin: 4px 0 0 0 !important;
+  line-height: 1.3;
 }
 
 /* Content Container */
@@ -358,46 +363,33 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .viewturns-header-layout {
-    flex-direction: column !important;
-    gap: 16px !important;
-    padding: 0 16px !important;
+  .viewturns-header {
+    margin-bottom: 16px;
+    padding: 12px;
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
   }
 
   .viewturns-header-content {
-    position: static !important;
-    transform: none !important;
-    order: 1 !important;
+    align-items: center;
   }
 
-  .viewturns-back-button-container {
-    order: 2 !important;
-    width: 100% !important;
+  .viewturns-header-icon {
+    width: 48px !important;
+    height: 48px !important;
   }
 
-  .viewturns-back-button {
-    width: 100% !important;
-    justify-content: center !important;
-  }
-
-  .viewturns-header-spacer {
-    display: none !important;
+  .viewturns-header-title {
+    font-size: 1.5rem !important;
   }
 
   .viewturns-content {
-    padding: 0 16px 32px 16px !important;
-    gap: 24px !important;
+    padding: 16px !important;
   }
 
-  .viewturns-filters-header {
-    flex-direction: column !important;
-    gap: 16px !important;
-    align-items: flex-start !important;
-  }
-
-  .viewturns-filter-select {
-    min-width: auto !important;
-    width: 100% !important;
+  .viewturns-turn-item {
+    padding: 20px !important;
   }
 
   .viewturns-turn-content {
@@ -408,11 +400,41 @@
 
   .viewturns-turn-actions {
     width: 100% !important;
-    justify-content: space-between !important;
+    justify-content: flex-start !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .viewturns-header {
+    padding: 8px;
+    margin-bottom: 12px;
   }
 
-  .viewturns-actions-section {
-    flex-direction: column !important;
+  .viewturns-header-title {
+    font-size: 1.25rem !important;
+  }
+
+  .viewturns-header-subtitle {
+    display: none !important;
+  }
+
+  .viewturns-content,
+  .viewturns-search-container {
+    padding: 12px !important;
+  }
+
+  .viewturns-turn-item {
+    padding: 16px !important;
+  }
+
+  .viewturns-turn-datetime {
+    font-size: 1rem !important;
+    margin-bottom: 12px !important;
+  }
+
+  .viewturns-turn-doctor,
+  .viewturns-turn-specialty {
+    font-size: 0.9rem !important;
   }
 }
 
@@ -423,7 +445,20 @@
     width: 100% !important;
   }
 
-  .viewturns-cancel-btn {
+  .viewturns-cancel-btn,
+  .viewturns-modify-btn {
     width: 100% !important;
+    padding: 10px 16px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .viewturns-turn-datetime {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .viewturns-status-chip {
+    align-self: flex-start !important;
   }
 }

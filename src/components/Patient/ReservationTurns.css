@@ -1,9 +1,9 @@
 /* ReservationTurns Component Styles */
 
 .reservation-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, var(--white) 0%, #f8fafc 100%);
-  padding: 40px 0;
+  height: auto !important;
+  background-color: var(--white) !important;
+  padding: 0 !important;
 }
 
 .reservation-page-container {
@@ -12,43 +12,81 @@
   padding: 0 24px;
 }
 
-/* Page Header */
-.reservation-page-header {
-  margin-bottom: 40px;
+/* Page Header - Same structure as ViewPatients */
+.reservation-header-layout {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  position: relative !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 24px !important;
+  gap: 24px !important;
+}
+
+.reservation-back-button-container {
+  flex-shrink: 0 !important;
+  min-width: 120px !important;
 }
 
 .reservation-back-button {
-  color: var(--indigo-dye) !important;
-  border-color: var(--verdigris) !important;
+  border: 2px solid var(--lapis-lazuli) !important;
+  color: var(--lapis-lazuli) !important;
+  background: transparent !important;
   border-radius: 8px !important;
-  text-transform: none !important;
-  font-weight: 600 !important;
   padding: 8px 16px !important;
-  margin-bottom: 24px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.2s ease !important;
 }
 
 .reservation-back-button:hover {
-  background: var(--tea-green) !important;
-  border-color: var(--emerald) !important;
+  border-color: var(--indigo-dye) !important;
+  background-color: var(--lapis-lazuli) !important;
+  color: white !important;
 }
 
-.reservation-title-section {
-  text-align: center;
-  margin-bottom: 16px;
+.reservation-header {
+  background: linear-gradient(135deg, var(--white) 0%, var(--white) 100%) !important;
+  border-radius: 0 !important;
+  margin-bottom: 40px !important;
+  box-shadow: 0 4px 12px rgba(13, 34, 48, 0.15) !important;
+  padding: 20px 0 !important;
 }
 
-.reservation-page-title {
+.reservation-header-icon {
+  background-color: var(--verdigris) !important;
+  width: 56px !important;
+  height: 56px !important;
+  margin-right: 24px !important;
+}
+
+.reservation-header-content {
+  flex: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  max-width: 600px !important;
+  margin: 0 auto !important;
+}
+
+.reservation-header-title {
   font-weight: 700 !important;
-  color: var(--gunmetal) !important;
-  margin-bottom: 12px !important;
-  line-height: 1.2 !important;
+  color: #0d2230 !important;
+  margin: 0 !important;
+  line-height: 1.2;
 }
 
-.reservation-page-subtitle {
-  color: var(--indigo-dye) !important;
+.reservation-header-subtitle {
+  color: #64748b !important;
   font-weight: 400 !important;
-  margin-bottom: 0 !important;
-  line-height: 1.4 !important;
+  margin: 4px 0 0 0 !important;
+  line-height: 1.3;
+}
+
+.reservation-header-spacer {
+  flex-shrink: 0 !important;
+  min-width: 120px !important;
 }
 
 /* Step 1 Styles */
@@ -87,7 +125,7 @@
 }
 
 .reservation-select {
-  margin-bottom: 24px !important;
+  margin-bottom: 15px !important;
 }
 
 .reservation-select .MuiOutlinedInput-root {
@@ -108,7 +146,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 15px;
   gap: 20px;
 }
 
@@ -267,7 +305,7 @@
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  margin-top: 32px !important;
+  margin: 32px !important;
   padding-top: 24px !important;
   border-top: 1px solid var(--verdigris) !important;
 }
@@ -324,14 +362,24 @@
   }
 
   .reservation-header {
+    margin-bottom: 16px;
+    padding: 12px;
     flex-direction: column;
-    gap: 16px;
-    padding: 20px;
     text-align: center;
+    gap: 12px;
   }
 
   .reservation-header-content {
-    order: -1;
+    align-items: center;
+  }
+
+  .reservation-header-icon {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .reservation-header-title {
+    font-size: 1.5rem !important;
   }
 
   .reservation-step1-container,
@@ -384,16 +432,16 @@
   }
 
   .reservation-header {
-    padding: 16px;
-    margin-bottom: 20px;
+    padding: 8px;
+    margin-bottom: 12px;
   }
 
   .reservation-header-title {
-    font-size: 1.5rem !important;
+    font-size: 1.25rem !important;
   }
 
   .reservation-header-subtitle {
-    font-size: 0.9rem !important;
+    display: none !important;
   }
 
   .reservation-form-section,

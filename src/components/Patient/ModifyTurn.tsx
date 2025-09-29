@@ -1,6 +1,6 @@
 import {
   Box, Button, Typography, CircularProgress,
-  Container
+  Container, Avatar
 } from "@mui/material";
 import React from "react";
 import { useMachines } from "#/providers/MachineProvider";
@@ -10,6 +10,7 @@ import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { DateCalendar } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   formatDateTime,
   shouldDisableDate
@@ -59,25 +60,39 @@ const ModifyTurn: React.FC = () => {
 
   return (
     <Box className="reservation-container">
-      <Container maxWidth="lg" className="reservation-page-container">
-        <Box className="reservation-page-header">
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })}
-            className="reservation-back-button"
-            variant="outlined"
-          >
-            Volver a Mis Turnos
-          </Button>
-          <Box className="reservation-title-section">
-            <Typography variant="h3" className="reservation-page-title">
-              Modificar Turno Médico
-            </Typography>
-            <Typography variant="h6" className="reservation-page-subtitle">
-              Selecciona una nueva fecha y horario para tu cita
-            </Typography>
+      {/* Page Header */}
+      <Box className="reservation-header">
+        <Box className="reservation-header-layout">
+          <Box className="reservation-back-button-container">
+            <Button
+              startIcon={<ArrowBackIcon />}
+              onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })}
+              className="reservation-back-button"
+              variant="outlined"
+            >
+              Volver
+            </Button>
           </Box>
+
+          <Box className="reservation-header-content">
+            <Avatar className="reservation-header-icon">
+              <EditIcon sx={{ fontSize: 28 }} />
+            </Avatar>
+            <Box>
+              <Typography variant="h4" component="h1" className="reservation-header-title">
+                Modificar Turno
+              </Typography>
+              <Typography variant="h6" className="reservation-header-subtitle">
+                Selecciona una nueva fecha y horario para tu cita
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box className="reservation-header-spacer"></Box>
         </Box>
+      </Box>
+
+      <Container maxWidth="lg" className="reservation-page-container">
 
         <Box className="reservation-step1-container">
           <Box className="reservation-form-section">
@@ -153,18 +168,10 @@ const ModifyTurn: React.FC = () => {
 
         <Box className="reservation-actions">
           <Button
-            onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })}
-            className="reservation-btn-secondary"
-            variant="outlined"
-          >
-            Cancelar
-          </Button>
-          <Button
             onClick={() => turnSend({ type: "SUBMIT_MODIFY_REQUEST" })}
             variant="contained"
             className="reservation-btn-primary"
             disabled={!selectedDate || !selectedTime || isModifyingTurn}
-            sx={{ ml: 2 }}
           >
             {isModifyingTurn ? (
               <>
