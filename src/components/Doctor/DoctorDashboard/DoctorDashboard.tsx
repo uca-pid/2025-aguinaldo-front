@@ -5,11 +5,11 @@ import {
   Container,
   Avatar
 } from "@mui/material";
-import ScheduleIcon from "@mui/icons-material/Schedule";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import PersonIcon from "@mui/icons-material/Person";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
@@ -38,7 +38,7 @@ const DoctorDashboard: React.FC = () => {
       
       return isUpcoming && (turn.status === 'SCHEDULED' || turn.status === 'CANCELED');
     })
-    .slice(0, 10)
+    .slice(0, 3)
     .sort((a: any, b: any) => dayjs(a.scheduledAt).diff(dayjs(b.scheduledAt)));
 
   return (
@@ -64,22 +64,22 @@ const DoctorDashboard: React.FC = () => {
           <Box className="dashboard-actions-container">
             <DashboardCard
               type="doctor"
-              variant="primary"
-              icon={<ScheduleIcon className="doctor-action-icon" />}
-              title="Ver Turnos"
-              description="Consulta y gestiona todos tus turnos programados"
-              buttonText="Mis Turnos"
-              onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/view-turns" })}
-            />
-
-            <DashboardCard
-              type="doctor"
               variant="secondary"
               icon={<PeopleAltIcon className="doctor-action-icon" />}
               title="Pacientes"
               description="Ver y administrar tu lista de pacientes"
               buttonText="Ver Pacientes"
               onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/view-patients" })}
+            />
+
+            <DashboardCard
+              type="doctor"
+              variant="primary"
+              icon={<NotificationsIcon className="doctor-action-icon" />}
+              title="Solicitudes Pendientes"
+              description="Gestiona solicitudes de modificación de turnos"
+              buttonText="Ver Solicitudes"
+              onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/turns-modifications" })}
             />
 
             <DashboardUpcomingCard
@@ -89,6 +89,8 @@ const DoctorDashboard: React.FC = () => {
               isLoading={turnContext?.isLoadingMyTurns}
               error={turnContext?.myTurnsError}
               emptyMessage="No tenés turnos próximos"
+              viewAllText="Ver todos"
+              onViewAll={() => uiSend({ type: "NAVIGATE", to: "/doctor/view-turns" })}
             />
 
             <DashboardCard

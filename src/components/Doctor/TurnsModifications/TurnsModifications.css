@@ -1,0 +1,429 @@
+/* ViewTurns.css - Complete styles matching PendingScreen design */
+
+/* Color palette variables - matching PendingScreen */
+:root {
+  --gunmetal: #0d2230;
+  --indigo-dye: #1f4f6f;
+  --lapis-lazuli: #22577a;
+  --cerulean: #286a85;
+  --cerulean-2: #2d7d90;
+  --verdigris: #38a3a5;
+  --emerald: #57cc99;
+  --light-green: #80ed99;
+  --tea-green: #c7f9cc;
+  --tea-green-2: #ccfad1;
+  --white: #ffffff;
+  --black: #000000;
+}
+
+/* Main Container */
+.viewturns-container {
+  min-height: 100vh !important;
+  background-color: var(--white) !important;
+  padding: 0 !important;
+}
+
+.viewturns-page-container {
+  min-height: 100vh !important;
+}
+
+/* Header Section - matching PendingScreen */
+.viewturns-header {
+  background: linear-gradient(135deg, var(--white) 0%, var(--white) 100%) !important;
+  border-radius: 0 !important;
+  margin-bottom: 32px !important;
+  box-shadow: 0 4px 12px rgba(13, 34, 48, 0.15) !important;
+  padding: 32px 0 !important;
+}
+
+.viewturns-header-layout {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  position: relative !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 24px !important;
+}
+
+.viewturns-back-button-container {
+  flex-shrink: 0 !important;
+}
+
+.viewturns-header-content {
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.viewturns-header-spacer {
+  flex-shrink: 0 !important;
+  width: 180px !important; /* Match approximate button width */
+}
+
+/* Back Button - matching PendingScreen */
+.viewturns-back-button {
+  border: 2px solid var(--lapis-lazuli) !important;
+  color: var(--lapis-lazuli) !important;
+  background: transparent !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.viewturns-back-button:hover {
+  border-color: var(--indigo-dye) !important;
+  background-color: var(--lapis-lazuli) !important;
+  color: white !important;
+}
+
+.viewturns-header-icon {
+  background-color: var(--verdigris) !important;
+  width: 56px !important;
+  height: 56px !important;
+  margin-right: 24px !important;
+  box-shadow: 0 2px 8px rgba(56, 163, 165, 0.3) !important;
+}
+
+.viewturns-header-title {
+  font-weight: 600 !important;
+  margin-bottom: 4px !important;
+  color: var(--black) !important;
+}
+
+.viewturns-header-subtitle {
+  color: var(--black) !important;
+  font-weight: 400 !important;
+}
+
+/* Content Container */
+.viewturns-content {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 24px 32px 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 32px !important;
+}
+
+/* Filters Section - matching PendingScreen card style */
+.viewturns-filters-section {
+  background: white !important;
+  border: 1px solid var(--tea-green) !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  box-shadow: 0 2px 8px rgba(13, 34, 48, 0.08) !important;
+}
+
+.viewturns-filters-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 20px !important;
+}
+
+.viewturns-section-title {
+  font-weight: 600 !important;
+  color: var(--gunmetal) !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+.viewturns-filters-controls {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  flex-wrap: wrap !important;
+}
+
+.viewturns-filter-select {
+  min-width: 200px !important;
+}
+
+.viewturns-filter-select .MuiOutlinedInput-root {
+  border-radius: 8px !important;
+  background: white !important;
+}
+
+.viewturns-clear-filter-btn {
+  color: var(--indigo-dye) !important;
+  border-color: var(--tea-green) !important;
+  border-radius: 8px !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.viewturns-clear-filter-btn:hover {
+  background: var(--tea-green-2) !important;
+  border-color: var(--cerulean-2) !important;
+}
+
+/* List Section */
+.viewturns-list-section {
+  background: white !important;
+  border: 1px solid var(--tea-green) !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  box-shadow: 0 2px 8px rgba(13, 34, 48, 0.08) !important;
+}
+
+.viewturns-list-content {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+/* Turn Items - styled as cards like PendingScreen doctor cards */
+.viewturns-turn-item {
+  background: white !important;
+  border: 1px solid var(--tea-green) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(13, 34, 48, 0.08) !important;
+  transition: all 0.2s ease !important;
+  padding: 24px !important;
+}
+
+.viewturns-turn-item:hover {
+  box-shadow: 0 4px 16px rgba(13, 34, 48, 0.12) !important;
+  border-color: var(--cerulean-2) !important;
+}
+
+.viewturns-turn-content {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+}
+
+.viewturns-turn-info {
+  flex: 1 !important;
+}
+
+.viewturns-turn-datetime {
+  font-weight: 600 !important;
+  color: var(--gunmetal) !important;
+  margin-bottom: 8px !important;
+}
+
+.viewturns-turn-doctor {
+  color: var(--indigo-dye) !important;
+  margin-bottom: 4px !important;
+}
+
+.viewturns-turn-specialty {
+  color: var(--indigo-dye) !important;
+  font-style: italic !important;
+}
+
+.viewturns-turn-actions {
+  display: flex !important;
+  gap: 16px !important;
+  align-items: flex-end !important;
+}
+
+/* Status Chips */
+.viewturns-status-chip {
+  font-weight: 500 !important;
+}
+
+.viewturns-status-chip.status-scheduled {
+  background: var(--tea-green) !important;
+  color: var(--lapis-lazuli) !important;
+}
+
+.viewturns-status-chip.status-completed {
+  background: var(--light-green) !important;
+  color: var(--gunmetal) !important;
+}
+
+.viewturns-status-chip.status-canceled,
+.viewturns-status-chip.status-cancelled {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+/* Cancel Button - matching PendingScreen reject button style */
+.viewturns-cancel-btn {
+  background-color: #ef4444 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.2s ease !important;
+  min-width: 120px !important;
+}
+
+.viewturns-cancel-btn:hover:not(:disabled) {
+  background-color: #dc2626 !important;
+}
+
+.viewturns-cancel-btn:disabled {
+  background-color: var(--tea-green) !important;
+  color: var(--indigo-dye) !important;
+}
+
+/* Modify Button - new styles for 'Cambiar fecha/horario' button */
+.viewturns-modify-btn {
+  background-color: var(--lapis-lazuli) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.viewturns-modify-btn:hover:not(:disabled) {
+  background-color: var(--indigo-dye) !important;
+}
+
+.viewturns-modify-btn:disabled {
+  background-color: var(--tea-green) !important;
+  color: var(--indigo-dye) !important;
+}
+
+/* Loading States */
+.viewturns-loading-container {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 48px !important;
+  background: white !important;
+  border: 1px solid var(--tea-green) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(13, 34, 48, 0.08) !important;
+}
+
+.viewturns-loading-text {
+  margin-left: 12px !important;
+  color: var(--indigo-dye) !important;
+}
+
+/* Empty State - matching PendingScreen */
+.viewturns-empty-state {
+  background: white !important;
+  border: 1px solid var(--tea-green) !important;
+  border-radius: 12px !important;
+  padding: 48px 32px !important;
+  text-align: center !important;
+  box-shadow: 0 2px 8px rgba(13, 34, 48, 0.08) !important;
+}
+
+.viewturns-empty-emoji {
+  font-size: 4rem !important;
+  margin-bottom: 16px !important;
+}
+
+.viewturns-empty-title {
+  color: var(--gunmetal) !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+}
+
+.viewturns-empty-subtitle {
+  color: var(--indigo-dye) !important;
+}
+
+/* Actions */
+.viewturns-actions {
+  display: flex !important;
+  justify-content: center !important;
+  margin-top: 32px !important;
+  padding-top: 24px !important;
+  border-top: 1px solid var(--tea-green) !important;
+}
+
+.viewturns-btn-close {
+  border: 2px solid var(--lapis-lazuli) !important;
+  color: var(--lapis-lazuli) !important;
+  background: transparent !important;
+  border-radius: 8px !important;
+  padding: 12px 32px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.viewturns-btn-close:hover {
+  border-color: var(--indigo-dye) !important;
+  background-color: var(--lapis-lazuli) !important;
+  color: white !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .viewturns-header-layout {
+    flex-direction: column !important;
+    gap: 16px !important;
+    padding: 0 16px !important;
+  }
+
+  .viewturns-header-content {
+    position: static !important;
+    transform: none !important;
+    order: 1 !important;
+  }
+
+  .viewturns-back-button-container {
+    order: 2 !important;
+    width: 100% !important;
+  }
+
+  .viewturns-back-button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .viewturns-header-spacer {
+    display: none !important;
+  }
+
+  .viewturns-content {
+    padding: 0 16px 32px 16px !important;
+    gap: 24px !important;
+  }
+
+  .viewturns-filters-header {
+    flex-direction: column !important;
+    gap: 16px !important;
+    align-items: flex-start !important;
+  }
+
+  .viewturns-filter-select {
+    min-width: auto !important;
+    width: 100% !important;
+  }
+
+  .viewturns-turn-content {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+
+  .viewturns-turn-actions {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  .viewturns-actions-section {
+    flex-direction: column !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .viewturns-turn-actions {
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  .viewturns-cancel-btn {
+    width: 100% !important;
+  }
+}

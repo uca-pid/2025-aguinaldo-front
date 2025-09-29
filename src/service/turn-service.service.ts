@@ -29,7 +29,6 @@ export class TurnService {
         method: 'GET',
       });
       
-      // Handle authentication errors centrally
       if (response.status === 401) {
         await handleAuthError(response, () => this.getMyModifyRequests(accessToken));
       }
@@ -50,7 +49,32 @@ export class TurnService {
       throw error;
     }
   }
-  
+
+  static async getDoctorModifyRequests( accessToken: string): Promise<TurnModifyRequest[]> {
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTOR_MODIFY_REQUESTS);
+    try {
+      const response = await fetch(url, {
+        ...getAuthenticatedFetchOptions(accessToken),
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData?.message || 
+          errorData?.error ||
+          `Failed to fetch doctor modify requests! Status: ${response.status}`
+        );
+      }
+
+      const result: TurnModifyRequest[] = await response.json();
+      return result;
+    } catch (error) {
+      console.error('[TurnService] getDoctorModifyRequests - Exception:', error);
+      throw error;
+    }
+  }
+
   static async getDoctors(accessToken: string): Promise<Doctor[]> {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTORS);
     
@@ -293,6 +317,60 @@ export class TurnService {
     try {
       const availableDates = await TurnService.getAvailableDates(doctorId, accessToken);
       return { availableDates };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async approveModifyRequest(requestId: string, accessToken: string): Promise<any> {
+    const url = buildApiUrl(`${API_CONFIG.ENDPOINTS.DOCTOR_MODIFY_REQUEST}/${requestId}/approve`);
+    try {
+      const response = await fetch(url, {
+        ...getAuthenticatedFetchOptions(accessToken),
+        method: 'POST',
+      });
+      
+      if (response.status === 401) {
+        await handleAuthError(response, () => this.approveModifyRequest(requestId, accessToken));
+      }
+      
+      if (!response.ok) {
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData?.message || 
+          errorData?.error ||
+          `Failed to approve modify request! Status: ${response.status}`
+        );
+      }
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async rejectModifyRequest(requestId: string, accessToken: string): Promise<any> {
+    const url = buildApiUrl(`${API_CONFIG.ENDPOINTS.DOCTOR_MODIFY_REQUEST}/${requestId}/reject`);
+    try {
+      const response = await fetch(url, {
+        ...getAuthenticatedFetchOptions(accessToken),
+        method: 'POST',
+      });
+      
+      if (response.status === 401) {
+        await handleAuthError(response, () => this.rejectModifyRequest(requestId, accessToken));
+      }
+      
+      if (!response.ok) {
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData?.message || 
+          errorData?.error ||
+          `Failed to reject modify request! Status: ${response.status}`
+        );
+      }
+      const result = await response.json();
+      return result;
     } catch (error) {
       throw error;
     }
