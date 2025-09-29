@@ -122,33 +122,33 @@ const EnableHours: React.FC = () => {
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Box className="enablehours-container">
-                <Box className="enablehours-header">
-                    <Box className="enablehours-header-layout">
-                        <Box className="enablehours-back-button-container">
+                <Box className="shared-header">
+                    <Box className="shared-header-layout">
+                        <Box className="shared-back-button-container">
                             <Button
                                 startIcon={<ArrowBack />}
                                 onClick={handleBack}
-                                className="enablehours-back-button"
+                                className="shared-back-button"
                                 variant="outlined"
                             >
                                 Volver
                             </Button>
                         </Box>
                         
-                        <Box className="enablehours-header-content">
-                            <Avatar className="enablehours-header-icon">
+                        <Box className="shared-header-content">
+                            <Avatar className="shared-header-icon">
                                 <CalendarMonthOutlined className="enablehours-calendar-icon" />
                             </Avatar>
                             <Box>
-                                <Typography variant="h4" component="h1" className="enablehours-header-title">
+                                <Typography variant="h4" component="h1" className="shared-header-title">
                                     Configurar Horarios
                                 </Typography>
-                                <Typography variant="h6" className="enablehours-header-subtitle">
+                                <Typography variant="h6" className="shared-header-subtitle">
                                     Establece tus días y horarios de atención 
                                 </Typography>
                             </Box>
                         </Box>
-                        <Box className="enablehours-header-spacer"></Box>
+                        <Box className="shared-header-spacer"></Box>
                     </Box>
 
                     {/* Error Alert */}

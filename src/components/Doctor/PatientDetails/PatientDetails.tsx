@@ -196,25 +196,25 @@ const PatientDetails: React.FC = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box className="patient-details-container">
-        <Box className="patient-details-header">
-          <Box className="patient-details-header-layout">
-            <Box className="patient-details-back-button-container">
+        <Box className="shared-header">
+          <Box className="shared-header-layout">
+            <Box className="shared-back-button-container">
               <Button
                 startIcon={<ArrowBack />}
                 onClick={handleBack}
-                className="patient-details-back-button"
+                className="shared-back-button"
                 variant="outlined"
               >
                 Volver
               </Button>
             </Box>
 
-            <Box className="patient-details-header-content">
-              <Avatar className="patient-details-header-icon">
+            <Box className="shared-header-content">
+              <Avatar className="shared-header-icon">
                 {getInitials(patient.name, patient.surname)}
               </Avatar>
               <Box>
-                <Typography variant="h4" component="h1" className="patient-details-header-title">
+                <Typography variant="h4" component="h1" className="shared-header-title">
                   {getFullName(patient.name, patient.surname)}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
@@ -227,7 +227,7 @@ const PatientDetails: React.FC = () => {
                 </Box>
               </Box>
             </Box>
-            <Box className="patient-details-header-spacer"></Box>
+            <Box className="shared-header-spacer"></Box>
           </Box>
         </Box>
 

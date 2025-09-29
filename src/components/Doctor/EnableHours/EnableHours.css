@@ -1,3 +1,8 @@
+/* EnableHours.css - Component-specific styles */
+
+@import "../../shared/SharedStyles.css";
+
+/* Color palette variables - matching PatientShared */
 :root {
   --gunmetal: #0d2230;
   --indigo-dye: #1f4f6f;
@@ -108,82 +113,6 @@
   padding: 0 !important;
   width: 100% !important;
   max-width: 100% !important;
-}
-
-.enablehours-header-layout {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  position: relative !important;
-  max-width: 1200px !important;
-  margin: 0 auto !important;
-  padding: 0 24px !important;
-  gap: 24px !important;
-}
-
-.enablehours-back-button-container {
-  flex-shrink: 0 !important;
-  min-width: 120px !important;
-}
-
-.enablehours-back-button {
-  border: 2px solid var(--lapis-lazuli) !important;
-  color: var(--lapis-lazuli) !important;
-  background: transparent !important;
-  border-radius: 8px !important;
-  padding: 8px 16px !important;
-  font-weight: 500 !important;
-  text-transform: none !important;
-  transition: all 0.2s ease !important;
-}
-
-.enablehours-back-button:hover {
-  border-color: var(--indigo-dye) !important;
-  background-color: var(--lapis-lazuli) !important;
-  color: white !important;
-}
-
-.enablehours-header {
-  background: linear-gradient(135deg, var(--white) 0%, var(--white) 100%) !important;
-  border-radius: 0 !important;
-  margin-bottom: 32px !important;
-  box-shadow: 0 4px 12px rgba(13, 34, 48, 0.15) !important;
-  padding: 20px 0 !important;
-}
-
-.enablehours-header-icon {
-  background-color: var(--verdigris) !important;
-  width: 56px !important;
-  height: 56px !important;
-  margin-right: 24px !important;
-}
-
-.enablehours-header-content {
-  flex: 1 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  max-width: 600px !important;
-  margin: 0 auto !important;
-}
-
-.enablehours-header-title {
-  font-weight: 700 !important;
-  color: #0d2230 !important;
-  margin: 0 !important;
-  line-height: 1.2;
-}
-
-.enablehours-header-subtitle {
-  color: #64748b !important;
-  font-weight: 400 !important;
-  margin: 4px 0 0 0 !important;
-  line-height: 1.3;
-}
-
-.enablehours-header-spacer {
-  flex-shrink: 0 !important;
-  min-width: 120px !important;
 }
 
 .enablehours-content {
@@ -362,27 +291,6 @@
 /* Responsive Design */
 
 @media (max-width: 768px) {
-  .enablehours-header {
-    margin-bottom: 16px;
-    padding: 12px;
-    flex-direction: column;
-    text-align: center;
-    gap: 12px;
-  }
-
-  .enablehours-header-content {
-    align-items: center;
-  }
-
-  .enablehours-header-icon {
-    width: 48px !important;
-    height: 48px !important;
-  }
-
-  .enablehours-header-title {
-    font-size: 1.5rem !important;
-  }
-
   .enablehours-content {
     padding: 16px !important;
   }
@@ -509,19 +417,6 @@
 }
 
 @media (max-width: 480px) {
-  .enablehours-header {
-    padding: 8px;
-    margin-bottom: 12px;
-  }
-
-  .enablehours-header-title {
-    font-size: 1.25rem !important;
-  }
-
-  .enablehours-header-subtitle {
-    display: none !important;
-  }
-  
   .enablehours-content {
     padding: 12px !important;
   }

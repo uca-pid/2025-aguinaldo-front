@@ -51,28 +51,28 @@ const TurnsModifications: React.FC = () => {
 
   return (
     <Box className="turnsmod-container">
-      <Box className="turnsmod-header">
-        <Box className="turnsmod-header-layout">
-          <Box className="turnsmod-back-button-container">
+      <Box className="shared-header">
+        <Box className="shared-header-layout">
+          <Box className="shared-back-button-container">
             <Button startIcon={<ArrowBackIcon />} onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor" })}
-              className="turnsmod-back-button" variant="outlined">        
+              className="shared-back-button" variant="outlined">        
               Volver
             </Button>
           </Box>
-          <Box className="turnsmod-header-content">
-            <Avatar className="turnsmod-header-icon">
+          <Box className="shared-header-content">
+            <Avatar className="shared-header-icon">
               <ListAltIcon sx={{ fontSize: 28 }} />
             </Avatar>
             <Box>
-              <Typography variant="h4" component="h1" className="turnsmod-header-title">
+              <Typography variant="h4" component="h1" className="shared-header-title">
                 Solicitudes Pendientes
               </Typography>
-              <Typography variant="h6" className="turnsmod-header-subtitle">
+              <Typography variant="h6" className="shared-header-subtitle">
                 Gestiona los cambios de turnos de tus pacientes
               </Typography>
             </Box>
           </Box>
-          <Box className="turnsmod-header-spacer"></Box>
+          <Box className="shared-header-spacer"></Box>
         </Box>
       </Box>
 

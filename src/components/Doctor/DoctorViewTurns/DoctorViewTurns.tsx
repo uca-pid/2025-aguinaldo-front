@@ -72,33 +72,33 @@ const ViewTurns: React.FC = () => {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
 
       <Box className="viewturns-container">          
-          <Box className="viewturns-header">
-            <Box className="viewturns-header-layout">
-              <Box className="viewturns-back-button-container">
+          <Box className="shared-header">
+            <Box className="shared-header-layout">
+              <Box className="shared-back-button-container">
                 <Button
                   startIcon={<ArrowBack />}
                   onClick={handleBack}
                   variant="outlined"
-                  className="viewturns-back-button"
+                  className="shared-back-button"
                 >
                   Volver
                 </Button>
               </Box>
               
-              <Box className="viewturns-header-content">
-                <Avatar className="viewturns-header-icon">
+              <Box className="shared-header-content">
+                <Avatar className="shared-header-icon">
                   <ListAltIcon sx={{ fontSize: 28 }} />
                 </Avatar>
                 <Box>
-                  <Typography variant="h4" component="h1" className="viewturns-header-title">
+                  <Typography variant="h4" component="h1" className="shared-header-title">
                     Mis Turnos
                   </Typography>
-                  <Typography variant="h6" className="viewturns-header-subtitle">
+                  <Typography variant="h6" className="shared-header-subtitle">
                     Consulta y gestiona tus citas médicas
                   </Typography>
                 </Box>
               </Box>
-              <Box className="viewturns-header-spacer"></Box>
+              <Box className="shared-header-spacer"></Box>
             </Box>
           </Box>
 
