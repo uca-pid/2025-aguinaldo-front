@@ -1,7 +1,6 @@
 import { 
   Box, Button, FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, 
-  TextField, Typography, CircularProgress,
-  Container 
+  TextField, Typography, CircularProgress, Container, Avatar
 } from "@mui/material";
 import React from "react";
 import { useMachines } from "#/providers/MachineProvider";
@@ -14,6 +13,7 @@ import { DateCalendar } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import Event from "@mui/icons-material/Event";
 import "./ReservationTurns.css";
 
 const ReservationTurns: React.FC = () => {
@@ -109,28 +109,40 @@ const ReservationTurns: React.FC = () => {
   };
 
   return(
-    <Box className="reservation-container">
-      <Container maxWidth="lg" className="reservation-page-container">
-        {/* Page Header */}
-        <Box className="reservation-page-header">
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={handleClose}
-            className="reservation-back-button"
-            variant="outlined"
-          >
-            Volver al Dashboard
-          </Button>
-          
-          <Box className="reservation-title-section">
-            <Typography variant="h3" className="reservation-page-title">
-              Reservar Turno Médico
-            </Typography>
-            <Typography variant="h6" className="reservation-page-subtitle">
-              Agenda tu cita médica siguiendo estos simples pasos
-            </Typography>
+    <Box className="shared-container">
+      {/* Page Header */}
+      <Box className="shared-header">
+        <Box className="shared-header-layout">
+          <Box className="shared-back-button-container">
+            <Button
+              startIcon={<ArrowBackIcon />}
+              onClick={handleClose}
+              className="shared-back-button"
+              variant="outlined"
+            >
+              Volver
+            </Button>
           </Box>
+
+          <Box className="shared-header-content">
+            <Avatar className="shared-header-icon">
+              <Event sx={{ fontSize: 28 }} />
+            </Avatar>
+            <Box>
+              <Typography variant="h4" component="h1" className="shared-header-title">
+                Reservar Turno Médico
+              </Typography>
+              <Typography variant="h6" className="shared-header-subtitle">
+                Agenda tu cita médica en simples pasos
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box className="shared-header-spacer"></Box>
         </Box>
+      </Box>
+
+      <Container maxWidth="lg" className="reservation-page-container">
 
           {currentStep === "step1" && (
             <Box className="reservation-step1-container">
@@ -167,7 +179,7 @@ const ReservationTurns: React.FC = () => {
                   {turnContext.isLoadingDoctors && <FormHelperText>Cargando especialidades...</FormHelperText>}
                 </FormControl>
 
-                <FormControl required size="small" fullWidth className="reservation-select doctor-select">
+                <FormControl required size="small" fullWidth className="reservation-select">
                   <InputLabel id="doctor-select-label">Doctor</InputLabel>
                   <Select
                     labelId="doctor-select-label"
@@ -209,13 +221,6 @@ const ReservationTurns: React.FC = () => {
               </Box>
 
               <Box className="reservation-actions">
-                <Button 
-                  onClick={handleClose} 
-                  className="reservation-btn-secondary"
-                  variant="outlined"
-                >
-                  Cancelar
-                </Button>
                 <Button
                   onClick={handleNext}
                   variant="contained"

@@ -1,103 +1,14 @@
-/* ViewTurns.css - Complete styles matching PendingScreen design */
+/* ViewTurns.css - Component-specific styles */
 
-/* Color palette variables - matching PendingScreen */
-:root {
-  --gunmetal: #0d2230;
-  --indigo-dye: #1f4f6f;
-  --lapis-lazuli: #22577a;
-  --cerulean: #286a85;
-  --cerulean-2: #2d7d90;
-  --verdigris: #38a3a5;
-  --emerald: #57cc99;
-  --light-green: #80ed99;
-  --tea-green: #c7f9cc;
-  --tea-green-2: #ccfad1;
-  --white: #ffffff;
-  --black: #000000;
-}
+/* Import shared styles */
+@import "../shared/SharedStyles.css";
 
-/* Main Container */
-.viewturns-container {
-  min-height: 100vh !important;
-  background-color: var(--white) !important;
-  padding: 0 !important;
-}
-
-.viewturns-page-container {
-  min-height: 100vh !important;
-}
-
-/* Header Section - matching PendingScreen */
-.viewturns-header {
-  background: linear-gradient(135deg, var(--white) 0%, var(--white) 100%) !important;
-  border-radius: 0 !important;
-  margin-bottom: 32px !important;
-  box-shadow: 0 4px 12px rgba(13, 34, 48, 0.15) !important;
-  padding: 32px 0 !important;
-}
-
-.viewturns-header-layout {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  position: relative !important;
-  max-width: 1200px !important;
-  margin: 0 auto !important;
-  padding: 0 24px !important;
-}
-
-.viewturns-back-button-container {
-  flex-shrink: 0 !important;
-}
-
-.viewturns-header-content {
-  position: absolute !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  display: flex !important;
-  align-items: center !important;
-}
-
-.viewturns-header-spacer {
-  flex-shrink: 0 !important;
-  width: 180px !important; /* Match approximate button width */
-}
-
-/* Back Button - matching PendingScreen */
-.viewturns-back-button {
-  border: 2px solid var(--lapis-lazuli) !important;
-  color: var(--lapis-lazuli) !important;
-  background: transparent !important;
-  border-radius: 8px !important;
-  padding: 8px 16px !important;
-  font-weight: 500 !important;
-  text-transform: none !important;
-  transition: all 0.2s ease !important;
-}
-
-.viewturns-back-button:hover {
-  border-color: var(--indigo-dye) !important;
-  background-color: var(--lapis-lazuli) !important;
-  color: white !important;
-}
-
-.viewturns-header-icon {
-  background-color: var(--verdigris) !important;
-  width: 56px !important;
-  height: 56px !important;
-  margin-right: 24px !important;
-  box-shadow: 0 2px 8px rgba(56, 163, 165, 0.3) !important;
-}
-
-.viewturns-header-title {
-  font-weight: 600 !important;
-  margin-bottom: 4px !important;
-  color: var(--black) !important;
-}
-
-.viewturns-header-subtitle {
-  color: var(--black) !important;
+/* Header subtitle override */
+.patient-header-subtitle {
+  color: #64748b !important;
   font-weight: 400 !important;
+  margin: 4px 0 0 0 !important;
+  line-height: 1.3;
 }
 
 /* Content Container */
@@ -358,46 +269,12 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .viewturns-header-layout {
-    flex-direction: column !important;
-    gap: 16px !important;
-    padding: 0 16px !important;
-  }
-
-  .viewturns-header-content {
-    position: static !important;
-    transform: none !important;
-    order: 1 !important;
-  }
-
-  .viewturns-back-button-container {
-    order: 2 !important;
-    width: 100% !important;
-  }
-
-  .viewturns-back-button {
-    width: 100% !important;
-    justify-content: center !important;
-  }
-
-  .viewturns-header-spacer {
-    display: none !important;
-  }
-
   .viewturns-content {
-    padding: 0 16px 32px 16px !important;
-    gap: 24px !important;
+    padding: 16px !important;
   }
 
-  .viewturns-filters-header {
-    flex-direction: column !important;
-    gap: 16px !important;
-    align-items: flex-start !important;
-  }
-
-  .viewturns-filter-select {
-    min-width: auto !important;
-    width: 100% !important;
+  .viewturns-turn-item {
+    padding: 20px !important;
   }
 
   .viewturns-turn-content {
@@ -408,11 +285,41 @@
 
   .viewturns-turn-actions {
     width: 100% !important;
-    justify-content: space-between !important;
+    justify-content: flex-start !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .patient-header {
+    padding: 8px;
+    margin-bottom: 12px;
   }
 
-  .viewturns-actions-section {
-    flex-direction: column !important;
+  .patient-header-title {
+    font-size: 1.25rem !important;
+  }
+
+  .patient-header-subtitle {
+    display: none !important;
+  }
+
+  .viewturns-content,
+  .viewturns-search-container {
+    padding: 12px !important;
+  }
+
+  .viewturns-turn-item {
+    padding: 16px !important;
+  }
+
+  .viewturns-turn-datetime {
+    font-size: 1rem !important;
+    margin-bottom: 12px !important;
+  }
+
+  .viewturns-turn-doctor,
+  .viewturns-turn-specialty {
+    font-size: 0.9rem !important;
   }
 }
 
@@ -423,7 +330,20 @@
     width: 100% !important;
   }
 
-  .viewturns-cancel-btn {
+  .viewturns-cancel-btn,
+  .viewturns-modify-btn {
     width: 100% !important;
+    padding: 10px 16px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .viewturns-turn-datetime {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .viewturns-status-chip {
+    align-self: flex-start !important;
   }
 }

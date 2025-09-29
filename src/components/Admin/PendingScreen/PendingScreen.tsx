@@ -8,7 +8,6 @@ import {
   Card, 
   CardContent, 
   CircularProgress, 
-  Container, 
   Typography,
   Paper,
   Avatar,
@@ -34,38 +33,36 @@ export default function PendingScreen() {
     return (
     <Box className="pending-main-container">
       {/* Header Section */}
-      <Paper elevation={2} className="pending-header-section">
-        <Container maxWidth="lg" className="pending-header-container">
-          <Box className="pending-header-layout">
-            <Box className="pending-back-button-container">
-              <Button
-                variant="outlined"
-                startIcon={<ArrowBackIcon />}
-                onClick={() => uiSend({ type: 'NAVIGATE', to: '/' })}
-                className="pending-back-button"
-              >
-                Volver al Dashboard
-              </Button>
-            </Box>
-            <Box className="pending-header-content">
-              <Avatar className="pending-header-avatar">
-                <PendingActionsIcon sx={{ fontSize: 28 }} />
-              </Avatar>
-              <Box>
-                <Typography variant="h4" component="h1" className="pending-header-title">
-                  Solicitudes Pendientes
-                </Typography>
-                <Typography variant="h6" className="pending-header-subtitle">
-                  Gestionar solicitudes de registro de médicos
-                </Typography>
-              </Box>
-            </Box>
-            <Box className="pending-header-spacer"></Box>
+      <Box className="shared-header">
+        <Box className="shared-header-layout">
+          <Box className="shared-back-button-container">
+            <Button
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
+              onClick={() => uiSend({ type: 'NAVIGATE', to: '/' })}
+              className="shared-back-button"
+            >
+              Volver
+            </Button>
           </Box>
-        </Container>
-      </Paper>
+          <Box className="shared-header-content">
+            <Avatar className="shared-header-icon">
+              <PendingActionsIcon sx={{ fontSize: 28 }} />
+            </Avatar>
+            <Box>
+              <Typography variant="h4" component="h1" className="shared-header-title">
+                Solicitudes Pendientes
+              </Typography>
+              <Typography variant="h6" className="shared-header-subtitle">
+                Gestionar solicitudes de registro de médicos
+              </Typography>
+            </Box>
+          </Box>
+          <Box className="shared-header-spacer"></Box>
+        </Box>
+      </Box>
 
-      <Container maxWidth="lg" className="pending-content-container">
+      <Box maxWidth="lg" className="pending-content-container" sx={{ mx: 'auto', px: 3 }}>
         {/* Pending Doctors List */}
         {pendingDoctors.length > 0 ? (
           <Box>
@@ -149,7 +146,7 @@ export default function PendingScreen() {
             </Typography>
           </Paper>
         )}
-      </Container>
+      </Box>
     </Box>
     );
 }

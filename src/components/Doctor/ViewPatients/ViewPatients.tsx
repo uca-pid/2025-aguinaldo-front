@@ -54,45 +54,54 @@ const ViewPatients: React.FC = () => {
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Box className="viewpatients-container">
-                <Box className="viewpatients-header">
-                    <Box className="viewpatients-header-layout">
-                        <Box className="viewpatients-back-button-container">
+                <Box className="shared-header">
+                    <Box className="shared-header-layout">
+                        <Box className="shared-back-button-container">
                             <Button startIcon={<ArrowBack />} onClick={() => {uiSend({ type: "NAVIGATE", to: "/dashboard" })}} 
-                            className="viewpatients-back-button" variant="outlined">
-                                Volver al Dashboard
+                            className="shared-back-button" variant="outlined">
+                                Volver
                             </Button>
                         </Box>
 
-                        <Box className="viewpatients-header-content">
-                            <Avatar className="viewpatients-header-icon">
+                        <Box className="shared-header-content">
+                            <Avatar className="shared-header-icon">
                                 <PeopleOutlined sx={{ fontSize: 28 }} />
                             </Avatar>
                             <Box>
-                                <Typography variant="h4" component="h1" className="viewpatients-header-title">
+                                <Typography variant="h4" component="h1" className="shared-header-title">
                                     Mis Pacientes
                                 </Typography>
-                                <Typography variant="h6" className="viewpatients-header-subtitle">
+                                <Typography variant="h6" className="shared-header-subtitle">
                                     Gestiona y consulta la información de tus pacientes
                                 </Typography>
                             </Box>
                         </Box>
-                        <Box className="viewpatients-header-spacer"></Box>
+                        <Box className="shared-header-spacer"></Box>
                     </Box>
                 </Box>
 
                 <Box className="viewpatients-content">
-                    <Box className="viewpatients-search-container">
-                        <TextField className="viewpatients-search-field" placeholder="Buscar por nombre..." value={searchTerm}
-                            onChange={(e) => doctorSend({ type: "SET_PATIENT_SEARCH", searchTerm: e.target.value })}
-                            disabled={isLoading}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchOutlined color="action" />
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
+                    <Box className="viewpatients-search-and-count-container">
+                        <Box className="viewpatients-search-container">
+                            <TextField className="viewpatients-search-field" placeholder="Buscar por nombre..." value={searchTerm}
+                                onChange={(e) => doctorSend({ type: "SET_PATIENT_SEARCH", searchTerm: e.target.value })}
+                                disabled={isLoading}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <SearchOutlined color="action" />
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                        </Box>
+
+                        <Box className="viewpatients-patients-count">
+                            <Typography variant="body2">
+                                {filteredPatients.length} de {patients.length} paciente{patients.length !== 1 ? 's' : ''}
+                                {searchTerm && ' encontrado' + (filteredPatients.length !== 1 ? 's' : '')}
+                            </Typography>
+                        </Box>
                     </Box>
 
                     {error && (
@@ -118,13 +127,6 @@ const ViewPatients: React.FC = () => {
                         </Box>
                     ) : (
                         <>
-                            <Box className="viewpatients-patients-count">
-                                <Typography variant="body2">
-                                    {filteredPatients.length} de {patients.length} paciente{patients.length !== 1 ? 's' : ''}
-                                    {searchTerm && ' encontrado' + (filteredPatients.length !== 1 ? 's' : '')}
-                                </Typography>
-                            </Box>
-
                             {filteredPatients.length > 0 ? (
                                 <Box className="viewpatients-list-container">
                                     <List>

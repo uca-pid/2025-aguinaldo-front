@@ -39,19 +39,19 @@ export default function AdminDashboard() {
   };
 
   return (
-    <Box className="admin-dashboard-container">
+    <Box className="dashboard-container">
       <Container maxWidth="lg">
-        <Box className="admin-header-section">
-          <Box className="admin-header-content">
-            <Avatar className="admin-header-avatar">
-              <LocalHospitalIcon className="admin-header-icon" />
+        <Box className="dashboard-header-section">
+          <Box className="dashboard-header-content">
+            <Avatar className="dashboard-header-avatar admin-header-avatar">
+              <LocalHospitalIcon className="dashboard-header-icon" />
             </Avatar>
             <Box>
-              <Typography variant="h3" component="h1" className="admin-header-title">
+              <Typography variant="h4" component="h1" className="dashboard-header-title">
                 Panel de Administración
               </Typography>
-              <Typography variant="h6" className="admin-header-subtitle">
-                Gestiona solicitudes pendientes y analiza estadísticas
+              <Typography variant="h6" className="dashboard-header-subtitle admin-header-subtitle">
+                Gestiona solicitudes y estadísticas
               </Typography>
             </Box>
           </Box>
@@ -87,15 +87,17 @@ export default function AdminDashboard() {
             <Card className="admin-stats-card">
               <CardContent className="admin-stats-content">
                 <Box className="admin-stats-layout">
-                  <Box>
-                    <Typography variant="h3" className="admin-stats-number">
+                  <div className="admin-stats-icon-wrapper">
+                    <PersonIcon className="admin-stats-icon" />
+                  </div>
+                  <Box className="admin-stats-text">
+                    <Typography variant="h4" className="admin-stats-number">
                       {stats.patients}
                     </Typography>
                     <Typography variant="body1" className="admin-stats-label">
                       Pacientes Registrados
                     </Typography>
                   </Box>
-                  <PersonIcon className="admin-stats-icon" />
                 </Box>
               </CardContent>
             </Card>
@@ -105,15 +107,17 @@ export default function AdminDashboard() {
             <Card className="admin-stats-card">
               <CardContent className="admin-stats-content">
                 <Box className="admin-stats-layout">
-                  <Box>
-                    <Typography variant="h3" className="admin-stats-number">
+                  <div className="admin-stats-icon-wrapper">
+                    <LocalHospitalIcon className="admin-stats-icon" />
+                  </div>
+                  <Box className="admin-stats-text">
+                    <Typography variant="h4" className="admin-stats-number">
                       {stats.doctors}
                     </Typography>
                     <Typography variant="body1" className="admin-stats-label">
                       Doctores Activos
                     </Typography>
                   </Box>
-                  <LocalHospitalIcon className="admin-stats-icon" />
                 </Box>
               </CardContent>
             </Card>
@@ -123,23 +127,25 @@ export default function AdminDashboard() {
             <Card className="admin-stats-card">
               <CardContent className="admin-stats-content">
                 <Box className="admin-stats-layout">
-                  <Box>
-                    <Typography variant="h3" className="admin-stats-number">
+                  <div className="admin-stats-icon-wrapper">
+                    <PendingActionsIcon className="admin-stats-icon" />
+                  </div>
+                  <Box className="admin-stats-text">
+                    <Typography variant="h4" className="admin-stats-number">
                       {stats.pending}
                     </Typography>
                     <Typography variant="body1" className="admin-stats-label">
                       Solicitudes Pendientes
                     </Typography>
                   </Box>
-                  <PendingActionsIcon className="admin-stats-icon" />
                 </Box>
               </CardContent>
             </Card>
           </Box>
         </Box>
 
-        {/* Action Cards */}``
-        <Box className="admin-actions-container">
+        {/* Action Cards */}
+        <Box className="dashboard-actions-container">
           <DashboardCard
             type="admin"
             variant="primary"

@@ -1,5 +1,10 @@
 
 
+/* PatientDetails.css - Component-specific styles */
+
+@import "../../shared/SharedStyles.css";
+
+/* Color palette variables - matching PatientShared */
 :root {
   --gunmetal: #0d2230;
   --indigo-dye: #1f4f6f;
@@ -16,12 +21,18 @@
 }
 
 .patient-details-container {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-  min-height: 100vh;
-  background-color: #f5f5f5;
-  animation: fadeInUp 0.6s ease-out;
+  height: auto !important;
+  background-color: var(--white) !important;
+  padding: 0 !important;
+}
+
+.patient-details-content {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 24px 32px 24px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 32px !important;
 }
 
 .patient-details-header {
@@ -414,4 +425,51 @@
 
 .patient-details-history-input .MuiInputLabel-root.Mui-focused {
   color: var(--lapis-lazuli) !important;
+}
+
+@media (max-width: 768px) {
+  .patient-details-header {
+    margin-bottom: 16px;
+    padding: 12px;
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .patient-details-header-content {
+    align-items: center;
+  }
+
+  .patient-details-header-icon {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .patient-details-header-title {
+    font-size: 1.5rem !important;
+  }
+
+  .patient-details-content {
+    padding: 16px !important;
+    flex-direction: column !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .patient-details-header {
+    padding: 8px;
+    margin-bottom: 12px;
+  }
+
+  .patient-details-header-title {
+    font-size: 1.25rem !important;
+  }
+
+  .patient-details-header-subtitle {
+    display: none !important;
+  }
+
+  .patient-details-content {
+    padding: 12px !important;
+  }
 }

@@ -1,5 +1,9 @@
+/* ModifyTurn.css - Component-specific styles */
 
-/* Paridad visual con ReservationTurns */
+/* Import shared styles */
+@import "../shared/SharedStyles.css";
+
+/* Component-specific styles */
 .reservation-step1-container {
   display: flex;
   flex-direction: column;
@@ -20,7 +24,6 @@
   padding: 24px !important;
   border: 1px solid var(--verdigris) !important;
 }
-
 
 .reservation-step2-container {
   display: flex;
@@ -52,7 +55,28 @@
   justify-content: flex-end;
   margin-top: 32px;
 }
-/* ModifyTurn Component Styles */
+
+/* Button Styles */
+.reservation-btn-primary {
+  background: linear-gradient(135deg, var(--emerald) 0%, var(--verdigris) 100%) !important;
+  color: var(--white) !important;
+  border-radius: 8px !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  padding: 12px 32px !important;
+  box-shadow: 0 4px 12px rgba(87, 204, 153, 0.3) !important;
+}
+
+.reservation-btn-primary:hover {
+  background: linear-gradient(135deg, var(--verdigris) 0%, var(--lapis-lazuli) 100%) !important;
+  box-shadow: 0 6px 16px rgba(87, 204, 153, 0.4) !important;
+}
+
+.reservation-btn-primary:disabled {
+  background: #e5e7eb !important;
+  color: #9ca3af !important;
+  box-shadow: none !important;
+}
 
 .modify-turn-container {
   min-height: 100vh;
@@ -291,7 +315,7 @@
     grid-template-columns: 1fr;
     gap: 24px;
   }
-  
+
   .modify-turn-page-title {
     font-size: 2rem !important;
   }
@@ -309,6 +333,10 @@
   .modify-turn-container {
     padding: 20px 0;
   }
+}
+
+@media (max-width: 480px) {
+  /* No specific header overrides for ModifyTurn */
 }
 
 /* Reason Section */
@@ -341,6 +369,14 @@
 .modify-turn-reason-textarea::placeholder {
   color: #94a3b8;
   font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .reservation-btn-primary {
+    width: 100%;
+    padding: 14px !important;
+  }
 }
 
 @media (max-width: 768px) {
