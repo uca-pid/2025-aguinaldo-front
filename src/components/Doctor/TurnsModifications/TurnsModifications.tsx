@@ -5,8 +5,8 @@ import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import dayjs from "dayjs";
 import { SignInResponse } from "#/models/Auth";
-import { useEffect, useState } from "react";
-import { TurnService } from "#/service/turn-service.service";
+import { useState } from "react";
+import { useEffect } from "react";
 import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -15,6 +15,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { Patient } from "#/models/Doctor"
 import "./TurnsModifications.css";
 import { useDataMachine } from "#/providers/DataProvider"
+import { approveModifyRequest, rejectModifyRequest } from "#/utils/turnModificationsUtils";
 
 const TurnsModifications: React.FC = () => {
   const { dataState, dataSend } = useDataMachine();
@@ -24,71 +25,28 @@ const TurnsModifications: React.FC = () => {
   const dataContext = dataState.context;
   const user: SignInResponse = authState?.context?.authResponse || {};
   const patients: Patient[] = dataContext.doctorPatients || [];
-  const [pendingModifyRequests, setPendingModifyRequests] = useState<TurnModifyRequest[]>([]);
+  const pendingModifyRequests: TurnModifyRequest[] = dataContext.doctorModifyRequests?.filter((r: TurnModifyRequest) => r.status === "PENDING") || [];
+
   const [loadingApprove, setLoadingApprove] = useState<string | null>(null);
   const [loadingReject, setLoadingReject] = useState<string | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; action: 'approve' | 'reject' | null; requestId: string | null }>({ open: false, action: null, requestId: null });
 
-  const getPatientName = (patientId: string) => {
-    const patient = patients.find(p => p.id === patientId);
-    return patient ? `${patient.name} ${patient.surname}` : `Paciente ID: ${patientId}`;
-  };
-
   useEffect(() => {
-    const fetchPendingRequests = async () => {
-      if (!user.accessToken) return;
-      try {
-        const requests = await TurnService.getDoctorModifyRequests(user.id, user.accessToken);
-        setPendingModifyRequests(requests.filter(r => r.status === "PENDING"));
-      } catch {
-        setPendingModifyRequests([]);
-      }
-    };
-    fetchPendingRequests();
-  }, [user.accessToken]);
-
-  useEffect(() => {
-    if (!dataContext.doctorPatients) {
+    if (!dataContext.doctorPatients || dataContext.doctorPatients.length === 0) {
       dataSend({ type: "LOAD_DOCTOR_PATIENTS" });
     }
-  }, [dataContext.doctorPatients, dataSend]);
-
-  const handleApprove = async (requestId: string) => {
-    if (!user.accessToken) return;
-    setLoadingApprove(requestId);
-    try {
-      await TurnService.approveModifyRequest(requestId, user.accessToken);
-      // Refrescar la lista
-      const requests = await TurnService.getDoctorModifyRequests(user.id, user.accessToken);
-      setPendingModifyRequests(requests.filter(r => r.status === "PENDING"));
-      uiSend({type: "OPEN_SNACKBAR", message: "Solicitud aprobada correctamente", severity: "success"});
-    } catch (error) {
-      console.error("Error approving request", error);
-      uiSend({type: "OPEN_SNACKBAR", message: "Error al aprobar la solicitud", severity: "error"});
-    } finally {
-      setLoadingApprove(null);
+    if (!dataContext.doctorModifyRequests || dataContext.doctorModifyRequests.length === 0) {
+      dataSend({ type: "LOAD_DOCTOR_MODIFY_REQUESTS" });
     }
-  };
+  }, [dataContext.doctorPatients, dataContext.doctorModifyRequests, dataSend]);
 
-  const handleReject = async (requestId: string) => {
-    if (!user.accessToken) return;
-    setLoadingReject(requestId);
-    try {
-      await TurnService.rejectModifyRequest(requestId, user.accessToken);
-      // Refrescar la lista
-      const requests = await TurnService.getDoctorModifyRequests(user.id, user.accessToken);
-      setPendingModifyRequests(requests.filter(r => r.status === "PENDING"));
-      uiSend({type: "OPEN_SNACKBAR", message: "Solicitud rechazada correctamente", severity: "success"});
-    } catch (error) {
-      console.error("Error rejecting request", error);
-      uiSend({type: "OPEN_SNACKBAR", message: "Error al rechazar la solicitud", severity: "error"});
-    } finally {
-      setLoadingReject(null);
+  const getPatientName = (patientId: string) => {
+    const patient = patients.find(p => p.id === patientId);
+    if (patient) {
+      return `${patient.name} ${patient.surname}`;
+    } else {
+      return `Paciente ID: ${patientId}`;
     }
-  };
-
-  const handleClose = () => {
-    uiSend({ type: "NAVIGATE", to: "/doctor" });
   };
 
   return (
@@ -100,7 +58,7 @@ const TurnsModifications: React.FC = () => {
             <Button
               variant="outlined"
               startIcon={<ArrowBackIcon />}
-              onClick={handleClose}
+              onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor" })}
               className="viewturns-back-button"
             >
               Volver al Dashboard
@@ -128,7 +86,26 @@ const TurnsModifications: React.FC = () => {
         {/* Turns List Section */}
         <Box className="viewturns-list-section">
           <Box className="viewturns-list-content">
-            {pendingModifyRequests.length > 0 ? (
+            {dataContext.loading.doctorModifyRequests ? (
+              <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+                <CircularProgress />
+                <Typography variant="body1" sx={{ ml: 2 }}>
+                  Cargando solicitudes...
+                </Typography>
+              </Box>
+            ) : dataContext.errors.doctorModifyRequests ? (
+              <Box display="flex" flexDirection="column" alignItems="center" minHeight={200} justifyContent="center">
+                <Typography variant="h6" color="error" sx={{ mb: 2 }}>
+                  Error al cargar solicitudes
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  {dataContext.errors.doctorModifyRequests}
+                </Typography>
+                <Button variant="outlined" onClick={() => dataSend({ type: "LOAD_DOCTOR_MODIFY_REQUESTS" })}>
+                  Reintentar
+                </Button>
+              </Box>
+            ) : pendingModifyRequests.length > 0 ? (
               pendingModifyRequests.map((request, index) => {
                 const isDateChange = dayjs(request.currentScheduledAt).format("YYYY-MM-DD") !== dayjs(request.requestedScheduledAt).format("YYYY-MM-DD");
                 const isTimeChange = dayjs(request.currentScheduledAt).format("HH:mm") !== dayjs(request.requestedScheduledAt).format("HH:mm");
@@ -232,7 +209,7 @@ const TurnsModifications: React.FC = () => {
                   Todas las solicitudes han sido procesadas
                 </Typography>
               </Box>
-            )}
+            ) }
           </Box>
         </Box>
       </Box>
@@ -248,9 +225,9 @@ const TurnsModifications: React.FC = () => {
           <Button onClick={() => setConfirmDialog({ open: false, action: null, requestId: null })}>Cancelar</Button>
           <Button onClick={() => {
             if (confirmDialog.action === 'approve' && confirmDialog.requestId) {
-              handleApprove(confirmDialog.requestId);
+              approveModifyRequest(confirmDialog.requestId, user.accessToken!, dataSend, uiSend, setLoadingApprove);
             } else if (confirmDialog.action === 'reject' && confirmDialog.requestId) {
-              handleReject(confirmDialog.requestId);
+              rejectModifyRequest(confirmDialog.requestId, user.accessToken!, dataSend, uiSend, setLoadingReject);
             }
             setConfirmDialog({ open: false, action: null, requestId: null });
           }} color={confirmDialog.action === 'approve' ? 'success' : 'error'}>

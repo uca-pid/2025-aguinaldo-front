@@ -32,6 +32,11 @@ export interface LoadMyTurnsParams {
   status?: string;
 }
 
+export interface LoadDoctorModifiyRequestsParams {
+  accessToken: string;
+  doctorId: string;
+}
+
 /**
  * Load all doctors
  */
@@ -67,4 +72,11 @@ export const loadAvailableTurns = async ({ accessToken, doctorId, date }: LoadAv
  */
 export const loadMyTurns = async ({ accessToken, status }: LoadMyTurnsParams): Promise<any[]> => {
   return await TurnService.getMyTurns(accessToken, status);
+};
+/**
+ * Load doctor's modify requests
+ */
+export const loadDoctorModifyRequests = async ({ accessToken, doctorId }: LoadDoctorModifiyRequestsParams): Promise<any[]> => {
+  if (!doctorId) return [];
+  return await TurnService.getDoctorModifyRequests(doctorId, accessToken);
 };

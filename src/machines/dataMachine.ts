@@ -1,5 +1,5 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns } from "../utils/dataMachineUtils";
+import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests } from "../utils/dataMachineUtils";
 import { loadDoctorPatients, loadDoctorAvailability } from "../utils/doctorMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, AdminStats } from "../models/Admin";
@@ -18,7 +18,8 @@ export const DATA_MACHINE_EVENT_TYPES = [
   "LOAD_AVAILABLE_TURNS",
   "LOAD_MY_TURNS",
   "LOAD_DOCTOR_PATIENTS",
-  "LOAD_DOCTOR_AVAILABILITY"
+  "LOAD_DOCTOR_AVAILABILITY",
+  "LOAD_DOCTOR_MODIFY_REQUESTS"
 ];
 
 export interface DataMachineContext {
@@ -34,6 +35,7 @@ export interface DataMachineContext {
   myTurns: any[];
   doctorPatients: any[];
   doctorAvailability: any[];
+  doctorModifyRequests: any[];
   
   loading: {
     doctors: boolean;
@@ -43,6 +45,7 @@ export interface DataMachineContext {
     myTurns: boolean;
     doctorPatients: boolean;
     doctorAvailability: boolean;
+    doctorModifyRequests: boolean;
   };
   
   errors: {
@@ -53,6 +56,7 @@ export interface DataMachineContext {
     myTurns: string | null;
     doctorPatients: string | null;
     doctorAvailability: string | null;
+    doctorModifyRequests: string | null;
   };
 }
 
@@ -69,6 +73,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
   myTurns: [],
   doctorPatients: [],
   doctorAvailability: [],
+  doctorModifyRequests: [],
   
   loading: {
     doctors: false,
@@ -78,6 +83,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
     myTurns: false,
     doctorPatients: false,
     doctorAvailability: false,
+    doctorModifyRequests: false,
   },
   
   errors: {
@@ -88,6 +94,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
     myTurns: null,
     doctorPatients: null,
     doctorAvailability: null,
+    doctorModifyRequests: null,
   },
 };
 
@@ -102,6 +109,7 @@ export type DataMachineEvent =
   | { type: "LOAD_MY_TURNS"; status?: string }
   | { type: "LOAD_DOCTOR_PATIENTS" }
   | { type: "LOAD_DOCTOR_AVAILABILITY"; doctorId?: string }
+  | { type: "LOAD_DOCTOR_MODIFY_REQUESTS"; doctorId?: string };
 
 export const dataMachine = createMachine({
   id: "data",
@@ -139,6 +147,7 @@ export const dataMachine = createMachine({
             myTurns: [],
             doctorPatients: [],
             doctorAvailability: [],
+            doctorModifyRequests: [],
           }),
         },
         RELOAD_DOCTORS: {
@@ -172,7 +181,11 @@ export const dataMachine = createMachine({
         LOAD_DOCTOR_AVAILABILITY: {
           target: "fetchingDoctorAvailability",
           guard: ({ context }) => !!context.accessToken,
-        }
+        },
+        LOAD_DOCTOR_MODIFY_REQUESTS: {
+          target: "fetchingDoctorModifyRequests",
+          guard: ({ context }) => !!context.accessToken,
+        },
       },
     },
     
@@ -190,6 +203,7 @@ export const dataMachine = createMachine({
             myTurns: isPatient || isDoctor,
             doctorPatients: false,
             doctorAvailability: isDoctor,
+            doctorModifyRequests: isDoctor,
           },
           errors: {
             doctors: null,
@@ -199,6 +213,7 @@ export const dataMachine = createMachine({
             myTurns: null,
             doctorPatients: null,
             doctorAvailability: null,
+            doctorModifyRequests: null,
           },
         };
       }),
@@ -273,6 +288,50 @@ export const dataMachine = createMachine({
                   orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
                 }
                 const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar doctores pendientes";
+                orchestrator.sendToMachine(UI_MACHINE_ID, {
+                  type: "OPEN_SNACKBAR",
+                  message: errorMessage,
+                  severity: "error"
+                });
+              }
+            ],
+          },
+        },
+        {
+          id: "loadDoctorModifyRequests",
+          src: fromPromise(async ({ input }: { input: { accessToken: string; isDoctor: boolean; doctorId: string | null } }) => {
+            if (!input.isDoctor || !input.doctorId) return [];
+            return await loadDoctorModifyRequests({ accessToken: input.accessToken, doctorId: input.doctorId });
+          }),
+          input: ({ context }) => ({
+            accessToken: context.accessToken!,
+            isDoctor: context.userRole === "DOCTOR",
+            doctorId: context.doctorId
+          }),
+          onDone: {
+            actions: assign({
+              doctorModifyRequests: ({ event }) => event.output,
+              loading: ({ context }) => ({ ...context.loading, doctorModifyRequests: false }),
+            }),
+          },
+          onError: {
+            target: "idle",
+            actions: [
+              assign({
+                errors: ({ context, event }) => ({
+                  ...context.errors,
+                  doctorModifyRequests: event.error instanceof Error ? event.error.message : "Error al cargar solicitudes de modificación del doctor"
+                }),
+                loading: ({ context }) => ({
+                  ...context.loading,
+                  doctorModifyRequests: false
+                })
+              }),
+              ({ event }) => {
+                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+                }
+                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar solicitudes de modificación del doctor";
                 orchestrator.sendToMachine(UI_MACHINE_ID, {
                   type: "OPEN_SNACKBAR",
                   message: errorMessage,
@@ -868,6 +927,55 @@ export const dataMachine = createMachine({
                 orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
               }
               const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar disponibilidad del doctor";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
+            }
+          ],
+        },
+      },
+    },
+
+    fetchingDoctorModifyRequests: {
+      entry: assign({
+        loading: ({ context }) => ({ ...context.loading, doctorModifyRequests: true }),
+        errors: ({ context }) => ({ ...context.errors, doctorModifyRequests: null }),
+      }),
+      invoke: {
+        src: fromPromise(async ({ input }: { input: { accessToken: string; doctorId: string } }) => {
+          return await loadDoctorModifyRequests(input);
+        }),
+        input: ({ context, event }) => ({
+          accessToken: context.accessToken!,
+          doctorId: (event as any).doctorId || context.doctorId!
+        }),
+        onDone: {
+          target: "ready",
+          actions: assign({
+            doctorModifyRequests: ({ event }) => event.output,
+            loading: ({ context }) => ({ ...context.loading, doctorModifyRequests: false }),
+          }),
+        },
+        onError: {
+          target: "idle",
+          actions: [
+            assign({
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                doctorModifyRequests: event.error instanceof Error ? event.error.message : "Error al cargar solicitudes de modificación"
+              }),
+              loading: ({ context }) => ({
+                ...context.loading,
+                doctorModifyRequests: false
+              })
+            }),
+            ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+              }
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar solicitudes de modificación";
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",
                 message: errorMessage,
