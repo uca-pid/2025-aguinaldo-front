@@ -1,15 +1,18 @@
-import React from "react";
+import {useState, useEffect} from "react";
 import {
   Box, 
   Typography, 
   Container,
-  Avatar
+  Avatar,
+  Badge
 } from "@mui/material";
-import ScheduleIcon from "@mui/icons-material/Schedule";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import PersonIcon from "@mui/icons-material/Person";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
+import { TurnService } from "#/service/turn-service.service";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
@@ -22,13 +25,28 @@ import "./DoctorDashboard.css";
 
 const DoctorDashboard: React.FC = () => {
   const { uiSend, turnState, doctorState } = useMachines();
+
   const turnContext = turnState?.context;
   const doctorContext = doctorState?.context;
   const authContext = useAuthMachine().authState?.context;
   const user = authContext.authResponse as SignInResponse;
 
+  const [pendingModifyRequests, setPendingModifyRequests] = useState<TurnModifyRequest[]>([]);
   const availability = doctorContext?.availability || [];
   const hasConfiguredDays = availability.some((day: any) => day.enabled && day.ranges?.length > 0);
+
+    useEffect(() => {
+      const fetchPendingRequests = async () => {
+        if (!user.accessToken) return;
+        try {
+          const requests = await TurnService.getDoctorModifyRequests(user.id, user.accessToken);
+          setPendingModifyRequests(requests.filter(r => r.status === "PENDING"));
+        } catch {
+          setPendingModifyRequests([]);
+        }
+      };
+      fetchPendingRequests();
+    }, [user.accessToken]);
 
   const upcomingTurns = turnContext?.myTurns || []
     .filter((turn: any) => {
@@ -38,7 +56,7 @@ const DoctorDashboard: React.FC = () => {
       
       return isUpcoming && (turn.status === 'SCHEDULED' || turn.status === 'CANCELED');
     })
-    .slice(0, 10)
+    .slice(0, 3)
     .sort((a: any, b: any) => dayjs(a.scheduledAt).diff(dayjs(b.scheduledAt)));
 
   return (
@@ -64,16 +82,6 @@ const DoctorDashboard: React.FC = () => {
           <Box className="dashboard-actions-container">
             <DashboardCard
               type="doctor"
-              variant="primary"
-              icon={<ScheduleIcon className="doctor-action-icon" />}
-              title="Ver Turnos"
-              description="Consulta y gestiona todos tus turnos programados"
-              buttonText="Mis Turnos"
-              onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/view-turns" })}
-            />
-
-            <DashboardCard
-              type="doctor"
               variant="secondary"
               icon={<PeopleAltIcon className="doctor-action-icon" />}
               title="Pacientes"
@@ -82,6 +90,43 @@ const DoctorDashboard: React.FC = () => {
               onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/view-patients" })}
             />
 
+            {pendingModifyRequests.length > 0 ? (
+              <Badge 
+                badgeContent={pendingModifyRequests.length} 
+                color="error" 
+                sx={{
+                  '& .MuiBadge-badge': {
+                    animation: 'pulse 1.5s infinite',
+                    '@keyframes pulse': {
+                      '0%': { transform: 'scale(1)', opacity: 1 },
+                      '50%': { transform: 'scale(1.2)', opacity: 0.8 },
+                      '100%': { transform: 'scale(1)', opacity: 1 },
+                    },
+                  },
+                }}
+              >
+                <DashboardCard
+                  type="doctor"
+                  variant="primary"
+                  icon={<NotificationsIcon className="doctor-action-icon" />}
+                  title="Solicitudes Pendientes"
+                  description="Gestiona solicitudes de modificación de turnos"
+                  buttonText="Ver Solicitudes"
+                  onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/turns-modifications" })}
+                />
+              </Badge>
+            ) : (
+              <DashboardCard
+                type="doctor"
+                variant="primary"
+                icon={<NotificationsIcon className="doctor-action-icon" />}
+                title="Solicitudes Pendientes"
+                description="Gestiona solicitudes de modificación de turnos"
+                buttonText="Ver Solicitudes"
+                onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/turns-modifications" })}
+              />
+            )}
+
             <DashboardUpcomingCard
               type="doctor"
               title="Próximos Turnos"
@@ -89,6 +134,8 @@ const DoctorDashboard: React.FC = () => {
               isLoading={turnContext?.isLoadingMyTurns}
               error={turnContext?.myTurnsError}
               emptyMessage="No tenés turnos próximos"
+              viewAllText="Ver todos"
+              onViewAll={() => uiSend({ type: "NAVIGATE", to: "/doctor/view-turns" })}
             />
 
             <DashboardCard

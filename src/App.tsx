@@ -19,6 +19,7 @@ import DoctorViewTurns from './components/Doctor/DoctorViewTurns/DoctorViewTurns
 import PatientDetails from './components/Doctor/PatientDetails/PatientDetails'
 import SnackbarAlert from './components/shared/SnackbarAlert/SnackbarAlert'
 import PendingActivation from './components/Doctor/PendingActivation/PendingActivation'
+import TurnsModifications from './components/Doctor/TurnsModifications/TurnsModifications'
 
 function AppContent() {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ function AppContent() {
       <Route path="/doctor/view-patients" element={<ViewPatients />} />
       <Route path="/doctor/view-turns" element={<DoctorViewTurns />} />
       <Route path="/patient-detail" element={<PatientDetails />} />
-      
+      <Route path="/doctor/turns-modifications" element={<TurnsModifications />} />
     </>
   );
 

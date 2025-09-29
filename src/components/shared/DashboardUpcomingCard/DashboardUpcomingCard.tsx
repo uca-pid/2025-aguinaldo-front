@@ -4,7 +4,8 @@ import {
   Card,
   Typography,
   CircularProgress,
-  Chip
+  Chip,
+  Button
 } from "@mui/material";
 import dayjs from "dayjs";
 import "./DashboardUpcomingCard.css";
@@ -28,6 +29,8 @@ interface DashboardUpcomingCardProps {
   isLoading?: boolean;
   error?: string;
   emptyMessage?: string;
+  viewAllText?: string;
+  onViewAll?: () => void;
 }
 
 const DashboardUpcomingCard: React.FC<DashboardUpcomingCardProps> = ({
@@ -36,7 +39,9 @@ const DashboardUpcomingCard: React.FC<DashboardUpcomingCardProps> = ({
   turns,
   isLoading = false,
   error,
-  emptyMessage = "No hay turnos próximos"
+  emptyMessage = "No hay turnos próximos",
+  viewAllText,
+  onViewAll
 }) => {
   const renderTurnContent = (turn: Turn) => {
     if (type === 'patient') {
@@ -87,9 +92,22 @@ const DashboardUpcomingCard: React.FC<DashboardUpcomingCardProps> = ({
   return (
     <Box className="dashboard-card-item">
       <Card className={`upcoming-card ${type}-upcoming-card`}>
-        <Typography variant="h6" className={`upcoming-card-header ${type}-upcoming-header`}>
-          {title}
-        </Typography>
+        <Box className={`upcoming-card-header ${type}-upcoming-header`} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" className="upcoming-card-title">
+            {title}
+          </Typography>
+          {type === 'doctor' && onViewAll && (
+            <Button
+              variant="text"
+              size="small"
+              onClick={onViewAll}
+              className="upcoming-card-view-all"
+              sx={{ textTransform: 'none', fontSize: '0.875rem' }}
+            >
+              {viewAllText || 'Ver todos'}
+            </Button>
+          )}
+        </Box>
         
         <Box className="upcoming-card-content">
           {isLoading ? (
