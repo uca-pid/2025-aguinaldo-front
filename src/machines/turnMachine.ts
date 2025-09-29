@@ -84,6 +84,7 @@ export type TurnMachineEvent =
   | { type: "CLEAR_CANCEL_SUCCESS" }
   | { type: "SUBMIT_MODIFY_REQUEST" }
   | { type: "LOAD_MODIFY_AVAILABLE_SLOTS"; doctorId: string; date: string }
+  | { type: "RESET_MODIFY_TURN" }
   | { type: "NAVIGATE"; to: string | null };
 
 export const turnMachine = createMachine({
@@ -233,9 +234,13 @@ export const turnMachine = createMachine({
       initial: "idle",
       states: {
         idle: {
+          always: {
+            guard: ({ context }) => !!context.modifyTurn?.turnId,
+            target: "modifying"
+          },
           on: {
             NAVIGATE: {
-              actions: [assign({
+              actions: assign({
                 modifyTurn: ({ context, event }) => {
                   if (event.to?.includes('/patient/modify-turn')) {
                     const url = new URL(window.location.href);
@@ -252,19 +257,34 @@ export const turnMachine = createMachine({
                       reason: "",
                     };
                   }
-                  return context.modifyTurn;
+                  return {
+                    turnId: null,
+                    currentTurn: null,
+                    selectedDate: null,
+                    selectedTime: null,
+                    availableSlots: [],
+                    availableDates: [],
+                    reason: "",
+                  };
                 }
               }),
-              ({context}) => {
-                orchestrator.sendToMachine(DATA_MACHINE_ID, { type: "LOAD_AVAILABLE_TURNS", doctorId: context.modifyTurn?.currentTurn?.doctorId, date: context.modifyTurn?.selectedDate?.format('YYYY-MM-DD') });
-              }
-            ],
-              target: "modifying"
             },
           },
         },
         modifying: {
-          entry: assign({ isLoadingAvailableDates: true }),
+          entry: [
+            assign({ isLoadingAvailableDates: true }),
+            ({ context }) => {
+              // Si ya hay una fecha seleccionada, cargar los slots disponibles automáticamente
+              if (context.modifyTurn?.selectedDate && context.modifyTurn?.currentTurn?.doctorId) {
+                orchestrator.sendToMachine(DATA_MACHINE_ID, { 
+                  type: "LOAD_AVAILABLE_TURNS", 
+                  doctorId: context.modifyTurn.currentTurn.doctorId, 
+                  date: context.modifyTurn.selectedDate.format('YYYY-MM-DD') 
+                });
+              }
+            }
+          ],
           invoke: {
             src: fromPromise(async ({ input }) => {
               if (!input.doctorId) {
@@ -323,6 +343,7 @@ export const turnMachine = createMachine({
                     };
                   }
                 }),
+                target: "idle" // Primero ir a idle para forzar reinicio completo
               },
               {
                 target: "idle",
