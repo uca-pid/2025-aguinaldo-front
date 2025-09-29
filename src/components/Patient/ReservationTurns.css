@@ -1,35 +1,22 @@
-/* ReservationTurns Component Styles */
+/* ReservationTurns.css - Component-specific styles */
 
-.reservation-container {
+/* Import shared styles */
+@import "../shared/SharedStyles.css";
+
+/* Container override - specific to ReservationTurns */
+.patient-container {
   height: auto !important;
   background-color: var(--white) !important;
   padding: 0 !important;
 }
 
-.reservation-page-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
-}
-
-/* Page Header - Same structure as ViewPatients */
-.reservation-header-layout {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  position: relative !important;
-  max-width: 1200px !important;
-  margin: 0 auto !important;
-  padding: 0 24px !important;
-  gap: 24px !important;
-}
-
-.reservation-back-button-container {
+/* Header overrides - specific styling for ReservationTurns */
+.patient-back-button-container {
   flex-shrink: 0 !important;
   min-width: 120px !important;
 }
 
-.reservation-back-button {
+.patient-back-button {
   border: 2px solid var(--lapis-lazuli) !important;
   color: var(--lapis-lazuli) !important;
   background: transparent !important;
@@ -40,28 +27,20 @@
   transition: all 0.2s ease !important;
 }
 
-.reservation-back-button:hover {
+.patient-back-button:hover {
   border-color: var(--indigo-dye) !important;
   background-color: var(--lapis-lazuli) !important;
   color: white !important;
 }
 
-.reservation-header {
-  background: linear-gradient(135deg, var(--white) 0%, var(--white) 100%) !important;
-  border-radius: 0 !important;
-  margin-bottom: 40px !important;
-  box-shadow: 0 4px 12px rgba(13, 34, 48, 0.15) !important;
-  padding: 20px 0 !important;
-}
-
-.reservation-header-icon {
+.patient-header-icon {
   background-color: var(--verdigris) !important;
   width: 56px !important;
   height: 56px !important;
   margin-right: 24px !important;
 }
 
-.reservation-header-content {
+.patient-header-content {
   flex: 1 !important;
   display: flex !important;
   align-items: center !important;
@@ -70,21 +49,21 @@
   margin: 0 auto !important;
 }
 
-.reservation-header-title {
+.patient-header-title {
   font-weight: 700 !important;
   color: #0d2230 !important;
   margin: 0 !important;
   line-height: 1.2;
 }
 
-.reservation-header-subtitle {
+.patient-header-subtitle {
   color: #64748b !important;
   font-weight: 400 !important;
   margin: 4px 0 0 0 !important;
   line-height: 1.3;
 }
 
-.reservation-header-spacer {
+.patient-header-spacer {
   flex-shrink: 0 !important;
   min-width: 120px !important;
 }
@@ -357,29 +336,8 @@
 }
 
 @media (max-width: 768px) {
-  .reservation-container {
+  .patient-container {
     padding: 16px 8px;
-  }
-
-  .reservation-header {
-    margin-bottom: 16px;
-    padding: 12px;
-    flex-direction: column;
-    text-align: center;
-    gap: 12px;
-  }
-
-  .reservation-header-content {
-    align-items: center;
-  }
-
-  .reservation-header-icon {
-    width: 48px !important;
-    height: 48px !important;
-  }
-
-  .reservation-header-title {
-    font-size: 1.5rem !important;
   }
 
   .reservation-step1-container,
@@ -427,21 +385,8 @@
 }
 
 @media (max-width: 480px) {
-  .reservation-container {
+  .patient-container {
     padding: 12px 4px;
-  }
-
-  .reservation-header {
-    padding: 8px;
-    margin-bottom: 12px;
-  }
-
-  .reservation-header-title {
-    font-size: 1.25rem !important;
-  }
-
-  .reservation-header-subtitle {
-    display: none !important;
   }
 
   .reservation-form-section,

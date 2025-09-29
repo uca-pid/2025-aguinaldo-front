@@ -109,36 +109,36 @@ const ReservationTurns: React.FC = () => {
   };
 
   return(
-    <Box className="reservation-container">
+    <Box className="shared-container">
       {/* Page Header */}
-      <Box className="reservation-header">
-        <Box className="reservation-header-layout">
-          <Box className="reservation-back-button-container">
+      <Box className="shared-header">
+        <Box className="shared-header-layout">
+          <Box className="shared-back-button-container">
             <Button
               startIcon={<ArrowBackIcon />}
               onClick={handleClose}
-              className="reservation-back-button"
+              className="shared-back-button"
               variant="outlined"
             >
               Volver
             </Button>
           </Box>
 
-          <Box className="reservation-header-content">
-            <Avatar className="reservation-header-icon">
+          <Box className="shared-header-content">
+            <Avatar className="shared-header-icon">
               <Event sx={{ fontSize: 28 }} />
             </Avatar>
             <Box>
-              <Typography variant="h4" component="h1" className="reservation-header-title">
+              <Typography variant="h4" component="h1" className="shared-header-title">
                 Reservar Turno Médico
               </Typography>
-              <Typography variant="h6" className="reservation-header-subtitle">
+              <Typography variant="h6" className="shared-header-subtitle">
                 Agenda tu cita médica en simples pasos
               </Typography>
             </Box>
           </Box>
 
-          <Box className="reservation-header-spacer"></Box>
+          <Box className="shared-header-spacer"></Box>
         </Box>
       </Box>
 

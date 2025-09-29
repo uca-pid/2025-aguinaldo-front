@@ -59,40 +59,40 @@ const ModifyTurn: React.FC = () => {
   }
 
   return (
-    <Box className="reservation-container">
+    <Box className="shared-container">
       {/* Page Header */}
-      <Box className="reservation-header">
-        <Box className="reservation-header-layout">
-          <Box className="reservation-back-button-container">
+      <Box className="shared-header">
+        <Box className="shared-header-layout">
+          <Box className="shared-back-button-container">
             <Button
               startIcon={<ArrowBackIcon />}
               onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })}
-              className="reservation-back-button"
+              className="shared-back-button"
               variant="outlined"
             >
               Volver
             </Button>
           </Box>
 
-          <Box className="reservation-header-content">
-            <Avatar className="reservation-header-icon">
+          <Box className="shared-header-content">
+            <Avatar className="shared-header-icon">
               <EditIcon sx={{ fontSize: 28 }} />
             </Avatar>
             <Box>
-              <Typography variant="h4" component="h1" className="reservation-header-title">
+              <Typography variant="h4" component="h1" className="shared-header-title">
                 Modificar Turno
               </Typography>
-              <Typography variant="h6" className="reservation-header-subtitle">
+              <Typography variant="h6" className="shared-header-subtitle">
                 Selecciona una nueva fecha y horario para tu cita
               </Typography>
             </Box>
           </Box>
 
-          <Box className="reservation-header-spacer"></Box>
+          <Box className="shared-header-spacer"></Box>
         </Box>
       </Box>
 
-      <Container maxWidth="lg" className="reservation-page-container">
+      <Container maxWidth="lg" className="shared-page-container">
 
         <Box className="reservation-step1-container">
           <Box className="reservation-form-section">
