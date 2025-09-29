@@ -59,7 +59,7 @@ const ViewPatients: React.FC = () => {
                         <Box className="viewpatients-back-button-container">
                             <Button startIcon={<ArrowBack />} onClick={() => {uiSend({ type: "NAVIGATE", to: "/dashboard" })}} 
                             className="viewpatients-back-button" variant="outlined">
-                                Volver al Dashboard
+                                Volver
                             </Button>
                         </Box>
 
@@ -81,18 +81,27 @@ const ViewPatients: React.FC = () => {
                 </Box>
 
                 <Box className="viewpatients-content">
-                    <Box className="viewpatients-search-container">
-                        <TextField className="viewpatients-search-field" placeholder="Buscar por nombre..." value={searchTerm}
-                            onChange={(e) => doctorSend({ type: "SET_PATIENT_SEARCH", searchTerm: e.target.value })}
-                            disabled={isLoading}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchOutlined color="action" />
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
+                    <Box className="viewpatients-search-and-count-container">
+                        <Box className="viewpatients-search-container">
+                            <TextField className="viewpatients-search-field" placeholder="Buscar por nombre..." value={searchTerm}
+                                onChange={(e) => doctorSend({ type: "SET_PATIENT_SEARCH", searchTerm: e.target.value })}
+                                disabled={isLoading}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <SearchOutlined color="action" />
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                        </Box>
+
+                        <Box className="viewpatients-patients-count">
+                            <Typography variant="body2">
+                                {filteredPatients.length} de {patients.length} paciente{patients.length !== 1 ? 's' : ''}
+                                {searchTerm && ' encontrado' + (filteredPatients.length !== 1 ? 's' : '')}
+                            </Typography>
+                        </Box>
                     </Box>
 
                     {error && (
@@ -118,13 +127,6 @@ const ViewPatients: React.FC = () => {
                         </Box>
                     ) : (
                         <>
-                            <Box className="viewpatients-patients-count">
-                                <Typography variant="body2">
-                                    {filteredPatients.length} de {patients.length} paciente{patients.length !== 1 ? 's' : ''}
-                                    {searchTerm && ' encontrado' + (filteredPatients.length !== 1 ? 's' : '')}
-                                </Typography>
-                            </Box>
-
                             {filteredPatients.length > 0 ? (
                                 <Box className="viewpatients-list-container">
                                     <List>

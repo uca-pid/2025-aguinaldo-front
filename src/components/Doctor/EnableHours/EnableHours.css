@@ -115,13 +115,15 @@
   align-items: center !important;
   justify-content: space-between !important;
   position: relative !important;
-  max-width: 1000px !important;
+  max-width: 1200px !important;
   margin: 0 auto !important;
   padding: 0 24px !important;
+  gap: 24px !important;
 }
 
 .enablehours-back-button-container {
   flex-shrink: 0 !important;
+  min-width: 120px !important;
 }
 
 .enablehours-back-button {
@@ -146,7 +148,7 @@
   border-radius: 0 !important;
   margin-bottom: 32px !important;
   box-shadow: 0 4px 12px rgba(13, 34, 48, 0.15) !important;
-  padding: 32px 0 !important;
+  padding: 20px 0 !important;
 }
 
 .enablehours-header-icon {
@@ -157,11 +159,12 @@
 }
 
 .enablehours-header-content {
-  position: absolute !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
+  flex: 1 !important;
   display: flex !important;
   align-items: center !important;
+  justify-content: center !important;
+  max-width: 600px !important;
+  margin: 0 auto !important;
 }
 
 .enablehours-header-title {
@@ -180,15 +183,16 @@
 
 .enablehours-header-spacer {
   flex-shrink: 0 !important;
-  width: 180px !important;
+  min-width: 120px !important;
 }
 
 .enablehours-content {
-  max-width: 1000px !important;
+  max-width: 1200px !important;
   margin: 0 auto !important;
   padding: 0 24px 32px 24px !important;
   display: flex !important;
   flex-direction: column !important;
+  gap: 32px !important;
 }
 
 .enablehours-days-container {
@@ -356,32 +360,31 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
-  .enablehours-header-layout {
-    max-width: 960px !important;
-  }
-  .enablehours-content {
-    max-width: 960px !important;
-  }
-  .enablehours-days-container {
-    max-width: 700px !important;
-  }
-}
 
 @media (max-width: 768px) {
-  .enablehours-header-layout {
-    flex-direction: column !important;
-    gap: 16px !important;
-    text-align: center !important;
+  .enablehours-header {
+    margin-bottom: 16px;
+    padding: 12px;
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
   }
-  
+
   .enablehours-header-content {
-    position: static !important;
-    transform: none !important;
+    align-items: center;
   }
-  
-  .enablehours-header-spacer {
-    display: none !important;
+
+  .enablehours-header-icon {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .enablehours-header-title {
+    font-size: 1.5rem !important;
+  }
+
+  .enablehours-content {
+    padding: 16px !important;
   }
   
   .enablehours-content {
@@ -507,15 +510,20 @@
 
 @media (max-width: 480px) {
   .enablehours-header {
-    padding: 20px 0 !important;
+    padding: 8px;
+    margin-bottom: 12px;
   }
-  
+
   .enablehours-header-title {
-    font-size: 1.75rem !important;
+    font-size: 1.25rem !important;
+  }
+
+  .enablehours-header-subtitle {
+    display: none !important;
   }
   
-  .enablehours-header-subtitle {
-    font-size: 1rem !important;
+  .enablehours-content {
+    padding: 12px !important;
   }
   
   .enablehours-save-button {

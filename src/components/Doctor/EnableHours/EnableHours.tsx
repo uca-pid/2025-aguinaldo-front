@@ -131,7 +131,7 @@ const EnableHours: React.FC = () => {
                                 className="enablehours-back-button"
                                 variant="outlined"
                             >
-                                Volver al Dashboard
+                                Volver
                             </Button>
                         </Box>
                         

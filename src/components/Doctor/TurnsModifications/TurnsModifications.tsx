@@ -50,42 +50,35 @@ const TurnsModifications: React.FC = () => {
   };
 
   return (
-    <Box className="viewturns-container">
-      {/* Header Section */}
-      <Box className="viewturns-header">
-        <Box className="viewturns-header-layout">
-          <Box className="viewturns-back-button-container">
-            <Button
-              variant="outlined"
-              startIcon={<ArrowBackIcon />}
-              onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor" })}
-              className="viewturns-back-button"
-            >
-              Volver al Dashboard
+    <Box className="turnsmod-container">
+      <Box className="turnsmod-header">
+        <Box className="turnsmod-header-layout">
+          <Box className="turnsmod-back-button-container">
+            <Button startIcon={<ArrowBackIcon />} onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor" })}
+              className="turnsmod-back-button" variant="outlined">        
+              Volver
             </Button>
           </Box>
-          <Box className="viewturns-header-content">
-            <Avatar className="viewturns-header-icon">
+          <Box className="turnsmod-header-content">
+            <Avatar className="turnsmod-header-icon">
               <ListAltIcon sx={{ fontSize: 28 }} />
             </Avatar>
             <Box>
-              <Typography variant="h4" component="h1" className="viewturns-header-title">
+              <Typography variant="h4" component="h1" className="turnsmod-header-title">
                 Solicitudes Pendientes
               </Typography>
-              <Typography variant="h6" className="viewturns-header-subtitle">
+              <Typography variant="h6" className="turnsmod-header-subtitle">
                 Gestiona los cambios de turnos de tus pacientes
               </Typography>
             </Box>
           </Box>
-          <Box className="viewturns-header-spacer"></Box>
+          <Box className="turnsmod-header-spacer"></Box>
         </Box>
       </Box>
 
-      <Box className="viewturns-content">
-
-        {/* Turns List Section */}
-        <Box className="viewturns-list-section">
-          <Box className="viewturns-list-content">
+      <Box className="turnsmod-content">
+        <Box className="turnsmod-list-section">
+          <Box className="turnsmod-list-content">
             {dataContext.loading.doctorModifyRequests ? (
               <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
                 <CircularProgress />
@@ -200,12 +193,12 @@ const TurnsModifications: React.FC = () => {
                 );
               })
             ) : (
-              <Box className="viewturns-empty-state">
-                <Box className="viewturns-empty-emoji">📅</Box>
-                <Typography variant="h5" className="viewturns-empty-title">
+              <Box className="turnsmod-empty-state">
+                <Box className="turnsmod-empty-emoji">📅</Box>
+                <Typography variant="h5" className="turnsmod-empty-title">
                   No hay solicitudes pendientes
                 </Typography>
-                <Typography variant="body1" className="viewturns-empty-subtitle">
+                <Typography variant="body1" className="turnsmod-empty-subtitle">
                   Todas las solicitudes han sido procesadas
                 </Typography>
               </Box>

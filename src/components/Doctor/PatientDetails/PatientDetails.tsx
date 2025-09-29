@@ -1,4 +1,4 @@
-import {Avatar,Box,Button,Card,CardContent,Chip,Divider,Typography,Alert,CircularProgress,Paper,TextField} from "@mui/material"
+import {Avatar,Box,Button,Chip,Divider,Typography,Alert,CircularProgress,Paper,TextField} from "@mui/material"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { useMachines } from "#/providers/MachineProvider"
@@ -155,7 +155,7 @@ const PatientDetails: React.FC = () => {
             variant="outlined"
             sx={{ mb: 2 }}
           >
-            Volver a Pacientes
+            Volver
           </Button>
           <Alert 
             severity="error"
@@ -183,7 +183,7 @@ const PatientDetails: React.FC = () => {
             variant="outlined"
             sx={{ mb: 2 }}
           >
-            Volver a Pacientes
+            Volver
           </Button>
           <Alert severity="warning">
             No se encontró el paciente solicitado.
@@ -196,30 +196,25 @@ const PatientDetails: React.FC = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box className="patient-details-container">
-        
         <Box className="patient-details-header">
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={handleBack}
-            className="patient-details-back-button"
-            variant="outlined"
-          >
-            Volver a Pacientes
-          </Button>
-        </Box>
-
-
-        <Card className="patient-details-main-card patient-details-card-animation" elevation={2}>
-          <CardContent>
-            <Box className="patient-details-header-info">
-              <Avatar 
-                className="patient-details-avatar"
-                sx={{ width: 80, height: 80, fontSize: '2rem' }}
+          <Box className="patient-details-header-layout">
+            <Box className="patient-details-back-button-container">
+              <Button
+                startIcon={<ArrowBack />}
+                onClick={handleBack}
+                className="patient-details-back-button"
+                variant="outlined"
               >
+                Volver
+              </Button>
+            </Box>
+
+            <Box className="patient-details-header-content">
+              <Avatar className="patient-details-header-icon">
                 {getInitials(patient.name, patient.surname)}
               </Avatar>
-              <Box className="patient-details-basic-info">
-                <Typography variant="h4" component="h1" className="patient-details-name">
+              <Box>
+                <Typography variant="h4" component="h1" className="patient-details-header-title">
                   {getFullName(patient.name, patient.surname)}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
@@ -232,11 +227,11 @@ const PatientDetails: React.FC = () => {
                 </Box>
               </Box>
             </Box>
-          </CardContent>
-        </Card>
+            <Box className="patient-details-header-spacer"></Box>
+          </Box>
+        </Box>
 
-
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 2 }}>
+        <Box className="patient-details-content">
           
 
           <Box sx={{ flex: '1 1 400px', minWidth: 0 }}>
