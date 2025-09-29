@@ -1,5 +1,5 @@
 import { 
-  Box, Button, Typography, CircularProgress, Avatar, Card, CardContent, Dialog, DialogTitle, DialogContent, DialogActions
+  Box, Button, Typography, CircularProgress, Avatar, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, List, ListItem, ListItemText, Divider
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
@@ -10,8 +10,9 @@ import { useEffect } from "react";
 import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ScheduleIcon from "@mui/icons-material/Schedule";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 import { Patient } from "#/models/Doctor"
 import "./TurnsModifications.css";
 import { useDataMachine } from "#/providers/DataProvider"
@@ -99,99 +100,90 @@ const TurnsModifications: React.FC = () => {
                 </Button>
               </Box>
             ) : pendingModifyRequests.length > 0 ? (
-              pendingModifyRequests.map((request, index) => {
-                const isDateChange = dayjs(request.currentScheduledAt).format("YYYY-MM-DD") !== dayjs(request.requestedScheduledAt).format("YYYY-MM-DD");
-                const isTimeChange = dayjs(request.currentScheduledAt).format("HH:mm") !== dayjs(request.requestedScheduledAt).format("HH:mm");
-                
-                return (
-                  <Card key={request.id || index} sx={{ mb: 2, boxShadow: 1, borderRadius: 1, maxWidth: 700, mx: 'auto', '&:hover': { boxShadow: 3, transform: 'translateY(-2px)' }, transition: 'all 0.2s ease-in-out' }}>
-                    <CardContent sx={{ p: 2 }}>
-                      <Box display={{ xs: 'block', md: 'flex' }} alignItems="center" gap={{ xs: 2, md: 3 }}>
-                        <Box flex={1} display={{ xs: 'block', md: 'flex' }} alignItems="center" gap={{ xs: 1, md: 2 }}>
-                          <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.secondary', mb: { xs: 1, md: 0 } }}>
-                            {getPatientName(request.patientId)}
-                          </Typography>
-                          
-                          <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} alignItems="center" justifyContent="center" gap={{ xs: 1, md: 2 }} flex={1}>
-                            <Box textAlign="center" sx={{ minWidth: { xs: 90, md: 110 }, p: { xs: 1, md: 1.5 }, bgcolor: 'warning.50', borderRadius: 1 }}>
-                              <Typography variant="body2" color="warning.main" sx={{ fontWeight: 500, mb: 1, fontSize: '0.8rem' }}>
-                                Actual
-                              </Typography>
-                              <Box display="flex" alignItems="center" gap={1}>
-                                <ScheduleIcon sx={{ fontSize: 20, color: 'text.primary', marginBottom: '6px' }} />
-                                <Box>
-                                  <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.85rem' }}>
-                                    {dayjs(request.currentScheduledAt).format("DD/MM/YYYY")}
-                                  </Typography>
-                                  <Typography variant="body2" color="warning.main" sx={{ fontSize: '0.8rem' }}>
-                                    {dayjs(request.currentScheduledAt).format("HH:mm")}
-                                  </Typography>
-                                </Box>
-                              </Box>
-                            </Box>
-                            
-                            <ArrowForwardIcon sx={{ color: isDateChange || isTimeChange ? 'warning.main' : 'primary.main', fontSize: 24, transform: { xs: 'rotate(90deg)', md: 'none' } }} />
-                            
-                            <Box textAlign="center" sx={{ minWidth: { xs: 90, md: 110 }, p: { xs: 1, md: 1.5 }, bgcolor: 'success.50', borderRadius: 1 }}>
-                              <Typography variant="body2" color="success.main" sx={{ fontWeight: 500, mb: 1, fontSize: '0.8rem' }}>
-                                Solicitado
-                              </Typography>
-                              <Box display="flex" alignItems="center" gap={1}>
-                                <ScheduleIcon sx={{ fontSize: 20, color: 'text.primary' }} />
-                                <Box>
-                                  <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.85rem', color: isDateChange ? 'success.main' : 'text.primary' }}>
-                                    {dayjs(request.requestedScheduledAt).format("DD/MM/YYYY")}
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ color: 'success.main', fontSize: '0.8rem' }}>
-                                    {dayjs(request.requestedScheduledAt).format("HH:mm")}
-                                  </Typography>
-                                </Box>
-                              </Box>
-                            </Box>
+              <List sx={{ width: '100%', bgcolor: 'background.paper', borderRadius: 1 }}>
+                {pendingModifyRequests.map((request, index) => {
+                  const isDateChange = dayjs(request.currentScheduledAt).format("YYYY-MM-DD") !== dayjs(request.requestedScheduledAt).format("YYYY-MM-DD");
+                  const isTimeChange = dayjs(request.currentScheduledAt).format("HH:mm") !== dayjs(request.requestedScheduledAt).format("HH:mm");
+                  
+                  return (
+                    <Box key={request.id || index}>
+                      <ListItem
+                        alignItems="flex-start"
+                        secondaryAction={
+                          <Box display="flex" flexDirection="column" gap={0.5}>
+                            <IconButton
+                              color="success"
+                              onClick={() => setConfirmDialog({ open: true, action: 'approve', requestId: request.id })}
+                              disabled={loadingApprove === request.id || loadingReject === request.id}
+                              sx={{ fontSize: '1.5rem' }}
+                            >
+                              {loadingApprove === request.id ? (
+                                <CircularProgress size={20} />
+                              ) : (
+                                <CheckIcon />
+                              )}
+                            </IconButton>
+                            <IconButton
+                              color="error"
+                              onClick={() => setConfirmDialog({ open: true, action: 'reject', requestId: request.id })}
+                              disabled={loadingApprove === request.id || loadingReject === request.id}
+                              sx={{ fontSize: '1.5rem' }}
+                            >
+                              {loadingReject === request.id ? (
+                                <CircularProgress size={20} />
+                              ) : (
+                                <CloseIcon />
+                              )}
+                            </IconButton>
                           </Box>
-                        </Box>
-                        
-                        <Box display="flex" flexDirection="column" gap={1} alignItems="center" mt={{ xs: 2, md: 0 }}>
-                          <Button
-                            variant="text"
-                            size="small"
-                            color="success"
-                            onClick={() => setConfirmDialog({ open: true, action: 'approve', requestId: request.id })}
-                            disabled={loadingApprove === request.id || loadingReject === request.id}
-                            sx={{ minWidth: 100, fontSize: '0.8rem', textTransform: 'none' }}
-                          >
-                            {loadingApprove === request.id ? (
-                              <>
-                                <CircularProgress size={14} sx={{ mr: 0.5 }} />
-                                Aprobando...
-                              </>
-                            ) : (
-                              'Aprobar'
-                            )}
-                          </Button>
-                          <Button
-                            variant="text"
-                            size="small"
-                            color="error"
-                            onClick={() => setConfirmDialog({ open: true, action: 'reject', requestId: request.id })}
-                            disabled={loadingApprove === request.id || loadingReject === request.id}
-                            sx={{ minWidth: 100, fontSize: '0.8rem', textTransform: 'none' }}
-                          >
-                            {loadingReject === request.id ? (
-                              <>
-                                <CircularProgress size={14} sx={{ mr: 0.5 }} />
-                                Rechazando...
-                              </>
-                            ) : (
-                              'Rechazar'
-                            )}
-                          </Button>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                );
-              })
+                        }
+                        sx={{ px: 3, py: 2 }}
+                      >
+                        <ListItemText
+                          primary={
+                            <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                              {getPatientName(request.patientId)}
+                            </Typography>
+                          }
+                          secondary={
+                            <Typography component="div">
+                              <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'flex-start', md: 'center' }} gap={{ xs: 1, md: 2 }} mt={1}>
+                                <Typography variant="body1" sx={{ color: '#22577a', fontSize: '1rem' }}>
+                                  {dayjs(request.currentScheduledAt).format("DD/MM/YYYY HH:mm")}
+                                </Typography>
+                                
+                                <Box display="flex" alignItems="center" gap={1} sx={{ alignSelf: { xs: 'center', md: 'auto' } }}>
+                                  <ArrowForwardIcon sx={{ color: isDateChange || isTimeChange ? '#2d7d90' : 'primary.main', fontSize: 20, transform: { xs: 'rotate(90deg)', md: 'none' } }} />
+                                  {isDateChange && isTimeChange && (
+                                    <Typography variant="body2" sx={{ color: '#2d7d90', fontSize: '0.8rem' }}>
+                                      Nueva fecha y horario
+                                    </Typography>
+                                  )}
+                                  {isDateChange && !isTimeChange && (
+                                    <Typography variant="body2" sx={{ color: '#2d7d90', fontSize: '0.8rem' }}>
+                                      Nueva fecha
+                                    </Typography>
+                                  )}
+                                  {!isDateChange && isTimeChange && (
+                                    <Typography variant="body2" sx={{ color: '#2d7d90', fontSize: '0.8rem' }}>
+                                      Nuevo horario
+                                    </Typography>
+                                  )}
+                                </Box>
+                                
+                                <Typography variant="body1" sx={{ color: '#40a3a5', fontSize: '1rem' }}>
+                                  {dayjs(request.requestedScheduledAt).format("DD/MM/YYYY HH:mm")}
+                                </Typography>
+                              </Box>
+                            </Typography>
+                          }
+                        />
+                      </ListItem>
+                      {index < pendingModifyRequests.length - 1 && <Divider />}
+                    </Box>
+                  );
+                })}
+              </List>
             ) : (
               <Box className="turnsmod-empty-state">
                 <Box className="turnsmod-empty-emoji">📅</Box>
