@@ -1,53 +1,21 @@
-/* AdminDashboard Component Styles */
-
-.admin-dashboard-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
-  padding: 32px 16px;
-}
-
-.admin-header-section {
-  text-align: center;
-  margin-bottom: 48px;
-}
-
-.admin-header-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-}
+@import "../shared/Dashboard/Dashboard.css";
 
 .admin-header-avatar {
-  margin-right: 16px;
-  width: 56px !important;
-  height: 56px !important;
-  background: linear-gradient(135deg, #22577a 0%, #2d7d90 100%) !important;
-}
-
-.admin-header-icon {
-  font-size: 32px !important;
-  color: white !important;
-}
-
-.admin-header-title {
-  font-weight: 700 !important;
-  color: #0d2230 !important;
-  font-family: "Roboto", "Helvetica", "Arial", sans-serif !important;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
 }
 
 .admin-header-subtitle {
-  color: #1f4f6f !important;
-  font-weight: 400 !important;
+  color: #64748b !important;
 }
 
-/* Stats Section */
+/* Stats Section - Same width as DashboardCard */
 .admin-stats-container {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: row;
   gap: 32px;
-  margin-bottom: 48px;
+  margin-bottom: 32px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .admin-stats-item {
@@ -59,50 +27,60 @@
   background: linear-gradient(135deg, #22577a 0%, #2d7d90 100%) !important;
   color: white !important;
   border-radius: 16px !important;
-  box-shadow: 0 8px 25px rgba(34, 87, 122, 0.3) !important;
+  box-shadow: 0 4px 15px rgba(34, 87, 122, 0.2) !important;
   transition: all 0.3s ease-in-out !important;
+  border: 1px solid #e2e8f0 !important;
+  cursor: default !important;
+  height: 100% !important;
 }
 
 .admin-stats-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 35px rgba(34, 87, 122, 0.4);
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(34, 87, 122, 0.3);
+  border-color: #22577a;
 }
 
 .admin-stats-content {
-  padding: 24px !important;
+  padding: 32px !important;
+  text-align: center !important;
 }
 
 .admin-stats-layout {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 24px;
+}
+
+.admin-stats-icon-wrapper {
+  width: 72px !important;
+  height: 72px !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0;
+}
+
+.admin-stats-text {
+  text-align: left;
 }
 
 .admin-stats-number {
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   margin-bottom: 8px !important;
   color: white !important;
+  font-size: 2rem !important;
 }
 
 .admin-stats-label {
   opacity: 0.9 !important;
   color: white !important;
+  font-size: 1rem !important;
 }
 
 .admin-stats-icon {
-  font-size: 48px !important;
-  opacity: 0.8 !important;
+  font-size: 36px !important;
   color: white !important;
-}
-
-.admin-stats-badge {
-  margin-left: 16px !important;
-}
-
-/* Actions Container */
-.admin-actions-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 32px;
-  justify-content: center;
 }
