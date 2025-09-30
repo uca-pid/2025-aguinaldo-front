@@ -36,15 +36,33 @@ const ViewTurns: React.FC = () => {
   const showTurnsContext = turnContext.showTurns;
   const { cancellingTurnId, isCancellingTurn } = turnContext;
 
-  const filteredTurns = turnContext.myTurns.filter((turn: any) => {
-    let matchesStatus = true;
-
-    if (showTurnsContext.statusFilter) {
-      matchesStatus = turn.status === showTurnsContext.statusFilter;
-    }
-
-    return matchesStatus;
-  });
+  const filteredTurns = turnContext.myTurns
+    .filter((turn: any) => {
+      let matchesStatus = true;
+      if (showTurnsContext.statusFilter) {
+        matchesStatus = turn.status === showTurnsContext.statusFilter;
+      }
+      return matchesStatus;
+    })
+    .sort((a: any, b: any) => {
+      const getStatusPriority = (turn: any) => {
+        const isPast = dayjs(turn.scheduledAt).isBefore(dayjs());
+        
+        if (turn.status === 'SCHEDULED') {
+          return isPast ? 2 : 1; // Vencido (past) = 2, Programado (future) = 1
+        } else if (turn.status === 'CANCELED') {
+          return 3; // Cancelado = 3
+        }
+        return 4; // Other statuses
+      };
+      
+      const statusComparison = getStatusPriority(a) - getStatusPriority(b);
+      
+      if (statusComparison !== 0) {
+        return statusComparison;
+      }
+      return dayjs(b.scheduledAt).valueOf() - dayjs(a.scheduledAt).valueOf();
+    });
 
   const handleCancelTurn = (turnId: string) => {
     if (!user.accessToken) return;
