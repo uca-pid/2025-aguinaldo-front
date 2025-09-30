@@ -1,5 +1,6 @@
 import { DoctorService, type DoctorAvailabilityRequest } from "../../service/doctor-service.service";
 import type { Patient } from "../../models/Doctor";
+import { withDevDelay, DELAY_CONFIGS } from "../devDelay";
 
 /**
  * Utility functions for doctorMachine service calls
@@ -41,16 +42,16 @@ interface DayAvailability {
 
 
 export const loadDoctorPatients = async ({ accessToken, doctorId }: LoadPatientsParams): Promise<Patient[]> => {
-  return await DoctorService.getDoctorPatients(accessToken, doctorId);
+  return await withDevDelay(() => DoctorService.getDoctorPatients(accessToken, doctorId), DELAY_CONFIGS.SLOW);
 };
 
 
 export const loadDoctorAvailability = async ({ accessToken, doctorId }: LoadAvailabilityParams) => {
-  return await DoctorService.getAvailability(accessToken, doctorId);
+  return await withDevDelay(() => DoctorService.getAvailability(accessToken, doctorId), DELAY_CONFIGS.SLOW);
 };
 
 export const updateMedicalHistory = async ({accessToken, doctorId, patientId, medicalHistory}: UpdateMedicalHistoryParams): Promise<void> => {
-  return await DoctorService.updateMedicalHistory(accessToken, doctorId, patientId, medicalHistory);
+  return await withDevDelay(() => DoctorService.updateMedicalHistory(accessToken, doctorId, patientId, medicalHistory), DELAY_CONFIGS.SLOW  );
 }
 
 export const saveDoctorAvailability = async ({ accessToken, doctorId, availability }: SaveAvailabilityParams): Promise<string> => {
@@ -93,6 +94,6 @@ export const saveDoctorAvailability = async ({ accessToken, doctorId, availabili
     })
   };
 
-  await DoctorService.saveAvailability(accessToken, doctorId, availabilityRequest);
+  await withDevDelay(() => DoctorService.saveAvailability(accessToken, doctorId, availabilityRequest), DELAY_CONFIGS.SLOW);
   return "Availability saved successfully";
 };

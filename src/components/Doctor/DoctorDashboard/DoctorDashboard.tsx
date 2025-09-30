@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import {
   Box, 
   Typography, 
@@ -10,6 +11,7 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import PersonIcon from "@mui/icons-material/Person";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import LoadingThreeDotsJumping from "../../shared/PageLoadingScreen/LoadingThreeDots";
 import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
@@ -23,7 +25,7 @@ import "./DoctorDashboard.css";
 import { useDataMachine } from "#/providers/DataProvider";
 
 const DoctorDashboard: React.FC = () => {
-  const { dataState } = useDataMachine();
+  const { dataState, dataSend } = useDataMachine();
   const dataContext = dataState.context;
   const { uiSend, turnState, doctorState } = useMachines();
 
@@ -32,11 +34,27 @@ const DoctorDashboard: React.FC = () => {
   const authContext = useAuthMachine().authState?.context;
   const user = authContext.authResponse as SignInResponse;
 
+  // Load data when component mounts
+  useEffect(() => {
+    console.log('DoctorDashboard mounted, loading data...');
+    dataSend({ type: 'LOAD_MY_TURNS' });
+    dataSend({ type: 'LOAD_DOCTOR_MODIFY_REQUESTS' });
+    // doctorSend could be used for availability if available
+  }, [dataSend]);
+
   const availability = doctorContext?.availability || [];
   const hasConfiguredDays = availability.some((day: any) => day.enabled && day.ranges?.length > 0);
   const pendingModifyRequests: TurnModifyRequest[] = dataContext.doctorModifyRequests?.filter((r: TurnModifyRequest) => r.status === "PENDING") || [];
 
-  const upcomingTurns = (turnContext.myTurns || [])
+  // Loading states
+  const isLoadingMyTurns = dataContext.loading?.myTurns || turnContext?.isLoadingMyTurns;
+  const isLoadingDoctorModifyRequests = dataContext.loading?.doctorModifyRequests;
+  const isLoadingAvailability = doctorContext?.isLoadingAvailability;
+  
+  // Check if any critical data is still loading
+  const isAnyDataLoading = isLoadingMyTurns || isLoadingDoctorModifyRequests || isLoadingAvailability;
+
+  const upcomingTurns = (turnContext?.myTurns || [])
     .filter((turn: any) => {
       const turnDate = dayjs(turn.scheduledAt);
       const now = dayjs();
@@ -46,10 +64,32 @@ const DoctorDashboard: React.FC = () => {
     })
     .slice(0, 10)
     .sort((a: any, b: any) => dayjs(a.scheduledAt).diff(dayjs(b.scheduledAt)));
-
+    
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box className="dashboard-container">
+        {/* Show loading overlay when critical data is loading */}
+        {isAnyDataLoading && (
+          <Box 
+            sx={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              bgcolor: 'rgba(255, 255, 255, 0.8)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              backdropFilter: 'blur(4px)'
+            }}
+          >
+            <LoadingThreeDotsJumping />
+          </Box>
+        )}
+        
         <Container maxWidth="lg">
           <Box className="dashboard-header-section">
             <Box className="dashboard-header-content">

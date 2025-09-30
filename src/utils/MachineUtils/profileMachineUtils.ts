@@ -1,6 +1,7 @@
 import { AuthService } from "../../service/auth-service.service";
 import type { ProfileResponse } from "../../models/Auth";
 import type { ProfileMachineContext } from "../../machines/profileMachine";
+import { withDevDelay, DELAY_CONFIGS } from "../devDelay";
 
 
 /**
@@ -26,7 +27,7 @@ export interface DeactivateAccountParams {
  * Load user profile data
  */
 export const loadProfile = async ({ accessToken, userId }: LoadProfileParams): Promise<ProfileResponse> => {
-  return await AuthService.getProfile(accessToken, userId);
+  return await withDevDelay(() => AuthService.getProfile(accessToken, userId) , DELAY_CONFIGS.SLOW);
 };
 
 /**

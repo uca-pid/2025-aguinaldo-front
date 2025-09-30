@@ -2,6 +2,7 @@ import { AdminService } from "../../service/admin-service.service";
 import { TurnService } from "../../service/turn-service.service";
 import type { PendingDoctor, AdminStats } from "../../models/Admin";
 import type { Doctor } from "../../models/Turn";
+import { withDevDelay, DELAY_CONFIGS } from "../devDelay";
 
 /**
  * Utility functions for dataMachine service calls
@@ -41,7 +42,7 @@ export interface LoadDoctorModifiyRequestsParams {
  * Load all doctors
  */
 export const loadDoctors = async ({ accessToken }: LoadDoctorsParams): Promise<Doctor[]> => {
-  return await TurnService.getDoctors(accessToken);
+  return await withDevDelay(() => TurnService.getDoctors(accessToken), DELAY_CONFIGS.NORMAL);
 };
 
 /**
@@ -49,7 +50,7 @@ export const loadDoctors = async ({ accessToken }: LoadDoctorsParams): Promise<D
  */
 export const loadPendingDoctors = async ({ accessToken, isAdmin }: LoadPendingDoctorsParams): Promise<PendingDoctor[]> => {
   if (!isAdmin) return [];
-  return await AdminService.getPendingDoctors(accessToken);
+  return await withDevDelay(() => AdminService.getPendingDoctors(accessToken), DELAY_CONFIGS.SLOW);
 };
 
 /**
@@ -57,26 +58,27 @@ export const loadPendingDoctors = async ({ accessToken, isAdmin }: LoadPendingDo
  */
 export const loadAdminStats = async ({ accessToken, isAdmin }: LoadAdminStatsParams): Promise<AdminStats> => {
   if (!isAdmin) return { patients: 0, doctors: 0, pending: 0 };
-  return await AdminService.getAdminStats(accessToken);
+  return await withDevDelay(() => AdminService.getAdminStats(accessToken), DELAY_CONFIGS.NORMAL);
 };
 
 /**
  * Load available turns for a specific doctor and date
  */
 export const loadAvailableTurns = async ({ accessToken, doctorId, date }: LoadAvailableTurnsParams): Promise<string[]> => {
-  return await TurnService.getAvailableTurns(doctorId, date, accessToken);
+  return await withDevDelay(() => TurnService.getAvailableTurns(doctorId, date, accessToken), DELAY_CONFIGS.NORMAL);
 };
 
 /**
  * Load user's turns
  */
 export const loadMyTurns = async ({ accessToken, status }: LoadMyTurnsParams): Promise<any[]> => {
-  return await TurnService.getMyTurns(accessToken, status);
+  return await withDevDelay(() => TurnService.getMyTurns(accessToken, status), DELAY_CONFIGS.SLOW);
 };
+
 /**
  * Load doctor's modify requests
  */
 export const loadDoctorModifyRequests = async ({ accessToken, doctorId }: LoadDoctorModifiyRequestsParams): Promise<any[]> => {
   if (!doctorId) return [];
-  return await TurnService.getDoctorModifyRequests(doctorId, accessToken);
+  return await withDevDelay(() => TurnService.getDoctorModifyRequests(doctorId, accessToken), DELAY_CONFIGS.NORMAL);
 };
