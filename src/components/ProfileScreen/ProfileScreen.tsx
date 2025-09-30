@@ -28,14 +28,11 @@ const ProfileScreen: React.FC = () => {
     const minutes= formContext["editMinutes"] ?? false;
     const gender= formContext["editGender"] ?? false;
     const birthdate= formContext["editBirthdate"] ?? false;
-;
     
     useEffect(() => {
-        // Initialize profile page - this will load the profile if authenticated
         profileSend({ type: "INIT_PROFILE_PAGE" });
     }, [profileSend]);
 
- 
     return (
         <Box
         sx={{
@@ -98,7 +95,7 @@ const ProfileScreen: React.FC = () => {
                                 <ListItemText primary={`DNI `}  secondary={profile.dni}/>
                             </ListItem>
                             <Divider component="li" />
-                            <EditField key ="gender" label="Género" value={profile.gender} isEditing={gender} toggleKey="editGender" fieldKey="gender" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "gender", value: val })}/>
+                            <EditField key ="gender" label="Género" value={profile.gender === "MALE" ? "Masculino" : "Femenino"} isEditing={gender} toggleKey="editGender" fieldKey="gender" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "gender", value: val })}/>
                             <EditField key="birthdate" label="Fecha de nacimiento" value={profile.birthdate} isEditing={birthdate} toggleKey="editBirthdate" fieldKey="birthdate" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "birthdate", value: val })}/>
 
                             {user?.role === 'DOCTOR' && (

@@ -12,7 +12,6 @@ import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { DateCalendar } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
 import dayjs from "dayjs";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Event from "@mui/icons-material/Event";
 import "./ReservationTurns.css";
 
@@ -29,11 +28,6 @@ const ReservationTurns: React.FC = () => {
   const filteredDoctors = isProfessionSelected
     ? turnContext.doctors.filter((doctor: any) => doctor.specialty.toLowerCase() === formValues.professionSelected.toLowerCase())
     : [];
-
-  const handleClose = () => {
-    uiSend({ type: "NAVIGATE", to: "/patient" });
-    turnSend({ type: "RESET_TAKE_TURN" });
-  };
 
   const handleReasonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "reason"], value: e.target.value });
@@ -113,16 +107,6 @@ const ReservationTurns: React.FC = () => {
       {/* Page Header */}
       <Box className="shared-header">
         <Box className="shared-header-layout">
-          <Box className="shared-back-button-container">
-            <Button
-              startIcon={<ArrowBackIcon />}
-              onClick={handleClose}
-              className="shared-back-button"
-              variant="outlined"
-            >
-              Volver
-            </Button>
-          </Box>
 
           <Box className="shared-header-content">
             <Avatar className="shared-header-icon">

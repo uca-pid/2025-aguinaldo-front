@@ -1,43 +1,36 @@
 import { TurnService } from "../service/turn-service.service";
+import { orchestrator } from '#/core/Orchestrator';
 
 export const approveModifyRequest = async (
   requestId: string,
-  accessToken: string,
-  dataSend: (event: any) => void,
-  uiSend: (event: any) => void,
-  setLoading: (id: string | null) => void
+  accessToken: string
 ) => {
   if (!accessToken) return;
-  setLoading(requestId);
+  orchestrator.send({ type: "TOGGLE", key: "loadingApprove" });
   try {
     await TurnService.approveModifyRequest(requestId, accessToken);
-    dataSend({ type: "LOAD_DOCTOR_MODIFY_REQUESTS" });
-    uiSend({type: "OPEN_SNACKBAR", message: "Solicitud aprobada correctamente", severity: "success"});
+    orchestrator.send({ type: "LOAD_DOCTOR_MODIFY_REQUESTS" });
+    orchestrator.send({type: "OPEN_SNACKBAR", message: "Solicitud aprobada correctamente", severity: "success"});
   } catch (error) {
-    console.error("Error approving request", error);
-    uiSend({type: "OPEN_SNACKBAR", message: "Error al aprobar la solicitud", severity: "error"});
+    orchestrator.send({type: "OPEN_SNACKBAR", message: "Error al aprobar la solicitud", severity: "error"});
   } finally {
-    setLoading(null);
+    orchestrator.send({ type: "TOGGLE", key: "loadingApprove" });
   }
 };
 
 export const rejectModifyRequest = async (
   requestId: string,
-  accessToken: string,
-  dataSend: (event: any) => void,
-  uiSend: (event: any) => void,
-  setLoading: (id: string | null) => void
+  accessToken: string
 ) => {
   if (!accessToken) return;
-  setLoading(requestId);
+  orchestrator.send({ type: "TOGGLE", key: "loadingReject" });
   try {
     await TurnService.rejectModifyRequest(requestId, accessToken);
-    dataSend({ type: "LOAD_DOCTOR_MODIFY_REQUESTS" });
-    uiSend({type: "OPEN_SNACKBAR", message: "Solicitud rechazada correctamente", severity: "success"});
+    orchestrator.send({ type: "LOAD_DOCTOR_MODIFY_REQUESTS" });
+    orchestrator.send({type: "OPEN_SNACKBAR", message: "Solicitud rechazada correctamente", severity: "success"});
   } catch (error) {
-    console.error("Error rejecting request", error);
-    uiSend({type: "OPEN_SNACKBAR", message: "Error al rechazar la solicitud", severity: "error"});
+    orchestrator.send({type: "OPEN_SNACKBAR", message: "Error al rechazar la solicitud", severity: "error"});
   } finally {
-    setLoading(null);
+    orchestrator.send({ type: "TOGGLE", key: "loadingReject" });
   }
 };

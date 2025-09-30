@@ -1,7 +1,7 @@
 import { createMachine, assign } from "xstate";
 
 export const UI_MACHINE_ID = "ui";
-export const UI_MACHINE_EVENT_TYPES = ["TOGGLE", "NAVIGATE", "OPEN_SNACKBAR", "CLOSE_SNACKBAR"];
+export const UI_MACHINE_EVENT_TYPES = ["TOGGLE", "NAVIGATE", "OPEN_SNACKBAR", "CLOSE_SNACKBAR", "OPEN_CONFIRMATION_DIALOG", "CLOSE_CONFIRMATION_DIALOG"];
 
 export interface UiMachineContext {
   toggleStates: Record<string, boolean>;
@@ -12,6 +12,11 @@ export interface UiMachineContext {
     message: string;
     severity: 'success' | 'error' | 'warning' | 'info';
   };
+  confirmDialog: {
+    open: boolean;
+    action: 'approve' | 'reject' | null;
+    requestId: string | null;
+  };
 }
 
 export type UiMachineEvent =
@@ -19,13 +24,18 @@ export type UiMachineEvent =
   | { type: "TOGGLE"; key: string }
   | { type: "NAVIGATE"; to: string | null }
   | { type: "OPEN_SNACKBAR"; message: string; severity: 'success' | 'error' | 'warning' | 'info' }
-  | { type: "CLOSE_SNACKBAR" };
+  | { type: "CLOSE_SNACKBAR" }
+  | { type: "OPEN_CONFIRMATION_DIALOG"; action: 'approve' | 'reject'; requestId: string }
+  | { type: "CLOSE_CONFIRMATION_DIALOG" };
 
 export const uiMachine = createMachine({
   id: "ui",
   initial: "idle",
   context: {
-    toggleStates: {},
+    toggleStates: {
+      loadingApprove: false,
+      loadingReject: false,
+    },
     currentPath: "/",
     navigate: (to: string) => { console.log(`Default navigate to: ${to}`); },
     snackbar: {
@@ -33,6 +43,7 @@ export const uiMachine = createMachine({
       message: "",
       severity: "info" as const,
     },
+    confirmDialog: { open: false, action: null, requestId: null },
   },
   types: { 
     context: {} as UiMachineContext,
@@ -78,6 +89,24 @@ export const uiMachine = createMachine({
             snackbar: ({ context }) => ({
               ...context.snackbar,
               open: false,
+            }),
+          }),
+        },
+        OPEN_CONFIRMATION_DIALOG: {
+          actions: assign({
+            confirmDialog: ({ event }) => ({
+              open: true,
+              action: event.action,
+              requestId: event.requestId,
+            }),
+          }),
+        },
+        CLOSE_CONFIRMATION_DIALOG: {
+          actions: assign({
+            confirmDialog: () => ({
+              open: false,
+              action: null,
+              requestId: null,
             }),
           }),
         },

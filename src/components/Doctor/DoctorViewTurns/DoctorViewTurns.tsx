@@ -8,11 +8,10 @@ import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import ListAltIcon from "@mui/icons-material/ListAlt";
-import { ArrowBack } from '@mui/icons-material';
 import "./DoctorViewTurns.css";
 
 const ViewTurns: React.FC = () => {
-  const { uiSend, turnState, turnSend } = useMachines();
+  const { turnState, turnSend } = useMachines();
   const { authState } = useAuthMachine();
   const authContext = authState?.context;
   const user = authContext?.authResponse as SignInResponse;
@@ -20,10 +19,6 @@ const ViewTurns: React.FC = () => {
   const turnContext = turnState.context;
   const showTurnsContext = turnContext.showTurns;
   const { cancellingTurnId, isCancellingTurn } = turnContext;
-
-  const handleBack = () => {
-    uiSend({ type: "NAVIGATE", to: "/dashboard" });
-  };
 
   const filteredTurns = turnContext.myTurns.filter((turn: any) => {
     let matchesStatus = true;
@@ -74,16 +69,6 @@ const ViewTurns: React.FC = () => {
       <Box className="viewturns-container">          
           <Box className="shared-header">
             <Box className="shared-header-layout">
-              <Box className="shared-back-button-container">
-                <Button
-                  startIcon={<ArrowBack />}
-                  onClick={handleBack}
-                  variant="outlined"
-                  className="shared-back-button"
-                >
-                  Volver
-                </Button>
-              </Box>
               
               <Box className="shared-header-content">
                 <Avatar className="shared-header-icon">

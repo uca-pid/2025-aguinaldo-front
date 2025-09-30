@@ -15,7 +15,6 @@ import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { 
   CalendarMonthOutlined, 
-  ArrowBack,
   CheckCircle,
   Add,
   Delete
@@ -32,12 +31,6 @@ const EnableHours: React.FC = () => {
     const availability = doctorContext.availability || [];
     const enabledDays = availability.filter((day: any) => day.enabled).length;
     const totalRanges = availability.reduce((total: any, day: any) => total + (day.enabled ? day.ranges.length : 0), 0);
-
-
-
-    const handleBack = () => {
-        uiSend({ type: "NAVIGATE", to: "/dashboard" });
-    };
 
     const saveAvailability = () => {
         if (!doctorContext.accessToken || !doctorContext.doctorId) {
@@ -124,16 +117,6 @@ const EnableHours: React.FC = () => {
             <Box className="enablehours-container">
                 <Box className="shared-header">
                     <Box className="shared-header-layout">
-                        <Box className="shared-back-button-container">
-                            <Button
-                                startIcon={<ArrowBack />}
-                                onClick={handleBack}
-                                className="shared-back-button"
-                                variant="outlined"
-                            >
-                                Volver
-                            </Button>
-                        </Box>
                         
                         <Box className="shared-header-content">
                             <Avatar className="shared-header-icon">

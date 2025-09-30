@@ -1,4 +1,3 @@
-import {useState, useEffect} from "react";
 import {
   Box, 
   Typography, 
@@ -12,7 +11,6 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import PersonIcon from "@mui/icons-material/Person";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
-import { TurnService } from "#/service/turn-service.service";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
@@ -22,8 +20,11 @@ import DashboardCard from "../../shared/DashboardCard/DashboardCard";
 import DashboardUpcomingCard from "../../shared/DashboardUpcomingCard/DashboardUpcomingCard";
 import dayjs from "dayjs";
 import "./DoctorDashboard.css";
+import { useDataMachine } from "#/providers/DataProvider";
 
 const DoctorDashboard: React.FC = () => {
+  const { dataState } = useDataMachine();
+  const dataContext = dataState.context;
   const { uiSend, turnState, doctorState } = useMachines();
 
   const turnContext = turnState?.context;
@@ -31,22 +32,9 @@ const DoctorDashboard: React.FC = () => {
   const authContext = useAuthMachine().authState?.context;
   const user = authContext.authResponse as SignInResponse;
 
-  const [pendingModifyRequests, setPendingModifyRequests] = useState<TurnModifyRequest[]>([]);
   const availability = doctorContext?.availability || [];
   const hasConfiguredDays = availability.some((day: any) => day.enabled && day.ranges?.length > 0);
-
-    useEffect(() => {
-      const fetchPendingRequests = async () => {
-        if (!user.accessToken) return;
-        try {
-          const requests = await TurnService.getDoctorModifyRequests(user.id, user.accessToken);
-          setPendingModifyRequests(requests.filter(r => r.status === "PENDING"));
-        } catch {
-          setPendingModifyRequests([]);
-        }
-      };
-      fetchPendingRequests();
-    }, [user.accessToken]);
+  const pendingModifyRequests: TurnModifyRequest[] = dataContext.doctorModifyRequests?.filter((r: TurnModifyRequest) => r.status === "PENDING") || [];
 
   const upcomingTurns = turnContext?.myTurns || []
     .filter((turn: any) => {
