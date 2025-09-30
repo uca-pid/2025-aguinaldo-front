@@ -4,6 +4,7 @@ import { Box, Typography, Paper, Grid} from "@mui/material";
 import PatientDashboard from "../Patient/PatientDashboard";
 import DoctorDashboard from "../Doctor/DoctorDashboard/DoctorDashboard";
 import AdminDashboard from "../Admin/AdminDashboard";
+import PendingActivation from "../Doctor/PendingActivation/PendingActivation";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
 
@@ -11,8 +12,14 @@ const HomeScreen: React.FC = () => {
   const { authState } = useAuthMachine();
   const user = authState?.context?.authResponse as SignInResponse;
 
-  const USER_ROLE = user.role;
+  if (!user) {
+    return null;
+  }
 
+  const USER_ROLE = user.role;
+  const USER_STATUS = user.status;
+
+  const shouldShowPendingActivation = USER_STATUS !== "ACTIVE";
 
   return (
     <Box
@@ -30,9 +37,15 @@ const HomeScreen: React.FC = () => {
       >
         <Grid width="100%">
           <Paper>
-            {USER_ROLE === "PATIENT" && <PatientDashboard />}
-            {USER_ROLE === "DOCTOR" && <DoctorDashboard />}
-            {USER_ROLE === "ADMIN" && <AdminDashboard />}
+            {shouldShowPendingActivation ? (
+              <PendingActivation />
+            ) : (
+              <>
+                {USER_ROLE === "PATIENT" && <PatientDashboard />}
+                {USER_ROLE === "DOCTOR" && <DoctorDashboard />}
+                {USER_ROLE === "ADMIN" && <AdminDashboard />}
+              </>
+            )}
           </Paper>
         </Grid>
       </Grid>

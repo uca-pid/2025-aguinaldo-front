@@ -1,3 +1,8 @@
+/* EnableHours.css - Component-specific styles */
+
+@import "../../shared/SharedStyles.css";
+
+/* Color palette variables - matching PatientShared */
 :root {
   --gunmetal: #0d2230;
   --indigo-dye: #1f4f6f;
@@ -110,85 +115,13 @@
   max-width: 100% !important;
 }
 
-.enablehours-header-layout {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  position: relative !important;
-  max-width: 1000px !important;
-  margin: 0 auto !important;
-  padding: 0 24px !important;
-}
-
-.enablehours-back-button-container {
-  flex-shrink: 0 !important;
-}
-
-.enablehours-back-button {
-  border: 2px solid var(--lapis-lazuli) !important;
-  color: var(--lapis-lazuli) !important;
-  background: transparent !important;
-  border-radius: 8px !important;
-  padding: 8px 16px !important;
-  font-weight: 500 !important;
-  text-transform: none !important;
-  transition: all 0.2s ease !important;
-}
-
-.enablehours-back-button:hover {
-  border-color: var(--indigo-dye) !important;
-  background-color: var(--lapis-lazuli) !important;
-  color: white !important;
-}
-
-.enablehours-header {
-  background: linear-gradient(135deg, var(--white) 0%, var(--white) 100%) !important;
-  border-radius: 0 !important;
-  margin-bottom: 32px !important;
-  box-shadow: 0 4px 12px rgba(13, 34, 48, 0.15) !important;
-  padding: 32px 0 !important;
-}
-
-.enablehours-header-icon {
-  background-color: var(--verdigris) !important;
-  width: 56px !important;
-  height: 56px !important;
-  margin-right: 24px !important;
-}
-
-.enablehours-header-content {
-  position: absolute !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  display: flex !important;
-  align-items: center !important;
-}
-
-.enablehours-header-title {
-  font-weight: 700 !important;
-  color: #0d2230 !important;
-  margin: 0 !important;
-  line-height: 1.2;
-}
-
-.enablehours-header-subtitle {
-  color: #64748b !important;
-  font-weight: 400 !important;
-  margin: 4px 0 0 0 !important;
-  line-height: 1.3;
-}
-
-.enablehours-header-spacer {
-  flex-shrink: 0 !important;
-  width: 180px !important;
-}
-
 .enablehours-content {
-  max-width: 1000px !important;
+  max-width: 1200px !important;
   margin: 0 auto !important;
   padding: 0 24px 32px 24px !important;
   display: flex !important;
   flex-direction: column !important;
+  gap: 32px !important;
 }
 
 .enablehours-days-container {
@@ -356,32 +289,10 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
-  .enablehours-header-layout {
-    max-width: 960px !important;
-  }
-  .enablehours-content {
-    max-width: 960px !important;
-  }
-  .enablehours-days-container {
-    max-width: 700px !important;
-  }
-}
 
 @media (max-width: 768px) {
-  .enablehours-header-layout {
-    flex-direction: column !important;
-    gap: 16px !important;
-    text-align: center !important;
-  }
-  
-  .enablehours-header-content {
-    position: static !important;
-    transform: none !important;
-  }
-  
-  .enablehours-header-spacer {
-    display: none !important;
+  .enablehours-content {
+    padding: 16px !important;
   }
   
   .enablehours-content {
@@ -412,21 +323,122 @@
   }
 }
 
+
+.enablehours-no-config-card {
+  background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%) !important;
+  border: 2px solid #fb923c !important;
+  border-radius: 16px !important;
+  margin-bottom: 32px !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.enablehours-no-config-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #fb923c, #f97316, #ea580c);
+  animation: shimmer 2s ease-in-out infinite alternate;
+}
+
+@keyframes shimmer {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.enablehours-no-config-content {
+  text-align: center !important;
+  padding: 40px 32px !important;
+}
+
+.enablehours-no-config-icon {
+  margin-bottom: 24px !important;
+}
+
+.enablehours-no-config-calendar {
+  font-size: 72px !important;
+  color: #fb923c !important;
+  filter: drop-shadow(0 4px 8px rgba(251, 146, 60, 0.3));
+  animation: pulse-icon 3s ease-in-out infinite;
+}
+
+@keyframes pulse-icon {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.enablehours-no-config-title {
+  color: #c2410c !important;
+  font-weight: 700 !important;
+  margin-bottom: 16px !important;
+  text-shadow: 0 2px 4px rgba(194, 65, 12, 0.1);
+}
+
+.enablehours-no-config-description {
+  color: #9a3412 !important;
+  margin-bottom: 32px !important;
+  line-height: 1.6 !important;
+  font-size: 1.1rem !important;
+}
+
+.enablehours-no-config-steps {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  align-items: flex-start !important;
+  max-width: 400px !important;
+  margin: 0 auto !important;
+}
+
+.enablehours-step-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  color: #7c2d12 !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+}
+
+.enablehours-step-number {
+  background: #fb923c !important;
+  color: white !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+  flex-shrink: 0 !important;
+}
+
 @media (max-width: 480px) {
-  .enablehours-header {
-    padding: 20px 0 !important;
-  }
-  
-  .enablehours-header-title {
-    font-size: 1.75rem !important;
-  }
-  
-  .enablehours-header-subtitle {
-    font-size: 1rem !important;
+  .enablehours-content {
+    padding: 12px !important;
   }
   
   .enablehours-save-button {
     width: 100% !important;
     padding: 16px !important;
+  }
+
+  .enablehours-no-config-content {
+    padding: 32px 20px !important;
+  }
+
+  .enablehours-no-config-calendar {
+    font-size: 56px !important;
+  }
+
+  .enablehours-no-config-title {
+    font-size: 1.5rem !important;
+  }
+
+  .enablehours-no-config-description {
+    font-size: 1rem !important;
   }
 }

@@ -1,5 +1,7 @@
 
-/* PendingScreen.css - Complete styles with blue-focused palette */
+/* PendingScreen.css - Component-specific styles */
+
+@import "../../shared/SharedStyles.css";
 
 /* Color palette variables */
 :root {
@@ -22,80 +24,6 @@
   min-height: 100vh !important;
   background-color: var(--white) !important;
   padding: 0 !important;
-}
-
-/* Header Section */
-.pending-header-section {
-  background: linear-gradient(135deg, var(--white) 0%, var(--white) 100%) !important;
-  color: white !important;
-  border-radius: 0 !important;
-  margin-bottom: 32px !important;
-  box-shadow: 0 4px 12px rgba(13, 34, 48, 0.15) !important;
-}
-
-.pending-header-container {
-  padding: 32px 0 !important;
-}
-
-.pending-header-layout {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  position: relative !important;
-}
-
-.pending-back-button-container {
-  flex-shrink: 0 !important;
-}
-
-.pending-header-content {
-  position: absolute !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  display: flex !important;
-  align-items: center !important;
-}
-
-.pending-header-spacer {
-  flex-shrink: 0 !important;
-  width: 120px !important; /* Match approximate button width */
-}
-
-/* Back Button */
-.pending-back-button {
-  border: 2px solid var(--lapis-lazuli) !important;
-  color: var(--lapis-lazuli) !important;
-  background: transparent !important;
-  border-radius: 8px !important;
-  padding: 8px 16px !important;
-  font-weight: 500 !important;
-  text-transform: none !important;
-  transition: all 0.2s ease !important;
-}
-
-.pending-back-button:hover {
-  border-color: var(--indigo-dye) !important;
-  background-color: var(--lapis-lazuli) !important;
-  color: white !important;
-}
-
-.pending-header-avatar {
-  background-color: var(--cerulean-2) !important;
-  width: 56px !important;
-  height: 56px !important;
-  margin-right: 24px !important;
-  box-shadow: 0 2px 8px rgba(45, 125, 144, 0.3) !important;
-}
-
-.pending-header-title {
-  font-weight: 600 !important;
-  margin-bottom: 4px !important;
-  color: var(--black) !important;
-}
-
-.pending-header-subtitle {
-  color: var(--black) !important;
-  font-weight: 400 !important;
 }
 
 /* Content Container */

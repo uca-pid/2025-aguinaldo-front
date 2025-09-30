@@ -1,6 +1,6 @@
 import { createMachine, assign, fromPromise } from "xstate";
 import {validateField, checkFormValidation} from "../utils/authFormValidation";
-import { checkStoredAuth, submitAuthentication, logoutUser } from "../utils/authMachineUtils";
+import { checkStoredAuth, submitAuthentication, logoutUser } from "../utils/MachineUtils/authMachineUtils";
 import { AuthService } from "../service/auth-service.service";
 import { RegisterResponse, SignInResponse, ApiErrorResponse } from "../models/Auth";
 import { orchestrator } from "#/core/Orchestrator";
@@ -13,7 +13,8 @@ export const AUTH_MACHINE_EVENT_TYPES = [
   'TOGGLE_USER_TYPE',
   'TOGGLE_MODE',
   'SUBMIT',
-  'CHECK_AUTH'
+  'CHECK_AUTH',
+  'HANDLE_AUTH_ERROR'
 ];
 
 export interface AuthMachineContext {
@@ -76,7 +77,8 @@ export type AuthMachineEvent =
   | { type: "TOGGLE_MODE"; mode: "login" | "register" }
   | { type: "SUBMIT" }
   | { type: "LOGOUT" }
-  | { type: "CHECK_AUTH" }; 
+  | { type: "CHECK_AUTH" }
+  | { type: "HANDLE_AUTH_ERROR"; error: any; retryAction?: () => Promise<any> }; 
 
 
 export const authMachine = createMachine({
@@ -110,19 +112,27 @@ export const authMachine = createMachine({
       on: {
         LOGOUT: {
           target: "loggingOut"
+        },
+        HANDLE_AUTH_ERROR: {
+          target: "refreshingToken"
         }
       },
       entry: ({ context }) => {
         if (context.authResponse && "accessToken" in context.authResponse) {
-          // Send to dataMachine and profileMachine
+
           setTimeout(() => {
             const response = context.authResponse as SignInResponse;
-            context.send({ 
+            if (response.status!=='ACTIVE'){
+              orchestrator.send({ 
+                type: "NAVIGATE", to: "/pending-activation"});
+            }
+            else{
+            orchestrator.send({ 
               type: "SET_AUTH", 
               accessToken: response.accessToken, 
               userId: response.id,
               userRole: response.role
-            });
+            });}
           }, 0);
         }
       }
@@ -342,6 +352,62 @@ export const authMachine = createMachine({
         }
       }
     },
-  
+
+    refreshingToken: {
+      invoke: {
+        src: fromPromise(async ({ input }) => {
+          const context = input;
+          if (!context.authResponse || !("refreshToken" in context.authResponse)) {
+            throw new Error("No refresh token available");
+          }
+          
+          const refreshToken = (context.authResponse as SignInResponse).refreshToken;
+          const response = await AuthService.refreshToken(refreshToken);
+          
+          // Update localStorage with new tokens
+          localStorage.setItem('authData', JSON.stringify(response));
+          
+          return response;
+        }),
+        input: ({ context }) => context,
+        onDone: {
+          target: "authenticated",
+          actions: [
+            assign(({ event }) => ({
+              authResponse: event.output
+            })),
+            ({ context, event }) => {
+              // Send updated auth data to other machines
+              const response = event.output;
+              context.send({ 
+                type: "SET_AUTH", 
+                accessToken: response.accessToken, 
+                userId: response.id,
+                userRole: response.role
+              });
+              
+            }
+          ]
+        },
+        onError: {
+          target: "idle",
+          actions: [
+            assign(() => ({
+              isAuthenticated: false,
+              authResponse: null
+            })),
+            () => {
+              // Navigate to login on refresh failure
+              orchestrator.send({ type: "NAVIGATE", to: "/" });
+              orchestrator.send({ 
+                type: "OPEN_SNACKBAR", 
+                message: "Sesión expirada. Por favor, vuelve a iniciar sesión.", 
+                severity: "error" 
+              });
+            }
+          ]
+        }
+      }
+    }
   }
 });

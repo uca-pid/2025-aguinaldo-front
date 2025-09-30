@@ -1,5 +1,5 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { loadProfile, updateProfile, deactivateAccount } from "../utils/profileMachineUtils";
+import { loadProfile, updateProfile, deactivateAccount } from "../utils/MachineUtils/profileMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { ProfileResponse } from "../models/Auth";
 import { UI_MACHINE_ID } from "./uiMachine";

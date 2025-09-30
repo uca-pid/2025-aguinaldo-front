@@ -1,7 +1,7 @@
-import { AdminService } from "../service/admin-service.service";
-import { TurnService } from "../service/turn-service.service";
-import type { PendingDoctor, AdminStats } from "../models/Admin";
-import type { Doctor } from "../models/Turn";
+import { AdminService } from "../../service/admin-service.service";
+import { TurnService } from "../../service/turn-service.service";
+import type { PendingDoctor, AdminStats } from "../../models/Admin";
+import type { Doctor } from "../../models/Turn";
 
 /**
  * Utility functions for dataMachine service calls
@@ -30,6 +30,11 @@ export interface LoadAvailableTurnsParams {
 export interface LoadMyTurnsParams {
   accessToken: string;
   status?: string;
+}
+
+export interface LoadDoctorModifiyRequestsParams {
+  accessToken: string;
+  doctorId: string;
 }
 
 /**
@@ -67,4 +72,11 @@ export const loadAvailableTurns = async ({ accessToken, doctorId, date }: LoadAv
  */
 export const loadMyTurns = async ({ accessToken, status }: LoadMyTurnsParams): Promise<any[]> => {
   return await TurnService.getMyTurns(accessToken, status);
+};
+/**
+ * Load doctor's modify requests
+ */
+export const loadDoctorModifyRequests = async ({ accessToken, doctorId }: LoadDoctorModifiyRequestsParams): Promise<any[]> => {
+  if (!doctorId) return [];
+  return await TurnService.getDoctorModifyRequests(doctorId, accessToken);
 };

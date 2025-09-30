@@ -4,21 +4,14 @@ import { useAuthMachine } from "#/providers/AuthProvider";
 import { useMachines } from "#/providers/MachineProvider";
 import { 
   Box, 
-  Button, 
-  Card, 
-  CardContent, 
-  CircularProgress, 
-  Container, 
   Typography,
   Paper,
   Avatar,
   Chip
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PersonIcon from "@mui/icons-material/Person";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CancelIcon from "@mui/icons-material/Cancel";
 import PendingActionsIcon from "@mui/icons-material/PendingActions";
+import PendingCard from "#/components/shared/PendingCard/PendingCard";
 import "../AdminDashboard.css";
 import "./PendingScreen.css";
 
@@ -26,7 +19,7 @@ import "./PendingScreen.css";
 export default function PendingScreen() {
   const { authState } = useAuthMachine();
   const user = authState.context.authResponse as SignInResponse | null;
-  const { adminUserState, adminUserSend, uiSend } = useMachines();
+  const { adminUserState, adminUserSend } = useMachines();
   const adminContext = adminUserState.context;
 
   const pendingDoctors = adminContext.pendingDoctors || [];
@@ -34,38 +27,26 @@ export default function PendingScreen() {
     return (
     <Box className="pending-main-container">
       {/* Header Section */}
-      <Paper elevation={2} className="pending-header-section">
-        <Container maxWidth="lg" className="pending-header-container">
-          <Box className="pending-header-layout">
-            <Box className="pending-back-button-container">
-              <Button
-                variant="outlined"
-                startIcon={<ArrowBackIcon />}
-                onClick={() => uiSend({ type: 'NAVIGATE', to: '/' })}
-                className="pending-back-button"
-              >
-                Volver al Dashboard
-              </Button>
+      <Box className="shared-header">
+        <Box className="shared-header-layout">
+          <Box className="shared-header-content">
+            <Avatar className="shared-header-icon">
+              <PendingActionsIcon sx={{ fontSize: 28 }} />
+            </Avatar>
+            <Box>
+              <Typography variant="h4" component="h1" className="shared-header-title">
+                Solicitudes Pendientes
+              </Typography>
+              <Typography variant="h6" className="shared-header-subtitle">
+                Gestionar solicitudes de registro de médicos
+              </Typography>
             </Box>
-            <Box className="pending-header-content">
-              <Avatar className="pending-header-avatar">
-                <PendingActionsIcon sx={{ fontSize: 28 }} />
-              </Avatar>
-              <Box>
-                <Typography variant="h4" component="h1" className="pending-header-title">
-                  Solicitudes Pendientes
-                </Typography>
-                <Typography variant="h6" className="pending-header-subtitle">
-                  Gestionar solicitudes de registro de médicos
-                </Typography>
-              </Box>
-            </Box>
-            <Box className="pending-header-spacer"></Box>
           </Box>
-        </Container>
-      </Paper>
+          <Box className="shared-header-spacer"></Box>
+        </Box>
+      </Box>
 
-      <Container maxWidth="lg" className="pending-content-container">
+      <Box maxWidth="lg" className="pending-content-container" sx={{ mx: 'auto', px: 3 }}>
         {/* Pending Doctors List */}
         {pendingDoctors.length > 0 ? (
           <Box>
@@ -78,63 +59,33 @@ export default function PendingScreen() {
             
             <Box className="pending-cards-container">
               {pendingDoctors.map((doctor: PendingDoctor) => (
-                <Card key={doctor.id} elevation={2} className="pending-doctor-card">
-                  <CardContent className="pending-doctor-card-content">
-                    <Box className="pending-doctor-card-layout">
-                      <Box className="pending-doctor-info-section">
-                        <Avatar className="pending-doctor-avatar">
-                          <PersonIcon sx={{ fontSize: 28 }} />
-                        </Avatar>
-                        <Box className="pending-doctor-details">
-                          <Typography variant="h6" className="pending-doctor-name">
-                            Dr. {doctor.name} {doctor.surname}
-                          </Typography>
-                          <Typography variant="body2" className="pending-doctor-info">
-                            <strong>Email:</strong> {doctor.email}
-                          </Typography>
-                          <Typography variant="body2" className="pending-doctor-info">
-                            <strong>Especialidad:</strong> {doctor.specialty}
-                          </Typography>
-                          <Typography variant="body2" className="pending-doctor-info">
-                            <strong>Matricula:</strong> {doctor.medicalLicense}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Box className="pending-actions-section">
-                        <Button
-                          variant="contained"
-                          startIcon={<CheckCircleIcon />}
-                          onClick={() => adminUserSend({ 
-                            type: 'APPROVE_DOCTOR', 
-                            doctorId: doctor.id,
-                            accessToken: user?.accessToken
-                          })}
-                          disabled={adminUserState.matches('approvingDoctor')}
-                          className="pending-approve-button"
-                        >
-                          {adminUserState.matches('approvingDoctor') ? 
-                            <CircularProgress size={16} sx={{ color: 'white', mr: 1 }} /> : null}
-                          {adminUserState.matches('approvingDoctor') ? 'Aprobando...' : 'Aprobar'}
-                        </Button>
-                        <Button
-                          variant="contained"
-                          startIcon={<CancelIcon />}
-                          onClick={() => adminUserSend({ 
-                            type: 'REJECT_DOCTOR', 
-                            doctorId: doctor.id,
-                            accessToken: user?.accessToken
-                          })}
-                          disabled={adminUserState.matches('rejectingDoctor')}
-                          className="pending-reject-button"
-                        >
-                          {adminUserState.matches('rejectingDoctor') ? 
-                            <CircularProgress size={16} sx={{ color: 'white', mr: 1 }} /> : null}
-                          {adminUserState.matches('rejectingDoctor') ? 'Rechazando...' : 'Rechazar'}
-                        </Button>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
+                <PendingCard
+                  key={doctor.id}
+                  id={doctor.id}
+                  title={`Dr. ${doctor.name} ${doctor.surname}`}
+                  avatarContent={<PersonIcon sx={{ fontSize: 28 }} />}
+                  onApprove={(id) => adminUserSend({ 
+                    type: 'APPROVE_DOCTOR', 
+                    doctorId: id,
+                    accessToken: user?.accessToken
+                  })}
+                  onReject={(id) => adminUserSend({ 
+                    type: 'REJECT_DOCTOR', 
+                    doctorId: id,
+                    accessToken: user?.accessToken
+                  })}
+                  isLoading={adminUserState.matches('approvingDoctor') || adminUserState.matches('rejectingDoctor')}
+                >
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Email:</strong> {doctor.email}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Especialidad:</strong> {doctor.specialty}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Matrícula:</strong> {doctor.medicalLicense}
+                  </Typography>
+                </PendingCard>
               ))}
             </Box>
           </Box>
@@ -149,7 +100,7 @@ export default function PendingScreen() {
             </Typography>
           </Paper>
         )}
-      </Container>
+      </Box>
     </Box>
     );
 }

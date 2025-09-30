@@ -1,5 +1,5 @@
-import { AdminService } from "../service/admin-service.service";
-import type { DoctorApprovalResponse } from "../models/Admin";
+import { AdminService } from "../../service/admin-service.service";
+import type { DoctorApprovalResponse } from "../../models/Admin";
 
 /**
  * Utility functions for adminUserMachine service calls

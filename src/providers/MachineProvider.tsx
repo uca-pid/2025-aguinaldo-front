@@ -7,6 +7,7 @@ import { turnMachine, TURN_MACHINE_ID, TURN_MACHINE_EVENT_TYPES, type TurnMachin
 import doctorMachine, { DOCTOR_MACHINE_ID, DOCTOR_MACHINE_EVENT_TYPES, type DoctorMachineEvent } from '../machines/doctorMachine';
 import { adminUserMachine, ADMIN_USER_MACHINE_ID, ADMIN_USER_MACHINE_EVENT_TYPES } from '#/machines/adminUserMachine';
 import { profileMachine, PROFILE_MACHINE_ID, PROFILE_MACHINE_EVENT_TYPES, type ProfileMachineEvent } from '../machines/profileMachine';
+import { notificationMachine, NOTIFICATION_MACHINE_ID, NOTIFICATION_MACHINE_EVENT_TYPES, type NotificationMachineEvent } from '../machines/notificationMachine';
 
 interface MachineInstances {
     uiState: any;
@@ -19,6 +20,8 @@ interface MachineInstances {
     adminUserSend: (event: any) => void;
     profileState: any;
     profileSend: (event: ProfileMachineEvent) => void;
+    notificationState: any;
+    notificationSend: (event: NotificationMachineEvent) => void;
 }
 
 interface MachineProviderProps {
@@ -42,7 +45,7 @@ orchestrator.registerMachine({
 orchestrator.registerMachine({
   id: DOCTOR_MACHINE_ID,
   machine: doctorMachine,
-  eventTypes: DOCTOR_MACHINE_EVENT_TYPES
+    eventTypes: DOCTOR_MACHINE_EVENT_TYPES
 });
 
 orchestrator.registerMachine({
@@ -57,12 +60,19 @@ orchestrator.registerMachine({
   eventTypes: PROFILE_MACHINE_EVENT_TYPES
 });
 
+orchestrator.registerMachine({
+  id: NOTIFICATION_MACHINE_ID,
+  machine: notificationMachine,
+  eventTypes: NOTIFICATION_MACHINE_EVENT_TYPES
+});
+
 export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) => {
   const { state: uiState, send: uiSend } = useStateMachine(UI_MACHINE_ID);
   const { state: turnState, send: turnSend } = useStateMachine(TURN_MACHINE_ID);
   const { state: doctorState, send: doctorSend } = useStateMachine(DOCTOR_MACHINE_ID);
   const { state: adminUserState, send: adminUserSend } = useStateMachine(ADMIN_USER_MACHINE_ID);
   const { state: profileState, send: profileSend } = useStateMachine(PROFILE_MACHINE_ID);
+  const { state: notificationState, send: notificationSend } = useStateMachine(NOTIFICATION_MACHINE_ID);
 
   const machines: MachineInstances = {
       uiState: uiState,
@@ -74,7 +84,9 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       adminUserState: adminUserState,
       adminUserSend: adminUserSend,
       profileState: profileState,
-      profileSend: profileSend
+      profileSend: profileSend,
+      notificationState: notificationState,
+      notificationSend: notificationSend,
   };
 
   return (

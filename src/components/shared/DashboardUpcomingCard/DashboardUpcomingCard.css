@@ -7,6 +7,39 @@
   box-shadow: 0 4px 15px rgba(34, 87, 122, 0.1) !important;
   border: 1px solid #e2e8f0 !important;
   height: 100% !important;
+  transition: all 0.3s ease-in-out !important;
+  cursor: pointer !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.upcoming-card::before {
+  content: "Ver todos";
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #22577a !important;
+  color: white !important;
+  padding: 8px 16px;
+  border-radius: 8px !important;
+  font-size: 14px;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  transition: all 0.3s ease-in-out;
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(34, 87, 122, 0.2);
+}
+
+.upcoming-card:hover::before {
+  bottom: 0;
+}
+
+.upcoming-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(34, 87, 122, 0.2);
+  border-color: #22577a;
 }
 
 .upcoming-card-header {
@@ -55,9 +88,7 @@
 }
 
 .upcoming-card-item-canceled {
-  background: #fef2f2 !important;
-  border-left-color: #ef4444 !important;
-  opacity: 0.85 !important;
+  display: none;
 }
 
 .upcoming-card-header-row {
@@ -88,6 +119,14 @@
   color: #64748b !important;
   font-style: italic !important;
   margin-top: 4px !important;
+}
+
+.upcoming-card-view-all{
+  border-radius: 8px !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  color: white !important;
+  background: #22577a !important;
 }
 
 .upcoming-card-loading {

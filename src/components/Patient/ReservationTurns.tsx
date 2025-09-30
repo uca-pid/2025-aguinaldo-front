@@ -1,17 +1,18 @@
 import { 
   Box, Button, FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, 
-  TextField, Typography, CircularProgress,
-  Container 
+  TextField, Typography, CircularProgress, Container, Avatar
 } from "@mui/material";
 import React from "react";
 import { useMachines } from "#/providers/MachineProvider";
+import { orchestrator } from "#/core/Orchestrator";
+import { DATA_MACHINE_ID } from "#/machines/dataMachine";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { DateCalendar } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
 import dayjs from "dayjs";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import Event from "@mui/icons-material/Event";
 import "./ReservationTurns.css";
 
 const ReservationTurns: React.FC = () => {
@@ -28,37 +29,54 @@ const ReservationTurns: React.FC = () => {
     ? turnContext.doctors.filter((doctor: any) => doctor.specialty.toLowerCase() === formValues.professionSelected.toLowerCase())
     : [];
 
-  const handleClose = () => {
-    uiSend({ type: "NAVIGATE", to: "/patient" });
-    turnSend({ type: "RESET_TAKE_TURN" });
-  };
-
   const handleReasonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "reason", value: e.target.value });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "reason"], value: e.target.value });
   };    
 
   const handleProfessionChange = (event: SelectChangeEvent) => {
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "professionSelected", value: event.target.value });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "doctorId", value: "" });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "profesionalSelected", value: "" });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "professionSelected"], value: event.target.value });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "doctorId"], value: "" });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "profesionalSelected"], value: "" });
   };
   
   const handleDoctorChange = (event: SelectChangeEvent) => {
     const selectedDoctor = turnContext.doctors.find((doctor: any) => doctor.id === event.target.value);
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "doctorId", value: event.target.value });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "profesionalSelected", value: selectedDoctor ? `${selectedDoctor.name} ${selectedDoctor.surname}` : "" });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "doctorId"], value: event.target.value });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "profesionalSelected"], value: selectedDoctor ? `${selectedDoctor.name} ${selectedDoctor.surname}` : "" });
+    
+    // Limpiar fecha y hora seleccionadas cuando cambia el doctor
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "dateSelected"], value: null });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "timeSelected"], value: null });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "scheduledAt"], value: null });
+    
+    // Cargar fechas disponibles para el doctor seleccionado
+    if (event.target.value) {
+      orchestrator.sendToMachine(DATA_MACHINE_ID, { 
+        type: "LOAD_AVAILABLE_DATES", 
+        doctorId: event.target.value 
+      });
+    }
   };
 
   const handleDateChange = (newValue: Dayjs | null) => {
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "dateSelected", value: newValue });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "timeSelected", value: null });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "scheduledAt", value: null });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "dateSelected"], value: newValue });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "timeSelected"], value: null });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "scheduledAt"], value: null });
+    
+    // Cargar turnos disponibles para el doctor seleccionado en la fecha seleccionada
+    if (newValue && formValues.doctorId) {
+      orchestrator.sendToMachine(DATA_MACHINE_ID, { 
+        type: "LOAD_AVAILABLE_TURNS", 
+        doctorId: formValues.doctorId, 
+        date: newValue.format('YYYY-MM-DD') 
+      });
+    }
   };
 
   const handleTimeSelect = (timeSlot: string) => {
     const selectedDateTime = dayjs(timeSlot);
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "timeSelected", value: selectedDateTime });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "scheduledAt", value: timeSlot });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "timeSelected"], value: selectedDateTime });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "scheduledAt"], value: timeSlot });
   };
 
   const handleReserve = async () => {
@@ -78,35 +96,37 @@ const ReservationTurns: React.FC = () => {
   };
 
   const handleNext = () => {
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "dateSelected", value: null });
-    turnSend({ type: "UPDATE_FORM_TAKE_TURN", key: "scheduledAt", value: null });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "dateSelected"], value: null });
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "scheduledAt"], value: null });
     
     turnSend({ type: "NEXT" });
   };
 
   return(
-    <Box className="reservation-container">
-      <Container maxWidth="lg" className="reservation-page-container">
-        {/* Page Header */}
-        <Box className="reservation-page-header">
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={handleClose}
-            className="reservation-back-button"
-            variant="outlined"
-          >
-            Volver al Dashboard
-          </Button>
-          
-          <Box className="reservation-title-section">
-            <Typography variant="h3" className="reservation-page-title">
-              Reservar Turno Médico
-            </Typography>
-            <Typography variant="h6" className="reservation-page-subtitle">
-              Agenda tu cita médica siguiendo estos simples pasos
-            </Typography>
+    <Box className="shared-container">
+      {/* Page Header */}
+      <Box className="shared-header">
+        <Box className="shared-header-layout">
+
+          <Box className="shared-header-content">
+            <Avatar className="shared-header-icon">
+              <Event sx={{ fontSize: 28 }} />
+            </Avatar>
+            <Box>
+              <Typography variant="h4" component="h1" className="shared-header-title">
+                Reservar Turno Médico
+              </Typography>
+              <Typography variant="h6" className="shared-header-subtitle">
+                Agenda tu cita médica en simples pasos
+              </Typography>
+            </Box>
           </Box>
+
+          <Box className="shared-header-spacer"></Box>
         </Box>
+      </Box>
+
+      <Container maxWidth="lg" className="reservation-page-container">
 
           {currentStep === "step1" && (
             <Box className="reservation-step1-container">
@@ -143,7 +163,7 @@ const ReservationTurns: React.FC = () => {
                   {turnContext.isLoadingDoctors && <FormHelperText>Cargando especialidades...</FormHelperText>}
                 </FormControl>
 
-                <FormControl required size="small" fullWidth className="reservation-select doctor-select">
+                <FormControl required size="small" fullWidth className="reservation-select">
                   <InputLabel id="doctor-select-label">Doctor</InputLabel>
                   <Select
                     labelId="doctor-select-label"
@@ -185,13 +205,6 @@ const ReservationTurns: React.FC = () => {
               </Box>
 
               <Box className="reservation-actions">
-                <Button 
-                  onClick={handleClose} 
-                  className="reservation-btn-secondary"
-                  variant="outlined"
-                >
-                  Cancelar
-                </Button>
                 <Button
                   onClick={handleNext}
                   variant="contained"

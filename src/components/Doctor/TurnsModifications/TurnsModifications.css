@@ -1,0 +1,89 @@
+/* TurnsModifications.css - Component-specific styles */
+
+@import "../../shared/SharedStyles.css";
+
+/* Color palette variables - matching PendingScreen */
+:root {
+  --gunmetal: #0d2230;
+  --indigo-dye: #1f4f6f;
+  --lapis-lazuli: #22577a;
+  --cerulean: #286a85;
+  --cerulean-2: #2d7d90;
+  --verdigris: #38a3a5;
+  --emerald: #57cc99;
+  --light-green: #80ed99;
+  --tea-green: #c7f9cc;
+  --tea-green-2: #ccfad1;
+  --white: #ffffff;
+  --black: #000000;
+}
+
+/* Main Container */
+.turnsmod-container {
+  height: auto !important;
+  background-color: var(--white) !important;
+  padding: 0 !important;
+}
+
+/* Content Container */
+.turnsmod-content {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 24px 32px 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 32px !important;
+}
+
+/* List Section */
+.turnsmod-list-section {
+  background: white !important;
+  border: 1px solid var(--tea-green) !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  box-shadow: 0 2px 8px rgba(13, 34, 48, 0.08) !important;
+}
+
+.turnsmod-list-content {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+/* Empty State - matching PendingScreen */
+.turnsmod-empty-state {
+  background: white !important;
+  border: 1px solid var(--tea-green) !important;
+  border-radius: 12px !important;
+  padding: 48px 32px !important;
+  text-align: center !important;
+  box-shadow: 0 2px 8px rgba(13, 34, 48, 0.08) !important;
+}
+
+.turnsmod-empty-emoji {
+  font-size: 4rem !important;
+  margin-bottom: 16px !important;
+}
+
+.turnsmod-empty-title {
+  color: var(--gunmetal) !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+}
+
+.turnsmod-empty-subtitle {
+  color: var(--indigo-dye) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .turnsmod-content {
+    padding: 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .turnsmod-content {
+    padding: 12px !important;
+  }
+}

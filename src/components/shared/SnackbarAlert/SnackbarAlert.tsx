@@ -11,8 +11,7 @@ function SnackbarAlert() {
 
   return (
     <Snackbar 
-      open={snackbar.open} 
-      autoHideDuration={6000} 
+      open={snackbar.open}  
       onClose={handleClose}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
     >

@@ -3,7 +3,10 @@ import {
   Box, 
   Button, 
   List, 
-  ListItem, 
+  ListItem,
+  ListItemButton,
+  ListItemAvatar,
+  ListItemText,
   Typography,
   TextField,
   InputAdornment,
@@ -13,31 +16,31 @@ import {
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { useMachines } from "#/providers/MachineProvider"
-import { PeopleOutlined, SearchOutlined, PersonOutlined, BadgeOutlined, ArrowBack } from '@mui/icons-material'
-import { Patient, calculateAge } from "#/models/Doctor"
+import { PeopleOutlined, SearchOutlined, ChevronRight } from '@mui/icons-material'
+import { Patient } from "#/models/Doctor"
 import './ViewPatients.css'
+import { useDataMachine } from "#/providers/DataProvider"
 
 const ViewPatients: React.FC = () => {
+    const { dataState, dataSend } = useDataMachine();
     const { uiSend, doctorState, doctorSend } = useMachines();
 
     const doctorContext = doctorState.context;
-    const patients: Patient[] = doctorContext.patients;
-    const isLoading = doctorContext.isLoadingPatients;
-    const error = doctorContext.patientsError;
+    const dataContext = dataState.context;
+    
+    const patients: Patient[] = dataContext.doctorPatients || [];
+    const isLoading = dataContext.loading.doctorPatients;
+    const error = dataContext.errors.doctorPatients;
     const searchTerm = doctorContext.patientSearchTerm;
 
-    const handleBack = () => {
-        uiSend({ type: "NAVIGATE", to: "/dashboard" });
-    };
-
-    const handleRetry = () => {
-        doctorSend({ type: "RETRY" });
+    const handlePatientClick = (patient: Patient) => {
+        doctorSend({ type: "SELECT_PATIENT", patient });
+        uiSend({ type: "NAVIGATE", to: `/patient-detail` });
     };
 
     const filteredPatients = patients.filter(patient =>
         patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        patient.surname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        patient.dni.toString().includes(searchTerm)
+        patient.surname.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const getInitials = (name: string, surname: string) => {
@@ -50,66 +53,60 @@ const ViewPatients: React.FC = () => {
     
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-
             <Box className="viewpatients-container">
+                <Box className="shared-header">
+                    <Box className="shared-header-layout">
 
-                <Box className="viewpatients-header">
-                    <Box className="viewpatients-header-layout">
-                        <Box className="viewpatients-back-button-container">
-                            <Button
-                                startIcon={<ArrowBack />}
-                                onClick={handleBack}
-                                className="viewpatients-back-button"
-                                variant="outlined"
-                            >
-                                Volver al Dashboard
-                            </Button>
-                        </Box>
-                        
-                        <Box className="viewpatients-header-content">
-                            <Avatar className="viewpatients-header-icon">
+                        <Box className="shared-header-content">
+                            <Avatar className="shared-header-icon">
                                 <PeopleOutlined sx={{ fontSize: 28 }} />
                             </Avatar>
                             <Box>
-                                <Typography variant="h4" component="h1" className="viewpatients-header-title">
+                                <Typography variant="h4" component="h1" className="shared-header-title">
                                     Mis Pacientes
                                 </Typography>
-                                <Typography variant="h6" className="viewpatients-header-subtitle">
+                                <Typography variant="h6" className="shared-header-subtitle">
                                     Gestiona y consulta la información de tus pacientes
                                 </Typography>
                             </Box>
                         </Box>
-                        <Box className="viewpatients-header-spacer"></Box>
+                        <Box className="shared-header-spacer"></Box>
                     </Box>
                 </Box>
 
                 <Box className="viewpatients-content">
-                    <Box className="viewpatients-search-container">
-                        <TextField
-                            className="viewpatients-search-field"
-                            placeholder="Buscar por nombre o DNI..."
-                            value={searchTerm}
-                            onChange={(e) => doctorSend({ type: "SET_PATIENT_SEARCH", searchTerm: e.target.value })}
-                            disabled={isLoading}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchOutlined color="action" />
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
+                    <Box className="viewpatients-search-and-count-container">
+                        <Box className="viewpatients-search-container">
+                            <TextField className="viewpatients-search-field" placeholder="Buscar por nombre..." value={searchTerm}
+                                onChange={(e) => doctorSend({ type: "SET_PATIENT_SEARCH", searchTerm: e.target.value })}
+                                disabled={isLoading}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <SearchOutlined color="action" />
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                        </Box>
+
+                        <Box className="viewpatients-patients-count">
+                            <Typography variant="body2">
+                                {filteredPatients.length} de {patients.length} paciente{patients.length !== 1 ? 's' : ''}
+                                {searchTerm && ' encontrado' + (filteredPatients.length !== 1 ? 's' : '')}
+                            </Typography>
+                        </Box>
                     </Box>
 
                     {error && (
                         <Alert 
                             severity="error" 
                             action={
-                                <Button color="inherit" size="small" onClick={handleRetry}>
+                                <Button color="inherit" size="small" onClick={() => dataSend({ type: "LOAD_DOCTOR_PATIENTS" })}>
                                     Reintentar
                                 </Button>
                             }
-                            sx={{ mb: 2 }}
+                            className="viewpatients-error-alert"
                         >
                             {error}
                         </Alert>
@@ -117,45 +114,37 @@ const ViewPatients: React.FC = () => {
 
                     {isLoading ? (
                         <Box className="viewpatients-empty-state">
-                            <CircularProgress size={40} />
-                            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                            <CircularProgress size={40} className="viewpatients-loading-progress" />
+                            <Typography variant="h6" gutterBottom>
                                 Cargando pacientes...
                             </Typography>
                         </Box>
                     ) : (
                         <>
-                            <Box className="viewpatients-patients-count">
-                                <Typography variant="body2">
-                                    {filteredPatients.length} de {patients.length} paciente{patients.length !== 1 ? 's' : ''}
-                                    {searchTerm && ' encontrado' + (filteredPatients.length !== 1 ? 's' : '')}
-                                </Typography>
-                            </Box>
-
                             {filteredPatients.length > 0 ? (
                                 <Box className="viewpatients-list-container">
                                     <List>
                                         {filteredPatients.map((patient) => (
-                                            <ListItem key={patient.id} className="viewpatients-patient-card">
-                                                <Box className="viewpatients-patient-info">
-                                                    <Avatar className="viewpatients-patient-avatar">
-                                                        {getInitials(patient.name, patient.surname)}
-                                                    </Avatar>
-                                                    <Box className="viewpatients-patient-details">
-                                                        <Typography className="viewpatients-patient-name">
-                                                            {getFullName(patient.name, patient.surname)}
-                                                        </Typography>
-                                                        <Box className="viewpatients-patient-info-row">
-                                                            <Typography className="viewpatients-patient-info-item">
-                                                                <PersonOutlined fontSize="small" />
-                                                                {calculateAge(patient.birthdate) ? `${calculateAge(patient.birthdate)} años` : 'Edad no disponible'}
+                                            <ListItem key={patient.id} disablePadding>
+                                                <ListItemButton 
+                                                    onClick={() => handlePatientClick(patient)}
+                                                    className="viewpatients-patient-card viewpatients-patient-card-hover"
+                                                >
+                                                    <ListItemAvatar>
+                                                        <Avatar className="viewpatients-patient-avatar">
+                                                            {getInitials(patient.name, patient.surname)}
+                                                        </Avatar>
+                                                    </ListItemAvatar>
+                                                    <ListItemText 
+                                                        primary={
+                                                            <Typography className="viewpatients-patient-name">
+                                                                {getFullName(patient.name, patient.surname)}
                                                             </Typography>
-                                                            <Typography className="viewpatients-patient-info-item">
-                                                                <BadgeOutlined fontSize="small" />
-                                                                DNI: {patient.dni}
-                                                            </Typography>
-                                                        </Box>
-                                                    </Box>
-                                                </Box>
+                                                        }
+                                                        secondary="Ver detalles del paciente"
+                                                    />
+                                                    <ChevronRight color="action" />
+                                                </ListItemButton>
                                             </ListItem>
                                         ))}
                                     </List>

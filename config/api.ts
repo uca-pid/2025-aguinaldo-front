@@ -15,7 +15,12 @@ export const API_CONFIG = {
     GET_MY_TURNS: '/api/turns/my-turns',
     GET_DOCTOR_TURNS: '/api/turns/doctor',
     GET_PATIENT_TURNS: '/api/turns/patient',
-
+    
+    MODIFY_TURN_REQUEST: '/api/turns/modify-requests',
+    GET_MY_MODIFY_REQUESTS: '/api/turns/modify-requests/my-requests',
+    GET_DOCTOR_MODIFY_REQUESTS: '/api/turns/modify-requests/pending?doctorId={doctorId}',
+    DOCTOR_MODIFY_REQUEST: '/api/turns/modify-requests',
+    
     GET_DOCTORS: '/api/doctors',
     GET_DOCTOR_PATIENTS: '/api/doctors/patients',
 
@@ -23,6 +28,9 @@ export const API_CONFIG = {
     APPROVE_DOCTOR: '/api/admin/approve-doctor',
     REJECT_DOCTOR: '/api/admin/reject-doctor',
     GET_ADMIN_STATS: '/api/admin/stats',
+
+    GET_NOTIFICATIONS: '/api/notifications',
+    DELETE_NOTIFICATION: '/api/notifications',
   },
 
   DEFAULT_HEADERS: {

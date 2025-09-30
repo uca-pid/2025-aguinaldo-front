@@ -1,5 +1,5 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { saveDoctorAvailability } from "../utils/doctorMachineUtils";
+import { saveDoctorAvailability, updateMedicalHistory } from "../utils/MachineUtils/doctorMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import { DATA_MACHINE_ID } from "./dataMachine";
 import { UI_MACHINE_ID } from "./uiMachine";
@@ -8,8 +8,6 @@ import type { Patient } from "../models/Doctor";
 export const DOCTOR_MACHINE_ID = "doctor";
 export const DOCTOR_MACHINE_EVENT_TYPES = [
   "SET_AUTH",
-  "DATA_LOADED",
-  "RETRY",
   "RESET",
   "TOGGLE_DAY",
   "ADD_RANGE",
@@ -17,8 +15,12 @@ export const DOCTOR_MACHINE_EVENT_TYPES = [
   "UPDATE_RANGE",
   "SAVE_AVAILABILITY",
   "SET_PATIENT_SEARCH",
-  "INIT_AVAILABILITY_PAGE",
-  "INIT_PATIENTS_PAGE"
+  "SELECT_PATIENT",
+  "CLEAR_PATIENT_SELECTION",
+  "START_EDIT_HISTORY",
+  "UPDATE_HISTORY",
+  "SAVE_HISTORY",
+  "DATA_LOADED"
 ];
 
 interface Range {
@@ -33,12 +35,14 @@ interface DayAvailability {
 }
 
 export interface DoctorMachineContext {
-  patients: Patient[];
-  isLoadingPatients: boolean;
-  patientsError: string | null;
   accessToken: string | null;
   doctorId: string | null;
   patientSearchTerm: string;
+  
+  patients: Patient[];
+  selectedPatient: Patient | null;
+  editedHistory: string;
+  isSavingHistory: boolean;
   
   availability: DayAvailability[];
   isSavingAvailability: boolean;
@@ -48,8 +52,6 @@ export interface DoctorMachineContext {
 
 export type DoctorMachineEvent =
   | { type: "SET_AUTH"; accessToken: string; userId: string; userRole?: string }
-  | { type: "DATA_LOADED" }
-  | { type: "RETRY" }
   | { type: "RESET" }
   | { type: "TOGGLE_DAY"; index: number }
   | { type: "ADD_RANGE"; dayIndex: number }
@@ -57,22 +59,26 @@ export type DoctorMachineEvent =
   | { type: "UPDATE_RANGE"; dayIndex: number; rangeIndex: number; field: "start" | "end"; value: string }
   | { type: "SAVE_AVAILABILITY" }
   | { type: "SET_PATIENT_SEARCH"; searchTerm: string }
-  | { type: "INIT_AVAILABILITY_PAGE" }
-  | { type: "INIT_PATIENTS_PAGE" };
+  | { type: "SELECT_PATIENT"; patient: Patient }
+  | { type: "CLEAR_PATIENT_SELECTION" }
+  | { type: "START_EDIT_HISTORY" }
+  | { type: "UPDATE_HISTORY"; value: string }
+  | { type: "SAVE_HISTORY" }
+  | { type: "DATA_LOADED" };
 
 const doctorMachine = createMachine({
   id: "doctor",
   type: "parallel",
 
   context: {
-    patients: [],
-    isLoadingPatients: false,
-    patientsError: null,
     accessToken: null,
     doctorId: null,
     patientSearchTerm: "",
     
-    availability: [
+
+  selectedPatient: null,
+  editedHistory: '',
+  isSavingHistory: false,    availability: [
       { day: "Lunes", enabled: false, ranges: [{ start: "", end: "" }] },
       { day: "Martes", enabled: false, ranges: [{ start: "", end: "" }] },
       { day: "Miércoles", enabled: false, ranges: [{ start: "", end: "" }] },
@@ -92,36 +98,119 @@ const doctorMachine = createMachine({
       states: {
         idle: {
           on: {
-            DATA_LOADED: {
-              actions: assign(() => {
-                try {
-                  const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
-                  const dataContext = dataSnapshot.context;
-                  return {
-                    patients: dataContext.doctorPatients || [],
-                    isLoadingPatients: false,
-                    patientsError: null,
-                  };
-                } catch (error) {
-                  console.warn("Could not get dataMachine snapshot:", error);
-                  return {};
-                }
-              }),
-            },
-            RETRY: {
-              actions: ({ context }) => {
-                if (context.accessToken && context.doctorId) {
-                  orchestrator.send({
-                    type: "LOAD_DOCTOR_PATIENTS"
-                  });
-                }
-              },
-            },
             RESET: {
               actions: assign({
-                patients: [],
-                patientsError: null,
+                selectedPatient: null,
+                editedHistory: '',
+                isSavingHistory: false,
               }),
+            },
+            SELECT_PATIENT: {
+              actions: assign({
+                selectedPatient: ({ event }) => event.patient,
+                editedHistory: '',
+                isSavingHistory: false,
+              }),
+            },
+            CLEAR_PATIENT_SELECTION: {
+              actions: assign({
+                selectedPatient: null,
+                editedHistory: '',
+                isSavingHistory: false,
+              }),
+            },
+            START_EDIT_HISTORY: {
+              actions: [assign({
+                editedHistory: ({ context }) => context.selectedPatient?.medicalHistory || '',
+              })],
+            },
+            UPDATE_HISTORY: {
+              actions: assign({
+                editedHistory: ({ event }) => event.value,
+              }),
+            },
+            SAVE_HISTORY: "savingHistory",
+          },
+        },
+        
+        savingHistory: {
+          entry: assign({
+            isSavingHistory: true,
+          }),
+          
+          invoke: {
+            src: fromPromise(async ({ input }: { 
+              input: { 
+                accessToken: string; 
+                doctorId: string; 
+                patientId: string; 
+                medicalHistory: string; 
+              } 
+            }) => {
+              return await updateMedicalHistory(input);
+            }),
+
+            input: ({ context }) => ({
+              accessToken: context.accessToken!,
+              doctorId: context.doctorId!,
+              patientId: context.selectedPatient!.id,
+              medicalHistory: context.editedHistory
+            }),
+
+            onDone: {
+              target: "idle",
+              actions: [
+                assign({
+                  isSavingHistory: false,
+                  editedHistory: '',
+                  selectedPatient: ({ context }) => 
+                    context.selectedPatient 
+                      ? { ...context.selectedPatient, medicalHistory: context.editedHistory }
+                      : null,
+                }),
+                () => {
+
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: "Historial médico actualizado exitosamente", 
+                    severity: "success" 
+                  });
+
+   
+                  orchestrator.sendToMachine(DATA_MACHINE_ID, {
+                    type: "RETRY_DOCTOR_PATIENTS"
+                  });
+                }
+              ]
+            },
+            
+            onError: {
+              target: "idle",
+              actions: [
+                assign({
+                  isSavingHistory: false,
+                }),
+                ({ event }) => {
+                  const error = event.error as Error;
+                  let errorMessage = "Error al actualizar el historial médico. Inténtalo de nuevo.";
+                  
+                  if (error?.message?.includes('Failed to fetch') || error?.message?.includes('fetch')) {
+                    errorMessage = "No se pudo conectar con el servidor. Verifica tu conexión.";
+                  } else if (error?.message?.includes('404')) {
+                    errorMessage = "Paciente no encontrado.";
+                  } else if (error?.message?.includes('401') || error?.message?.includes('403')) {
+                    errorMessage = "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
+                  } else if (error?.message) {
+                    errorMessage = error.message;
+                  }
+                  
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: errorMessage, 
+                    severity: "error" 
+                  });
+                }
+              ]
             },
           },
         },
@@ -182,45 +271,6 @@ const doctorMachine = createMachine({
               }),
             },
             SAVE_AVAILABILITY: "saving",
-            DATA_LOADED: {
-              actions: assign(() => {
-                try {
-                  const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
-                  const dataContext = dataSnapshot.context;
-                  
-                  const dayMapping: { [key: string]: string } = {
-                    "MONDAY": "Lunes",
-                    "TUESDAY": "Martes", 
-                    "WEDNESDAY": "Miércoles",
-                    "THURSDAY": "Jueves",
-                    "FRIDAY": "Viernes",
-                    "SATURDAY": "Sábado",
-                    "SUNDAY": "Domingo"
-                  };
-                  
-                  const availabilityData = dataContext.doctorAvailability as any;
-                  if (availabilityData && availabilityData.weeklyAvailability && availabilityData.weeklyAvailability.length > 0) {
-                    return {
-                      availability: availabilityData.weeklyAvailability.map((day: any) => ({
-                        day: dayMapping[day.day] || day.day,
-                        enabled: day.enabled,
-                        ranges: day.ranges || [{ start: "", end: "" }]
-                      })),
-                      isLoadingAvailability: false,
-                      availabilityError: null,
-                    };
-                  }
-                  
-                  return {
-                    isLoadingAvailability: false,
-                    availabilityError: null,
-                  };
-                } catch (error) {
-                  console.warn("Could not get dataMachine snapshot:", error);
-                  return {};
-                }
-              }),
-            },
           },
         },
         
@@ -297,7 +347,7 @@ const doctorMachine = createMachine({
     SET_AUTH: {
       actions: assign({
         accessToken: ({ event }) => event.accessToken,
-        doctorId: ({ event }) => event.userId, // For doctors, userId is the same as doctorId
+        doctorId: ({ event }) => event.userId, 
       }),
     },
     SET_PATIENT_SEARCH: {
@@ -305,19 +355,46 @@ const doctorMachine = createMachine({
         patientSearchTerm: ({ event }) => event.searchTerm,
       }),
     },
-    INIT_AVAILABILITY_PAGE: {
-      actions: ({ context }) => {
-        if (context.accessToken && context.doctorId) {
-          orchestrator.send({ type: "LOAD_DOCTOR_AVAILABILITY" });
+    DATA_LOADED: {
+      actions: assign(() => {
+        try {
+          const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
+          const dataContext = dataSnapshot.context;
+          
+          const dayMapping: { [key: string]: string } = {
+            "MONDAY": "Lunes",
+            "TUESDAY": "Martes", 
+            "WEDNESDAY": "Miércoles",
+            "THURSDAY": "Jueves",
+            "FRIDAY": "Viernes",
+            "SATURDAY": "Sábado",
+            "SUNDAY": "Domingo"
+          };
+          
+          const availabilityData = dataContext.doctorAvailability as any;
+          if (availabilityData && availabilityData.weeklyAvailability && availabilityData.weeklyAvailability.length > 0) {
+            return {
+              availability: availabilityData.weeklyAvailability.map((day: any) => ({
+                day: dayMapping[day.day] || day.day,
+                enabled: day.enabled,
+                ranges: day.ranges || [{ start: "", end: "" }]
+              })),
+              patients: dataContext.doctorPatients || [],
+              isLoadingAvailability: false,
+              availabilityError: null,
+            };
+          }
+          
+          return {
+            patients: dataContext.doctorPatients || [],
+            isLoadingAvailability: false,
+            availabilityError: null,
+          };
+        } catch (error) {
+          console.warn("Could not get dataMachine snapshot:", error);
+          return {};
         }
-      },
-    },
-    INIT_PATIENTS_PAGE: {
-      actions: ({ context }) => {
-        if (context.accessToken && context.doctorId) {
-          orchestrator.send({ type: "LOAD_DOCTOR_PATIENTS" });
-        }
-      },
+      }),
     },
   },
 });

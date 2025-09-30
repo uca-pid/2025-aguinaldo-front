@@ -1,7 +1,8 @@
 import { createMachine, assign } from "xstate";
+import { orchestrator } from "#/core/Orchestrator";
 
 export const UI_MACHINE_ID = "ui";
-export const UI_MACHINE_EVENT_TYPES = ["TOGGLE", "NAVIGATE", "OPEN_SNACKBAR", "CLOSE_SNACKBAR"];
+export const UI_MACHINE_EVENT_TYPES = ["TOGGLE", "NAVIGATE", "OPEN_SNACKBAR", "CLOSE_SNACKBAR", "OPEN_CONFIRMATION_DIALOG", "CLOSE_CONFIRMATION_DIALOG"];
 
 export interface UiMachineContext {
   toggleStates: Record<string, boolean>;
@@ -12,6 +13,11 @@ export interface UiMachineContext {
     message: string;
     severity: 'success' | 'error' | 'warning' | 'info';
   };
+  confirmDialog: {
+    open: boolean;
+    action: 'approve' | 'reject' | null;
+    requestId: string | null;
+  };
 }
 
 export type UiMachineEvent =
@@ -19,13 +25,18 @@ export type UiMachineEvent =
   | { type: "TOGGLE"; key: string }
   | { type: "NAVIGATE"; to: string | null }
   | { type: "OPEN_SNACKBAR"; message: string; severity: 'success' | 'error' | 'warning' | 'info' }
-  | { type: "CLOSE_SNACKBAR" };
+  | { type: "CLOSE_SNACKBAR" }
+  | { type: "OPEN_CONFIRMATION_DIALOG"; action: 'approve' | 'reject'; requestId: string }
+  | { type: "CLOSE_CONFIRMATION_DIALOG" };
 
 export const uiMachine = createMachine({
   id: "ui",
   initial: "idle",
   context: {
-    toggleStates: {},
+    toggleStates: {
+      loadingApprove: false,
+      loadingReject: false,
+    },
     currentPath: "/",
     navigate: (to: string) => { console.log(`Default navigate to: ${to}`); },
     snackbar: {
@@ -33,6 +44,7 @@ export const uiMachine = createMachine({
       message: "",
       severity: "info" as const,
     },
+    confirmDialog: { open: false, action: null, requestId: null },
   },
   types: { 
     context: {} as UiMachineContext,
@@ -65,19 +77,48 @@ export const uiMachine = createMachine({
           },
         },
         OPEN_SNACKBAR: {
-          actions: assign({
+          actions: [assign({
             snackbar: ({ event }) => ({
               open: true,
               message: event.message,
               severity: event.severity,
             }),
           }),
+          () => {
+            setTimeout(() => {
+              orchestrator.send({ type: "CLOSE_SNACKBAR" });
+            }, 6000);
+          }
+        ],
         },
         CLOSE_SNACKBAR: {
+          actions: [
+            assign({
+              snackbar: ({ context }) => ({
+                ...context.snackbar,
+                open: false,
+              }),
+            }),
+            () => {
+              orchestrator.send({ type: 'NOTIFICATION_CLOSED' });
+            }
+          ],
+        },
+        OPEN_CONFIRMATION_DIALOG: {
           actions: assign({
-            snackbar: ({ context }) => ({
-              ...context.snackbar,
+            confirmDialog: ({ event }) => ({
+              open: true,
+              action: event.action,
+              requestId: event.requestId,
+            }),
+          }),
+        },
+        CLOSE_CONFIRMATION_DIALOG: {
+          actions: assign({
+            confirmDialog: () => ({
               open: false,
+              action: null,
+              requestId: null,
             }),
           }),
         },
