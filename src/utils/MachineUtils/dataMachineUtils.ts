@@ -1,7 +1,7 @@
-import { AdminService } from "../service/admin-service.service";
-import { TurnService } from "../service/turn-service.service";
-import type { PendingDoctor, AdminStats } from "../models/Admin";
-import type { Doctor } from "../models/Turn";
+import { AdminService } from "../../service/admin-service.service";
+import { TurnService } from "../../service/turn-service.service";
+import type { PendingDoctor, AdminStats } from "../../models/Admin";
+import type { Doctor } from "../../models/Turn";
 
 /**
  * Utility functions for dataMachine service calls

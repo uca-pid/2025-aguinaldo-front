@@ -28,6 +28,9 @@ export const API_CONFIG = {
     APPROVE_DOCTOR: '/api/admin/approve-doctor',
     REJECT_DOCTOR: '/api/admin/reject-doctor',
     GET_ADMIN_STATS: '/api/admin/stats',
+
+    GET_NOTIFICATIONS: '/api/notifications',
+    DELETE_NOTIFICATION: '/api/notifications',
   },
 
   DEFAULT_HEADERS: {

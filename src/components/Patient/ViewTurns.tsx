@@ -9,13 +9,13 @@ import { useEffect, useState } from "react";
 import { TurnService } from "#/service/turn-service.service";
 import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
 import ListAltIcon from "@mui/icons-material/ListAlt";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
 import "./ViewTurns.css";
 import { orchestrator } from "#/core/Orchestrator";
+import { filterTurns } from "#/utils/filterTurns";
 
 const ViewTurns: React.FC = () => {
-  const { uiSend, turnState, turnSend } = useMachines();
+  const { turnState, turnSend } = useMachines();
   const { authState } = useAuthMachine();
   const user: SignInResponse = authState?.context?.authResponse || {};
 
@@ -37,15 +37,7 @@ const ViewTurns: React.FC = () => {
   const showTurnsContext = turnContext.showTurns;
   const { cancellingTurnId, isCancellingTurn } = turnContext;
 
-  const filteredTurns = turnContext.myTurns.filter((turn: any) => {
-    let matchesStatus = true;
-
-    if (showTurnsContext.statusFilter) {
-      matchesStatus = turn.status === showTurnsContext.statusFilter;
-    }
-
-    return matchesStatus;
-  });
+  const filteredTurns = filterTurns(turnContext.myTurns, showTurnsContext.statusFilter);
 
   const handleCancelTurn = (turnId: string) => {
     if (!user.accessToken) return;
@@ -85,27 +77,11 @@ const ViewTurns: React.FC = () => {
     return turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt) && !hasPendingModifyRequest(turn.id);
   };
 
-  const handleClose = () => {
-    uiSend({ type: "NAVIGATE", to: "/patient" });
-    turnSend({ type: "RESET_SHOW_TURNS" });
-    turnSend({ type: "CLEAR_CANCEL_SUCCESS" });
-  };
-
   return (
     <Box className="shared-container">
       {/* Header Section */}
       <Box className="shared-header">
         <Box className="shared-header-layout">
-          <Box className="shared-back-button-container">
-            <Button
-              variant="outlined"
-              startIcon={<ArrowBackIcon />}
-              onClick={handleClose}
-              className="shared-back-button"
-            >
-              Volver
-            </Button>
-          </Box>
           <Box className="shared-header-content">
             <Avatar className="shared-header-icon">
               <ListAltIcon sx={{ fontSize: 28 }} />

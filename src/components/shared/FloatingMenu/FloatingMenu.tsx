@@ -33,39 +33,15 @@ const FloatingMenu: React.FC = () => {
   return (
     <>
     
-      {!isOpen && (
-        <Button
-          className="floating-menu-button"
-          onClick={()=>{uiSend({ type: "TOGGLE", key: "floatingMenu" });}}
-          variant="contained"
-          sx={{
-            '&.MuiButton-root': {
-              position: 'fixed',
-              top: '90px',
-              left: '20px',
-              zIndex: 1300,
-              minWidth: '56px',
-              width: '56px',
-              height: '56px',
-              borderRadius: '50%',
-              backgroundColor: '#22577a',
-              color: 'white',
-              boxShadow: '0 4px 20px rgba(34, 87, 122, 0.3)',
-              padding: 0,
-              '&:hover': {
-                backgroundColor: '#1a4660',
-                boxShadow: '0 6px 25px rgba(34, 87, 122, 0.4)',
-                transform: 'scale(1.1)',
-              },
-              '&:focus': {
-                backgroundColor: '#22577a',
-              },
-            },
-          }}
-        >
-          <MenuIcon sx={{ fontSize: '1.5rem', color: 'white' }} />
-        </Button>
-      )}
+      
+      <Button
+        className="floating-menu-button"
+        onClick={()=>{uiSend({ type: "TOGGLE", key: "floatingMenu" });}}
+        variant="contained"
+      >
+        <MenuIcon sx={{ fontSize: '1.5rem', color: 'white' }} />
+      </Button>
+      
 
     
       <Backdrop

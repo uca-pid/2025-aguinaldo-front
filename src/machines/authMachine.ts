@@ -1,6 +1,6 @@
 import { createMachine, assign, fromPromise } from "xstate";
 import {validateField, checkFormValidation} from "../utils/authFormValidation";
-import { checkStoredAuth, submitAuthentication, logoutUser } from "../utils/authMachineUtils";
+import { checkStoredAuth, submitAuthentication, logoutUser } from "../utils/MachineUtils/authMachineUtils";
 import { AuthService } from "../service/auth-service.service";
 import { RegisterResponse, SignInResponse, ApiErrorResponse } from "../models/Auth";
 import { orchestrator } from "#/core/Orchestrator";

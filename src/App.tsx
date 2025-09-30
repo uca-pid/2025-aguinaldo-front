@@ -1,5 +1,5 @@
 import './App.css'
-import { Routes, Route, } from 'react-router-dom'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import HomeScreen from './components/HomeScreen/HomeScreen'
 import { useAuthMachine } from './providers/AuthProvider'
 import { Box } from '@mui/material'
@@ -18,15 +18,24 @@ import SnackbarAlert from './components/shared/SnackbarAlert/SnackbarAlert'
 import PendingActivation from './components/Doctor/PendingActivation/PendingActivation'
 import TurnsModifications from './components/Doctor/TurnsModifications/TurnsModifications'
 import FloatingMenu from './components/shared/FloatingMenu/FloatingMenu'
+import { useEffect } from 'react'
+import { useMachines } from './providers/MachineProvider'
+import ConfirmationModal from './components/shared/ConfirmationModal/ConfirmationModal'
 
 function AppContent() {
   const { authState } = useAuthMachine();
+  const { uiSend } = useMachines();
+  const navigate = useNavigate();
   const authContext = authState.context;
 
   const userRole = authContext.authResponse?.role || '';
   const userStatus = authContext.authResponse?.status || '';
   
   const shouldHideHeader = userStatus !== "ACTIVE";
+
+  useEffect(() => {
+    uiSend({ type: "ADD_NAVIGATE_HOOK", navigate, initialPath: window.location.pathname });
+  }, [uiSend, navigate]);
 
   const renderAdminRoutes = () => (
     <>
@@ -56,13 +65,12 @@ function AppContent() {
 
   return (
       <Box>
-      
-        <FloatingMenu />
         
         {!shouldHideHeader && (
           <>
             <Box className="app-header">
-              <Box>
+              <FloatingMenu />
+              <Box onClick={() => uiSend({ type: "NAVIGATE", to: '/' })} style={{ cursor: 'pointer' }}>
                 <h2>MediBook</h2>
               </Box>
              
@@ -81,6 +89,7 @@ function AppContent() {
           <Route path="/pending-activation" element={<PendingActivation />} />
         </Routes>
         <SnackbarAlert />
+        <ConfirmationModal />
       </Box>
   );
 }

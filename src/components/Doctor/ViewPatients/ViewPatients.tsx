@@ -16,7 +16,7 @@ import {
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { useMachines } from "#/providers/MachineProvider"
-import { PeopleOutlined, SearchOutlined, ArrowBack, ChevronRight } from '@mui/icons-material'
+import { PeopleOutlined, SearchOutlined, ChevronRight } from '@mui/icons-material'
 import { Patient } from "#/models/Doctor"
 import './ViewPatients.css'
 import { useDataMachine } from "#/providers/DataProvider"
@@ -56,12 +56,6 @@ const ViewPatients: React.FC = () => {
             <Box className="viewpatients-container">
                 <Box className="shared-header">
                     <Box className="shared-header-layout">
-                        <Box className="shared-back-button-container">
-                            <Button startIcon={<ArrowBack />} onClick={() => {uiSend({ type: "NAVIGATE", to: "/dashboard" })}} 
-                            className="shared-back-button" variant="outlined">
-                                Volver
-                            </Button>
-                        </Box>
 
                         <Box className="shared-header-content">
                             <Avatar className="shared-header-icon">

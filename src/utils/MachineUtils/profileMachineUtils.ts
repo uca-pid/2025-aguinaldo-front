@@ -1,6 +1,6 @@
-import { AuthService } from "../service/auth-service.service";
-import type { ProfileResponse } from "../models/Auth";
-import type { ProfileMachineContext } from "../machines/profileMachine";
+import { AuthService } from "../../service/auth-service.service";
+import type { ProfileResponse } from "../../models/Auth";
+import type { ProfileMachineContext } from "../../machines/profileMachine";
 
 
 /**

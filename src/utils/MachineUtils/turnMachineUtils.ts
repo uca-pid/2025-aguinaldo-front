@@ -1,5 +1,5 @@
-import { TurnService } from "../service/turn-service.service";
-import type { TurnResponse } from "../models/Turn";
+import { TurnService } from "../../service/turn-service.service";
+import type { TurnResponse } from "../../models/Turn";
 
 /**
  * Utility functions for turnMachine service calls
@@ -115,7 +115,7 @@ export const loadTurnDetails = async ({ turnId, accessToken }: { turnId: string;
       const authData = JSON.parse(localStorage.getItem('authData') || '{}');
       if (authData.refreshToken) {
         try {
-          const { AuthService } = await import('../service/auth-service.service');
+          const { AuthService } = await import('../../service/auth-service.service');
           const refreshed = await AuthService.refreshToken(authData.refreshToken);
           if (refreshed.accessToken) {
             localStorage.setItem('authData', JSON.stringify(refreshed));

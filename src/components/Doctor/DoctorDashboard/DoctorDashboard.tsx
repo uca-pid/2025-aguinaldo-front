@@ -1,4 +1,3 @@
-import {useState, useEffect} from "react";
 import {
   Box, 
   Typography, 
@@ -12,7 +11,6 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import PersonIcon from "@mui/icons-material/Person";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
-import { TurnService } from "#/service/turn-service.service";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
@@ -22,8 +20,11 @@ import DashboardCard from "../../shared/DashboardCard/DashboardCard";
 import DashboardUpcomingCard from "../../shared/DashboardUpcomingCard/DashboardUpcomingCard";
 import dayjs from "dayjs";
 import "./DoctorDashboard.css";
+import { useDataMachine } from "#/providers/DataProvider";
 
 const DoctorDashboard: React.FC = () => {
+  const { dataState } = useDataMachine();
+  const dataContext = dataState.context;
   const { uiSend, turnState, doctorState } = useMachines();
 
   const turnContext = turnState?.context;
@@ -31,32 +32,19 @@ const DoctorDashboard: React.FC = () => {
   const authContext = useAuthMachine().authState?.context;
   const user = authContext.authResponse as SignInResponse;
 
-  const [pendingModifyRequests, setPendingModifyRequests] = useState<TurnModifyRequest[]>([]);
   const availability = doctorContext?.availability || [];
   const hasConfiguredDays = availability.some((day: any) => day.enabled && day.ranges?.length > 0);
+  const pendingModifyRequests: TurnModifyRequest[] = dataContext.doctorModifyRequests?.filter((r: TurnModifyRequest) => r.status === "PENDING") || [];
 
-    useEffect(() => {
-      const fetchPendingRequests = async () => {
-        if (!user.accessToken) return;
-        try {
-          const requests = await TurnService.getDoctorModifyRequests(user.id, user.accessToken);
-          setPendingModifyRequests(requests.filter(r => r.status === "PENDING"));
-        } catch {
-          setPendingModifyRequests([]);
-        }
-      };
-      fetchPendingRequests();
-    }, [user.accessToken]);
-
-  const upcomingTurns = turnContext?.myTurns || []
+  const upcomingTurns = (turnContext.myTurns || [])
     .filter((turn: any) => {
       const turnDate = dayjs(turn.scheduledAt);
       const now = dayjs();
       const isUpcoming = turnDate.isAfter(now);
       
-      return isUpcoming && (turn.status === 'SCHEDULED' || turn.status === 'CANCELED');
+      return isUpcoming && turn.status === 'SCHEDULED';
     })
-    .slice(0, 3)
+    .slice(0, 10)
     .sort((a: any, b: any) => dayjs(a.scheduledAt).diff(dayjs(b.scheduledAt)));
 
   return (
@@ -129,12 +117,11 @@ const DoctorDashboard: React.FC = () => {
 
             <DashboardUpcomingCard
               type="doctor"
-              title="Próximos Turnos"
+              title="Mis Turnos"
               turns={upcomingTurns}
               isLoading={turnContext?.isLoadingMyTurns}
               error={turnContext?.myTurnsError}
               emptyMessage="No tenés turnos próximos"
-              viewAllText="Ver todos"
               onViewAll={() => uiSend({ type: "NAVIGATE", to: "/doctor/view-turns" })}
             />
 

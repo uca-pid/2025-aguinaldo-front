@@ -1,11 +1,12 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests } from "../utils/dataMachineUtils";
-import { loadDoctorPatients, loadDoctorAvailability } from "../utils/doctorMachineUtils";
+import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests } from "../utils/MachineUtils/dataMachineUtils";
+import { loadDoctorPatients, loadDoctorAvailability } from "../utils/MachineUtils/doctorMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, AdminStats } from "../models/Admin";
 import type { Doctor } from "../models/Turn";
 import { UI_MACHINE_ID } from "./uiMachine";
 import { AUTH_MACHINE_ID } from "./authMachine";
+import { TurnModifyRequest } from "#/models/TurnModifyRequest";
 
 export const DATA_MACHINE_ID = "data";
 export const DATA_MACHINE_EVENT_TYPES = [
@@ -35,7 +36,7 @@ export interface DataMachineContext {
   myTurns: any[];
   doctorPatients: any[];
   doctorAvailability: any[];
-  doctorModifyRequests: any[];
+  doctorModifyRequests: TurnModifyRequest[];
   
   loading: {
     doctors: boolean;
@@ -533,11 +534,14 @@ export const dataMachine = createMachine({
     
     ready: {
       entry: ({ context }) => {
-        // Use setTimeout to ensure all assign actions complete before broadcasting
         setTimeout(() => {
           orchestrator.send({
             type: "DATA_LOADED",
             doctorAvailability: context.doctorAvailability
+          });
+          orchestrator.sendToMachine("notification", {
+            type: "LOAD_NOTIFICATIONS",
+            accessToken: context.accessToken!
           });
         }, 0);
       },
@@ -591,10 +595,12 @@ export const dataMachine = createMachine({
         },
         LOAD_DOCTOR_AVAILABILITY: {
           target: "fetchingDoctorAvailability",
-        }
+        },
+        LOAD_DOCTOR_MODIFY_REQUESTS: {
+          target: "fetchingDoctorModifyRequests",
+        },
       },
     },
-    
     fetchingDoctors: {
       entry: assign({
         loading: ({ context }) => ({ ...context.loading, doctors: true }),
@@ -939,10 +945,12 @@ export const dataMachine = createMachine({
     },
 
     fetchingDoctorModifyRequests: {
-      entry: assign({
-        loading: ({ context }) => ({ ...context.loading, doctorModifyRequests: true }),
-        errors: ({ context }) => ({ ...context.errors, doctorModifyRequests: null }),
-      }),
+      entry: [
+        assign({
+          loading: ({ context }) => ({ ...context.loading, doctorModifyRequests: true }),
+          errors: ({ context }) => ({ ...context.errors, doctorModifyRequests: null }),
+        })
+      ],
       invoke: {
         src: fromPromise(async ({ input }: { input: { accessToken: string; doctorId: string } }) => {
           return await loadDoctorModifyRequests(input);
@@ -953,10 +961,12 @@ export const dataMachine = createMachine({
         }),
         onDone: {
           target: "ready",
-          actions: assign({
-            doctorModifyRequests: ({ event }) => event.output,
-            loading: ({ context }) => ({ ...context.loading, doctorModifyRequests: false }),
-          }),
+          actions: [
+            assign({
+              doctorModifyRequests: ({ event }) => event.output,
+              loading: ({ context }) => ({ ...context.loading, doctorModifyRequests: false }),
+            })
+          ],
         },
         onError: {
           target: "idle",

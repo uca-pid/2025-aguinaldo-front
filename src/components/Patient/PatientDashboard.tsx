@@ -6,7 +6,6 @@ import {
   Avatar
 } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import ListAltIcon from "@mui/icons-material/ListAlt";
 import PersonIcon from "@mui/icons-material/Person";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
@@ -56,33 +55,25 @@ const PatientDashboard: React.FC = () => {
           </Box>
 
           <Box className="dashboard-actions-container">
-            <DashboardCard
+
+            <DashboardUpcomingCard
               type="patient"
-              variant="primary"
-              icon={<CalendarTodayIcon className="patient-action-icon" />}
-              title="Reservar Turno"
-              description="Agenda una nueva cita médica con tu especialista preferido"
-              buttonText="Nuevo Turno"
-              onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/reservation-turns" })}
+              title="Mis Turnos"
+              turns={upcomingTurns}
+              isLoading={turnContext.isLoadingMyTurns}
+              error={turnContext.myTurnsError}
+              emptyMessage="No tenés turnos próximos"
+              onViewAll={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })}
             />
 
             <DashboardCard
               type="patient"
               variant="secondary"
-              icon={<ListAltIcon className="patient-action-icon" />}
-              title="Mis Turnos"
-              description="Consulta, modifica o cancela tus turnos programados"
-              buttonText="Ver Turnos"
-              onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/view-turns" })}
-            />
-
-            <DashboardUpcomingCard
-              type="patient"
-              title="Próximos"
-              turns={upcomingTurns}
-              isLoading={turnContext.isLoadingMyTurns}
-              error={turnContext.myTurnsError}
-              emptyMessage="No tenés turnos próximos"
+              icon={<CalendarTodayIcon className="patient-action-icon" />}
+              title="Reservar Turno"
+              description="Agenda una nueva cita médica con tu especialista preferido"
+              buttonText="Nuevo Turno"
+              onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/reservation-turns" })}
             />
           </Box>
         </Container>

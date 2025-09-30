@@ -3,9 +3,7 @@ import {
   Box,
   Card,
   Typography,
-  CircularProgress,
-  Chip,
-  Button
+  CircularProgress
 } from "@mui/material";
 import dayjs from "dayjs";
 import "./DashboardUpcomingCard.css";
@@ -40,7 +38,6 @@ const DashboardUpcomingCard: React.FC<DashboardUpcomingCardProps> = ({
   isLoading = false,
   error,
   emptyMessage = "No hay turnos próximos",
-  viewAllText,
   onViewAll
 }) => {
   const renderTurnContent = (turn: Turn) => {
@@ -62,19 +59,6 @@ const DashboardUpcomingCard: React.FC<DashboardUpcomingCardProps> = ({
             <Typography variant="body1" className="upcoming-card-date">
               {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
             </Typography>
-            {turn.status === 'CANCELED' && (
-              <Chip 
-                label="CANCELADO" 
-                size="small" 
-                className="upcoming-card-canceled-chip"
-                sx={{
-                  backgroundColor: '#fee2e2',
-                  color: '#dc2626',
-                  fontWeight: 600,
-                  fontSize: '0.75rem'
-                }}
-              />
-            )}
           </Box>
           <Typography variant="body2" className="upcoming-card-secondary">
             Paciente: {turn.patientName || "Paciente"}
@@ -90,23 +74,12 @@ const DashboardUpcomingCard: React.FC<DashboardUpcomingCardProps> = ({
   };
 
   return (
-    <Box className="dashboard-card-item">
+    <Box className="dashboard-card-item" onClick={onViewAll}>
       <Card className={`upcoming-card ${type}-upcoming-card`}>
         <Box className={`upcoming-card-header ${type}-upcoming-header`} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h6" className="upcoming-card-title">
             {title}
           </Typography>
-          {type === 'doctor' && onViewAll && (
-            <Button
-              variant="text"
-              size="small"
-              onClick={onViewAll}
-              className="upcoming-card-view-all"
-              sx={{ textTransform: 'none', fontSize: '0.875rem' }}
-            >
-              {viewAllText || 'Ver todos'}
-            </Button>
-          )}
         </Box>
         
         <Box className="upcoming-card-content">

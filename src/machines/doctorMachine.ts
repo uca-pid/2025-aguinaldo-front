@@ -1,5 +1,5 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { saveDoctorAvailability, updateMedicalHistory } from "../utils/doctorMachineUtils";
+import { saveDoctorAvailability, updateMedicalHistory } from "../utils/MachineUtils/doctorMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import { DATA_MACHINE_ID } from "./dataMachine";
 import { UI_MACHINE_ID } from "./uiMachine";
