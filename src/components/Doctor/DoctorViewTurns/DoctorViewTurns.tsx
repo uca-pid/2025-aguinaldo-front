@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { filterTurns } from "#/utils/filterTurns";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import "./DoctorViewTurns.css";
 
@@ -20,42 +21,7 @@ const ViewTurns: React.FC = () => {
   const showTurnsContext = turnContext.showTurns;
   const { cancellingTurnId, isCancellingTurn } = turnContext;
 
-  const filteredTurns = turnContext.myTurns
-    .filter((turn: any) => {
-      let matchesStatus = true;
-      let matchesDate = true;
-
-      if (showTurnsContext.statusFilter) {
-        matchesStatus = turn.status === showTurnsContext.statusFilter;
-      }
-
-      if (showTurnsContext.dateSelected) {
-        const turnDate = dayjs(turn.scheduledAt).format('YYYY-MM-DD');
-        const selectedDate = showTurnsContext.dateSelected.format('YYYY-MM-DD');
-        matchesDate = turnDate === selectedDate;
-      }
-
-      return matchesStatus && matchesDate;
-    })
-    .sort((a: any, b: any) => {
-      const getStatusPriority = (turn: any) => {
-        const isPast = dayjs(turn.scheduledAt).isBefore(dayjs());
-        
-        if (turn.status === 'SCHEDULED') {
-          return isPast ? 2 : 1; // Vencido (past) = 2, Programado (future) = 1
-        } else if (turn.status === 'CANCELED') {
-          return 3; // Cancelado = 3
-        }
-        return 4; // Other statuses
-      };
-      
-      const statusComparison = getStatusPriority(a) - getStatusPriority(b);
-      
-      if (statusComparison !== 0) {
-        return statusComparison;
-      }
-      return dayjs(b.scheduledAt).valueOf() - dayjs(a.scheduledAt).valueOf();
-    });
+  const filteredTurns = filterTurns(turnContext.myTurns, showTurnsContext.statusFilter);
 
   const handleCancelTurn = (turnId: string) => {
     if (!user.accessToken) return;

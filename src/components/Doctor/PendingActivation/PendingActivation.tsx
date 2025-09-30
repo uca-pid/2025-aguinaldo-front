@@ -7,7 +7,7 @@ import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
 import Logo from "#/assets/favicon.svg";
 import "./PendingActivation.css";
-import { getStatusMessage } from "#/utils/profileMachineUtils";
+import { getStatusMessage } from "#/utils/MachineUtils/profileMachineUtils";
 
 const PendingActivation: React.FC = () => {
   const { authState, authSend } = useAuthMachine();

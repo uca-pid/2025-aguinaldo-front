@@ -1,5 +1,5 @@
-import { DoctorService, type DoctorAvailabilityRequest } from "../service/doctor-service.service";
-import type { Patient } from "../models/Doctor";
+import { DoctorService, type DoctorAvailabilityRequest } from "../../service/doctor-service.service";
+import type { Patient } from "../../models/Doctor";
 
 /**
  * Utility functions for doctorMachine service calls

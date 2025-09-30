@@ -1,5 +1,5 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { approveDoctor, rejectDoctor } from "../utils/adminUserMachineUtils";
+import { approveDoctor, rejectDoctor } from "../utils/MachineUtils/adminUserMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, DoctorApprovalResponse } from "#/models/Admin";
 import { DATA_MACHINE_ID } from "./dataMachine";

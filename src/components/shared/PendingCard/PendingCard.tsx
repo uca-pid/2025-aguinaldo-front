@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, Typography, Avatar, Chip, Button, Box } from '@mui/material';
+import { Card, CardContent, Typography, Avatar, Button, Box } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -19,7 +19,6 @@ export default function PendingCard(props: PendingCardProps) {
     id,
     title,
     avatarContent,
-    status = 'Pending',
     onApprove,
     onReject,
     isLoading = false,
@@ -41,12 +40,6 @@ export default function PendingCard(props: PendingCardProps) {
           </Box>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Chip
-            label={status}
-            color="warning"
-            variant="outlined"
-            sx={{ fontWeight: 'medium' }}
-          />
           <Button
             variant="contained"
             color="success"
@@ -55,7 +48,7 @@ export default function PendingCard(props: PendingCardProps) {
             disabled={isLoading}
             sx={{ minWidth: 100 }}
           >
-            Approve
+            Aprobar
           </Button>
           <Button
             variant="outlined"
@@ -65,7 +58,7 @@ export default function PendingCard(props: PendingCardProps) {
             disabled={isLoading}
             sx={{ minWidth: 100 }}
           >
-            Reject
+            Rechazar
           </Button>
         </Box>
       </CardContent>

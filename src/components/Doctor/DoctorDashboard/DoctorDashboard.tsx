@@ -36,15 +36,15 @@ const DoctorDashboard: React.FC = () => {
   const hasConfiguredDays = availability.some((day: any) => day.enabled && day.ranges?.length > 0);
   const pendingModifyRequests: TurnModifyRequest[] = dataContext.doctorModifyRequests?.filter((r: TurnModifyRequest) => r.status === "PENDING") || [];
 
-  const upcomingTurns = turnContext?.myTurns || []
+  const upcomingTurns = (turnContext.myTurns || [])
     .filter((turn: any) => {
       const turnDate = dayjs(turn.scheduledAt);
       const now = dayjs();
       const isUpcoming = turnDate.isAfter(now);
       
-      return isUpcoming && (turn.status === 'SCHEDULED' || turn.status === 'CANCELED');
+      return isUpcoming && turn.status === 'SCHEDULED';
     })
-    .slice(0, 3)
+    .slice(0, 10)
     .sort((a: any, b: any) => dayjs(a.scheduledAt).diff(dayjs(b.scheduledAt)));
 
   return (

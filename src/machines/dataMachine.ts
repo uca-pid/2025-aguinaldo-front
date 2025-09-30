@@ -1,6 +1,6 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests } from "../utils/dataMachineUtils";
-import { loadDoctorPatients, loadDoctorAvailability } from "../utils/doctorMachineUtils";
+import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests } from "../utils/MachineUtils/dataMachineUtils";
+import { loadDoctorPatients, loadDoctorAvailability } from "../utils/MachineUtils/doctorMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, AdminStats } from "../models/Admin";
 import type { Doctor } from "../models/Turn";
@@ -534,11 +534,14 @@ export const dataMachine = createMachine({
     
     ready: {
       entry: ({ context }) => {
-        // Use setTimeout to ensure all assign actions complete before broadcasting
         setTimeout(() => {
           orchestrator.send({
             type: "DATA_LOADED",
             doctorAvailability: context.doctorAvailability
+          });
+          orchestrator.sendToMachine("notification", {
+            type: "LOAD_NOTIFICATIONS",
+            accessToken: context.accessToken!
           });
         }, 0);
       },

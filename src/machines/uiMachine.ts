@@ -1,4 +1,5 @@
 import { createMachine, assign } from "xstate";
+import { orchestrator } from "#/core/Orchestrator";
 
 export const UI_MACHINE_ID = "ui";
 export const UI_MACHINE_EVENT_TYPES = ["TOGGLE", "NAVIGATE", "OPEN_SNACKBAR", "CLOSE_SNACKBAR", "OPEN_CONFIRMATION_DIALOG", "CLOSE_CONFIRMATION_DIALOG"];
@@ -76,21 +77,32 @@ export const uiMachine = createMachine({
           },
         },
         OPEN_SNACKBAR: {
-          actions: assign({
+          actions: [assign({
             snackbar: ({ event }) => ({
               open: true,
               message: event.message,
               severity: event.severity,
             }),
           }),
+          () => {
+            setTimeout(() => {
+              orchestrator.send({ type: "CLOSE_SNACKBAR" });
+            }, 6000);
+          }
+        ],
         },
         CLOSE_SNACKBAR: {
-          actions: assign({
-            snackbar: ({ context }) => ({
-              ...context.snackbar,
-              open: false,
+          actions: [
+            assign({
+              snackbar: ({ context }) => ({
+                ...context.snackbar,
+                open: false,
+              }),
             }),
-          }),
+            () => {
+              orchestrator.send({ type: 'NOTIFICATION_CLOSED' });
+            }
+          ],
         },
         OPEN_CONFIRMATION_DIALOG: {
           actions: assign({
