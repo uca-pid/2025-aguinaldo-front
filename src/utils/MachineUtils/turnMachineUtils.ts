@@ -46,16 +46,6 @@ export interface LoadAvailableSlotsParams {
 }
 
 /**
- * Reserve an existing turn
- */
-export const reserveTurn = async ({ accessToken, userId, turnId }: ReserveTurnParams): Promise<TurnResponse> => {
-  return await TurnService.reserveTurn(
-    { turnId, patientId: userId },
-    accessToken
-  );
-};
-
-/**
  * Create a new turn
  */
 export const createTurn = async ({ accessToken, userId, doctorId, scheduledAt }: CreateTurnParams): Promise<TurnResponse> => {
