@@ -117,12 +117,11 @@ const DoctorDashboard: React.FC = () => {
 
             <DashboardUpcomingCard
               type="doctor"
-              title="Próximos Turnos"
+              title="Mis Turnos"
               turns={upcomingTurns}
               isLoading={turnContext?.isLoadingMyTurns}
               error={turnContext?.myTurnsError}
               emptyMessage="No tenés turnos próximos"
-              viewAllText="Ver todos"
               onViewAll={() => uiSend({ type: "NAVIGATE", to: "/doctor/view-turns" })}
             />
 
