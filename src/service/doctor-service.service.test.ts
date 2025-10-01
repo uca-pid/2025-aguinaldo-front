@@ -4,6 +4,19 @@ import type { Patient } from '../models/Doctor';
 
 // Mock the API config
 vi.mock('../../config/api', () => ({
+  API_CONFIG: {
+    BASE_URL: 'http://localhost:8080',
+    ENDPOINTS: {
+      GET_DOCTOR_PATIENTS: '/api/doctors/{doctorId}/patients',
+      SAVE_DOCTOR_AVAILABILITY: '/api/doctors/{doctorId}/availability',
+      GET_DOCTOR_AVAILABLE_SLOTS: '/api/doctors/{doctorId}/available-slots',
+      GET_DOCTOR_AVAILABILITY: '/api/doctors/{doctorId}/availability',
+      UPDATE_MEDICAL_HISTORY: '/api/doctors/{doctorId}/patients/medical-history'
+    },
+    DEFAULT_HEADERS: {
+      'Content-Type': 'application/json'
+    }
+  },
   buildApiUrl: vi.fn((endpoint: string) => `http://localhost:8080${endpoint}`),
   getAuthenticatedFetchOptions: vi.fn((token: string) => ({
     headers: {
@@ -12,8 +25,6 @@ vi.mock('../../config/api', () => ({
     }
   }))
 }));
-
-// Mock fetch globally
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 

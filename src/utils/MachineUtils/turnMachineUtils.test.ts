@@ -75,7 +75,7 @@ describe('turnMachineUtils', () => {
 
       await expect(cancelTurn(params)).resolves.not.toThrow()
 
-      expect(global.fetch).toHaveBeenCalledWith('/api/turns/turn456/cancel', {
+      expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/api/turns/turn456/cancel', {
         method: 'PATCH',
         headers: {
           'Authorization': 'Bearer token123',
@@ -136,7 +136,7 @@ describe('turnMachineUtils', () => {
       const result = await loadTurnDetails(params)
 
       expect(result).toEqual({ id: 'turn456', status: 'PENDING' })
-      expect(global.fetch).toHaveBeenCalledWith('/api/turns/my-turns', {
+      expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/api/turns/my-turns', {
         method: 'GET',
         headers: {
           'Authorization': 'Bearer token123',

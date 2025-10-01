@@ -10,16 +10,25 @@ import type { TurnModifyRequest } from '../models/TurnModifyRequest';
 // Mock the API config
 vi.mock('../../config/api', () => ({
   API_CONFIG: {
+    BASE_URL: 'http://localhost:8080',
     ENDPOINTS: {
-      GET_MY_MODIFY_REQUESTS: '/api/turns/modify/my-requests',
-      GET_DOCTOR_MODIFY_REQUESTS: '/api/turns/modify/doctor/{doctorId}',
+      GET_MY_MODIFY_REQUESTS: '/api/turns/modify-requests/my-requests',
+      GET_DOCTOR_MODIFY_REQUESTS: '/api/turns/modify-requests/pending?doctorId={doctorId}',
       GET_DOCTORS: '/api/doctors',
       CREATE_TURN: '/api/turns',
       GET_MY_TURNS: '/api/turns/my-turns',
       GET_PATIENT_TURNS: '/api/turns/patient',
       GET_DOCTOR_TURNS: '/api/turns/doctor',
-      MODIFY_TURN_REQUEST: '/api/turns/modify',
-      DOCTOR_MODIFY_REQUEST: '/api/turns/modify/doctor'
+      MODIFY_TURN_REQUEST: '/api/turns/modify-requests',
+      DOCTOR_MODIFY_REQUEST: '/api/turns/modify-requests',
+      GET_AVAILABLE_TURNS: '/api/turns/available',
+      CANCEL_TURN: '/api/turns/{turnId}/cancel',
+      APPROVE_MODIFY_REQUEST: '/api/turns/modify-requests/{requestId}/approve',
+      REJECT_MODIFY_REQUEST: '/api/turns/modify-requests/{requestId}/reject',
+      GET_DOCTOR_AVAILABLE_SLOTS: '/api/doctors/{doctorId}/available-slots'
+    },
+    DEFAULT_HEADERS: {
+      'Content-Type': 'application/json'
     }
   },
   buildApiUrl: vi.fn((endpoint: string) => `http://localhost:8080${endpoint}`),
@@ -75,7 +84,7 @@ describe('TurnService', () => {
       const result = await TurnService.getMyModifyRequests(accessToken);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8080/api/turns/modify/my-requests',
+        'http://localhost:8080/api/turns/modify-requests/my-requests',
         expect.objectContaining({
           method: 'GET'
         })
@@ -146,7 +155,7 @@ describe('TurnService', () => {
       const result = await TurnService.getDoctorModifyRequests(doctorId, accessToken);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8080/api/turns/modify/doctor/doctor-1',
+        'http://localhost:8080/api/turns/modify-requests/pending?doctorId=doctor-1',
         expect.objectContaining({
           method: 'GET'
         })
@@ -609,7 +618,7 @@ describe('TurnService', () => {
       const result = await TurnService.createModifyRequest(mockModifyData, accessToken);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8080/api/turns/modify',
+        'http://localhost:8080/api/turns/modify-requests',
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify(mockModifyData)
@@ -684,7 +693,7 @@ describe('TurnService', () => {
       const result = await TurnService.approveModifyRequest(requestId, accessToken);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8080/api/turns/modify/doctor/modify-1/approve',
+        'http://localhost:8080/api/turns/modify-requests/modify-1/approve',
         expect.objectContaining({
           method: 'POST'
         })
@@ -750,7 +759,7 @@ describe('TurnService', () => {
       const result = await TurnService.rejectModifyRequest(requestId, accessToken);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8080/api/turns/modify/doctor/modify-1/reject',
+        'http://localhost:8080/api/turns/modify-requests/modify-1/reject',
         expect.objectContaining({
           method: 'POST'
         })

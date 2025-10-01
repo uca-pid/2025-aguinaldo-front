@@ -5,9 +5,13 @@ import type { NotificationResponse } from './notification-service.service';
 // Mock the API config
 vi.mock('../../config/api', () => ({
   API_CONFIG: {
+    BASE_URL: 'http://localhost:8080',
     ENDPOINTS: {
       GET_NOTIFICATIONS: '/api/notifications',
-      DELETE_NOTIFICATION: '/api/notifications'
+      DELETE_NOTIFICATION: '/api/notifications/{notificationId}'
+    },
+    DEFAULT_HEADERS: {
+      'Content-Type': 'application/json'
     }
   },
   buildApiUrl: vi.fn((endpoint: string) => `http://localhost:8080${endpoint}`),

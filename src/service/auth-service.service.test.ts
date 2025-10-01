@@ -11,12 +11,16 @@ import type {
 // Mock the API config
 vi.mock('../../config/api', () => ({
   API_CONFIG: {
+    BASE_URL: 'http://localhost:8080',
     ENDPOINTS: {
       REGISTER_PATIENT: '/api/auth/register/patient',
       REGISTER_DOCTOR: '/api/auth/register/doctor',
       SIGNIN: '/api/auth/signin',
       SIGNOUT: '/api/auth/signout',
-      REFRESH_TOKEN: '/api/auth/refresh'
+      REFRESH_TOKEN: '/api/auth/refresh-token',
+      GET_PROFILE: '/api/profile/{profileId}',
+      UPDATE_PROFILE: '/api/profile/{profileId}',
+      DEACTIVATE_ACCOUNT: '/api/profile/me/deactivate'
     },
     DEFAULT_HEADERS: {
       'Content-Type': 'application/json'
@@ -348,7 +352,7 @@ describe('AuthService', () => {
       const result = await AuthService.refreshToken(refreshToken);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8080/api/auth/refresh',
+        'http://localhost:8080/api/auth/refresh-token',
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({
