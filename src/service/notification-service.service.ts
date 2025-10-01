@@ -53,7 +53,7 @@ export class NotificationService {
   }
 
   static async deleteNotification(notificationId: string, accessToken: string): Promise<void> {
-    const url = buildApiUrl(`${API_CONFIG.ENDPOINTS.DELETE_NOTIFICATION}/${notificationId}`);
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.DELETE_NOTIFICATION.replace('{notificationId}', notificationId));
     try {
       const response = await fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
