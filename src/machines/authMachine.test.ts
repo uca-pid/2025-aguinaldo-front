@@ -29,23 +29,18 @@ vi.mock('../utils/MachineUtils/authMachineUtils', () => ({
 
 import { authMachine } from './authMachine';
 import { orchestrator } from '#/core/Orchestrator';
-import { AuthService } from '../service/auth-service.service';
-import { checkStoredAuth, submitAuthentication, logoutUser } from '../utils/MachineUtils/authMachineUtils';
+import { checkStoredAuth, logoutUser } from '../utils/MachineUtils/authMachineUtils';
 import { validateField, checkFormValidation } from '../utils/authFormValidation';
 
 describe('authMachine', () => {
   let actor: any;
   let mockOrchestrator: any;
-  let mockAuthService: any;
-  let mockAuthUtils: any;
   let mockFormValidation: any;
 
   beforeEach(() => {
     vi.useFakeTimers(); // Enable fake timers for all tests
     // Get mocked modules
     mockOrchestrator = vi.mocked(orchestrator);
-    mockAuthService = vi.mocked(AuthService);
-    mockAuthUtils = vi.mocked({ checkStoredAuth, submitAuthentication, logoutUser });
     mockFormValidation = vi.mocked({ validateField, checkFormValidation });
 
     // Reset mocks
