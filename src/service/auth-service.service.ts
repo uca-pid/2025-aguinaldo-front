@@ -8,6 +8,8 @@ import type {
     ProfileResponse
 } from '../models/Auth';
 
+import { DELAY_CONFIGS, withDevDelay } from '#/utils/devDelay';
+
 export class AuthService {
 
   static async registerPatient(data: RegisterRequestData): Promise<RegisterResponse> {
@@ -68,11 +70,11 @@ export class AuthService {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.SIGNIN);
     
     try {
-      const response = await fetch(url, {
+      const response = await withDevDelay(() => fetch(url, {
         ...getDefaultFetchOptions(),
         method: 'POST',
         body: JSON.stringify(data),
-      });
+      }),DELAY_CONFIGS.VERY_SLOW);
 
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
@@ -83,7 +85,7 @@ export class AuthService {
         );
       }
 
-      const result: SignInResponse = await response.json();
+      const result: SignInResponse = await withDevDelay(() => response.json() );
       
       return result;
     } catch (error) {
