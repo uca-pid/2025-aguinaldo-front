@@ -32,7 +32,22 @@ export default defineConfig({
       'src/service/**/*.{test,spec}.{ts,tsx}',
       'src/utils/**/*.{test,spec}.{ts,tsx}',
       'src/App.{test,spec}.{ts,tsx}'
-    ]
+    ],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      reportsDirectory: './coverage',
+      exclude: [
+        'node_modules/',
+        'src/test/',
+        'src/components/',
+        'src/assets/',
+        'src/models/',
+        '**/*.d.ts',
+        '**/*.config.*',
+        '**/index.ts'
+      ]
+    }
   },
   build: {
     outDir: 'dist',
