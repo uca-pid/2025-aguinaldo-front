@@ -28,6 +28,7 @@ jobs:
         run: npm run test:coverage
 
       - name: Upload to Coveralls (parallel)
+        if: github.ref == 'refs/heads/develop'
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -37,6 +38,7 @@ jobs:
 
   finish:
     needs: build
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     steps:
       - name: Coveralls Finished
