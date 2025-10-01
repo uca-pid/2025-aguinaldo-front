@@ -7,7 +7,6 @@ export const NOTIFICATION_MACHINE_ID = "notification";
 export const NOTIFICATION_MACHINE_EVENT_TYPES = [
   "LOAD_NOTIFICATIONS",
   "DELETE_NOTIFICATION",
-  "SHOW_NEXT_NOTIFICATION",
   "NOTIFICATION_CLOSED",
   "UPDATE_INDEX",
   "ALL_NOTIFICATIONS_SHOWN",
@@ -24,7 +23,6 @@ export interface NotificationMachineContext {
 export type NotificationMachineEvent =
   | { type: "LOAD_NOTIFICATIONS"; accessToken: string }
   | { type: "DELETE_NOTIFICATION"; notificationId: string }
-  | { type: "SHOW_NEXT_NOTIFICATION" }
   | { type: "NOTIFICATION_CLOSED" }
   | { type: "UPDATE_INDEX"; index: number }
   | { type: "ALL_NOTIFICATIONS_SHOWN" };
@@ -83,7 +81,7 @@ export const notificationMachine = createMachine({
     showingNotifications: {
       entry: ({ context }) => {
         if (context.notifications.length > 0) {
-          const notification = context.notifications[0];
+          const notification = context.notifications[context.currentNotificationIndex];
           const severity = notification.message.toLowerCase().includes('rechazada') || 
                           notification.message.toLowerCase().includes('cancelado') 
                           ? 'warning' : 'success';
@@ -106,22 +104,6 @@ export const notificationMachine = createMachine({
             }
           },
         },
-        SHOW_NEXT_NOTIFICATION: {
-          actions: ({ context }) => {
-            const nextIndex = context.currentNotificationIndex + 1;
-            if (nextIndex < context.notifications.length) {
-              const nextNotification = context.notifications[nextIndex];
-              const severity = nextNotification.message.toLowerCase().includes('rechazada') || 
-                              nextNotification.message.toLowerCase().includes('cancelado') 
-                              ? 'warning' : 'success';
-              orchestrator.sendToMachine(UI_MACHINE_ID, {
-                type: "OPEN_SNACKBAR",
-                message: nextNotification.message,
-                severity: severity
-              });
-            }
-          },
-        },
         LOAD_NOTIFICATIONS: "loadingNotifications",
       },
     },
@@ -136,33 +118,42 @@ export const notificationMachine = createMachine({
         }),
         onDone: {
           target: "showingNotifications",
-          actions: ({ context }) => {
-            const nextIndex = context.currentNotificationIndex + 1;
-            if (nextIndex < context.notifications.length) {
-              orchestrator.sendToMachine(NOTIFICATION_MACHINE_ID, {
-                type: "SHOW_NEXT_NOTIFICATION"
-              });
-              orchestrator.sendToMachine(NOTIFICATION_MACHINE_ID, {
-                type: "UPDATE_INDEX",
-                index: nextIndex
-              });
-            } else {
-              orchestrator.sendToMachine(NOTIFICATION_MACHINE_ID, {
-                type: "ALL_NOTIFICATIONS_SHOWN"
-              });
-            }
-          },
+          actions: [
+            assign(({ context }) => {
+              const remainingNotifications = context.notifications.filter(
+                (_, index) => index !== context.currentNotificationIndex
+              );
+              return {
+                notifications: remainingNotifications,
+                currentNotificationIndex: 0,
+              };
+            }),
+            ({ context }) => {
+              // Check if there are more notifications after removal
+              const remainingNotifications = context.notifications.filter(
+                (_, index) => index !== context.currentNotificationIndex
+              );
+              
+              if (remainingNotifications.length === 0) {
+                orchestrator.sendToMachine(NOTIFICATION_MACHINE_ID, {
+                  type: "ALL_NOTIFICATIONS_SHOWN"
+                });
+              }
+            },
+          ],
         },
         onError: {
           target: "showingNotifications",
-          actions: ({ context }) => {
-            const nextIndex = context.currentNotificationIndex + 1;
-            if (nextIndex < context.notifications.length) {
-              orchestrator.sendToMachine(NOTIFICATION_MACHINE_ID, {
-                type: "SHOW_NEXT_NOTIFICATION"
-              });
-            }
-          },
+          actions: assign(({ context }) => {
+            // Remove the notification even if delete failed (optimistic update)
+            const remainingNotifications = context.notifications.filter(
+              (_, index) => index !== context.currentNotificationIndex
+            );
+            return {
+              notifications: remainingNotifications,
+              currentNotificationIndex: 0,
+            };
+          }),
         },
       },
     },

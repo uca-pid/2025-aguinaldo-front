@@ -1,189 +1,79 @@
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   Container,
   Avatar,
-  Paper,
-  LinearProgress
+  Paper
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import { useMachines } from "#/providers/MachineProvider";
 import "./AdminDashboard.css";
 
 export default function AdminPatients() {
-  const { adminUserState } = useMachines();
-  const adminContext = adminUserState.context;
-
-  const stats = adminContext.adminStats;
-
-  // Mock data for development - replace with real API calls
-  const patientStats = {
-    totalPatients: stats.patients || 0,
-    activePatients: Math.floor((stats.patients || 0) * 0.85), // 85% active
-    newPatientsThisMonth: Math.floor((stats.patients || 0) * 0.12), // 12% new this month
-    averageTurnsPerPatient: 3.2,
-    patientRetentionRate: 92,
-    topSpecialties: [
-      { name: "Cardiología", count: 45 },
-      { name: "Dermatología", count: 38 },
-      { name: "Pediatría", count: 52 },
-      { name: "Ginecología", count: 41 }
-    ]
-  };
-
   return (
-    <Box className="admin-dashboard-container">
+    <Box className="dashboard-container">
       <Container maxWidth="lg">
-        <Box className="admin-header-section">
-          <Box className="admin-header-content">
-            <Avatar className="admin-header-avatar">
-              <PersonIcon className="admin-header-icon" />
+        <Box className="dashboard-header-section">
+          <Box className="dashboard-header-content">
+            <Avatar className="dashboard-header-avatar admin-header-avatar">
+              <PersonIcon className="dashboard-header-icon" />
             </Avatar>
             <Box>
-              <Typography variant="h3" component="h1" className="admin-header-title">
+              <Typography variant="h4" component="h1" className="dashboard-header-title">
                 Estadísticas de Pacientes
               </Typography>
-              <Typography variant="h6" className="admin-header-subtitle">
+              <Typography variant="h6" className="dashboard-header-subtitle admin-header-subtitle">
                 Análisis detallado del comportamiento y métricas de pacientes
               </Typography>
             </Box>
           </Box>
         </Box>
 
-        {/* Key Metrics */}
-        <Box className="admin-stats-container">
-          <Box className="admin-stats-item">
-            <Card className="admin-stats-card">
-              <CardContent className="admin-stats-content">
-                <Box className="admin-stats-layout">
-                  <Box>
-                    <Typography variant="h3" className="admin-stats-number">
-                      {patientStats.totalPatients}
-                    </Typography>
-                    <Typography variant="body1" className="admin-stats-label">
-                      Total Pacientes
-                    </Typography>
-                  </Box>
-                  <PersonIcon className="admin-stats-icon" />
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-
-          <Box className="admin-stats-item">
-            <Card className="admin-stats-card">
-              <CardContent className="admin-stats-content">
-                <Box className="admin-stats-layout">
-                  <Box>
-                    <Typography variant="h3" className="admin-stats-number">
-                      {patientStats.activePatients}
-                    </Typography>
-                    <Typography variant="body1" className="admin-stats-label">
-                      Pacientes Activos
-                    </Typography>
-                  </Box>
-                  <PersonIcon className="admin-stats-icon" />
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-
-          <Box className="admin-stats-item">
-            <Card className="admin-stats-card">
-              <CardContent className="admin-stats-content">
-                <Box className="admin-stats-layout">
-                  <Box>
-                    <Typography variant="h3" className="admin-stats-number">
-                      {patientStats.newPatientsThisMonth}
-                    </Typography>
-                    <Typography variant="body1" className="admin-stats-label">
-                      Nuevos Este Mes
-                    </Typography>
-                  </Box>
-                  <TrendingUpIcon className="admin-stats-icon" />
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-
-          <Box className="admin-stats-item">
-            <Card className="admin-stats-card">
-              <CardContent className="admin-stats-content">
-                <Box className="admin-stats-layout">
-                  <Box>
-                    <Typography variant="h3" className="admin-stats-number">
-                      {patientStats.averageTurnsPerPatient}
-                    </Typography>
-                    <Typography variant="body1" className="admin-stats-label">
-                      Turnos Promedio
-                    </Typography>
-                  </Box>
-                  <CalendarTodayIcon className="admin-stats-icon" />
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-        </Box>
-
-        {/* Detailed Stats */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-          <Box sx={{ flex: '1 1 45%', minWidth: '300px' }}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Tasa de Retención de Pacientes
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <Box sx={{ width: '100%', mr: 1 }}>
-                  <LinearProgress
-                    variant="determinate"
-                    value={patientStats.patientRetentionRate}
-                    sx={{ height: 10, borderRadius: 5 }}
-                  />
-                </Box>
-                <Box sx={{ minWidth: 35 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {`${patientStats.patientRetentionRate}%`}
-                  </Typography>
-                </Box>
+        {/* Placeholder */}
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+          <Paper 
+            sx={{ 
+              p: 8, 
+              maxWidth: 700,
+              textAlign: 'center',
+              bgcolor: 'rgba(255, 255, 255, 0.9)',
+              borderRadius: 4,
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)'
+            }}
+          >
+            <PersonIcon 
+              sx={{ 
+                fontSize: 100, 
+                color: '#22577a', 
+                mb: 4,
+                opacity: 0.5
+              }} 
+            />
+            <Typography variant="h5" gutterBottom sx={{ color: '#0d2230', fontWeight: 600, mb: 4 }}>
+              Análisis de Pacientes
+            </Typography>
+            
+            {/* Visual placeholder mockup */}
+            <Box sx={{ display: 'flex', gap: 2, mb: 3, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Box sx={{ flex: '1 1 140px', p: 2, bgcolor: '#f1f5f9', borderRadius: 2, minWidth: '140px' }}>
+                <Typography variant="h6" sx={{ color: '#22577a', opacity: 0.7 }}>—</Typography>
+                <Typography variant="caption" sx={{ color: '#64748b' }}>Registrados</Typography>
               </Box>
-              <Typography variant="body2" color="text.secondary">
-                Pacientes que continúan usando el servicio
-              </Typography>
-            </Paper>
-          </Box>
+              <Box sx={{ flex: '1 1 140px', p: 2, bgcolor: '#f1f5f9', borderRadius: 2, minWidth: '140px' }}>
+                <Typography variant="h6" sx={{ color: '#22577a', opacity: 0.7 }}>—</Typography>
+                <Typography variant="caption" sx={{ color: '#64748b' }}>Activos</Typography>
+              </Box>
+              <Box sx={{ flex: '1 1 140px', p: 2, bgcolor: '#f1f5f9', borderRadius: 2, minWidth: '140px' }}>
+                <Typography variant="h6" sx={{ color: '#22577a', opacity: 0.7 }}>—</Typography>
+                <Typography variant="caption" sx={{ color: '#64748b' }}>Turnos Prom.</Typography>
+              </Box>
+            </Box>
 
-          <Box sx={{ flex: '1 1 45%', minWidth: '300px' }}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Especialidades Más Solicitadas
+            <Box sx={{ mt: 4, p: 3, bgcolor: '#f8fafc', borderRadius: 2, border: '1px dashed #cbd5e1' }}>
+              <Typography variant="body2" sx={{ color: '#94a3b8' }}>
+                📊 Gráficos · 📈 Actividad · 🏥 Especialidades
               </Typography>
-              {patientStats.topSpecialties.map((specialty, index) => (
-                <Box key={specialty.name} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2">
-                    {index + 1}. {specialty.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {specialty.count} pacientes
-                  </Typography>
-                </Box>
-              ))}
-            </Paper>
-          </Box>
-        </Box>
-
-        {/* Placeholder for future charts */}
-        <Box sx={{ mt: 4, p: 3, bgcolor: 'grey.50', borderRadius: 2 }}>
-          <Typography variant="h6" color="text.secondary" align="center">
-            📊 Gráficos y análisis avanzados próximamente
-          </Typography>
-          <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
-            Esta sección incluirá gráficos interactivos de tendencias, distribución por edad,
-            frecuencia de visitas y otros indicadores clave.
-          </Typography>
+            </Box>
+          </Paper>
         </Box>
       </Container>
     </Box>
