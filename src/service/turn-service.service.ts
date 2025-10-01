@@ -170,10 +170,10 @@ export class TurnService {
       ? `${buildApiUrl(API_CONFIG.ENDPOINTS.GET_MY_TURNS)}?status=${status}`
       : buildApiUrl(API_CONFIG.ENDPOINTS.GET_MY_TURNS);
     try {
-      const response = await withDevDelay(() => fetch(url, {
+      const response = await  fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
-      }), DELAY_CONFIGS.VERY_SLOW);
+      });
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
         console.error('[TurnService] getMyTurns - Error:', errorData);
@@ -183,7 +183,7 @@ export class TurnService {
           `Failed to fetch my turns! Status: ${response.status}`
         );
       }
-      const result: TurnResponse[] = await withDevDelay(() => response.json(), DELAY_CONFIGS.VERY_SLOW);
+      const result: TurnResponse[] = await response.json();
       return result;
     } catch (error) {
         console.error('[TurnService] getMyTurns - Exception:', error);
@@ -201,10 +201,10 @@ export class TurnService {
       : `${buildApiUrl(API_CONFIG.ENDPOINTS.GET_PATIENT_TURNS)}/${patientId}`;
     
     try {
-      const response = await withDevDelay(() => fetch(url, {
+      const response = await fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
-      }), DELAY_CONFIGS.VERY_SLOW);
+      });
 
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
@@ -215,7 +215,7 @@ export class TurnService {
         );
       }
 
-      const result: TurnResponse[] = await withDevDelay(() => response.json(), DELAY_CONFIGS.VERY_SLOW  );
+      const result: TurnResponse[] = await response.json();
       return result;
     } catch (error) {
       throw error;
@@ -232,10 +232,10 @@ export class TurnService {
       : `${buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTOR_TURNS)}/${doctorId}`;
     
     try {
-      const response = await withDevDelay(() => fetch(url, {
+      const response = await fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
-      }), DELAY_CONFIGS.VERY_SLOW);
+      });
 
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
@@ -246,7 +246,7 @@ export class TurnService {
         );
       }
 
-      const result: TurnResponse[] = await withDevDelay(() => response.json(), DELAY_CONFIGS.VERY_SLOW);
+      const result: TurnResponse[] = await  response.json();
       return result;
     } catch (error) {
       throw error;
@@ -317,7 +317,7 @@ export class TurnService {
 
   static async getDoctorAvailability(doctorId: string, accessToken: string): Promise<any> {
     try {
-      const availableDates = await withDevDelay(() => TurnService.getAvailableDates(doctorId, accessToken), DELAY_CONFIGS.VERY_SLOW)  ;
+      const availableDates = await  TurnService.getAvailableDates(doctorId, accessToken);
       return { availableDates };
     } catch (error) {
       throw error;

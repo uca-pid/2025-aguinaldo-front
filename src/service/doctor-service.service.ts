@@ -36,10 +36,10 @@ export class DoctorService {
     const url = buildApiUrl(`/api/doctors/${doctorId}/patients`);
     
     try {
-      const response = await withDevDelay(() => fetch(url, {
+      const response = await fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
-      }), DELAY_CONFIGS.VERY_SLOW);
+      });
 
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
@@ -50,7 +50,7 @@ export class DoctorService {
         );
       }
 
-      const result: Patient[] = await withDevDelay(() => response.json(), DELAY_CONFIGS.VERY_SLOW);
+      const result: Patient[] = await  response.json();
       return result;
     } catch (error) {
       console.error('Failed to fetch doctor patients:', error);
@@ -86,11 +86,10 @@ export class DoctorService {
     const url = buildApiUrl(`/api/doctors/${doctorId}/availability`);
     
     try {
-      const response = await withDevDelay(() => fetch(url, {
+      const response = await fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
-      }), DELAY_CONFIGS.VERY_SLOW);
-
+      });
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
         throw new Error(
@@ -100,7 +99,7 @@ export class DoctorService {
         );
       }
 
-      const result: DoctorAvailabilityResponse = await withDevDelay(() => response.json(), DELAY_CONFIGS.VERY_SLOW);
+      const result: DoctorAvailabilityResponse = await  response.json();
       return result;
     } catch (error) {
       console.error('Failed to fetch availability:', error);

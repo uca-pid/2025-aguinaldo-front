@@ -43,10 +43,10 @@ export class TurnModifyService {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_MY_MODIFY_REQUESTS);
 
     try {
-      const response = await withDevDelay(() => fetch(url, {
+      const response = await  fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
-      }), DELAY_CONFIGS.VERY_SLOW);
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -58,7 +58,7 @@ export class TurnModifyService {
         );
       }
 
-      const result: TurnModifyRequest[] = await withDevDelay(() => response.json(), DELAY_CONFIGS.VERY_SLOW);
+      const result: TurnModifyRequest[] = await  response.json();
       return result;
     } catch (error) {
       console.error('[TurnModifyService] getMyModifyRequests - Exception:', error);
