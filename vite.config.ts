@@ -23,7 +23,32 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: './src/test/setup.ts',
+    setupFiles: './test/setup.ts',
+    include: [
+      'src/core/**/*.{test,spec}.{ts,tsx}',
+      'src/hooks/**/*.{test,spec}.{ts,tsx}',
+      'src/machines/**/*.{test,spec}.{ts,tsx}',
+      'src/providers/**/*.{test,spec}.{ts,tsx}',
+      'src/service/**/*.{test,spec}.{ts,tsx}',
+      'src/utils/**/*.{test,spec}.{ts,tsx}',
+      'src/App.{test,spec}.{ts,tsx}',
+      'src/main.{test,spec}.{ts,tsx}'
+    ],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      reportsDirectory: './coverage',
+      exclude: [
+        'node_modules/',
+        'src/test/',
+        'src/components/',
+        'src/assets/',
+        'src/models/',
+        '**/*.d.ts',
+        '**/*.config.*',
+        '**/index.ts'
+      ]
+    }
   },
   build: {
     outDir: 'dist',
