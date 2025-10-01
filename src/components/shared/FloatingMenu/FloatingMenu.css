@@ -13,6 +13,8 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  position: fixed;
+  z-index: 1250;
 }
 
 .floating-menu-button:focus {
@@ -31,6 +33,8 @@
   left: 0;
   width: 280px;
   height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile browsers */
+  max-width: 100vw; /* Prevent overflow on small screens */
   background: linear-gradient(135deg, #22577a 0%, #1a4660 100%);
   z-index: 1350;
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
@@ -110,33 +114,83 @@
   font-size: 0.95rem;
 }
 
+/* Responsive Design */
 
+/* Large tablets and small desktops (landscape tablets) */
+@media (max-width: 1024px) {
+  .floating-menu-container {
+    width: 270px;
+  }
+}
+
+/* Tablets and larger phones */
 @media (max-width: 768px) {
   .floating-menu-container {
     width: 260px;
   }
   
   .floating-menu-button {
-    top: 75px !important; 
-    left: 15px !important;
     width: 50px !important;
     height: 50px !important;
     min-width: 50px !important;
   }
-}
 
-@media (max-width: 480px) {
-  .floating-menu-container {
-    width: 240px;
+  .floating-menu-button .MuiSvgIcon-root {
+    font-size: 1.3rem !important;
   }
   
   .floating-menu-header {
     padding: 20px 16px 16px 16px;
   }
+
+  .floating-menu-avatar {
+    width: 55px !important;
+    height: 55px !important;
+  }
+
+  .floating-menu-user-name {
+    font-size: 1.05rem !important;
+  }
+
+  .floating-menu-item {
+    padding: 11px 18px !important;
+    margin: 3px 10px !important;
+  }
+
+  .floating-menu-icon .MuiSvgIcon-root {
+    font-size: 1.2rem;
+  }
+
+  .floating-menu-text .MuiListItemText-primary {
+    font-size: 0.9rem;
+  }
+}
+
+/* Mobile devices */
+@media (max-width: 480px) {
+  .floating-menu-container {
+    width: 75vw; /* Use viewport width for better responsiveness */
+    max-width: 240px;
+  }
+  
+  .floating-menu-button {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+  }
+
+  .floating-menu-button .MuiSvgIcon-root {
+    font-size: 1.2rem !important;
+  }
+  
+  .floating-menu-header {
+    padding: 18px 14px 14px 14px;
+  }
   
   .floating-menu-avatar {
     width: 50px !important;
     height: 50px !important;
+    border: 2px solid rgba(255, 255, 255, 0.3);
   }
   
   .floating-menu-user-name {
@@ -146,6 +200,73 @@
   .floating-menu-item {
     padding: 10px 16px !important;
     margin: 2px 8px !important;
+    border-radius: 10px !important;
+  }
+
+  .floating-menu-icon {
+    min-width: 36px !important;
+  }
+
+  .floating-menu-icon .MuiSvgIcon-root {
+    font-size: 1.1rem;
+  }
+
+  .floating-menu-text .MuiListItemText-primary {
+    font-size: 0.875rem;
+  }
+
+  .floating-menu-item.logout-item {
+    margin-bottom: 16px !important;
+    padding-top: 14px !important;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 360px) {
+  .floating-menu-container {
+    width: 80vw;
+    max-width: 220px;
+  }
+
+  .floating-menu-button {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+  }
+
+  .floating-menu-button .MuiSvgIcon-root {
+    font-size: 1.1rem !important;
+  }
+
+  .floating-menu-header {
+    padding: 16px 12px 12px 12px;
+  }
+
+  .floating-menu-avatar {
+    width: 45px !important;
+    height: 45px !important;
+  }
+
+  .floating-menu-user-name {
+    font-size: 0.95rem !important;
+  }
+
+  .floating-menu-item {
+    padding: 9px 14px !important;
+    margin: 2px 6px !important;
+    border-radius: 8px !important;
+  }
+
+  .floating-menu-icon {
+    min-width: 32px !important;
+  }
+
+  .floating-menu-icon .MuiSvgIcon-root {
+    font-size: 1rem;
+  }
+
+  .floating-menu-text .MuiListItemText-primary {
+    font-size: 0.85rem;
   }
 }
 
