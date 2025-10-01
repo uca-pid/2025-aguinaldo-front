@@ -122,7 +122,7 @@ export const uiMachine = createMachine({
           actions: assign({
             confirmDialog: ({ event }) => ({
               open: true,
-              action: 'cancel_turn',
+              action: 'cancel_turn' as const,
               requestId: null,
               turnId: event.turnId,
               turnData: event.turnData,

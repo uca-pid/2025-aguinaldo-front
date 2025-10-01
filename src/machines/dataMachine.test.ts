@@ -9,6 +9,7 @@ vi.mock('../utils/MachineUtils/dataMachineUtils', () => ({
   loadAvailableTurns: vi.fn(),
   loadMyTurns: vi.fn(),
   loadDoctorModifyRequests: vi.fn(),
+  loadMyModifyRequests: vi.fn(),
 }));
 
 vi.mock('../utils/MachineUtils/doctorMachineUtils', () => ({
@@ -40,6 +41,7 @@ describe('dataMachine', () => {
   let mockLoadDoctorPatients: any;
   let mockLoadDoctorAvailability: any;
   let mockLoadDoctorModifyRequests: any;
+  let mockLoadMyModifyRequests: any;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -54,6 +56,7 @@ describe('dataMachine', () => {
     mockLoadDoctorPatients = vi.mocked(doctorMachineUtils.loadDoctorPatients);
     mockLoadDoctorAvailability = vi.mocked(doctorMachineUtils.loadDoctorAvailability);
     mockLoadDoctorModifyRequests = vi.mocked(dataMachineUtils.loadDoctorModifyRequests);
+    mockLoadMyModifyRequests = vi.mocked(dataMachineUtils.loadMyModifyRequests);
 
     // Reset all mocks
     vi.clearAllMocks();
@@ -77,6 +80,9 @@ describe('dataMachine', () => {
       { day: 'Monday', slots: ['09:00', '10:00'] }
     ]);
     mockLoadDoctorModifyRequests.mockResolvedValue([
+      { id: '1', status: 'PENDING' }
+    ]);
+    mockLoadMyModifyRequests.mockResolvedValue([
       { id: '1', status: 'PENDING' }
     ]);
   });

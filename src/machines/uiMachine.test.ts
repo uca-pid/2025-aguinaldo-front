@@ -467,6 +467,8 @@ describe('uiMachine', () => {
         open: false,
         action: null,
         requestId: null,
+        turnId: null,
+        turnData: null,
       });
     });
   });
