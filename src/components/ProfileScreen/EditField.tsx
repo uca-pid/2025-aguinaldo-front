@@ -16,7 +16,7 @@ type EditFieldProps={
     onChange: (val: string) => void 
 }
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const EditField :React.FC<EditFieldProps>= ({label, value, isEditing, toggleKey, fieldKey, onChange})=>{
     const { uiSend, profileState, profileSend } = useMachines();

@@ -10,7 +10,7 @@ import { useMachines } from "#/providers/MachineProvider";
 import EditField from "./EditField";
 import { useEffect } from "react";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-const MotionCard = motion(Card);
+const MotionCard = motion.create(Card);
 
 
 const ProfileScreen: React.FC = () => {

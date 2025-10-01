@@ -12,7 +12,7 @@ import ListAltIcon from "@mui/icons-material/ListAlt";
 import "./DoctorViewTurns.css";
 
 const ViewTurns: React.FC = () => {
-  const { turnState, turnSend } = useMachines();
+  const { turnState, turnSend, uiSend } = useMachines();
   const { authState } = useAuthMachine();
   const authContext = authState?.context;
   const user = authContext?.authResponse as SignInResponse;
@@ -25,7 +25,12 @@ const ViewTurns: React.FC = () => {
 
   const handleCancelTurn = (turnId: string) => {
     if (!user.accessToken) return;
-    turnSend({ type: "CANCEL_TURN", turnId });
+    const turnData = filteredTurns.find((turn: any) => turn.id === turnId);
+    uiSend({ 
+      type: "OPEN_CANCEL_TURN_DIALOG", 
+      turnId,
+      turnData
+    });
   };
 
   const getStatusLabel = (status: string) => {

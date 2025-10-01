@@ -2,7 +2,7 @@ import { createMachine, assign } from "xstate";
 import { orchestrator } from "#/core/Orchestrator";
 
 export const UI_MACHINE_ID = "ui";
-export const UI_MACHINE_EVENT_TYPES = ["TOGGLE", "NAVIGATE", "OPEN_SNACKBAR", "CLOSE_SNACKBAR", "OPEN_CONFIRMATION_DIALOG", "CLOSE_CONFIRMATION_DIALOG"];
+export const UI_MACHINE_EVENT_TYPES = ["TOGGLE", "NAVIGATE", "OPEN_SNACKBAR", "CLOSE_SNACKBAR", "OPEN_CONFIRMATION_DIALOG", "OPEN_CANCEL_TURN_DIALOG", "CLOSE_CONFIRMATION_DIALOG"];
 
 export interface UiMachineContext {
   toggleStates: Record<string, boolean>;
@@ -15,8 +15,10 @@ export interface UiMachineContext {
   };
   confirmDialog: {
     open: boolean;
-    action: 'approve' | 'reject' | null;
+    action: 'approve' | 'reject' | 'cancel_turn' | null;
     requestId: string | null;
+    turnId: string | null;
+    turnData?: any;
   };
 }
 
@@ -27,6 +29,7 @@ export type UiMachineEvent =
   | { type: "OPEN_SNACKBAR"; message: string; severity: 'success' | 'error' | 'warning' | 'info' }
   | { type: "CLOSE_SNACKBAR" }
   | { type: "OPEN_CONFIRMATION_DIALOG"; action: 'approve' | 'reject'; requestId: string }
+  | { type: "OPEN_CANCEL_TURN_DIALOG"; turnId: string; turnData?: any }
   | { type: "CLOSE_CONFIRMATION_DIALOG" };
 
 export const uiMachine = createMachine({
@@ -44,7 +47,7 @@ export const uiMachine = createMachine({
       message: "",
       severity: "info" as const,
     },
-    confirmDialog: { open: false, action: null, requestId: null },
+    confirmDialog: { open: false, action: null, requestId: null, turnId: null, turnData: null },
   },
   types: { 
     context: {} as UiMachineContext,
@@ -110,6 +113,19 @@ export const uiMachine = createMachine({
               open: true,
               action: event.action,
               requestId: event.requestId,
+              turnId: null,
+              turnData: null,
+            }),
+          }),
+        },
+        OPEN_CANCEL_TURN_DIALOG: {
+          actions: assign({
+            confirmDialog: ({ event }) => ({
+              open: true,
+              action: 'cancel_turn',
+              requestId: null,
+              turnId: event.turnId,
+              turnData: event.turnData,
             }),
           }),
         },
@@ -119,6 +135,8 @@ export const uiMachine = createMachine({
               open: false,
               action: null,
               requestId: null,
+              turnId: null,
+              turnData: null,
             }),
           }),
         },

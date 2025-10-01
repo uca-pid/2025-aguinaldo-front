@@ -397,12 +397,17 @@ export const turnMachine = createMachine({
                   modifyError: null,
                 }),
                 () => {
+                  // Cargar solo myTurns - myModifyRequests se cargará automáticamente después
                   orchestrator.sendToMachine(DATA_MACHINE_ID, { type: "LOAD_MY_TURNS" });
+                  
+                  // Mostrar mensaje de éxito
                   orchestrator.sendToMachine(UI_MACHINE_ID, {
                     type: "OPEN_SNACKBAR",
                     message: "Solicitud de modificación enviada exitosamente",
                     severity: "success"
                   });
+                  
+                  // Navegar inmediatamente - los datos se cargarán secuencialmente
                   orchestrator.sendToMachine(UI_MACHINE_ID, { type: "NAVIGATE", to: "/patient/view-turns" });
                 }
               ]
