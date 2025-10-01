@@ -2,11 +2,8 @@ import {
   Box, Button, Typography, CircularProgress, Chip, FormControl, InputLabel, Select, MenuItem, Avatar 
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
-import { useAuthMachine } from "#/providers/AuthProvider";
+import { useDataMachine } from "#/providers/DataProvider";
 import dayjs from "dayjs";
-import { SignInResponse } from "#/models/Auth";
-import { useEffect, useState } from "react";
-import { TurnService } from "#/service/turn-service.service";
 import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import EditIcon from "@mui/icons-material/Edit";
@@ -15,33 +12,26 @@ import { orchestrator } from "#/core/Orchestrator";
 import { filterTurns } from "#/utils/filterTurns";
 
 const ViewTurns: React.FC = () => {
-  const { turnState, turnSend } = useMachines();
-  const { authState } = useAuthMachine();
-  const user: SignInResponse = authState?.context?.authResponse || {};
+  const { turnState, turnSend, uiSend } = useMachines();
+  const { dataState } = useDataMachine();
 
-  const [pendingModifyRequests, setPendingModifyRequests] = useState<TurnModifyRequest[]>([]);
-  useEffect(() => {
-    const fetchPendingRequests = async () => {
-      if (!user.accessToken) return;
-      try {
-        const requests = await TurnService.getMyModifyRequests(user.accessToken);
-        setPendingModifyRequests(requests.filter(r => r.status === "PENDING"));
-      } catch {
-        setPendingModifyRequests([]);
-      }
-    };
-    fetchPendingRequests();
-  }, [user.accessToken]);
-  
   const turnContext = turnState.context;
+  const dataContext = dataState.context;
   const showTurnsContext = turnContext.showTurns;
   const { cancellingTurnId, isCancellingTurn } = turnContext;
 
-  const filteredTurns = filterTurns(turnContext.myTurns, showTurnsContext.statusFilter);
+  // Obtener los turnos del dataContext en lugar del turnContext
+  const allTurns = dataContext.myTurns || [];
+  const filteredTurns = filterTurns(allTurns, showTurnsContext.statusFilter);
+  const pendingModifyRequests = dataContext.myModifyRequests?.filter((r: TurnModifyRequest) => r.status === "PENDING") || [];
 
   const handleCancelTurn = (turnId: string) => {
-    if (!user.accessToken) return;
-    turnSend({ type: "CANCEL_TURN", turnId });
+    const turnData = allTurns.find((turn: any) => turn.id === turnId);
+    uiSend({ 
+      type: "OPEN_CANCEL_TURN_DIALOG", 
+      turnId,
+      turnData
+    });
   };
 
   const handleModifyTurn = (turnId: string) => {
@@ -70,7 +60,7 @@ const ViewTurns: React.FC = () => {
   };
 
   const hasPendingModifyRequest = (turnId: string) => {
-    return pendingModifyRequests.some(r => r.turnId === turnId);
+    return pendingModifyRequests.some((r: TurnModifyRequest) => r.turnId === turnId);
   };
 
   const canModifyTurn = (turn: any) => {
