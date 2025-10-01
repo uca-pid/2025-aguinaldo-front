@@ -6,7 +6,6 @@ import {
   Container,
   Avatar,
   Button,
-  CircularProgress,
   Alert
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";

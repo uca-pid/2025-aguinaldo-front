@@ -16,6 +16,7 @@ import DashboardCard from "../shared/DashboardCard/DashboardCard";
 import DashboardUpcomingCard from "../shared/DashboardUpcomingCard/DashboardUpcomingCard";
 import dayjs from "dayjs";
 import "./PatientDashboard.css";
+import LoadingThreeDotsJumping from "../shared/PageLoadingScreen/LoadingThreeDots";
 
 const PatientDashboard: React.FC = () => {
   const { uiSend, turnState } = useMachines();
@@ -23,6 +24,8 @@ const PatientDashboard: React.FC = () => {
   const user: SignInResponse = authState?.context?.authResponse || {};
   const turnContext = turnState?.context || {};
 
+  const isLoading= turnContext.isLoadingMyTurns;
+  
   const upcomingTurns = (turnContext.myTurns || [])
     .filter((turn: any) => {
       const turnDate = dayjs(turn.scheduledAt);
@@ -37,6 +40,26 @@ const PatientDashboard: React.FC = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box className="dashboard-container">
+        { isLoading&& (
+          <Box 
+            sx={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              bgcolor: 'rgba(255, 255, 255, 0.8)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              backdropFilter: 'blur(4px)'
+            }}
+          >
+            <LoadingThreeDotsJumping />
+          </Box>
+        )}
         <Container maxWidth="lg">
           <Box className="dashboard-header-section">
             <Box className="dashboard-header-content">
