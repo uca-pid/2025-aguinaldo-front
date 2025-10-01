@@ -176,7 +176,7 @@ export class AuthService {
 
 
   static async getProfile(accessToken: string, profileId: string): Promise<ProfileResponse> {
-      const url = buildApiUrl(`/api/profile/${profileId}`);
+      const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_PROFILE.replace('{profileId}', profileId));
       
       try {
         const response = await fetch(url, {
@@ -202,7 +202,7 @@ export class AuthService {
     }
 
     static async updateProfile(accessToken: string,profileId: string,updates: Partial<ProfileResponse>): Promise<ProfileResponse> {
-      const url = buildApiUrl(`/api/profile/${profileId}`);
+      const url = buildApiUrl(API_CONFIG.ENDPOINTS.UPDATE_PROFILE.replace('{profileId}', profileId));
 
       try {
         const response = await fetch(url, {
@@ -233,7 +233,7 @@ export class AuthService {
     }
 
     static async deactivateAccount(accessToken: string): Promise<void> {
-      const url = buildApiUrl('/api/profile/me/deactivate');
+      const url = buildApiUrl(API_CONFIG.ENDPOINTS.DEACTIVATE_ACCOUNT);
 
       try {
         const response = await fetch(url, {
