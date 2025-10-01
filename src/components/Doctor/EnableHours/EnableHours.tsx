@@ -23,7 +23,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useMachines } from "#/providers/MachineProvider"
 import './EnableHours.css'
 
-const RangeRow = motion(Box);
+const RangeRow = motion.create(Box);
 
 const EnableHours: React.FC = () => {
     const { uiSend, doctorState, doctorSend } = useMachines();

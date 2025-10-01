@@ -17,12 +17,18 @@ const TurnsModifications: React.FC = () => {
   const dataContext = dataState.context;
   const patients: Patient[] = dataContext.doctorPatients || [];
   const pendingModifyRequests: TurnModifyRequest[] = dataContext.doctorModifyRequests?.filter((r: TurnModifyRequest) => r.status === "PENDING") || [];
+  const isLoadingPatients = dataContext.loading?.doctorPatients || false;
 
   const getPatientName = (patientId: string) => {
     const patient = patients.find(p => p.id === patientId);
     if (patient) {
       return `${patient.name} ${patient.surname}`;
     } else {
+      // Si estamos cargando, mostrar estado de carga
+      if (isLoadingPatients) {
+        return "Cargando paciente...";
+      }
+      // Si ya terminó de cargar pero no encontramos el paciente específico
       return `Paciente ID: ${patientId}`;
     }
   };
