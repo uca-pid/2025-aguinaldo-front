@@ -27,7 +27,7 @@ export interface DeactivateAccountParams {
  * Load user profile data
  */
 export const loadProfile = async ({ accessToken, userId }: LoadProfileParams): Promise<ProfileResponse> => {
-  return await withDevDelay(() => AuthService.getProfile(accessToken, userId) , DELAY_CONFIGS.SLOW);
+  return await AuthService.getProfile(accessToken, userId);
 };
 
 /**

@@ -46,14 +46,8 @@ const DoctorDashboard: React.FC = () => {
   const hasConfiguredDays = availability.some((day: any) => day.enabled && day.ranges?.length > 0);
   const pendingModifyRequests: TurnModifyRequest[] = dataContext.doctorModifyRequests?.filter((r: TurnModifyRequest) => r.status === "PENDING") || [];
 
-  // Loading states
-  const isLoadingMyTurns = dataContext.loading?.myTurns || turnContext?.isLoadingMyTurns;
-  const isLoadingDoctorModifyRequests = dataContext.loading?.doctorModifyRequests;
-  const isLoadingAvailability = doctorContext?.isLoadingAvailability;
+  const isLoading= dataContext.loading?.availableTurns ||dataContext.loading?.myTurns ||dataContext.loading?.doctorPatients|| dataContext.loading?.doctorAvailablity|| dataContext.loading?.doctorModifyRequests || doctorContext.isLoadingAvailability;
   
-  // Check if any critical data is still loading
-  const isAnyDataLoading = isLoadingMyTurns || isLoadingDoctorModifyRequests || isLoadingAvailability;
-
   const upcomingTurns = (turnContext?.myTurns || [])
     .filter((turn: any) => {
       const turnDate = dayjs(turn.scheduledAt);
@@ -69,7 +63,7 @@ const DoctorDashboard: React.FC = () => {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box className="dashboard-container">
         {/* Show loading overlay when critical data is loading */}
-        {isAnyDataLoading && (
+        { isLoading&& (
           <Box 
             sx={{
               position: 'fixed',

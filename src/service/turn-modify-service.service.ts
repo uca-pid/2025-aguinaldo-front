@@ -1,3 +1,4 @@
+import { DELAY_CONFIGS, withDevDelay } from '#/utils/devDelay';
 import { API_CONFIG, buildApiUrl, getAuthenticatedFetchOptions } from '../../config/api';
 import type { TurnModifyRequest } from '../models/TurnModifyRequest';
 
@@ -42,10 +43,10 @@ export class TurnModifyService {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_MY_MODIFY_REQUESTS);
 
     try {
-      const response = await fetch(url, {
+      const response = await withDevDelay(() => fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
-      });
+      }), DELAY_CONFIGS.VERY_SLOW);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -57,7 +58,7 @@ export class TurnModifyService {
         );
       }
 
-      const result: TurnModifyRequest[] = await response.json();
+      const result: TurnModifyRequest[] = await withDevDelay(() => response.json(), DELAY_CONFIGS.VERY_SLOW);
       return result;
     } catch (error) {
       console.error('[TurnModifyService] getMyModifyRequests - Exception:', error);

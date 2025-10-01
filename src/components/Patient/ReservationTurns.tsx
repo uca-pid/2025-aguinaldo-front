@@ -267,7 +267,7 @@ const ReservationTurns: React.FC = () => {
                         Elige una fecha en el calendario para ver los horarios disponibles
                       </Typography>
                     </Box>
-                  ) : turnContext.isLoadingAvailableTurns ? (
+                  ) : turnContext.isLoadingAvailableDates ? (
                     <Box className="reservation-loading-container">
                       <CircularProgress />
                       <Typography className="reservation-loading-text">

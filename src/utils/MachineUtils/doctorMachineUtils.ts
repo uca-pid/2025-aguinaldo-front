@@ -42,16 +42,16 @@ interface DayAvailability {
 
 
 export const loadDoctorPatients = async ({ accessToken, doctorId }: LoadPatientsParams): Promise<Patient[]> => {
-  return await withDevDelay(() => DoctorService.getDoctorPatients(accessToken, doctorId), DELAY_CONFIGS.SLOW);
+  return await DoctorService.getDoctorPatients(accessToken, doctorId);
 };
 
 
 export const loadDoctorAvailability = async ({ accessToken, doctorId }: LoadAvailabilityParams) => {
-  return await withDevDelay(() => DoctorService.getAvailability(accessToken, doctorId), DELAY_CONFIGS.SLOW);
+  return await  DoctorService.getAvailability(accessToken, doctorId);
 };
 
 export const updateMedicalHistory = async ({accessToken, doctorId, patientId, medicalHistory}: UpdateMedicalHistoryParams): Promise<void> => {
-  return await withDevDelay(() => DoctorService.updateMedicalHistory(accessToken, doctorId, patientId, medicalHistory), DELAY_CONFIGS.SLOW  );
+  return await  DoctorService.updateMedicalHistory(accessToken, doctorId, patientId, medicalHistory);
 }
 
 export const saveDoctorAvailability = async ({ accessToken, doctorId, availability }: SaveAvailabilityParams): Promise<string> => {
@@ -94,6 +94,6 @@ export const saveDoctorAvailability = async ({ accessToken, doctorId, availabili
     })
   };
 
-  await withDevDelay(() => DoctorService.saveAvailability(accessToken, doctorId, availabilityRequest), DELAY_CONFIGS.SLOW);
+  await  DoctorService.saveAvailability(accessToken, doctorId, availabilityRequest);
   return "Availability saved successfully";
 };

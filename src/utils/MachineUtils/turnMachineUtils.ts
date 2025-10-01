@@ -82,10 +82,10 @@ export const cancelTurn = async ({ accessToken, turnId }: CancelTurnParams): Pro
  * Create a modify turn request
  */
 export const createModifyTurnRequest = async ({ accessToken, turnId, newScheduledAt }: ModifyTurnParams): Promise<any> => {
-  return await withDevDelay(() => TurnService.createModifyRequest({
+  return await  TurnService.createModifyRequest({
     turnId,
     newScheduledAt
-  }, accessToken));
+  }, accessToken);
 };
 
 /**
@@ -93,13 +93,13 @@ export const createModifyTurnRequest = async ({ accessToken, turnId, newSchedule
  */
 export const loadTurnDetails = async ({ turnId, accessToken }: { turnId: string; accessToken: string }): Promise<TurnResponse | null> => {
   try {
-    let response = await withDevDelay(() => fetch('/api/turns/my-turns', {
+    let response = await fetch('/api/turns/my-turns', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       }
-    }));
+    });
 
     if (response.status === 401) {
       // Intentar refresh token
@@ -144,7 +144,7 @@ export const loadTurnDetails = async ({ turnId, accessToken }: { turnId: string;
  * Load doctor availability dates
  */
 export const loadDoctorAvailability = async ({ accessToken, doctorId }: LoadDoctorAvailabilityParams): Promise<string[]> => {
-  const availability = await withDevDelay(() => TurnService.getDoctorAvailability(doctorId, accessToken), DELAY_CONFIGS.VERY_SLOW);
+  const availability = await TurnService.getDoctorAvailability(doctorId, accessToken);
   return availability?.availableDates || [];
 };
 
@@ -152,6 +152,6 @@ export const loadDoctorAvailability = async ({ accessToken, doctorId }: LoadDoct
  * Load available time slots for a specific date and doctor
  */
 export const loadAvailableSlots = async ({ accessToken, doctorId, date }: LoadAvailableSlotsParams): Promise<string[]> => {
-  const slots = await withDevDelay(() => TurnService.getAvailableTurns(doctorId, date, accessToken), DELAY_CONFIGS.VERY_SLOW);
+  const slots = await TurnService.getAvailableTurns(doctorId, date, accessToken);
   return slots || [];
 };

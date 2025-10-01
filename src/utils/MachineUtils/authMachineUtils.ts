@@ -35,10 +35,10 @@ export const checkStoredAuth = (): CheckAuthResult => {
  */
 export const submitAuthentication = async ({ context }: AuthSubmitParams) => {
   if (context.mode === "login") {
-    return await withDevDelay(() => AuthService.signIn({
+    return await AuthService.signIn({
       email: context.formValues.email,
       password: context.formValues.password,
-    }), DELAY_CONFIGS.SLOW);
+    });
   } else {
     // Register mode - RegisterRequestData interface requires all fields
     const registerData = {
@@ -71,7 +71,7 @@ export const logoutUser = async (): Promise<boolean> => {
   try {
     const authData = AuthService.getStoredAuthData();
     if (authData?.refreshToken) {
-      await withDevDelay(() => AuthService.signOut(authData.refreshToken), DELAY_CONFIGS.SLOW);
+      await  AuthService.signOut(authData.refreshToken);
     }
     AuthService.clearAuthData();
     return true;

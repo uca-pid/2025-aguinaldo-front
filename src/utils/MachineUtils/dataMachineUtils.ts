@@ -42,7 +42,7 @@ export interface LoadDoctorModifiyRequestsParams {
  * Load all doctors
  */
 export const loadDoctors = async ({ accessToken }: LoadDoctorsParams): Promise<Doctor[]> => {
-  return await withDevDelay(() => TurnService.getDoctors(accessToken), DELAY_CONFIGS.NORMAL);
+  return await TurnService.getDoctors(accessToken);
 };
 
 /**
@@ -50,7 +50,7 @@ export const loadDoctors = async ({ accessToken }: LoadDoctorsParams): Promise<D
  */
 export const loadPendingDoctors = async ({ accessToken, isAdmin }: LoadPendingDoctorsParams): Promise<PendingDoctor[]> => {
   if (!isAdmin) return [];
-  return await withDevDelay(() => AdminService.getPendingDoctors(accessToken), DELAY_CONFIGS.SLOW);
+  return await  AdminService.getPendingDoctors(accessToken);
 };
 
 /**
@@ -58,21 +58,21 @@ export const loadPendingDoctors = async ({ accessToken, isAdmin }: LoadPendingDo
  */
 export const loadAdminStats = async ({ accessToken, isAdmin }: LoadAdminStatsParams): Promise<AdminStats> => {
   if (!isAdmin) return { patients: 0, doctors: 0, pending: 0 };
-  return await withDevDelay(() => AdminService.getAdminStats(accessToken), DELAY_CONFIGS.NORMAL);
+  return await  AdminService.getAdminStats(accessToken)
 };
 
 /**
  * Load available turns for a specific doctor and date
  */
 export const loadAvailableTurns = async ({ accessToken, doctorId, date }: LoadAvailableTurnsParams): Promise<string[]> => {
-  return await withDevDelay(() => TurnService.getAvailableTurns(doctorId, date, accessToken), DELAY_CONFIGS.NORMAL);
+  return await TurnService.getAvailableTurns(doctorId, date, accessToken);
 };
 
 /**
  * Load user's turns
  */
 export const loadMyTurns = async ({ accessToken, status }: LoadMyTurnsParams): Promise<any[]> => {
-  return await withDevDelay(() => TurnService.getMyTurns(accessToken, status), DELAY_CONFIGS.SLOW);
+  return await TurnService.getMyTurns(accessToken, status);
 };
 
 /**
@@ -80,5 +80,5 @@ export const loadMyTurns = async ({ accessToken, status }: LoadMyTurnsParams): P
  */
 export const loadDoctorModifyRequests = async ({ accessToken, doctorId }: LoadDoctorModifiyRequestsParams): Promise<any[]> => {
   if (!doctorId) return [];
-  return await withDevDelay(() => TurnService.getDoctorModifyRequests(doctorId, accessToken), DELAY_CONFIGS.NORMAL);
+  return await  TurnService.getDoctorModifyRequests(doctorId, accessToken);
 };
