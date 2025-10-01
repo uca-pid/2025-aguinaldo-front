@@ -37,7 +37,7 @@ export class AdminService {
 
 
   static async approveDoctor(doctorId: string, accessToken: string): Promise<DoctorApprovalResponse> {
-    const url = buildApiUrl(`${API_CONFIG.ENDPOINTS.APPROVE_DOCTOR}/${doctorId}`);
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.APPROVE_DOCTOR.replace('{doctorId}', doctorId));
     
     try {
       const response = await fetch(url, {
@@ -64,7 +64,7 @@ export class AdminService {
 
 
   static async rejectDoctor(doctorId: string, accessToken: string): Promise<DoctorApprovalResponse> {
-    const url = buildApiUrl(`${API_CONFIG.ENDPOINTS.REJECT_DOCTOR}/${doctorId}`);
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.REJECT_DOCTOR.replace('{doctorId}', doctorId));
     
     try {
       const response = await fetch(url, {
