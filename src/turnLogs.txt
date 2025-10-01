@@ -1,0 +1,40 @@
+client:733 [vite] connecting...
+client:827 [vite] connected.
+react-dom_client.js?v=bfa64e4e:17995 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+authMachine.ts:93 authMachine: checkingAuth entry - calling checkStoredAuth
+authMachine.ts:95 authMachine: checkStoredAuth result {authData: null, isAuthenticated: false}
+EditField.tsx:19 motion() is deprecated. Use motion.create() instead.
+warnOnce @ framer-motion.js?v=bfa64e4e:193
+deprecatedFactoryFunction @ framer-motion.js?v=bfa64e4e:5360
+(anonymous) @ EditField.tsx:19
+(index):1 [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) <input aria-invalid=​"false" id=​"outlined-adornment-password" required class=​"MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd css-1dune0f-MuiInputBase-input-MuiOutlinedInput-input" type=​"password" value>​
+authMachine.ts:118 authMachine: authenticated entry - checking authResponse {hasAuthResponse: true, hasAccessToken: true}
+authMachine.ts:120 authMachine: sending SET_AUTH to dataMachine {userId: 'ff3f7523-c0ec-4053-974b-f12e2cf8d68d', userRole: 'PATIENT'}
+dataMachine.ts:126 dataMachine: idle - received SET_AUTH, transitioning to loadingInitialData {userRole: 'PATIENT', userId: 'ff3f7523-c0ec-4053-974b-f12e2cf8d68d'}
+dataMachine.ts:181 dataMachine: loadingInitialData entry - starting data load {userRole: 'PATIENT', userId: 'ff3f7523-c0ec-4053-974b-f12e2cf8d68d', doctorId: null}
+dataMachine.ts:446 dataMachine: checking if all data loaded {allLoaded: false, loading: {…}, userRole: 'PATIENT'}
+dataMachine.ts:263 dataMachine: loadPendingDoctors completed successfully
+dataMachine.ts:446 dataMachine: checking if all data loaded {allLoaded: false, loading: {…}, userRole: 'PATIENT'}
+dataMachine.ts:307 dataMachine: loadAdminStats completed successfully
+dataMachine.ts:446 dataMachine: checking if all data loaded {allLoaded: false, loading: {…}, userRole: 'PATIENT'}
+dataMachine.ts:355 dataMachine: loadDoctorAvailability completed successfully
+dataMachine.ts:446 dataMachine: checking if all data loaded {allLoaded: false, loading: {…}, userRole: 'PATIENT'}
+dataMachine.ts:219 dataMachine: loadDoctors completed successfully
+dataMachine.ts:446 dataMachine: checking if all data loaded {allLoaded: false, loading: {…}, userRole: 'PATIENT'}
+dataMachine.ts:403 dataMachine: loadMyTurns completed successfully
+dataMachine.ts:446 dataMachine: checking if all data loaded {allLoaded: true, loading: {…}, userRole: 'PATIENT'}
+dataMachine.ts:454 dataMachine: entered ready state - data loading complete {doctorsCount: 3, pendingDoctorsCount: 0, adminStats: {…}, myTurnsCount: 8}
+
+
+
+client:733 [vite] connecting...
+client:827 [vite] connected.
+react-dom_client.js?v=bfa64e4e:17995 Download the React DevTools for a better development experience: https://react.dev/link/react-devtools
+authMachine.ts:93 authMachine: checkingAuth entry - calling checkStoredAuth
+authMachine.ts:95 authMachine: checkStoredAuth result {authData: {…}, isAuthenticated: true}
+authMachine.ts:118 authMachine: authenticated entry - checking authResponse {hasAuthResponse: true, hasAccessToken: true}
+authMachine.ts:120 authMachine: sending SET_AUTH to dataMachine {userId: 'ff3f7523-c0ec-4053-974b-f12e2cf8d68d', userRole: 'PATIENT'}
+EditField.tsx:19 motion() is deprecated. Use motion.create() instead.
+warnOnce @ framer-motion.js?v=bfa64e4e:193
+deprecatedFactoryFunction @ framer-motion.js?v=bfa64e4e:5360
+(anonymous) @ EditField.tsx:19

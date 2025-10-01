@@ -15,6 +15,7 @@ export const API_CONFIG = {
     GET_MY_TURNS: '/api/turns/my-turns',
     GET_DOCTOR_TURNS: '/api/turns/doctor',
     GET_PATIENT_TURNS: '/api/turns/patient',
+    CANCEL_TURN: '/api/turns/{turnId}/cancel',
     
     MODIFY_TURN_REQUEST: '/api/turns/modify-requests',
     GET_MY_MODIFY_REQUESTS: '/api/turns/modify-requests/my-requests',
@@ -22,15 +23,25 @@ export const API_CONFIG = {
     DOCTOR_MODIFY_REQUEST: '/api/turns/modify-requests',
     
     GET_DOCTORS: '/api/doctors',
-    GET_DOCTOR_PATIENTS: '/api/doctors/patients',
+    GET_DOCTOR_PATIENTS: '/api/doctors/{doctorId}/patients',
+    SAVE_DOCTOR_AVAILABILITY: '/api/doctors/{doctorId}/availability',
+    GET_DOCTOR_AVAILABLE_SLOTS: '/api/doctors/{doctorId}/available-slots',
 
     GET_PENDING_DOCTORS: '/api/admin/pending-doctors',
-    APPROVE_DOCTOR: '/api/admin/approve-doctor',
-    REJECT_DOCTOR: '/api/admin/reject-doctor',
+    APPROVE_DOCTOR: '/api/admin/approve-doctor/{doctorId}',
+    REJECT_DOCTOR: '/api/admin/reject-doctor/{doctorId}',
     GET_ADMIN_STATS: '/api/admin/stats',
 
+    APPROVE_MODIFY_REQUEST: '/api/turns/modify-requests/{requestId}/approve',
+    REJECT_MODIFY_REQUEST: '/api/turns/modify-requests/{requestId}/reject',
+
     GET_NOTIFICATIONS: '/api/notifications',
-    DELETE_NOTIFICATION: '/api/notifications',
+    DELETE_NOTIFICATION: '/api/notifications/{notificationId}',
+    GET_DOCTOR_AVAILABILITY: '/api/doctors/{doctorId}/availability',
+    UPDATE_MEDICAL_HISTORY: '/api/doctors/{doctorId}/patients/medical-history',
+    GET_PROFILE: '/api/profile/{profileId}',
+    UPDATE_PROFILE: '/api/profile/{profileId}',
+    DEACTIVATE_ACCOUNT: '/api/profile/me/deactivate',
   },
 
   DEFAULT_HEADERS: {

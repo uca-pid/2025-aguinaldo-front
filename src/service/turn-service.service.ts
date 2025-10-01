@@ -107,7 +107,7 @@ export class TurnService {
     date: string, 
     accessToken: string
   ): Promise<string[]> {
-    const url = buildApiUrl(`/api/turns/available?doctorId=${doctorId}&date=${date}`);
+    const url = buildApiUrl(`${API_CONFIG.ENDPOINTS.GET_AVAILABLE_TURNS}?doctorId=${doctorId}&date=${date}`);
     
     try {
       const response = await fetch(url, {
@@ -258,7 +258,7 @@ export class TurnService {
     const fromDate = new Date().toISOString().split('T')[0];
     const toDate = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
-    const url = buildApiUrl(`/api/doctors/${doctorId}/available-slots?fromDate=${fromDate}&toDate=${toDate}`);
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTOR_AVAILABLE_SLOTS.replace('{doctorId}', doctorId) + `?fromDate=${fromDate}&toDate=${toDate}`);
     
     try {
       const response = await fetch(url, {
@@ -325,7 +325,7 @@ export class TurnService {
   }
 
   static async approveModifyRequest(requestId: string, accessToken: string): Promise<any> {
-    const url = buildApiUrl(`${API_CONFIG.ENDPOINTS.DOCTOR_MODIFY_REQUEST}/${requestId}/approve`);
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.APPROVE_MODIFY_REQUEST.replace('{requestId}', requestId));
     try {
       const response = await fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
@@ -352,7 +352,7 @@ export class TurnService {
   }
 
   static async rejectModifyRequest(requestId: string, accessToken: string): Promise<any> {
-    const url = buildApiUrl(`${API_CONFIG.ENDPOINTS.DOCTOR_MODIFY_REQUEST}/${requestId}/reject`);
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.REJECT_MODIFY_REQUEST.replace('{requestId}', requestId));
     try {
       const response = await fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),

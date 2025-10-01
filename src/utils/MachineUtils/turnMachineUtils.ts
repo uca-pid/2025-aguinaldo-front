@@ -1,4 +1,5 @@
 import { TurnService } from "../../service/turn-service.service";
+import { API_CONFIG, buildApiUrl } from "../../../config/api";
 import type { TurnResponse } from "../../models/Turn";
 import devDelay, { withDevDelay, DELAY_CONFIGS } from "../devDelay";
 
@@ -64,7 +65,8 @@ export const createTurn = async ({ accessToken, userId, doctorId, scheduledAt }:
  * Cancel a turn
  */
 export const cancelTurn = async ({ accessToken, turnId }: CancelTurnParams): Promise<void> => {
-  const response = await fetch(`/api/turns/${turnId}/cancel`, {
+  const url = buildApiUrl(API_CONFIG.ENDPOINTS.CANCEL_TURN.replace('{turnId}', turnId));
+  const response = await fetch(url, {
     method: 'PATCH',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
@@ -93,7 +95,8 @@ export const createModifyTurnRequest = async ({ accessToken, turnId, newSchedule
  */
 export const loadTurnDetails = async ({ turnId, accessToken }: { turnId: string; accessToken: string }): Promise<TurnResponse | null> => {
   try {
-    let response = await fetch('/api/turns/my-turns', {
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_MY_TURNS);
+    let response = await fetch(url, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -110,7 +113,7 @@ export const loadTurnDetails = async ({ turnId, accessToken }: { turnId: string;
           const refreshed = await AuthService.refreshToken(authData.refreshToken);
           if (refreshed.accessToken) {
             localStorage.setItem('authData', JSON.stringify(refreshed));
-            response = await fetch('/api/turns/my-turns', {
+            response = await fetch(url, {
               method: 'GET',
               headers: {
                 'Authorization': `Bearer ${refreshed.accessToken}`,

@@ -1,5 +1,4 @@
-import { DELAY_CONFIGS, withDevDelay } from '#/utils/devDelay';
-import { buildApiUrl, getAuthenticatedFetchOptions } from '../../config/api';
+import { API_CONFIG, buildApiUrl, getAuthenticatedFetchOptions } from '../../config/api';
 import type { Patient, ApiErrorResponse } from '../models/Doctor';
 
 export interface TimeRange {
@@ -33,7 +32,7 @@ export interface AvailableSlot {
 export class DoctorService {
   
   static async getDoctorPatients(accessToken: string, doctorId: string): Promise<Patient[]> {
-    const url = buildApiUrl(`/api/doctors/${doctorId}/patients`);
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTOR_PATIENTS.replace('{doctorId}', doctorId));
     
     try {
       const response = await fetch(url, {
@@ -59,7 +58,7 @@ export class DoctorService {
   }
 
   static async saveAvailability(accessToken: string, doctorId: string, availability: DoctorAvailabilityRequest): Promise<void> {
-    const url = buildApiUrl(`/api/doctors/${doctorId}/availability`);
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.SAVE_DOCTOR_AVAILABILITY.replace('{doctorId}', doctorId));
     
     try {
       const response = await fetch(url, {
@@ -83,7 +82,7 @@ export class DoctorService {
   }
 
   static async getAvailability(accessToken: string, doctorId: string): Promise<DoctorAvailabilityResponse> {
-    const url = buildApiUrl(`/api/doctors/${doctorId}/availability`);
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTOR_AVAILABILITY.replace('{doctorId}', doctorId));
     
     try {
       const response = await fetch(url, {
@@ -108,7 +107,7 @@ export class DoctorService {
   }
 
   static async getAvailableSlots(accessToken: string, doctorId: string, fromDate: string, toDate: string): Promise<AvailableSlot[]> {
-    const url = buildApiUrl(`/api/doctors/${doctorId}/available-slots?fromDate=${fromDate}&toDate=${toDate}`);
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTOR_AVAILABLE_SLOTS.replace('{doctorId}', doctorId) + `?fromDate=${fromDate}&toDate=${toDate}`);
     
     try {
       const response = await fetch(url, {
@@ -135,7 +134,7 @@ export class DoctorService {
 
 
   static async updateMedicalHistory(accessToken: string, doctorId: string, patientId: string, medicalHistory: string): Promise<void> {
-    const url = buildApiUrl(`/api/doctors/${doctorId}/patients/medical-history`);
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.UPDATE_MEDICAL_HISTORY.replace('{doctorId}', doctorId));
 
     try {
       const response = await fetch(url, {

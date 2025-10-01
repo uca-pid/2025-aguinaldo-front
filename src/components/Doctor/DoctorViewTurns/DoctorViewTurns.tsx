@@ -12,7 +12,7 @@ import ListAltIcon from "@mui/icons-material/ListAlt";
 import "./DoctorViewTurns.css";
 
 const ViewTurns: React.FC = () => {
-  const { turnState, turnSend } = useMachines();
+  const { turnState, turnSend, uiSend } = useMachines();
   const { authState } = useAuthMachine();
   const authContext = authState?.context;
   const user = authContext?.authResponse as SignInResponse;
@@ -25,7 +25,12 @@ const ViewTurns: React.FC = () => {
 
   const handleCancelTurn = (turnId: string) => {
     if (!user.accessToken) return;
-    turnSend({ type: "CANCEL_TURN", turnId });
+    const turnData = filteredTurns.find((turn: any) => turn.id === turnId);
+    uiSend({ 
+      type: "OPEN_CANCEL_TURN_DIALOG", 
+      turnId,
+      turnData
+    });
   };
 
   const getStatusLabel = (status: string) => {
@@ -130,7 +135,7 @@ const ViewTurns: React.FC = () => {
                       <Box className="viewturns-turn-info">
                         <Typography variant="h6" className="viewturns-turn-datetime">
                           {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
-                          {turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt) && (
+                          {turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt) ? (
                             <Chip 
                               label="Vencido" 
                               size="small" 
@@ -141,13 +146,14 @@ const ViewTurns: React.FC = () => {
                                 fontSize: '0.75rem'
                               }} 
                             />
+                          ) : (
+                            <Chip
+                              label={getStatusLabel(turn.status)}
+                              className={`viewturns-status-chip status-${turn.status.toLowerCase()}`}
+                              size="small"
+                              sx={{ ml: 1 }}
+                            />
                           )}
-                          <Chip
-                            label={getStatusLabel(turn.status)}
-                            className={`viewturns-status-chip status-${turn.status.toLowerCase()}`}
-                            size="small"
-                            sx={{ ml: 1 }}
-                          />
                         </Typography>
                         <Typography variant="body1" className="viewturns-turn-patient">
                           Paciente: {turn.patientName || "Paciente"}
