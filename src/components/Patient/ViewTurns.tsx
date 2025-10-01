@@ -149,19 +149,20 @@ const ViewTurns: React.FC = () => {
                     <Box className="viewturns-turn-info">
                       <Typography variant="h6" className="viewturns-turn-datetime" style={{display: 'flex', alignItems: 'center', gap: 8}}>
                         {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
-                        {turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt) && (
+                        {turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt) ? (
                           <Chip 
                             label="Vencido" 
                             size="small" 
                             sx={{ ml: 1, backgroundColor: '#fbbf24', color: '#92400e', fontSize: '0.75rem' }} 
                           />
+                        ) : (
+                          <Chip
+                            label={getStatusLabel(turn.status)}
+                            className={`viewturns-status-chip status-${turn.status.toLowerCase()}`}
+                            size="small"
+                            sx={{ ml: 1 }}
+                          />
                         )}
-                        <Chip
-                          label={getStatusLabel(turn.status)}
-                          className={`viewturns-status-chip status-${turn.status.toLowerCase()}`}
-                          size="small"
-                          sx={{ ml: 1 }}
-                        />
                         {hasPendingModifyRequest(turn.id) && (
                           <Chip
                             label="Cambio pendiente de aceptación"
