@@ -31,7 +31,8 @@ export default defineConfig({
       'src/providers/**/*.{test,spec}.{ts,tsx}',
       'src/service/**/*.{test,spec}.{ts,tsx}',
       'src/utils/**/*.{test,spec}.{ts,tsx}',
-      'src/App.{test,spec}.{ts,tsx}'
+      'src/App.{test,spec}.{ts,tsx}',
+      'src/main.{test,spec}.{ts,tsx}'
     ],
     coverage: {
       provider: 'v8',

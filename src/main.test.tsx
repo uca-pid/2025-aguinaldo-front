@@ -53,7 +53,7 @@ const AppRouter = () => {
     );
   }
 
-  return authState?.context.isAuthenticated ? <div data-testid="app">App Component</div> : <div data-testid="auth-screen">Auth Screen</div>;
+  return authState?.context?.isAuthenticated ? <div data-testid="app">App Component</div> : <div data-testid="auth-screen">Auth Screen</div>;
 };
 
 describe('main.tsx', () => {
