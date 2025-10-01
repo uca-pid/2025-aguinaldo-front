@@ -258,7 +258,7 @@ describe('notificationMachine', () => {
       });
     });
 
-    it('should handle SHOW_NEXT_NOTIFICATION event', async () => {
+    it('should update index and maintain state', async () => {
       const mockNotifications = [
         { id: '1', message: 'First notification', userId: 'user1' },
         { id: '2', message: 'Second notification', userId: 'user1' }
@@ -274,17 +274,14 @@ describe('notificationMachine', () => {
         expect(actor.getSnapshot().value).toBe('showingNotifications');
       });
 
-      mockOrchestrator.sendToMachine.mockClear();
-      actor.send({ type: 'SHOW_NEXT_NOTIFICATION' });
+      // Test index update
+      actor.send({ type: 'UPDATE_INDEX', index: 1 });
 
-      expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith('uiMachine', {
-        type: 'OPEN_SNACKBAR',
-        message: 'Second notification',
-        severity: 'success'
-      });
+      expect(actor.getSnapshot().context.currentNotificationIndex).toBe(1);
+      expect(actor.getSnapshot().value).toBe('showingNotifications');
     });
 
-    it('should not show next notification when at the end of the list', async () => {
+    it('should maintain notifications array in state', async () => {
       const mockNotifications = [
         { id: '1', message: 'Only notification', userId: 'user1' }
       ];
@@ -299,11 +296,8 @@ describe('notificationMachine', () => {
         expect(actor.getSnapshot().value).toBe('showingNotifications');
       });
 
-      mockOrchestrator.sendToMachine.mockClear();
-      actor.send({ type: 'SHOW_NEXT_NOTIFICATION' });
-
-      // Should not send OPEN_SNACKBAR when no next notification
-      expect(mockOrchestrator.sendToMachine).not.toHaveBeenCalled();
+      expect(actor.getSnapshot().context.notifications).toEqual(mockNotifications);
+      expect(actor.getSnapshot().context.currentNotificationIndex).toBe(0);
     });
 
     it('should handle LOAD_NOTIFICATIONS to reload notifications', async () => {
@@ -329,7 +323,7 @@ describe('notificationMachine', () => {
   });
 
   describe('deletingNotification state', () => {
-    it('should successfully delete notification and show next', async () => {
+    it('should successfully delete notification and show remaining notification', async () => {
       const mockNotifications = [
         { id: '1', message: 'First notification', userId: 'user1' },
         { id: '2', message: 'Second notification', userId: 'user1' }
@@ -354,12 +348,17 @@ describe('notificationMachine', () => {
       });
 
       expect(mockNotificationService.deleteNotification).toHaveBeenCalledWith('1', 'token');
-      expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith(NOTIFICATION_MACHINE_ID, {
-        type: 'SHOW_NEXT_NOTIFICATION'
-      });
-      expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith(NOTIFICATION_MACHINE_ID, {
-        type: 'UPDATE_INDEX',
-        index: 1
+      
+      // After deletion, array should have one notification left
+      expect(actor.getSnapshot().context.notifications).toHaveLength(1);
+      expect(actor.getSnapshot().context.notifications[0].id).toBe('2');
+      expect(actor.getSnapshot().context.currentNotificationIndex).toBe(0);
+      
+      // Should show the remaining notification automatically
+      expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith('uiMachine', {
+        type: 'OPEN_SNACKBAR',
+        message: 'Second notification',
+        severity: 'success'
       });
     });
 
@@ -391,7 +390,7 @@ describe('notificationMachine', () => {
       });
     });
 
-    it('should handle deletion error and continue to next notification', async () => {
+    it('should handle deletion error and remove notification optimistically', async () => {
       const mockNotifications = [
         { id: '1', message: 'First notification', userId: 'user1' },
         { id: '2', message: 'Second notification', userId: 'user1' }
@@ -415,12 +414,19 @@ describe('notificationMachine', () => {
         expect(actor.getSnapshot().value).toBe('showingNotifications');
       });
 
-      expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith(NOTIFICATION_MACHINE_ID, {
-        type: 'SHOW_NEXT_NOTIFICATION'
+      // Even on error, notification should be removed (optimistic update)
+      expect(actor.getSnapshot().context.notifications).toHaveLength(1);
+      expect(actor.getSnapshot().context.notifications[0].id).toBe('2');
+      
+      // Should show remaining notification
+      expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith('uiMachine', {
+        type: 'OPEN_SNACKBAR',
+        message: 'Second notification',
+        severity: 'success'
       });
     });
 
-    it('should not send SHOW_NEXT_NOTIFICATION on error when at end of list', async () => {
+    it('should send ALL_NOTIFICATIONS_SHOWN on error when no more notifications', async () => {
       const mockNotifications = [
         { id: '1', message: 'Last notification', userId: 'user1' }
       ];
@@ -443,10 +449,13 @@ describe('notificationMachine', () => {
         expect(actor.getSnapshot().value).toBe('showingNotifications');
       });
 
-      // Should not call SHOW_NEXT_NOTIFICATION when at end of list
+      // Should not have any notifications left
+      expect(actor.getSnapshot().context.notifications).toHaveLength(0);
+      
+      // Should not call OPEN_SNACKBAR when no notifications left
       expect(mockOrchestrator.sendToMachine).not.toHaveBeenCalledWith(
-        NOTIFICATION_MACHINE_ID,
-        expect.objectContaining({ type: 'SHOW_NEXT_NOTIFICATION' })
+        'uiMachine',
+        expect.objectContaining({ type: 'OPEN_SNACKBAR' })
       );
     });
   });

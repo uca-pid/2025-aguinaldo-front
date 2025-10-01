@@ -32,6 +32,8 @@
   "include": [
     "src",
     "**/*.test.ts", 
-    "**/*.test.tsx"
-, "config", "test"  ]
+    "**/*.test.tsx", 
+    "config", 
+    "test"  
+  ]
 }
