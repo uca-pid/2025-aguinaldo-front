@@ -35,7 +35,7 @@ export interface AdminUserMachineContext {
 }
 
 export const AdminUserMachineDefaultContext: AdminUserMachineContext = {
-  loading: false,
+  loading: true,
   error: null,
   pendingDoctors: [],
   adminStats: {
@@ -74,7 +74,8 @@ export const adminUserMachine = createMachine({
               const dataContext = dataSnapshot.context;
               return {
                 pendingDoctors: dataContext.pendingDoctors || [],
-                adminStats: dataContext.adminStats || { patients: 0, doctors: 0, pending: 0 }
+                adminStats: dataContext.adminStats || { patients: 0, doctors: 0, pending: 0 },
+                loading: false
               };
             } catch (error) {
               console.warn("Could not get dataMachine snapshot:", error);

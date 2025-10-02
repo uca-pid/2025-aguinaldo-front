@@ -43,13 +43,10 @@ const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
 
   if (availableSlots.length === 0) {
     return (
-      <Box className={`time-slot-empty-state ${className}`}>
-        <Typography>😔 No hay horarios disponibles</Typography>
-        <Typography variant="body2" sx={{ mt: 1, opacity: 0.7 }}>
-          {selectedDate.format("DD/MM/YYYY")}
-        </Typography>
-        <Typography variant="body2" sx={{ mt: 1, opacity: 0.7 }}>
-          El doctor no tiene horarios disponibles para esta fecha
+      <Box className="reservation-loading-container">
+        <CircularProgress />
+        <Typography className="reservation-loading-text">
+          Cargando horarios disponibles...
         </Typography>
       </Box>
     );

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Box, 
   Typography, 
@@ -25,7 +25,7 @@ import "./DoctorDashboard.css";
 import { useDataMachine } from "#/providers/DataProvider";
 
 const DoctorDashboard: React.FC = () => {
-  const { dataState, dataSend } = useDataMachine();
+  const { dataState } = useDataMachine();
   const dataContext = dataState.context;
   const { uiSend, turnState, doctorState } = useMachines();
 
@@ -33,14 +33,6 @@ const DoctorDashboard: React.FC = () => {
   const doctorContext = doctorState?.context;
   const authContext = useAuthMachine().authState?.context;
   const user = authContext.authResponse as SignInResponse;
-
-  // Load data when component mounts
-  useEffect(() => {
-    console.log('DoctorDashboard mounted, loading data...');
-    dataSend({ type: 'LOAD_MY_TURNS' });
-    dataSend({ type: 'LOAD_DOCTOR_MODIFY_REQUESTS' });
-    // doctorSend could be used for availability if available
-  }, [dataSend]);
 
   const availability = doctorContext?.availability || [];
   const hasConfiguredDays = availability.some((day: any) => day.enabled && day.ranges?.length > 0);
@@ -63,7 +55,7 @@ const DoctorDashboard: React.FC = () => {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box className="dashboard-container">
         {/* Show loading overlay when critical data is loading */}
-        { isLoading&& (
+        { isLoading && (
           <Box 
             sx={{
               position: 'fixed',
