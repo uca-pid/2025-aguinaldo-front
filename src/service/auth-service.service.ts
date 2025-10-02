@@ -8,8 +8,6 @@ import type {
     ProfileResponse
 } from '../models/Auth';
 
-import { DELAY_CONFIGS, withDevDelay } from '#/utils/devDelay';
-
 export class AuthService {
 
   static async registerPatient(data: RegisterRequestData): Promise<RegisterResponse> {
@@ -144,7 +142,7 @@ export class AuthService {
         );
       }
 
-      const result: SignInResponse = await response.json());
+      const result: SignInResponse = await response.json();
       
       return result;
     } catch (error) {

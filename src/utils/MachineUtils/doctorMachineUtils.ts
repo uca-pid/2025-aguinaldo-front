@@ -1,6 +1,5 @@
 import { DoctorService, type DoctorAvailabilityRequest } from "../../service/doctor-service.service";
 import type { Patient } from "../../models/Doctor";
-import { withDevDelay, DELAY_CONFIGS } from "../devDelay";
 
 /**
  * Utility functions for doctorMachine service calls
