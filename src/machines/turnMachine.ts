@@ -30,6 +30,7 @@ export interface TurnMachineContext {
   availableTurns: string[];
   availableDates: string[];
   myTurns: TurnResponse[];
+  isLoadingMyTurns: boolean;
   isCreatingTurn: boolean;
   isReservingTurn: boolean;
   isCancellingTurn: boolean;
@@ -94,6 +95,7 @@ export const turnMachine = createMachine({
     doctors: [],
     availableTurns: [],
     myTurns: [],
+    isLoadingMyTurns: true,
     
     isCreatingTurn: false,
     isReservingTurn: false,
@@ -459,6 +461,7 @@ export const turnMachine = createMachine({
                     accessToken: dataContext.accessToken || null,
                     userId: dataContext.userId || authContext?.authResponse?.id || null,
                     specialties,
+                    isLoadingMyTurns: false,
                   };
                 } catch (error) {
                   return {};

@@ -17,7 +17,6 @@ import { SignInResponse } from "#/models/Auth";
 import DashboardCard from "../shared/DashboardCard/DashboardCard";
 import "./AdminDashboard.css";
 import LoadingThreeDotsJumping from "../shared/PageLoadingScreen/LoadingThreeDots";
-import { useEffect } from "react";
 
 export default function AdminDashboard() {
   const { authState } = useAuthMachine();
@@ -28,17 +27,6 @@ export default function AdminDashboard() {
   const stats = adminContext.adminStats;
   const loading = adminContext.loading;
   const error = adminContext.error;
-
-  // Fetch admin stats when component mounts
-  useEffect(() => {
-    if (user?.accessToken && !stats && !loading) {
-      console.log('Fetching admin stats...'); // Debug log
-      adminUserSend({ 
-        type: 'FETCH_ADMIN_STATS', 
-        accessToken: user.accessToken 
-      });
-    }
-  }, [user?.accessToken, stats, loading, adminUserSend]);
 
   const handleRetry = () => {
     if (user?.accessToken) {
@@ -75,9 +63,6 @@ export default function AdminDashboard() {
           }}
         >
           <LoadingThreeDotsJumping />
-          <Typography variant="body1" sx={{ mt: 2 }}>
-            Cargando estadísticas...
-          </Typography>
         </Box>
       )}
       
