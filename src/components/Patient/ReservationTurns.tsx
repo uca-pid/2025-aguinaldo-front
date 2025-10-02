@@ -204,7 +204,7 @@ const ReservationTurns: React.FC = () => {
                 
               </Box>
 
-              <Box className="reservation-actions">
+              <Box className="reservation-actions-step-1">
                 <Button
                   onClick={handleNext}
                   variant="contained"

@@ -289,6 +289,15 @@
   border-top: 1px solid var(--verdigris) !important;
 }
 
+.reservation-actions-step-1 {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  margin: 32px !important;
+  padding-top: 24px !important;
+  border-top: 1px solid var(--verdigris) !important;
+}
+
 .reservation-btn-secondary {
   color: var(--indigo-dye) !important;
   border-color: var(--verdigris) !important;
