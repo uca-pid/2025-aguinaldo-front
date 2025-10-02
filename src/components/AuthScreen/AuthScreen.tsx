@@ -2,6 +2,7 @@ import { Box } from "@mui/material";
 import LoginScreen from "./LoginScreen/LoginScreen";
 import RegisterScreen from "./RegisterScreen/RegisterScreen";
 import { useAuthMachine } from "#/providers/AuthProvider";
+import LoadingThreeDotsJumping from "../shared/PageLoadingScreen/LoadingThreeDots";
 
 function AuthScreen() {
     const {authState} = useAuthMachine();
@@ -9,9 +10,24 @@ function AuthScreen() {
     // Handle loading state when authState is null
     if (!authState) {
         return (
-            <Box>
-                Loading authentication state...
-            </Box>
+            <Box 
+            sx={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              bgcolor: 'rgba(255, 255, 255, 0.8)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              backdropFilter: 'blur(4px)'
+            }}
+          >
+            <LoadingThreeDotsJumping />
+          </Box>
         );
     }
 
@@ -19,9 +35,24 @@ function AuthScreen() {
     if (!authState.context) {
         console.error('AuthState exists but context is undefined:', authState);
         return (
-            <Box>
-                Error: Authentication context not available
-            </Box>
+            <Box 
+            sx={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              bgcolor: 'rgba(255, 255, 255, 0.8)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              backdropFilter: 'blur(4px)'
+            }}
+          >
+            <LoadingThreeDotsJumping />
+          </Box>
         );
     }
 

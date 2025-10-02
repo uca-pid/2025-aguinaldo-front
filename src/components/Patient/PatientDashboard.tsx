@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Box, 
   Typography, 
@@ -25,6 +25,10 @@ const PatientDashboard: React.FC = () => {
   const turnContext = turnState?.context || {};
 
   const isLoading= turnContext.isLoadingMyTurns;
+
+  useEffect(() => {
+    console.log('Turn context:', turnContext);
+  }, [turnContext]);
   
   const upcomingTurns = (turnContext.myTurns || [])
     .filter((turn: any) => {
@@ -40,7 +44,7 @@ const PatientDashboard: React.FC = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box className="dashboard-container">
-        { isLoading&& (
+        { isLoading && (
           <Box 
             sx={{
               position: 'fixed',

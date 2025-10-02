@@ -152,22 +152,24 @@ const ViewTurns: React.FC = () => {
                         {turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt) ? (
                           <Chip 
                             label="Vencido" 
-                            size="small" 
-                            sx={{ ml: 1, backgroundColor: '#fbbf24', color: '#92400e', fontSize: '0.75rem' }} 
+                            size="small"
+                            color="default"
+                            sx={{ ml: 1, fontSize: '0.75rem' }} 
                           />
-                        ) : (
+                        ) : !hasPendingModifyRequest(turn.id) ? (
                           <Chip
                             label={getStatusLabel(turn.status)}
                             className={`viewturns-status-chip status-${turn.status.toLowerCase()}`}
                             size="small"
                             sx={{ ml: 1 }}
                           />
-                        )}
+                        ) : null}
                         {hasPendingModifyRequest(turn.id) && (
                           <Chip
                             label="Cambio pendiente de aceptación"
                             size="small"
-                            sx={{ ml: 1, backgroundColor: '#fffc58ff', color: '#222222ff', fontSize: '0.75rem' }}
+                            color="info"
+                            sx={{ ml: 1, fontSize: '0.75rem' }}
                           />
                         )}
                       </Typography>
