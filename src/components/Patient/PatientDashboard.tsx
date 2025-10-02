@@ -44,7 +44,7 @@ const PatientDashboard: React.FC = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box className="dashboard-container">
-        { isLoading&& (
+        { isLoading && (
           <Box 
             sx={{
               position: 'fixed',

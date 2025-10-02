@@ -37,11 +37,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Debug logs to see the loading state
-  console.log('Loading state:', loading);
-  console.log('Admin stats:', stats);
-  console.log('Admin state:', adminUserState.value);
-
   return (
     <Box className="dashboard-container">
       {/* Loading Overlay */}

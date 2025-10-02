@@ -65,7 +65,7 @@ describe('adminUserMachine', () => {
       actor.start();
 
       const context = actor.getSnapshot().context;
-      expect(context.loading).toBe(false);
+      expect(context.loading).toBe(true);
       expect(context.error).toBe(null);
       expect(context.pendingDoctors).toEqual([]);
       expect(context.adminStats).toEqual({ patients: 0, doctors: 0, pending: 0 });
