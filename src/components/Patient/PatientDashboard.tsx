@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Box, 
   Typography, 
@@ -25,10 +25,6 @@ const PatientDashboard: React.FC = () => {
   const turnContext = turnState?.context || {};
 
   const isLoading= turnContext.isLoadingMyTurns;
-
-  useEffect(() => {
-    console.log('Turn context:', turnContext);
-  }, [turnContext]);
   
   const upcomingTurns = (turnContext.myTurns || [])
     .filter((turn: any) => {

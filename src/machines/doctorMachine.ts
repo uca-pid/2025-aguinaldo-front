@@ -373,7 +373,6 @@ const doctorMachine = createMachine({
           
           const availabilityData = dataContext.doctorAvailability as any;
           if (availabilityData && availabilityData.weeklyAvailability && availabilityData.weeklyAvailability.length > 0) {
-            console.log(availabilityData);
             return {
               availability: availabilityData.weeklyAvailability.map((day: any) => ({
                 day: dayMapping[day.day] || day.day,
