@@ -373,6 +373,7 @@ const doctorMachine = createMachine({
           
           const availabilityData = dataContext.doctorAvailability as any;
           if (availabilityData && availabilityData.weeklyAvailability && availabilityData.weeklyAvailability.length > 0) {
+            console.log(availabilityData);
             return {
               availability: availabilityData.weeklyAvailability.map((day: any) => ({
                 day: dayMapping[day.day] || day.day,
@@ -389,6 +390,15 @@ const doctorMachine = createMachine({
             patients: dataContext.doctorPatients || [],
             isLoadingAvailability: false,
             availabilityError: null,
+            availability: [
+              { day: "Lunes", enabled: false, ranges: [{ start: "", end: "" }] },
+              { day: "Martes", enabled: false, ranges: [{ start: "", end: "" }] },
+              { day: "Miércoles", enabled: false, ranges: [{ start: "", end: "" }] },
+              { day: "Jueves", enabled: false, ranges: [{ start: "", end: "" }] },
+              { day: "Viernes", enabled: false, ranges: [{ start: "", end: "" }] },
+              { day: "Sábado", enabled: false, ranges: [{ start: "", end: "" }] },
+              { day: "Domingo", enabled: false, ranges: [{ start: "", end: "" }] },
+            ],
           };
         } catch (error) {
           console.warn("Could not get dataMachine snapshot:", error);
