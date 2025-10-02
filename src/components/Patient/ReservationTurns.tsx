@@ -306,15 +306,10 @@ const ReservationTurns: React.FC = () => {
                       </Box>
                     </Box>
                   ) : (
-                    <Box className="reservation-empty-state">
-                      <Typography>
-                        😔 No hay horarios disponibles
-                      </Typography>
-                      <Typography variant="body2" sx={{ mt: 1, opacity: 0.7 }}>
-                        {formValues.dateSelected.format("DD/MM/YYYY")}
-                      </Typography>
-                      <Typography variant="body2" sx={{ mt: 1, opacity: 0.7 }}>
-                        El doctor aún no ha configurado sus horarios de atención
+                    <Box className="reservation-loading-container">
+                      <CircularProgress />
+                      <Typography className="reservation-loading-text">
+                        Cargando horarios disponibles...
                       </Typography>
                     </Box>
                   )}
