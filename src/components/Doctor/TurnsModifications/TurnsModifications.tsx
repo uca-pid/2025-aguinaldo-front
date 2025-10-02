@@ -1,5 +1,5 @@
 import { 
-  Box, Typography, Avatar, Chip, Paper
+  Box, Typography, Avatar, Chip, Paper, CircularProgress
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import dayjs from "dayjs";
@@ -18,6 +18,8 @@ const TurnsModifications: React.FC = () => {
   const patients: Patient[] = dataContext.doctorPatients || [];
   const pendingModifyRequests: TurnModifyRequest[] = dataContext.doctorModifyRequests?.filter((r: TurnModifyRequest) => r.status === "PENDING") || [];
   const isLoadingPatients = dataContext.loading?.doctorPatients || false;
+  const loadingApprove = uiState.context.toggleStates.loadingApprove;
+  const loadingReject = uiState.context.toggleStates.loadingReject;
 
   const getPatientName = (patientId: string) => {
     const patient = patients.find(p => p.id === patientId);
@@ -56,7 +58,14 @@ const TurnsModifications: React.FC = () => {
 
       <Box maxWidth="lg" className="pending-content-container" sx={{ mx: 'auto', px: 3 }}>
         {/* Pending Turn Modification Requests */}
-        {pendingModifyRequests.length > 0 ? (
+        { (isLoadingPatients || loadingApprove || loadingReject) ? (
+          <Box className="pending-empty-state">
+            <CircularProgress size={24} />
+            <Typography variant="h6" className="pending-empty-title">
+              Cargando pacientes...
+            </Typography>
+          </Box>
+        ) : pendingModifyRequests.length > 0 ? (
           <Box>
             <Box className="pending-status-chip-container">
               <Chip
