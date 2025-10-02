@@ -13,7 +13,7 @@ export class AdminService {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_PENDING_DOCTORS);
     
     try {
-      const response = await fetch(url, {
+      const response = await  fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
       });
@@ -94,7 +94,7 @@ export class AdminService {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_ADMIN_STATS);
     
     try {
-      const response = await fetch(url, {
+      const response = await  fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
       });

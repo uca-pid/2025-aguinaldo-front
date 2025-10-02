@@ -77,6 +77,7 @@ describe('authMachineUtils', () => {
         hasErrorsOrEmpty: false,
         isAuthenticated: false,
         loading: false,
+        loggingOut: false,
         formValues: {
           email: 'test@example.com',
           password: 'password123',
@@ -112,6 +113,7 @@ describe('authMachineUtils', () => {
         hasErrorsOrEmpty: false,
         isAuthenticated: false,
         loading: false,
+        loggingOut: false,
         formValues: {
           name: 'John',
           surname: 'Doe',
@@ -157,6 +159,7 @@ describe('authMachineUtils', () => {
         hasErrorsOrEmpty: false,
         isAuthenticated: false,
         loading: false,
+        loggingOut: false,
         formValues: {
           name: 'Dr. John',
           surname: 'Doe',

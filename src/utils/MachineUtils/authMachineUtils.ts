@@ -70,7 +70,7 @@ export const logoutUser = async (): Promise<boolean> => {
   try {
     const authData = AuthService.getStoredAuthData();
     if (authData?.refreshToken) {
-      await AuthService.signOut(authData.refreshToken);
+      await  AuthService.signOut(authData.refreshToken);
     }
     AuthService.clearAuthData();
     return true;

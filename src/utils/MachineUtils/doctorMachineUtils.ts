@@ -46,11 +46,11 @@ export const loadDoctorPatients = async ({ accessToken, doctorId }: LoadPatients
 
 
 export const loadDoctorAvailability = async ({ accessToken, doctorId }: LoadAvailabilityParams) => {
-  return await DoctorService.getAvailability(accessToken, doctorId);
+  return await  DoctorService.getAvailability(accessToken, doctorId);
 };
 
 export const updateMedicalHistory = async ({accessToken, doctorId, patientId, medicalHistory}: UpdateMedicalHistoryParams): Promise<void> => {
-  return await DoctorService.updateMedicalHistory(accessToken, doctorId, patientId, medicalHistory);
+  return await  DoctorService.updateMedicalHistory(accessToken, doctorId, patientId, medicalHistory);
 }
 
 export const saveDoctorAvailability = async ({ accessToken, doctorId, availability }: SaveAvailabilityParams): Promise<string> => {
@@ -93,6 +93,6 @@ export const saveDoctorAvailability = async ({ accessToken, doctorId, availabili
     })
   };
 
-  await DoctorService.saveAvailability(accessToken, doctorId, availabilityRequest);
+  await  DoctorService.saveAvailability(accessToken, doctorId, availabilityRequest);
   return "Availability saved successfully";
 };

@@ -83,7 +83,7 @@ export class AuthService {
         );
       }
 
-      const result: SignInResponse = await response.json();
+      const result: SignInResponse = await  response.json();
       
       return result;
     } catch (error) {
@@ -96,7 +96,7 @@ export class AuthService {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.SIGNOUT);
     
     try {
-      const response = await fetch(url, {
+      const response = await  fetch(url, {
         ...getDefaultFetchOptions(),
         method: 'POST',
         headers: {

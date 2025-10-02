@@ -6,27 +6,22 @@ import { MachineProvider } from "./providers/MachineProvider";
 import { AuthProvider } from "./providers/AuthProvider";
 import AuthScreen from "./components/AuthScreen/AuthScreen";
 import { useAuthMachine } from "./providers/AuthProvider";
-import { CircularProgress, Box } from "@mui/material";
 import { BrowserRouter } from "react-router-dom";
 import { DataProvider } from "./providers/DataProvider";
+import LoginLoadingScreen from "./components/shared/LoadingScreens/LoginLoadingScreen";
+import LogoutLoadingScreen from "./components/shared/LoadingScreens/LogoutLoadingScreen";
 
 const AppRouter = () => {
   const { authState } = useAuthMachine();
 
+  // Show login loading when authenticating
   if (authState?.context?.loading) {
-    return (
-      <Box 
-        display="flex" 
-        justifyContent="center" 
-        alignItems="center" 
-        minHeight="100vh"
-        sx={{
-          background: 'linear-gradient(135deg, #0d2230 0%, #22577a 25%, #38a3a5 50%, #57cc99 75%, #c7f9cc 100%)'
-        }}
-      >
-        <CircularProgress size={60} sx={{ color: '#38a3a5' }} />
-      </Box>
-    );
+    return <LoginLoadingScreen />;
+  }
+
+  // Show logout loading when logging out
+  if (authState?.context?.loggingOut) {
+    return <LogoutLoadingScreen />;
   }
 
   return authState?.context.isAuthenticated ? <App /> : <AuthScreen />;
