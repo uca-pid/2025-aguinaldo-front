@@ -169,7 +169,7 @@ export class TurnService {
       ? `${buildApiUrl(API_CONFIG.ENDPOINTS.GET_MY_TURNS)}?status=${status}`
       : buildApiUrl(API_CONFIG.ENDPOINTS.GET_MY_TURNS);
     try {
-      const response = await fetch(url, {
+      const response = await  fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
       });
@@ -245,7 +245,7 @@ export class TurnService {
         );
       }
 
-      const result: TurnResponse[] = await response.json();
+      const result: TurnResponse[] = await  response.json();
       return result;
     } catch (error) {
       throw error;
@@ -316,7 +316,7 @@ export class TurnService {
 
   static async getDoctorAvailability(doctorId: string, accessToken: string): Promise<any> {
     try {
-      const availableDates = await TurnService.getAvailableDates(doctorId, accessToken);
+      const availableDates = await  TurnService.getAvailableDates(doctorId, accessToken);
       return { availableDates };
     } catch (error) {
       throw error;

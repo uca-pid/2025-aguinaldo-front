@@ -53,7 +53,7 @@ export const loadDoctors = async ({ accessToken }: LoadDoctorsParams): Promise<D
  */
 export const loadPendingDoctors = async ({ accessToken, isAdmin }: LoadPendingDoctorsParams): Promise<PendingDoctor[]> => {
   if (!isAdmin) return [];
-  return await AdminService.getPendingDoctors(accessToken);
+  return await  AdminService.getPendingDoctors(accessToken);
 };
 
 /**
@@ -61,7 +61,7 @@ export const loadPendingDoctors = async ({ accessToken, isAdmin }: LoadPendingDo
  */
 export const loadAdminStats = async ({ accessToken, isAdmin }: LoadAdminStatsParams): Promise<AdminStats> => {
   if (!isAdmin) return { patients: 0, doctors: 0, pending: 0 };
-  return await AdminService.getAdminStats(accessToken);
+  return await  AdminService.getAdminStats(accessToken)
 };
 
 /**
@@ -77,6 +77,7 @@ export const loadAvailableTurns = async ({ accessToken, doctorId, date }: LoadAv
 export const loadMyTurns = async ({ accessToken, status }: LoadMyTurnsParams): Promise<any[]> => {
   return await TurnService.getMyTurns(accessToken, status);
 };
+
 /**
  * Load doctor's modify requests
  */

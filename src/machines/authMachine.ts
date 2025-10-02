@@ -23,6 +23,7 @@ export interface AuthMachineContext {
   hasErrorsOrEmpty: boolean;
   isAuthenticated: boolean;
   loading: boolean;
+  loggingOut: boolean; // Add this flag for logout loading
   formValues: {
     // Login fields
     email: string;
@@ -52,6 +53,7 @@ export const AuthMachineDefaultContext = {
     hasErrorsOrEmpty: true,
     isAuthenticated: false,
     loading: false,
+    loggingOut: false, // Add this to default context
     formValues: {
       email: "",
       password: "",
@@ -138,8 +140,11 @@ export const authMachine = createMachine({
       }
     },
 
-
     loggingOut: {
+      // Set loggingOut flag to true when entering this state
+      entry: assign(() => ({
+        loggingOut: true
+      })),
       invoke: {
         src: fromPromise(async () => {
           return await logoutUser();
@@ -149,7 +154,8 @@ export const authMachine = createMachine({
           target: "idle",
           actions: [assign(() => ({
             isAuthenticated: false,
-            authResponse: null
+            authResponse: null,
+            loggingOut: false // Reset loggingOut flag
           })),
           () => {
             orchestrator.send({ type: "NAVIGATE", to: "/" });
@@ -160,7 +166,8 @@ export const authMachine = createMachine({
           target: "idle",
           actions: [assign(() => ({
             isAuthenticated: false,
-            authResponse: null
+            authResponse: null,
+            loggingOut: false // Reset loggingOut flag even on error
           })),
           () => {
             orchestrator.send({ type: "NAVIGATE", to: "/" });

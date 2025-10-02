@@ -83,7 +83,7 @@ export const cancelTurn = async ({ accessToken, turnId }: CancelTurnParams): Pro
  * Create a modify turn request
  */
 export const createModifyTurnRequest = async ({ accessToken, turnId, newScheduledAt }: ModifyTurnParams): Promise<any> => {
-  return await TurnService.createModifyRequest({
+  return await  TurnService.createModifyRequest({
     turnId,
     newScheduledAt
   }, accessToken);

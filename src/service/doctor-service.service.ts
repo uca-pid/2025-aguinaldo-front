@@ -49,7 +49,7 @@ export class DoctorService {
         );
       }
 
-      const result: Patient[] = await response.json();
+      const result: Patient[] = await  response.json();
       return result;
     } catch (error) {
       console.error('Failed to fetch doctor patients:', error);
@@ -89,7 +89,6 @@ export class DoctorService {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
       });
-
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
         throw new Error(
@@ -99,7 +98,7 @@ export class DoctorService {
         );
       }
 
-      const result: DoctorAvailabilityResponse = await response.json();
+      const result: DoctorAvailabilityResponse = await  response.json();
       return result;
     } catch (error) {
       console.error('Failed to fetch availability:', error);

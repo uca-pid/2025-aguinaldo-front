@@ -42,7 +42,7 @@ export class TurnModifyService {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_MY_MODIFY_REQUESTS);
 
     try {
-      const response = await fetch(url, {
+      const response = await  fetch(url, {
         ...getAuthenticatedFetchOptions(accessToken),
         method: 'GET',
       });
@@ -57,7 +57,7 @@ export class TurnModifyService {
         );
       }
 
-      const result: TurnModifyRequest[] = await response.json();
+      const result: TurnModifyRequest[] = await  response.json();
       return result;
     } catch (error) {
       console.error('[TurnModifyService] getMyModifyRequests - Exception:', error);
