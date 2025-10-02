@@ -316,7 +316,7 @@ const ReservationTurns: React.FC = () => {
                 </Box>
               </Box>
               
-              <Box className="reservation-actions">
+              <Box className="reservation-actions-step-2">
                 <Button 
                   onClick={() => turnSend({ type: "BACK" })} 
                   className="reservation-btn-secondary"

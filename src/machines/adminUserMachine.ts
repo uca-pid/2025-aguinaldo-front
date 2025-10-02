@@ -8,6 +8,7 @@ import { UI_MACHINE_ID } from "./uiMachine";
 export const ADMIN_USER_MACHINE_ID = "adminUser";
 export const ADMIN_USER_MACHINE_EVENT_TYPES = [
   'DATA_LOADED',
+  'LOADING',
   'APPROVE_DOCTOR', 
   'REJECT_DOCTOR',
   'SELECT_DOCTOR',
@@ -49,6 +50,7 @@ export const AdminUserMachineDefaultContext: AdminUserMachineContext = {
 
 export type AdminUserMachineEvent =
   | { type: "DATA_LOADED" }
+  | { type: "LOADING" }
   | { type: "APPROVE_DOCTOR"; doctorId: string; accessToken: string }
   | { type: "REJECT_DOCTOR"; doctorId: string; accessToken: string }
   | { type: "SELECT_DOCTOR"; doctor: PendingDoctor }
@@ -82,6 +84,9 @@ export const adminUserMachine = createMachine({
               return {};
             }
           })
+        },
+        LOADING: {
+          actions: assign(() => ({ loading: true, error: null }))
         },
         APPROVE_DOCTOR: {
           target: "approvingDoctor"
