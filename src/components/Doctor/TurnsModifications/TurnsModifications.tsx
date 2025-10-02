@@ -18,6 +18,7 @@ const TurnsModifications: React.FC = () => {
   const patients: Patient[] = dataContext.doctorPatients || [];
   const pendingModifyRequests: TurnModifyRequest[] = dataContext.doctorModifyRequests?.filter((r: TurnModifyRequest) => r.status === "PENDING") || [];
   const isLoadingPatients = dataContext.loading?.doctorPatients || false;
+  const isLoadingRequest = dataContext.loading?.doctorModifyRequests || false;
   const loadingApprove = uiState.context.toggleStates.loadingApprove;
   const loadingReject = uiState.context.toggleStates.loadingReject;
 
@@ -58,11 +59,11 @@ const TurnsModifications: React.FC = () => {
 
       <Box maxWidth="lg" className="pending-content-container" sx={{ mx: 'auto', px: 3 }}>
         {/* Pending Turn Modification Requests */}
-        { (isLoadingPatients || loadingApprove || loadingReject) ? (
+        { (isLoadingRequest || loadingApprove || loadingReject) ? (
           <Box className="pending-empty-state">
             <CircularProgress size={24} />
             <Typography variant="h6" className="pending-empty-title">
-              Cargando pacientes...
+              Cargando solicitudes...
             </Typography>
           </Box>
         ) : pendingModifyRequests.length > 0 ? (
