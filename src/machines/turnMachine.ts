@@ -16,6 +16,7 @@ export const TURN_MACHINE_EVENT_TYPES = [
   "RESET_TAKE_TURN",
   "RESET_SHOW_TURNS",
   "DATA_LOADED",
+  "LOADING",
   "RESERVE_TURN",
   "CREATE_TURN",
   "CANCEL_TURN",
@@ -79,6 +80,7 @@ export type TurnMachineEvent =
   | { type: "RESET_TAKE_TURN" }
   | { type: "RESET_SHOW_TURNS" }
   | { type: "DATA_LOADED" }
+  | { type: "LOADING" }
   | { type: "RESERVE_TURN"; turnId: string }
   | { type: "CREATE_TURN" }
   | { type: "CANCEL_TURN"; turnId: string }
@@ -468,6 +470,12 @@ export const turnMachine = createMachine({
                 }
               }),
             },
+            LOADING: {
+              actions: assign(() => ({
+                isLoadingMyTurns: true,
+                error: null,
+              }))
+            }, 
             CREATE_TURN: {
               target: "creatingTurn",
             }

@@ -200,6 +200,7 @@ export const dataMachine = createMachine({
     
     loadingInitialData: {
       entry: assign(({ context }) => {
+        orchestrator.send({ type: "LOADING" });
         const isAdmin = context.userRole === "ADMIN";
         const isDoctor = context.userRole === "DOCTOR";
         const isPatient = context.userRole === "PATIENT";
@@ -600,6 +601,11 @@ export const dataMachine = createMachine({
             accessToken: context.accessToken!
           });
         }, 0);
+      },
+      exit: () => {
+        orchestrator.send({
+          type: "LOADING"
+        });
       },
       on: {
         SET_AUTH: {
