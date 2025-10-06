@@ -67,7 +67,6 @@ export const saveDoctorAvailability = async ({ accessToken, doctorId, availabili
   };
 
   const availabilityRequest: DoctorAvailabilityRequest = {
-    slotDurationMin: 30, 
     weeklyAvailability: availability.map((day: DayAvailability) => {
       const spanishDay = day.day.toUpperCase();
       const englishDay = dayMapping[spanishDay] || spanishDay;

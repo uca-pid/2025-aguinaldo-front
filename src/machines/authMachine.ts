@@ -336,7 +336,7 @@ export const authMachine = createMachine({
                 },
                 authResponse: {
                   ...response,
-                  message: "Registration successful! Please sign in with your credentials."
+                  message: "!Registro exitoso!"
                 },
                 formErrors: {},
                 hasErrorsOrEmpty: false,
