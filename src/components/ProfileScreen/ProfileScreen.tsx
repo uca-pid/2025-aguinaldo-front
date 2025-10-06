@@ -82,14 +82,14 @@ const ProfileScreen: React.FC = () => {
                     </Typography>
                     ) : (
                         <List disablePadding>
-                            <EditField  key="name" label="Nombre" value={profile.name} isEditing={name} toggleKey="editName" fieldKey="name" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "name", value: val })}/>
-                            <EditField  key= "surname" label="Apellido" value={profile.surname} isEditing={surname} toggleKey="editSurname" fieldKey="surname" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "surname", value: val })} />
+                            <EditField  key="name" label="Nombre" value={profile.name} isEditing={name} toggleKey="editName" fieldKey="name" maxLength={50} onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "name", value: val })}/>
+                            <EditField  key= "surname" label="Apellido" value={profile.surname} isEditing={surname} toggleKey="editSurname" fieldKey="surname" maxLength={50} onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "surname", value: val })} />
                             {/*<EditField key="email" label="Email" value={profile.email} isEditing={email} toggleKey="editEmail" fieldKey="email" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "email", value: val })}/>*/}
                             <ListItem>
                                 <ListItemText primary={`Email `}  secondary={profile.email}/>
                             </ListItem>
                             <Divider component="li" />
-                            <EditField key="phone" label="Telefono" value={profile.phone} isEditing={phone} toggleKey="editNumberPhone" fieldKey="phone" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "phone", value: val })}/>
+                            <EditField key="phone" label="Telefono" value={profile.phone} isEditing={phone} toggleKey="editNumberPhone" fieldKey="phone" maxLength={20} onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "phone", value: val })}/>
                             {/*<EditField key="dni" label="DNI" value={profile.dni} isEditing={dni} toggleKey="editDni" fieldKey="dni" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "dni", value: val })}/>*/}
                             <ListItem>
                                 <ListItemText primary={`DNI `}  secondary={profile.dni}/>
@@ -105,7 +105,7 @@ const ProfileScreen: React.FC = () => {
                                 <ListItemText primary={`Matrícula Nacional `}  secondary={profile.medicalLicense}/>
                                 </ListItem>
                                 <Divider component="li" />
-                                <EditField key="speciality" label="Especialidad" value={profile.specialty} isEditing={speciality} toggleKey="editSpeciality" fieldKey="specialty" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "specialty", value: val })}/>
+                                <EditField key="speciality" label="Especialidad" value={profile.specialty} isEditing={speciality} toggleKey="editSpeciality" fieldKey="specialty" maxLength={100} onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "specialty", value: val })}/>
                                 <EditField key="slotDurationMin"label="Minutos por turno" value={profile.slotDurationMin} isEditing={minutes} toggleKey="editMinutes" fieldKey="slotDurationMin" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "slotDurationMin", value: val })}/>
 
 

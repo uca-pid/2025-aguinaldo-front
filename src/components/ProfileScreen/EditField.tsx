@@ -13,18 +13,27 @@ type EditFieldProps={
     isEditing:boolean;
     toggleKey:string;
     fieldKey: string; // Nueva prop para identificar el campo
-    onChange: (val: string) => void 
+    onChange: (val: string) => void;
+    maxLength?: number; // Límite de caracteres
 }
 
 const MotionBox = motion.create(Box);
 
-const EditField :React.FC<EditFieldProps>= ({label, value, isEditing, toggleKey, fieldKey, onChange})=>{
+const EditField :React.FC<EditFieldProps>= ({label, value, isEditing, toggleKey, fieldKey, onChange, maxLength})=>{
     const { uiSend, profileState, profileSend } = useMachines();
     const profileContext = profileState?.context;
 
     // Use machine's formValues instead of local state
     const currentValue = isEditing ? (profileContext?.formValues?.[fieldKey as keyof typeof profileContext.formValues] ?? value) : value;
     const isUpdating = profileContext?.updatingProfile;
+
+    const handleChange = (newValue: string) => {
+      // Apply maxLength validation if provided
+      if (maxLength && newValue.length > maxLength) {
+        return; // Don't update if exceeds limit
+      }
+      onChange(newValue);
+    };
 
     const handleSave = () => {
       // The value is already in machine's formValues from onChange calls
@@ -62,9 +71,11 @@ const EditField :React.FC<EditFieldProps>= ({label, value, isEditing, toggleKey,
                 <TextField
                   label={label}
                   value={currentValue}
-                  onChange={(e) => onChange(e.target.value)}
+                  onChange={(e) => handleChange(e.target.value)}
                   size="small"
                   fullWidth
+                  helperText={maxLength ? `${currentValue?.length || 0}/${maxLength} caracteres` : undefined}
+                  error={maxLength ? (currentValue?.length || 0) > maxLength : false}
                 />
               </MotionBox>
               ) : (

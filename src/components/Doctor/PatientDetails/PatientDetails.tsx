@@ -45,7 +45,10 @@ const PatientDetails: React.FC = () => {
   };
 
   const handleHistoryChange = (value: string) => {
-    doctorSend({ type: "UPDATE_HISTORY", value });
+    // Validate size limit (max 5000 characters to match backend)
+    if (value.length <= 5000) {
+      doctorSend({ type: "UPDATE_HISTORY", value });
+    }
   };
 
   const getInitials = (name: string, surname: string) => {
@@ -323,6 +326,8 @@ const PatientDetails: React.FC = () => {
                     placeholder="Ingrese la historia clínica del paciente..."
                     variant="outlined"
                     className="patient-details-history-input"
+                    helperText={`${editedHistory?.length || 0}/5000 caracteres`}
+                    error={editedHistory?.length > 5000}
                     sx={{
                       '& .MuiOutlinedInput-root': {borderRadius: '12px',transition: 'all 0.3s ease',
                       '&:hover': {boxShadow: '0 4px 12px rgba(34, 87, 122, 0.15)'},
@@ -355,7 +360,7 @@ const PatientDetails: React.FC = () => {
                     <Button
                       variant="contained"
                       onClick={handleSaveHistory}
-                      disabled={isSavingHistory}
+                      disabled={isSavingHistory || (editedHistory?.length || 0) > 5000}
                       startIcon={isSavingHistory ? <CircularProgress size={16} color="inherit" /> : <Save />}
                       className="patient-details-save-button"
                       sx={{

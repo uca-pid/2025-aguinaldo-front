@@ -30,7 +30,11 @@ const ReservationTurns: React.FC = () => {
     : [];
 
   const handleReasonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "reason"], value: e.target.value });
+    const value = e.target.value;
+    // Limit to 500 characters for security
+    if (value.length <= 500) {
+      turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "reason"], value });
+    }
   };    
 
   const handleProfessionChange = (event: SelectChangeEvent) => {
@@ -201,6 +205,8 @@ const ReservationTurns: React.FC = () => {
                   multiline
                   rows={3}
                   placeholder="Describe brevemente el motivo de tu consulta..."
+                  helperText={`${formValues.reason?.length || 0}/500 caracteres`}
+                  error={(formValues.reason?.length || 0) > 500}
                 />
                 
               </Box>
