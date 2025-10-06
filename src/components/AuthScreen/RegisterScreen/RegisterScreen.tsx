@@ -143,22 +143,6 @@ function RegisterScreen() {
                     variant={isPatient ? "filled" : "outlined"}
                     onClick={() => authSend({ type: "TOGGLE_USER_TYPE", isPatient: true})}
                     className={`register-chip ${isPatient ? 'register-chip--patient' : ''}`}
-                    sx={{
-                      py: 2,
-                      px: 3,
-                      fontSize: '1rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      ...(isPatient && {
-                        background: '#22577a',
-                        color: 'white',
-                        boxShadow: '0 4px 15px rgba(34, 87, 122, 0.3)',
-                        '&:hover': {
-                          background: '#1f4f6f',
-                          boxShadow: '0 6px 20px rgba(34, 87, 122, 0.4)',
-                        }
-                      })
-                    }}
                   />
                   <Chip
                     icon={<LocalHospital />}
@@ -166,22 +150,6 @@ function RegisterScreen() {
                     variant={!isPatient ? "filled" : "outlined"}
                     onClick={() => authSend({ type: "TOGGLE_USER_TYPE", isPatient: false})}
                     className={`register-chip ${!isPatient ? 'register-chip--doctor' : ''}`}
-                    sx={{
-                      py: 2,
-                      px: 3,
-                      fontSize: '1rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      ...(!isPatient && {
-                        background: '#2d7d90',
-                        color: 'white',
-                        boxShadow: '0 4px 15px rgba(45, 125, 144, 0.3)',
-                        '&:hover': {
-                          background: '#22577a',
-                          boxShadow: '0 6px 20px rgba(45, 125, 144, 0.4)',
-                        }
-                      })
-                    }}
                   />
                 </Stack>
 
@@ -196,7 +164,7 @@ function RegisterScreen() {
                       value={authContext.formValues.name || ""}
                       onChange={(e) => authSend({ type: "UPDATE_FORM", key: "name", value: e.target.value })}
                       error={!!authContext.formErrors?.name}
-                      helperText={authContext.formErrors?.name || ""}
+                      helperText={authContext.formErrors?.name || " "}
                       className="auth-field"
                     />
                     <TextField
@@ -207,7 +175,7 @@ function RegisterScreen() {
                       value={authContext.formValues.surname || ""}
                       onChange={(e) => authSend({ type: "UPDATE_FORM", key: "surname", value: e.target.value })}
                       error={!!authContext.formErrors?.surname}
-                      helperText={authContext.formErrors?.surname || ""}
+                      helperText={authContext.formErrors?.surname || " "}
                       className="auth-field"
                     />
                   </Stack>
@@ -222,14 +190,14 @@ function RegisterScreen() {
                       value={authContext.formValues.dni || ""}
                       onChange={(e) => authSend({ type: "UPDATE_FORM", key: "dni", value: e.target.value })}
                       error={!!authContext.formErrors?.dni}
-                      helperText={authContext.formErrors?.dni || ""}
+                      helperText={authContext.formErrors?.dni || " "}
                       className="auth-field"
                     />
                     <FormControl
                       fullWidth
                       required
                       error={!!authContext.formErrors?.gender}
-                      className="auth-field"
+                      className="auth-field register-form-control"
                     >
                       <InputLabel id="genero-label">Género</InputLabel>
                       <Select
@@ -245,29 +213,42 @@ function RegisterScreen() {
                         <MenuItem value={"FEMALE"}>Femenino</MenuItem>
                       </Select>
                       <FormHelperText>
-                        {authContext.formErrors?.gender}
+                        {authContext.formErrors?.gender || " "}
                       </FormHelperText>
                     </FormControl>
                   </Stack>
 
                   <Stack direction={isMobile ? "column" : "row"} spacing={2} className="register-form-row">
-                    <FormControl fullWidth required>
-                      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
-                        <DatePicker
-                          label="Fecha de Nacimiento"
-                          format="DD/MM/YYYY"
-                          slotProps={{
-                            textField: {
-                              required: true,
-                              fullWidth: true,
-                              name: "birthdate",
-                              className: "auth-field"
-                            },
-                          }}
-                          onChange={(date) => authSend({ type: "UPDATE_FORM", key: "birthdate", value: date ? date.toISOString() : null })}
-                        />
-                      </LocalizationProvider>
-                    </FormControl>
+                    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+                      <DatePicker
+                        label="Fecha de Nacimiento"
+                        format="DD/MM/YYYY"
+                        value={authContext.formValues.birthdate ? dayjs(authContext.formValues.birthdate) : null}
+                        maxDate={dayjs().subtract(18, 'year')}
+                        minDate={dayjs().subtract(120, 'year')}
+                        views={['year', 'month', 'day']}
+                        openTo="year"
+                        onChange={(date) => authSend({ 
+                          type: "UPDATE_FORM", 
+                          key: "birthdate", 
+                          value: date ? date.toISOString() : null 
+                        })}
+                        slotProps={{
+                          textField: {
+                            required: true,
+                            fullWidth: true,
+                            name: "birthdate",
+                            error: !!authContext.formErrors?.birthdate,
+                            helperText: authContext.formErrors?.birthdate || " ",
+                            className: "auth-field",
+                            placeholder: "DD/MM/YYYY"
+                          },
+                          field: {
+                            clearable: true
+                          }
+                        }}
+                      />
+                    </LocalizationProvider>
                     <TextField
                       label="Número de Teléfono"
                       name="phone"
@@ -277,7 +258,7 @@ function RegisterScreen() {
                       value={authContext.formValues.phone || ""}
                       onChange={(e) => authSend({ type: "UPDATE_FORM", key: "phone", value: e.target.value })}
                       error={!!authContext.formErrors?.phone}
-                      helperText={authContext.formErrors?.phone || ""}
+                      helperText={authContext.formErrors?.phone || " "}
                       className="auth-field"
                     />
                   </Stack>
@@ -291,7 +272,7 @@ function RegisterScreen() {
                     value={authContext.formValues.email || ""}
                     onChange={(e) => authSend({ type: "UPDATE_FORM", key: "email", value: e.target.value })}
                     error={!!authContext.formErrors?.email}
-                    helperText={authContext.formErrors?.email || ""}
+                    helperText={authContext.formErrors?.email || " "}
                     className="auth-field"
                   />
 
@@ -305,7 +286,7 @@ function RegisterScreen() {
                       value={authContext.formValues.password || ""}
                       onChange={(e) => authSend({ type: "UPDATE_FORM", key: "password", value: e.target.value })}
                       error={!!authContext.formErrors?.password}
-                      helperText={authContext.formErrors?.password || ""}
+                      helperText={authContext.formErrors?.password || " "}
                       className="auth-field"
                     />
                     <TextField
@@ -317,7 +298,7 @@ function RegisterScreen() {
                       value={authContext.formValues.password_confirm || ""}
                       onChange={(e) => authSend({ type: "UPDATE_FORM", key: "password_confirm", value: e.target.value })}
                       error={!!authContext.formErrors?.password_confirm}
-                      helperText={authContext.formErrors?.password_confirm || ""}
+                      helperText={authContext.formErrors?.password_confirm || " "}
                       className="auth-field"
                     />
                   </Stack>
@@ -328,7 +309,7 @@ function RegisterScreen() {
                       <Typography variant="h6" className="register-doctor-title">
                         Información Profesional
                       </Typography>
-                      <Stack spacing={3}>
+                      <Stack spacing={0}>
                         <Stack direction={isMobile ? "column" : "row"} spacing={2} className="register-form-row">
                           <TextField
                             label="Especialidad"
@@ -338,7 +319,7 @@ function RegisterScreen() {
                             value={authContext.formValues.specialty || ""}
                             onChange={(e) => authSend({ type: "UPDATE_FORM", key: "specialty", value: e.target.value })}
                             error={!!authContext.formErrors?.specialty}
-                            helperText={authContext.formErrors?.specialty || ""}
+                            helperText={authContext.formErrors?.specialty || " "}
                             className="auth-field"
                           />
                           <TextField
@@ -349,20 +330,26 @@ function RegisterScreen() {
                             value={authContext.formValues.medicalLicense || ""}
                             onChange={(e) => authSend({ type: "UPDATE_FORM", key: "medicalLicense", value: e.target.value })}
                             error={!!authContext.formErrors?.medicalLicense}
-                            helperText={authContext.formErrors?.medicalLicense || ""}
+                            helperText={authContext.formErrors?.medicalLicense || " "}
                             className="auth-field"
                           />
                         </Stack>
                         <TextField
-                          label="Duración de turno (minutos)"
+                          label="Duración de los turnos (minutos)"
                           name="slotDurationMin"
                           type="number"
                           fullWidth
+                          required
                           value={authContext.formValues.slotDurationMin || ""}
-                          onChange={(e) => authSend({ type: "UPDATE_FORM", key: "slotDurationMin", value: parseInt(e.target.value) })}
+                          onChange={(e) => authSend({ type: "UPDATE_FORM", key: "slotDurationMin", value: parseInt(e.target.value) || null })}
                           error={!!authContext.formErrors?.slotDurationMin}
                           helperText={authContext.formErrors?.slotDurationMin || ""}
                           className="auth-field"
+                          inputProps={{
+                            min: 15,
+                            max: 180,
+                            step: 15
+                          }}
                         />
                       </Stack>
                     </Box>

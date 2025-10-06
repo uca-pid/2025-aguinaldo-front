@@ -3,9 +3,33 @@ import { validateField, checkFormValidation } from './authFormValidation'
 
 // Mock dayjs
 vi.mock('dayjs', () => ({
-  default: vi.fn((date: string) => ({
-    isValid: () => date === 'valid-date'
-  }))
+  default: Object.assign(
+    vi.fn((date: string) => ({
+      isValid: () => date === 'valid-date',
+      subtract: vi.fn(() => ({
+        isAfter: vi.fn(() => false),
+        isBefore: vi.fn(() => false)
+      })),
+      isAfter: vi.fn(() => false),
+      isBefore: vi.fn(() => false)
+    })),
+    {
+      extend: vi.fn()
+    }
+  )
+}))
+
+// Mock dayjs plugins
+vi.mock('dayjs/plugin/customParseFormat', () => ({
+  default: vi.fn()
+}))
+
+vi.mock('dayjs/plugin/isSameOrAfter', () => ({
+  default: vi.fn()
+}))
+
+vi.mock('dayjs/plugin/isSameOrBefore', () => ({
+  default: vi.fn()
 }))
 
 describe('authFormValidation', () => {
@@ -60,11 +84,11 @@ describe('authFormValidation', () => {
 
     it('should validate phone format', () => {
       const context = createMockContext()
-      expect(validateField('phone', '1234567', context)).toBe('Número de teléfono inválido (solo números, 8-15 dígitos, opcional +)')
+      expect(validateField('phone', '1234567', context)).toBe('Solo números, de 8-15 dígitos, opcional +')
       expect(validateField('phone', '12345678', context)).toBe('')
       expect(validateField('phone', '+123456789012345', context)).toBe('')
-      expect(validateField('phone', '1234567890123456', context)).toBe('Número de teléfono inválido (solo números, 8-15 dígitos, opcional +)')
-      expect(validateField('phone', 'abc12345678', context)).toBe('Número de teléfono inválido (solo números, 8-15 dígitos, opcional +)')
+      expect(validateField('phone', '1234567890123456', context)).toBe('Solo números, de 8-15 dígitos, opcional +')
+      expect(validateField('phone', 'abc12345678', context)).toBe('Solo números, de 8-15 dígitos, opcional +')
     })
 
     it('should validate password format in register mode', () => {

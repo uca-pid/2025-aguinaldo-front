@@ -138,11 +138,16 @@ function LoginScreen() {
                     value={authContext.formValues.email || ""}
                     onChange={(e) => authSend({ type: "UPDATE_FORM", key: "email", value: e.target.value })}
                     error={!!authContext.formErrors?.email}
-                    helperText={authContext.formErrors?.email || ""}
+                    helperText={authContext.formErrors?.email || " "}
                     className="auth-field"
                   />
 
-                  <FormControl variant="outlined" fullWidth required>
+                  <FormControl 
+                    variant="outlined" 
+                    fullWidth 
+                    required
+                    className="auth-field"
+                  >
                     <InputLabel htmlFor="outlined-adornment-password">Contraseña</InputLabel>
                     <OutlinedInput
                       id="outlined-adornment-password"
@@ -165,11 +170,13 @@ function LoginScreen() {
                       }
                       label="Contraseña"
                     />
-                    {authContext.formErrors?.password && (
-                      <Typography variant="caption" color="error" className="auth-password-error">
-                        {authContext.formErrors.password}
-                      </Typography>
-                    )}
+                    <Typography 
+                      variant="caption" 
+                      color={authContext.formErrors?.password ? "error" : "transparent"} 
+                      className="auth-password-error"
+                    >
+                      {authContext.formErrors?.password || " "}
+                    </Typography>
                   </FormControl>
 
                   <Button

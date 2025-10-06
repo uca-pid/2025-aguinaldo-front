@@ -1,1 +1,24 @@
 @import '../AuthScreen.css';
+
+/* Login form specific spacing */
+.auth-form-stack {
+  gap: 0 !important;
+}
+
+/* Form field styling with reserved space for error messages */
+.auth-field {
+  margin-bottom: 0 !important;
+}
+
+.auth-field .MuiFormHelperText-root {
+  min-height: 20px !important;
+  margin: 3px 14px 0 !important;
+}
+
+/* Password field specific styling */
+.auth-password-error {
+  min-height: 20px !important;
+  margin: 3px 14px 0 !important;
+  font-size: 0.75rem !important;
+  line-height: 1.66 !important;
+}
