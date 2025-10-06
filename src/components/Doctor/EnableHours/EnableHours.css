@@ -351,17 +351,16 @@
 
 .enablehours-no-config-content {
   text-align: center !important;
-  padding: 40px 32px !important;
 }
 
 .enablehours-no-config-icon {
-  margin-bottom: 24px !important;
+  margin-bottom: 16px !important;
 }
 
 .enablehours-no-config-calendar {
-  font-size: 72px !important;
+  font-size: 80px !important;
   color: #fb923c !important;
-  filter: drop-shadow(0 4px 8px rgba(251, 146, 60, 0.3));
+  filter: drop-shadow(0 4px 12px rgba(251, 146, 60, 0.4));
   animation: pulse-icon 3s ease-in-out infinite;
 }
 
@@ -373,47 +372,123 @@
 .enablehours-no-config-title {
   color: #c2410c !important;
   font-weight: 700 !important;
-  margin-bottom: 16px !important;
+  margin-bottom: 8px !important;
   text-shadow: 0 2px 4px rgba(194, 65, 12, 0.1);
+}
+
+.enablehours-minimize-container {
+  text-align: center !important;
+  margin-top: 16px !important;
 }
 
 .enablehours-no-config-description {
   color: #9a3412 !important;
-  margin-bottom: 32px !important;
+  margin-bottom: 0 !important;
   line-height: 1.6 !important;
   font-size: 1.1rem !important;
+}
+
+.enablehours-no-config-layout {
+  display: flex !important;
+  gap: 32px !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  min-height: 300px !important;
+}
+
+.enablehours-no-config-left {
+  flex: 1 !important;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.enablehours-no-config-right {
+  flex: 1 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .enablehours-no-config-layout {
+    flex-direction: column !important;
+  }
+  .enablehours-no-config-left,
+  .enablehours-no-config-right {
+    flex: none !important;
+  }
+  .enablehours-no-config-divider {
+    width: 100% !important;
+    height: 2px !important;
+    background: linear-gradient(to right, transparent, #fb923c, transparent) !important;
+    margin: 24px 0 !important;
+  }
+}
+
+.enablehours-no-config-divider {
+  width: 2px !important;
+  background: linear-gradient(to bottom, transparent, #fb923c, transparent) !important;
+  align-self: stretch !important;
+  margin: 0 24px !important;
+}
+
+.enablehours-steps-title {
+  color: #c2410c !important;
+  font-weight: 600 !important;
+  margin-bottom: 20px !important;
+  text-align: center !important;
 }
 
 .enablehours-no-config-steps {
   display: flex !important;
   flex-direction: column !important;
   gap: 16px !important;
-  align-items: flex-start !important;
-  max-width: 400px !important;
-  margin: 0 auto !important;
+  width: 100% !important;
 }
 
-.enablehours-step-item {
+.enablehours-step-card {
   display: flex !important;
   align-items: center !important;
-  gap: 12px !important;
+  gap: 16px !important;
+  padding: 16px 20px !important;
+  background: linear-gradient(135deg, #fff 0%, #fef7ed 100%) !important;
+  border: 2px solid #fb923c !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 8px rgba(251, 146, 60, 0.1) !important;
+}
+
+.enablehours-step-card:hover {
+  transform: translateX(8px) !important;
+  box-shadow: 0 4px 16px rgba(251, 146, 60, 0.2) !important;
+  border-color: #f97316 !important;
+}
+
+.enablehours-step-text {
   color: #7c2d12 !important;
   font-size: 0.95rem !important;
   font-weight: 500 !important;
+  line-height: 1.4 !important;
+  flex: 1 !important;
 }
 
 .enablehours-step-number {
-  background: #fb923c !important;
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%) !important;
   color: white !important;
-  width: 24px !important;
-  height: 24px !important;
+  min-width: 36px !important;
+  height: 36px !important;
   border-radius: 50% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 0.8rem !important;
+  font-size: 1.1rem !important;
   font-weight: 700 !important;
   flex-shrink: 0 !important;
+  box-shadow: 0 2px 8px rgba(251, 146, 60, 0.3) !important;
 }
 
 @media (max-width: 480px) {
