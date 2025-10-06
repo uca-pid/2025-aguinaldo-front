@@ -221,13 +221,16 @@ export const authMachine = createMachine({
           })
         },
         TOGGLE_MODE: {
-          actions: assign(({ event }) => {
+          actions: assign(({ context, event }) => {
+            // Preserve form values when switching modes, only clear errors and loading state
             return {
               mode: event.mode,
               hasErrorsOrEmpty: true,
               formErrors: {},
               authResponse: null,
-              loading: false
+              loading: false,
+              // Keep form values to preserve user input
+              formValues: context.formValues
             };
           })
         },
@@ -348,10 +351,27 @@ export const authMachine = createMachine({
         ],
         onError: {
           target: "idle",
-          actions: assign(({ event }) => {
+          actions: assign(({ event, context }) => {
+            const error = event.error;
+            
+            // Handle validation errors from backend
+            if (error && (error as any).fieldErrors) {
+              return {
+                formErrors: {
+                  ...context.formErrors,
+                  ...(error as any).fieldErrors
+                },
+                authResponse: { 
+                  error: 'Por favor revise los campos marcados con error'
+                },
+                loading: false
+              };
+            }
+            
+            // Handle general errors
             return {
               authResponse: { 
-                error: event.error instanceof Error ? event.error.message : 'Authentication failed' 
+                error: error instanceof Error ? error.message : 'Error en autenticación' 
               },
               loading: false
             };
