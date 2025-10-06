@@ -13,7 +13,6 @@ export interface DayAvailability {
 }
 
 export interface DoctorAvailabilityRequest {
-  slotDurationMin: number;
   weeklyAvailability: DayAvailability[];
 }
 

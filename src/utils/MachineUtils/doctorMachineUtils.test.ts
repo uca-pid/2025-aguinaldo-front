@@ -88,6 +88,7 @@ describe('doctorMachineUtils', () => {
       const params = {
         accessToken: 'token123',
         doctorId: 'doctor456',
+        slotDurationMin: 30,
         availability: [
           {
             day: 'LUNES',
@@ -107,7 +108,6 @@ describe('doctorMachineUtils', () => {
       const result = await saveDoctorAvailability(params)
 
       expect(DoctorService.saveAvailability).toHaveBeenCalledWith('token123', 'doctor456', {
-        slotDurationMin: 30,
         weeklyAvailability: [
           {
             day: 'MONDAY',
@@ -128,6 +128,7 @@ describe('doctorMachineUtils', () => {
       const params = {
         accessToken: 'token123',
         doctorId: 'doctor456',
+        slotDurationMin: 30,
         availability: [
           {
             day: 'MIÉRCOLES',
@@ -142,7 +143,6 @@ describe('doctorMachineUtils', () => {
       await saveDoctorAvailability(params)
 
       expect(DoctorService.saveAvailability).toHaveBeenCalledWith('token123', 'doctor456', {
-        slotDurationMin: 30,
         weeklyAvailability: [
           {
             day: 'WEDNESDAY',
@@ -157,6 +157,7 @@ describe('doctorMachineUtils', () => {
       const params = {
         accessToken: 'token123',
         doctorId: 'doctor456',
+        slotDurationMin: 30,
         availability: [
           {
             day: 'LUNES',
@@ -177,7 +178,6 @@ describe('doctorMachineUtils', () => {
       await saveDoctorAvailability(params)
 
       expect(DoctorService.saveAvailability).toHaveBeenCalledWith('token123', 'doctor456', {
-        slotDurationMin: 30,
         weeklyAvailability: [
           {
             day: 'MONDAY',
@@ -192,6 +192,7 @@ describe('doctorMachineUtils', () => {
       const params = {
         accessToken: 'token123',
         doctorId: 'doctor456',
+        slotDurationMin: 30,
         availability: [
           {
             day: 'UNKNOWN_DAY',
@@ -206,7 +207,6 @@ describe('doctorMachineUtils', () => {
       await saveDoctorAvailability(params)
 
       expect(DoctorService.saveAvailability).toHaveBeenCalledWith('token123', 'doctor456', {
-        slotDurationMin: 30,
         weeklyAvailability: [
           {
             day: 'UNKNOWN_DAY',

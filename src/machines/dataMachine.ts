@@ -815,7 +815,8 @@ export const dataMachine = createMachine({
       }),
       invoke: {
         src: fromPromise(async ({ input }: { input: { accessToken: string; doctorId: string; date: string } }) => {
-          return await loadAvailableTurns(input);
+          const result = await loadAvailableTurns(input);
+          return result;
         }),
         input: ({ context, event }) => ({
           accessToken: context.accessToken!,

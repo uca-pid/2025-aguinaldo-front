@@ -45,6 +45,7 @@ export interface DoctorMachineContext {
   isSavingHistory: boolean;
   
   availability: DayAvailability[];
+  slotDurationMin: number | null;
   isSavingAvailability: boolean;
   isLoadingAvailability: boolean;
   availabilityError: string | null;
@@ -75,10 +76,11 @@ const doctorMachine = createMachine({
     doctorId: null,
     patientSearchTerm: "",
     
-
-  selectedPatient: null,
-  editedHistory: '',
-  isSavingHistory: false,    availability: [
+    patients: [],
+    selectedPatient: null,
+    editedHistory: '',
+    isSavingHistory: false,    
+    availability: [
       { day: "Lunes", enabled: false, ranges: [{ start: "", end: "" }] },
       { day: "Martes", enabled: false, ranges: [{ start: "", end: "" }] },
       { day: "Miércoles", enabled: false, ranges: [{ start: "", end: "" }] },
@@ -87,6 +89,7 @@ const doctorMachine = createMachine({
       { day: "Sábado", enabled: false, ranges: [{ start: "", end: "" }] },
       { day: "Domingo", enabled: false, ranges: [{ start: "", end: "" }] },
     ],
+    slotDurationMin: null,
     isSavingAvailability: false,
     isLoadingAvailability: false,
     availabilityError: null,
@@ -379,6 +382,7 @@ const doctorMachine = createMachine({
                 enabled: day.enabled,
                 ranges: day.ranges || [{ start: "", end: "" }]
               })),
+              slotDurationMin: availabilityData.slotDurationMin,
               patients: dataContext.doctorPatients || [],
               isLoadingAvailability: false,
               availabilityError: null,
@@ -387,6 +391,7 @@ const doctorMachine = createMachine({
           
           return {
             patients: dataContext.doctorPatients || [],
+            slotDurationMin: null,
             isLoadingAvailability: false,
             availabilityError: null,
             availability: [

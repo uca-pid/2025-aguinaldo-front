@@ -241,6 +241,17 @@ describe('App', () => {
   })
 
   it('renders pending activation screen on /pending-activation route', () => {
+    ;(useAuthMachine as Mock).mockReturnValue({
+      authState: {
+        context: {
+          authResponse: {
+            role: 'DOCTOR',
+            status: 'PENDING'
+          }
+        }
+      }
+    })
+
     render(
       <MemoryRouter initialEntries={['/pending-activation']}>
         <App />

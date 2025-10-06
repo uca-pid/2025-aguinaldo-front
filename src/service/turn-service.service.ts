@@ -122,6 +122,7 @@ export class TurnService {
         );
       }
       const availableTimes: string[] = await response.json();
+      
       return availableTimes;
     } catch (error) {
       throw error;
