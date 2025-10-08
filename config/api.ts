@@ -39,6 +39,14 @@ export const API_CONFIG = {
     DELETE_NOTIFICATION: '/api/notifications/{notificationId}',
     GET_DOCTOR_AVAILABILITY: '/api/doctors/{doctorId}/availability',
     UPDATE_MEDICAL_HISTORY: '/api/doctors/{doctorId}/patients/medical-history',
+    
+    // New Medical History endpoints
+    ADD_MEDICAL_HISTORY: '/api/doctors/{doctorId}/medical-history',
+    UPDATE_MEDICAL_HISTORY_ENTRY: '/api/doctors/{doctorId}/medical-history/{historyId}',
+    DELETE_MEDICAL_HISTORY: '/api/doctors/{doctorId}/medical-history/{historyId}',
+    GET_DOCTOR_MEDICAL_HISTORY: '/api/doctors/{doctorId}/medical-history',
+    GET_PATIENT_MEDICAL_HISTORY: '/api/medical-history/patient/{patientId}',
+    GET_PATIENT_HISTORY_BY_DOCTOR: '/api/doctors/{doctorId}/patients/{patientId}/medical-history',
     GET_PROFILE: '/api/profile/{profileId}',
     UPDATE_PROFILE: '/api/profile/{profileId}',
     DEACTIVATE_ACCOUNT: '/api/profile/me/deactivate',
