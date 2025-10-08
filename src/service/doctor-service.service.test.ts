@@ -10,8 +10,7 @@ vi.mock('../../config/api', () => ({
       GET_DOCTOR_PATIENTS: '/api/doctors/{doctorId}/patients',
       SAVE_DOCTOR_AVAILABILITY: '/api/doctors/{doctorId}/availability',
       GET_DOCTOR_AVAILABLE_SLOTS: '/api/doctors/{doctorId}/available-slots',
-      GET_DOCTOR_AVAILABILITY: '/api/doctors/{doctorId}/availability',
-      UPDATE_MEDICAL_HISTORY: '/api/doctors/{doctorId}/patients/medical-history'
+      GET_DOCTOR_AVAILABILITY: '/api/doctors/{doctorId}/availability'
     },
     DEFAULT_HEADERS: {
       'Content-Type': 'application/json'
@@ -339,60 +338,6 @@ describe('DoctorService', () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       await expect(DoctorService.getAvailableSlots(accessToken, doctorId, fromDate, toDate))
-        .rejects.toThrow('Network error');
-    });
-  });
-
-  describe('updateMedicalHistory', () => {
-    const accessToken = 'access-token-123';
-    const doctorId = 'doctor-1';
-    const patientId = 'patient-1';
-    const medicalHistory = 'Updated medical history with new allergies';
-
-    it('should successfully update medical history', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true
-      });
-
-      await expect(DoctorService.updateMedicalHistory(accessToken, doctorId, patientId, medicalHistory))
-        .resolves.toBeUndefined();
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8080/api/doctors/doctor-1/patients/medical-history',
-        expect.objectContaining({
-          method: 'PUT',
-          body: JSON.stringify({ patientId, medicalHistory })
-        })
-      );
-    });
-
-    it('should throw error when medical history update fails', async () => {
-      const errorResponse = { message: 'Patient not found' };
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        json: () => Promise.resolve(errorResponse)
-      });
-
-      await expect(DoctorService.updateMedicalHistory(accessToken, doctorId, patientId, medicalHistory))
-        .rejects.toThrow('Patient not found');
-    });
-
-    it('should throw error with default message when medical history update fails without error details', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        json: () => Promise.resolve({})
-      });
-
-      await expect(DoctorService.updateMedicalHistory(accessToken, doctorId, patientId, medicalHistory))
-        .rejects.toThrow('Failed to update medical history! Status: 500');
-    });
-
-    it('should throw error when fetch fails during medical history update', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
-
-      await expect(DoctorService.updateMedicalHistory(accessToken, doctorId, patientId, medicalHistory))
         .rejects.toThrow('Network error');
     });
   });
