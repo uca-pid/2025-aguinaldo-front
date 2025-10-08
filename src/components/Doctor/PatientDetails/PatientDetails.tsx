@@ -1,54 +1,34 @@
-import {Avatar,Box,Button,Chip,Divider,Typography,Alert,CircularProgress,Paper,TextField} from "@mui/material"
+import {Avatar,Box,Button,Chip,Divider,Typography,Alert,CircularProgress,Paper} from "@mui/material"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { useMachines } from "#/providers/MachineProvider"
-import { ArrowBack, PersonOutlined, BadgeOutlined, EmailOutlined,PhoneOutlined,CakeOutlined,WcOutlined,HistoryOutlined,
-  FiberManualRecordOutlined,Edit,Save,Cancel} from '@mui/icons-material'
+import { ArrowBack, PersonOutlined, BadgeOutlined, EmailOutlined,PhoneOutlined,CakeOutlined,WcOutlined,
+  FiberManualRecordOutlined} from '@mui/icons-material'
 import { calculateAge } from "#/models/Doctor"
 import './PatientDetails.css'
 import { useDataMachine } from "#/providers/DataProvider"
+import MedicalHistoryManager from "../MedicalHistoryManager/MedicalHistoryManager"
 
 const PatientDetails: React.FC = () => {
   const { dataState, dataSend } = useDataMachine();
-  const { uiState, uiSend, doctorState, doctorSend } = useMachines();
+  const { uiSend, doctorState, doctorSend } = useMachines();
 
   const doctorContext = doctorState.context;
   const dataContext = dataState.context;
-  const uiContext = uiState.context;
 
   const isLoading = dataContext.loading.doctorPatients;
   const error = dataContext.errors.doctorPatients;
 
   const patient = doctorContext.selectedPatient;
-  const isEditingHistory = uiContext.toggleStates?.['editingMedicalHistory'] || false;
-  const editedHistory = doctorContext.editedHistory;
-  const isSavingHistory = doctorContext.isSavingHistory; 
 
   const handleBack = () => {
     uiSend({ type: "NAVIGATE", to: "/doctor/view-patients" });
     doctorSend({ type: "CLEAR_PATIENT_SELECTION" });
   };
 
+  const handleHistoryUpdate = () => {
 
-  const handleEditHistory = () => {
-    uiSend({ type: "TOGGLE", key: "editingMedicalHistory" });
-    doctorSend({ type: "START_EDIT_HISTORY" });
-  };
-
-  const handleSaveHistory = () => {
-    doctorSend({ type: "SAVE_HISTORY" });
-    uiSend({ type: "TOGGLE", key: "editingMedicalHistory" });
-  };
-
-  const handleCancelEdit = () => {
-    uiSend({ type: "TOGGLE", key: "editingMedicalHistory" });
-  };
-
-  const handleHistoryChange = (value: string) => {
-    // Validate size limit (max 5000 characters to match backend)
-    if (value.length <= 5000) {
-      doctorSend({ type: "UPDATE_HISTORY", value });
-    }
+    dataSend({ type: "RETRY_DOCTOR_PATIENTS" });
   };
 
   const getInitials = (name: string, surname: string) => {
@@ -309,125 +289,12 @@ const PatientDetails: React.FC = () => {
   
           <Box sx={{ flex: '1 1 400px', minWidth: 0 }}>
             <Paper elevation={1} sx={{ p: 3 }} className="patient-details-medical-history-paper">
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <HistoryOutlined color="primary" />
-                Historia Clínica
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              
-              {isEditingHistory ? (
-                <Box className="patient-details-edit-container">
-                  <TextField
-                    multiline
-                    rows={6}
-                    fullWidth
-                    value={editedHistory}
-                    onChange={(e) => handleHistoryChange(e.target.value)}
-                    placeholder="Ingrese la historia clínica del paciente..."
-                    variant="outlined"
-                    className="patient-details-history-input"
-                    helperText={`${editedHistory?.length || 0}/5000 caracteres`}
-                    error={editedHistory?.length > 5000}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {borderRadius: '12px',transition: 'all 0.3s ease',
-                      '&:hover': {boxShadow: '0 4px 12px rgba(34, 87, 122, 0.15)'},
-                      '&.Mui-focused': {boxShadow: '0 4px 16px rgba(34, 87, 122, 0.25)'}
-                      }
-                    }}
-                  />
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={handleCancelEdit}
-                      disabled={isSavingHistory}
-                      startIcon={<Cancel />}
-                      className="patient-details-cancel-button"
-                      sx={{
-                        borderRadius: '8px',
-                        textTransform: 'none',
-                        fontWeight: 500,
-                        padding: '8px 16px',
-                        transition: 'all 0.2s ease',
-                        '&:hover': {
-                          transform: 'translateY(-1px)',
-                          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)'
-                        }
-                      }}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={handleSaveHistory}
-                      disabled={isSavingHistory || (editedHistory?.length || 0) > 5000}
-                      startIcon={isSavingHistory ? <CircularProgress size={16} color="inherit" /> : <Save />}
-                      className="patient-details-save-button"
-                      sx={{
-                        background: 'linear-gradient(135deg, #57cc99 0%, #80ed99 100%)',
-                        borderRadius: '8px',
-                        textTransform: 'none',
-                        fontWeight: 600,
-                        padding: '8px 20px',
-                        boxShadow: '0 4px 14px rgba(87, 204, 153, 0.3)',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, #80ed99 0%, #57cc99 100%)',
-                          transform: 'translateY(-2px)',
-                          boxShadow: '0 6px 20px rgba(87, 204, 153, 0.4)'
-                        },
-                        '&:disabled': {
-                          background: '#e5e7eb',
-                          color: '#9ca3af',
-                          boxShadow: 'none'
-                        }
-                      }}
-                    >
-                      {isSavingHistory ? 'Guardando...' : 'Guardar Historia'}
-                    </Button>
-                  </Box>
-                </Box>
-              ) : (
-                <>
-                  {patient.medicalHistory ? (
-                    <Box className="patient-details-history-content">
-                      <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
-                        {patient.medicalHistory}
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <Box className="patient-details-no-history">
-                      <Typography variant="body2" color="textSecondary" sx={{ textAlign: 'center', py: 3 }}>
-                        No hay historia clínica registrada para este paciente.
-                      </Typography>
-                    </Box>
-                  )}
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                    <Button
-                      variant="contained"
-                      onClick={handleEditHistory}
-                      startIcon={<Edit />}
-                      className="patient-details-edit-button"
-                      sx={{
-                        background: 'linear-gradient(135deg, #22577a 0%, #38a3a5 100%)',
-                        borderRadius: '8px',
-                        textTransform: 'none',
-                        fontWeight: 600,
-                        padding: '8px 20px',
-                        boxShadow: '0 4px 14px rgba(34, 87, 122, 0.3)',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, #38a3a5 0%, #22577a 100%)',
-                          transform: 'translateY(-2px)',
-                          boxShadow: '0 6px 20px rgba(34, 87, 122, 0.4)'
-                        }
-                      }}
-                    >
-                      {patient.medicalHistory ? 'Editar Historia Clínica' : 'Agregar Historia Clínica'}
-                    </Button>
-                  </Box>
-                </>
-              )}
+              <MedicalHistoryManager
+                patientId={patient.id}
+                patientName={patient.name}
+                patientSurname={patient.surname}
+                onHistoryUpdate={handleHistoryUpdate}
+              />
             </Paper>
           </Box>
 

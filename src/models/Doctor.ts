@@ -1,3 +1,5 @@
+import type { MedicalHistory } from './MedicalHistory';
+
 export interface Patient {
   id: string;
   name: string;
@@ -8,7 +10,8 @@ export interface Patient {
   birthdate?: string;
   gender?: string;
   status: string;
-  medicalHistory?: string;
+  medicalHistory?: string; // For backward compatibility - latest medical history content
+  medicalHistories?: MedicalHistory[]; // New field for multiple medical history entries
 }
 
 export interface ApiErrorResponse {

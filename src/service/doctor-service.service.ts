@@ -131,30 +131,7 @@ export class DoctorService {
     }
   }
 
-
-  static async updateMedicalHistory(accessToken: string, doctorId: string, patientId: string, medicalHistory: string): Promise<void> {
-    const url = buildApiUrl(API_CONFIG.ENDPOINTS.UPDATE_MEDICAL_HISTORY.replace('{doctorId}', doctorId));
-
-    try {
-      const response = await fetch(url, {
-        ...getAuthenticatedFetchOptions(accessToken),
-        method: 'PUT',
-        body: JSON.stringify({ patientId, medicalHistory }),
-      });
-
-      if (!response.ok) {
-        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData?.message || 
-          errorData?.error ||
-          `Failed to update medical history! Status: ${response.status}`
-        );
-      }
-    } catch (error) {
-      console.error('Failed to update medical history:', error);
-      throw error;
-    }
-  }
-
+  // Note: Medical history operations have been moved to MedicalHistoryService
+  // Use MedicalHistoryService.addMedicalHistory(), updateMedicalHistory(), etc.
 
 }

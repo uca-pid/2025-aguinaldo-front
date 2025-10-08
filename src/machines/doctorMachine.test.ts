@@ -11,7 +11,7 @@ vi.mock('#/core/Orchestrator', () => ({
 
 vi.mock('../utils/MachineUtils/doctorMachineUtils', () => ({
   saveDoctorAvailability: vi.fn(),
-  updateMedicalHistory: vi.fn()
+  updateMedicalHistory: vi.fn(), // Legacy function - medical history now handled by medicalHistoryMachine
 }));
 
 vi.mock('./dataMachine', () => ({

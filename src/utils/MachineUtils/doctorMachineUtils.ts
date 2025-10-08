@@ -1,15 +1,40 @@
 import { DoctorService, type DoctorAvailabilityRequest } from "../../service/doctor-service.service";
+import { MedicalHistoryService } from "../../service/medical-history-service.service";
 import type { Patient } from "../../models/Doctor";
+import type { MedicalHistory, CreateMedicalHistoryRequest } from "../../models/MedicalHistory";
 
-/**
- * Utility functions for doctorMachine service calls
- */
+
 
 export interface UpdateMedicalHistoryParams {
   accessToken: string;
   doctorId: string;
   patientId: string;
   medicalHistory: string;
+}
+
+export interface AddMedicalHistoryParams {
+  accessToken: string;
+  doctorId: string;
+  patientId: string;
+  content: string;
+}
+
+export interface UpdateMedicalHistoryEntryParams {
+  accessToken: string;
+  doctorId: string;
+  historyId: string;
+  content: string;
+}
+
+export interface DeleteMedicalHistoryParams {
+  accessToken: string;
+  doctorId: string;
+  historyId: string;
+}
+
+export interface LoadPatientMedicalHistoryParams {
+  accessToken: string;
+  patientId: string;
 }
 
 export interface LoadPatientsParams {
@@ -49,8 +74,35 @@ export const loadDoctorAvailability = async ({ accessToken, doctorId }: LoadAvai
   return await  DoctorService.getAvailability(accessToken, doctorId);
 };
 
-export const updateMedicalHistory = async ({accessToken, doctorId, patientId, medicalHistory}: UpdateMedicalHistoryParams): Promise<void> => {
-  return await  DoctorService.updateMedicalHistory(accessToken, doctorId, patientId, medicalHistory);
+export const updateMedicalHistory = async ({accessToken, doctorId, patientId, medicalHistory}: UpdateMedicalHistoryParams): Promise<MedicalHistory> => {
+  // Since the new API works with individual entries, we'll add a new medical history entry
+  const request: CreateMedicalHistoryRequest = {
+    patientId,
+    content: medicalHistory
+  };
+  
+  return await MedicalHistoryService.addMedicalHistory(accessToken, doctorId, request);
+}
+
+export const addMedicalHistory = async ({accessToken, doctorId, patientId, content}: AddMedicalHistoryParams): Promise<MedicalHistory> => {
+  const request: CreateMedicalHistoryRequest = {
+    patientId,
+    content
+  };
+  
+  return await MedicalHistoryService.addMedicalHistory(accessToken, doctorId, request);
+}
+
+export const updateMedicalHistoryEntry = async ({accessToken, doctorId, historyId, content}: UpdateMedicalHistoryEntryParams): Promise<MedicalHistory> => {
+  return await MedicalHistoryService.updateMedicalHistory(accessToken, doctorId, historyId, { content });
+}
+
+export const deleteMedicalHistory = async ({accessToken, doctorId, historyId}: DeleteMedicalHistoryParams): Promise<void> => {
+  return await MedicalHistoryService.deleteMedicalHistory(accessToken, doctorId, historyId);
+}
+
+export const loadPatientMedicalHistory = async ({accessToken, patientId}: LoadPatientMedicalHistoryParams): Promise<MedicalHistory[]> => {
+  return await MedicalHistoryService.getPatientMedicalHistory(accessToken, patientId);
 }
 
 export const saveDoctorAvailability = async ({ accessToken, doctorId, availability }: SaveAvailabilityParams): Promise<string> => {
