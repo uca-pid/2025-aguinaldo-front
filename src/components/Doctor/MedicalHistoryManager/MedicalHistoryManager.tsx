@@ -1,181 +1,96 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  TextField,
-  Alert,
-  CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  IconButton,
-  Chip,
-  Card,
-  CardContent,
-  CardActions
-} from '@mui/material';
-import {
-  Add,
-  Edit,
-  Delete,
-  Save,
-  Cancel,
-  ExpandMore,
-  ExpandLess,
-  PersonOutlined,
-  AccessTime
-} from '@mui/icons-material';
+import {Box,Typography,Paper,Button,TextField,Alert,CircularProgress,Dialog,DialogTitle,DialogContent,DialogActions,
+  IconButton,Card,CardContent,CardActions} from '@mui/material';
+import {Add,Delete,Save,PersonOutlined,AccessTime} from '@mui/icons-material';
 import type { MedicalHistory } from '../../../models/MedicalHistory';
-import { MedicalHistoryService } from '../../../service/medical-history-service.service';
+import { useMachines } from '#/providers/MachineProvider';
+
 
 interface MedicalHistoryManagerProps {
   patientId: string;
   patientName: string;
   patientSurname: string;
-  accessToken: string;
-  doctorId: string;
   onHistoryUpdate?: () => void;
 }
 
-const MedicalHistoryManager: React.FC<MedicalHistoryManagerProps> = ({
-  patientId,
-  patientName,
-  patientSurname,
-  accessToken,
-  doctorId,
-  onHistoryUpdate
-}) => {
-  const [histories, setHistories] = useState<MedicalHistory[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingHistoryId, setEditingHistoryId] = useState<string | null>(null);
-  const [editContent, setEditContent] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    loadPatientMedicalHistory();
-  }, [patientId]);
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('es-AR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
 
-  const loadPatientMedicalHistory = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const medicalHistories = await MedicalHistoryService.getPatientMedicalHistory(accessToken, patientId);
-      setHistories(medicalHistories);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error loading medical history');
-    } finally {
-      setLoading(false);
-    }
-  };
+const MedicalHistoryManager: React.FC<MedicalHistoryManagerProps> = ({patientId,patientName,patientSurname,onHistoryUpdate}) => {
+  const { doctorState, uiState, uiSend, medicalHistoryState, medicalHistorySend} = useMachines();
 
-  const handleAddHistory = async () => {
-    if (!editContent.trim()) return;
+  const accessToken = doctorState.context.accessToken;
+  const doctorId = doctorState.context.doctorId;
 
-    try {
-      setSaving(true);
-      const newHistory = await MedicalHistoryService.addMedicalHistory(accessToken, doctorId, {
+  const histories = medicalHistoryState.context.medicalHistories || [];
+  const loading = medicalHistoryState.context.isLoading;
+  const error = medicalHistoryState.context.error;
+  const newContent = medicalHistoryState.context.newHistoryContent || '';
+
+  const sortedHistories = [...histories].sort((a, b) => 
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
+  const isAddDialogOpen = uiState.context.toggleStates.addMedicalHistoryDialog || false;
+  const currentPatientId = medicalHistoryState.context.currentPatientId;
+
+
+  if (patientId && accessToken && 
+      (patientId !== currentPatientId || currentPatientId === null)) {
+        medicalHistorySend({
+        type: 'LOAD_PATIENT_MEDICAL_HISTORY',
         patientId,
-        content: editContent.trim()
-      });
-      
-      setHistories(prev => [newHistory, ...prev]);
-      setEditContent('');
-      setIsAddDialogOpen(false);
-      onHistoryUpdate?.();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error adding medical history');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleUpdateHistory = async (historyId: string) => {
-    if (!editContent.trim()) return;
-
-    try {
-      setSaving(true);
-      const updatedHistory = await MedicalHistoryService.updateMedicalHistory(
         accessToken,
-        doctorId,
-        historyId,
-        { content: editContent.trim() }
-      );
+        });
+  }
 
-      setHistories(prev => 
-        prev.map(h => h.id === historyId ? updatedHistory : h)
-      );
-      setEditingHistoryId(null);
-      setEditContent('');
-      onHistoryUpdate?.();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error updating medical history');
-    } finally {
-      setSaving(false);
-    }
+
+  const handleOpenAddDialog = () => {
+    uiSend({ type: 'TOGGLE', key: 'addMedicalHistoryDialog' });
+    medicalHistorySend({ type: 'SET_NEW_CONTENT', content: '' });
   };
 
-  const handleDeleteHistory = async (historyId: string) => {
+  const handleAddHistory = () => {
+    if (!newContent.trim() || !accessToken || !doctorId) return;
+    
+    medicalHistorySend({
+      type: 'ADD_HISTORY_ENTRY',
+      content: newContent.trim(),
+      accessToken,
+      doctorId,
+    });
+    uiSend({ type: 'TOGGLE', key: 'addMedicalHistoryDialog' });
+    onHistoryUpdate?.();
+  };
+
+
+  const handleDeleteHistory = (historyId: string) => {
     if (!window.confirm('¿Está seguro de que desea eliminar esta entrada del historial médico?')) {
       return;
     }
 
-    try {
-      setSaving(true);
-      await MedicalHistoryService.deleteMedicalHistory(accessToken, doctorId, historyId);
-      setHistories(prev => prev.filter(h => h.id !== historyId));
-      onHistoryUpdate?.();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error deleting medical history');
-    } finally {
-      setSaving(false);
-    }
-  };
+    if (!accessToken || !doctorId) return;
 
-  const startEdit = (history: MedicalHistory) => {
-    setEditingHistoryId(history.id);
-    setEditContent(history.content);
-  };
-
-  const cancelEdit = () => {
-    setEditingHistoryId(null);
-    setEditContent('');
-  };
-
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return dateString;
-    }
-  };
-
-  const toggleCardExpansion = (historyId: string) => {
-    setExpandedCards(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(historyId)) {
-        newSet.delete(historyId);
-      } else {
-        newSet.add(historyId);
-      }
-      return newSet;
+    medicalHistorySend({
+      type: 'DELETE_HISTORY_ENTRY',
+      historyId,
+      accessToken,
+      doctorId,
     });
+    onHistoryUpdate?.();
   };
 
-  const truncateContent = (content: string, maxLength: number = 150) => {
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength) + '...';
+  const handleCloseAddDialog = () => {
+    uiSend({ type: 'TOGGLE', key: 'addMedicalHistoryDialog' });
+    medicalHistorySend({ type: 'SET_NEW_CONTENT', content: '' });
   };
 
   if (loading) {
@@ -195,7 +110,7 @@ const MedicalHistoryManager: React.FC<MedicalHistoryManagerProps> = ({
         <Button
           variant="contained"
           startIcon={<Add />}
-          onClick={() => setIsAddDialogOpen(true)}
+          onClick={handleOpenAddDialog}
           sx={{
             background: 'linear-gradient(135deg, #22577a 0%, #38a3a5 100%)',
             borderRadius: '8px',
@@ -207,130 +122,77 @@ const MedicalHistoryManager: React.FC<MedicalHistoryManagerProps> = ({
         </Button>
       </Box>
 
+      {loading && <CircularProgress sx={{ color: '#38a3a5' }} />}
+
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+        <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
 
-      {histories.length === 0 ? (
+      {!loading && sortedHistories.length === 0 && (
         <Paper elevation={2} sx={{ p: 3, textAlign: 'center' }}>
           <Typography variant="body2" color="textSecondary">
             No hay entradas en la historia clínica para este paciente.
           </Typography>
         </Paper>
-      ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {histories.map((history) => {
-            const isExpanded = expandedCards.has(history.id);
-            const isEditing = editingHistoryId === history.id;
+      )}
 
-            return (
-              <Card key={history.id} elevation={2}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Box>
-                      <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <PersonOutlined fontSize="small" />
-                        Dr. {history.doctorName} {history.doctorSurname}
-                      </Typography>
-                      <Typography variant="caption" color="textSecondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <AccessTime fontSize="small" />
-                        {formatDate(history.createdAt)}
-                        {history.updatedAt !== history.createdAt && ' (Actualizada)'}
-                      </Typography>
-                    </Box>
-                    <Chip 
-                      label={history.doctorId === doctorId ? 'Mi entrada' : 'Otro doctor'} 
-                      size="small"
-                      color={history.doctorId === doctorId ? 'primary' : 'default'}
-                    />
+      {sortedHistories.length > 0 && (
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: 2,
+          }}
+        >
+          {sortedHistories.map((history: MedicalHistory) => (
+            <Card key={history.id} elevation={2}>
+              <CardContent>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PersonOutlined fontSize="small" />
+                      Dr. {history.doctorName} {history.doctorSurname}
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <AccessTime fontSize="small" />
+                      {formatDate(history.createdAt)}
+                      {history.updatedAt !== history.createdAt && ' (Actualizada)'}
+                    </Typography>
                   </Box>
+                  
+                </Box>
 
-                  {isEditing ? (
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={4}
-                      value={editContent}
-                      onChange={(e) => setEditContent(e.target.value)}
-                      placeholder="Ingrese el contenido de la historia clínica..."
-                      helperText={`${editContent.length}/5000 caracteres`}
-                      error={editContent.length > 5000}
-                      disabled={saving}
-                    />
-                  ) : (
-                    <Box>
-                      <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
-                        {isExpanded ? history.content : truncateContent(history.content)}
-                      </Typography>
-                      {history.content.length > 150 && (
-                        <Button
-                          size="small"
-                          onClick={() => toggleCardExpansion(history.id)}
-                          startIcon={isExpanded ? <ExpandLess /> : <ExpandMore />}
-                          sx={{ mt: 1 }}
-                        >
-                          {isExpanded ? 'Ver menos' : 'Ver más'}
-                        </Button>
-                      )}
-                    </Box>
-                  )}
-                </CardContent>
+                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+                  {history.content}
+                </Typography>
+              </CardContent>
 
-                <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
-                  {isEditing ? (
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Button
-                        size="small"
-                        onClick={cancelEdit}
-                        startIcon={<Cancel />}
-                        disabled={saving}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        onClick={() => handleUpdateHistory(history.id)}
-                        startIcon={saving ? <CircularProgress size={16} /> : <Save />}
-                        disabled={saving || editContent.length > 5000 || !editContent.trim()}
-                      >
-                        Guardar
-                      </Button>
-                    </Box>
-                  ) : (
-                    history.doctorId === doctorId && (
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        <IconButton
-                          size="small"
-                          onClick={() => startEdit(history)}
-                          disabled={saving}
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleDeleteHistory(history.id)}
-                          disabled={saving}
-                          color="error"
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </Box>
-                    )
-                  )}
-                </CardActions>
-              </Card>
-            );
-          })}
+              <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
+                {history.doctorId === doctorId && (
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                 
+                    <IconButton
+                      size="small"
+                      onClick={() => handleDeleteHistory(history.id)}
+                      disabled={loading}
+                      color="error"
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Box>
+                )}
+              </CardActions>
+            </Card>
+          ))}
         </Box>
       )}
 
-      {/* Add History Dialog */}
+
       <Dialog
         open={isAddDialogOpen}
-        onClose={() => setIsAddDialogOpen(false)}
+        onClose={handleCloseAddDialog}
         maxWidth="md"
         fullWidth
       >
@@ -342,29 +204,31 @@ const MedicalHistoryManager: React.FC<MedicalHistoryManagerProps> = ({
             fullWidth
             multiline
             rows={6}
-            value={editContent}
-            onChange={(e) => setEditContent(e.target.value)}
+            value={newContent}
+            onChange={(e) => medicalHistorySend({ type: 'SET_NEW_CONTENT', content: e.target.value })}
             placeholder="Ingrese el contenido de la historia clínica..."
-            helperText={`${editContent.length}/5000 caracteres`}
-            error={editContent.length > 5000}
-            disabled={saving}
+            helperText={`${newContent.length}/5000 caracteres`}
+            error={newContent.length > 5000}
+            disabled={loading}
             sx={{ mt: 2 }}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsAddDialogOpen(false)} disabled={saving}>
+          <Button onClick={handleCloseAddDialog} disabled={loading}>
             Cancelar
           </Button>
           <Button
             variant="contained"
             onClick={handleAddHistory}
-            startIcon={saving ? <CircularProgress size={16} /> : <Save />}
-            disabled={saving || editContent.length > 5000 || !editContent.trim()}
+            startIcon={loading ? <CircularProgress size={16} /> : <Save />}
+            disabled={loading || newContent.length > 5000 || !newContent.trim()}
           >
             Agregar Entrada
           </Button>
         </DialogActions>
       </Dialog>
+
+    
     </Box>
   );
 };
