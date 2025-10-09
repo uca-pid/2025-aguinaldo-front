@@ -15,7 +15,6 @@ export const DATA_MACHINE_EVENT_TYPES = [
   "RELOAD_DOCTORS",
   "RELOAD_PENDING_DOCTORS", 
   "RELOAD_ADMIN_STATS",
-  "RELOAD_ALL",
   "LOAD_AVAILABLE_TURNS",
   "LOAD_MY_TURNS",
   "LOAD_DOCTOR_PATIENTS",
@@ -112,7 +111,6 @@ export type DataMachineEvent =
   | { type: "RELOAD_DOCTORS" }
   | { type: "RELOAD_PENDING_DOCTORS" }
   | { type: "RELOAD_ADMIN_STATS" }
-  | { type: "RELOAD_ALL" }
   | { type: "LOAD_AVAILABLE_TURNS"; doctorId: string; date: string }
   | { type: "LOAD_MY_TURNS"; status?: string }
   | { type: "LOAD_DOCTOR_PATIENTS" }
@@ -132,12 +130,9 @@ export const dataMachine = createMachine({
     idle: {
       on: {
         SET_AUTH: {
-          target: "loadingInitialData",
+          target: "fetchingDoctors",
           actions: assign({
-            accessToken: ({ event }) => {
-            
-              return event.accessToken;
-            },
+            accessToken: ({ event }) => event.accessToken,
             userRole: ({ event }) => event.userRole,
             userId: ({ event }) => event.userId,
             doctorId: ({ event }) => event.userRole === "DOCTOR" ? event.userId : null,
@@ -171,10 +166,6 @@ export const dataMachine = createMachine({
           target: "fetchingAdminStats",
           guard: ({ context }) => !!context.accessToken,
         },
-        RELOAD_ALL: {
-          target: "loadingInitialData",
-          guard: ({ context }) => !!context.accessToken,
-        },
         LOAD_AVAILABLE_TURNS: {
           target: "fetchingAvailableTurns",
           guard: ({ context, event }) => !!context.accessToken && !!(event as any).doctorId && !!(event as any).date,
@@ -195,396 +186,9 @@ export const dataMachine = createMachine({
           target: "fetchingDoctorModifyRequests",
           guard: ({ context }) => !!context.accessToken,
         },
-      },
-    },
-    
-    loadingInitialData: {
-      entry: assign(({ context }) => {
-        orchestrator.send({ type: "LOADING" });
-        const isAdmin = context.userRole === "ADMIN";
-        const isDoctor = context.userRole === "DOCTOR";
-        const isPatient = context.userRole === "PATIENT";
-        return {
-          loading: {
-            doctors: true,
-            pendingDoctors: isAdmin,
-            adminStats: isAdmin,
-            availableTurns: false,
-            myTurns: isPatient || isDoctor,
-            doctorPatients: isDoctor,
-            doctorAvailability: isDoctor,
-            doctorModifyRequests: isDoctor,
-            myModifyRequests: isPatient,
-          },
-          errors: {
-            doctors: null,
-            pendingDoctors: null,
-            adminStats: null,
-            availableTurns: null,
-            myTurns: null,
-            doctorPatients: null,
-            doctorAvailability: null,
-            doctorModifyRequests: null,
-            myModifyRequests: null,
-          },
-        };
-      }),
-      invoke: [
-        {
-          id: "loadDoctors",
-          src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
-            return await loadDoctors(input);
-          }),
-          input: ({ context }) => ({ accessToken: context.accessToken! }),
-          onDone: {
-            actions: assign({
-              doctors: ({ event }) => event.output,
-              loading: ({ context }) => ({ ...context.loading, doctors: false }),
-            }),
-          },
-          onError: {
-            target: "idle",
-            actions: [
-              assign({
-                errors: ({ context, event }) => ({
-                  ...context.errors,
-                  doctors: event.error instanceof Error ? event.error.message : "Error al cargar doctores"
-                }),
-                loading: ({ context }) => ({
-                  ...context.loading,
-                  doctors: false
-                })
-              }),
-              ({ event }) => {
-                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
-                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
-                }
-                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar doctores";
-                orchestrator.sendToMachine(UI_MACHINE_ID, {
-                  type: "OPEN_SNACKBAR",
-                  message: errorMessage,
-                  severity: "error"
-                });
-              }
-            ],
-          },
-        },
-        {
-          id: "loadPendingDoctors", 
-          src: fromPromise(async ({ input }: { input: { accessToken: string; isAdmin: boolean } }) => {
-            if (!input.isAdmin) return [];
-            return await loadPendingDoctors(input);
-          }),
-          input: ({ context }) => ({ accessToken: context.accessToken!, isAdmin: context.userRole === "ADMIN" }),
-          onDone: {
-            actions: assign({
-              pendingDoctors: ({ event }) => event.output,
-              loading: ({ context }) => ({ ...context.loading, pendingDoctors: false }),
-            }),
-          },
-          onError: {
-            target: "idle",
-            actions: [
-              assign({
-                errors: ({ context, event }) => ({
-                  ...context.errors,
-                  pendingDoctors: event.error instanceof Error ? event.error.message : "Error al cargar doctores pendientes"
-                }),
-                loading: ({ context }) => ({
-                  ...context.loading,
-                  pendingDoctors: false
-                })
-              }),
-              ({ event }) => {
-                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
-                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
-                }
-                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar doctores pendientes";
-                orchestrator.sendToMachine(UI_MACHINE_ID, {
-                  type: "OPEN_SNACKBAR",
-                  message: errorMessage,
-                  severity: "error"
-                });
-              }
-            ],
-          },
-        },
-        {
-          id: "loadDoctorModifyRequests",
-          src: fromPromise(async ({ input }: { input: { accessToken: string; isDoctor: boolean; doctorId: string | null } }) => {
-            if (!input.isDoctor || !input.doctorId) return [];
-            return await loadDoctorModifyRequests({ accessToken: input.accessToken, doctorId: input.doctorId });
-          }),
-          input: ({ context }) => ({
-            accessToken: context.accessToken!,
-            isDoctor: context.userRole === "DOCTOR",
-            doctorId: context.doctorId
-          }),
-          onDone: {
-            actions: assign({
-              doctorModifyRequests: ({ event }) => event.output,
-              loading: ({ context }) => ({ ...context.loading, doctorModifyRequests: false }),
-            }),
-          },
-          onError: {
-            target: "idle",
-            actions: [
-              assign({
-                errors: ({ context, event }) => ({
-                  ...context.errors,
-                  doctorModifyRequests: event.error instanceof Error ? event.error.message : "Error al cargar solicitudes de modificación del doctor"
-                }),
-                loading: ({ context }) => ({
-                  ...context.loading,
-                  doctorModifyRequests: false
-                })
-              }),
-              ({ event }) => {
-                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
-                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
-                }
-                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar solicitudes de modificación del doctor";
-                orchestrator.sendToMachine(UI_MACHINE_ID, {
-                  type: "OPEN_SNACKBAR",
-                  message: errorMessage,
-                  severity: "error"
-                });
-              }
-            ],
-          },
-        },
-        {
-          id: "loadAdminStats",
-          src: fromPromise(async ({ input }: { input: { accessToken: string; isAdmin: boolean } }) => {
-            if (!input.isAdmin) return { patients: 0, doctors: 0, pending: 0 };
-            return await loadAdminStats(input);
-          }),
-          input: ({ context }) => ({ accessToken: context.accessToken!, isAdmin: context.userRole === "ADMIN" }),
-          onDone: {
-            actions: assign({
-              adminStats: ({ event }) => event.output,
-              loading: ({ context }) => ({ ...context.loading, adminStats: false }),
-            }),
-          },
-          onError: {
-            target: "idle",
-            actions: [
-              assign({
-                errors: ({ context, event }) => ({
-                  ...context.errors,
-                  adminStats: event.error instanceof Error ? event.error.message : "Error al cargar estadísticas"
-                }),
-                loading: ({ context }) => ({
-                  ...context.loading,
-                  adminStats: false
-                })
-              }),
-              ({ event }) => {
-                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
-                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
-                }
-                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar estadísticas";
-                orchestrator.sendToMachine(UI_MACHINE_ID, {
-                  type: "OPEN_SNACKBAR",
-                  message: errorMessage,
-                  severity: "error"
-                });
-              }
-            ],
-          },
-        },
-        {
-          id: "loadDoctorAvailability",
-          src: fromPromise(async ({ input }: { input: { accessToken: string; isDoctor: boolean; doctorId: string | null } }) => {
-            if (!input.isDoctor || !input.doctorId) return null;
-            return await loadDoctorAvailability({ accessToken: input.accessToken, doctorId: input.doctorId });
-          }),
-          input: ({ context }) => ({ 
-            accessToken: context.accessToken!, 
-            isDoctor: context.userRole === "DOCTOR",
-            doctorId: context.doctorId
-          }),
-          onDone: {
-            actions: assign({
-              doctorAvailability: ({ event }) => event.output,
-              loading: ({ context }) => ({ ...context.loading, doctorAvailability: false }),
-            }),
-          },
-          onError: {
-            target: "idle",
-            actions: [
-              assign({
-                errors: ({ context, event }) => ({
-                  ...context.errors,
-                  doctorAvailability: event.error instanceof Error ? event.error.message : "Error al cargar disponibilidad"
-                }),
-                loading: ({ context }) => ({
-                  ...context.loading,
-                  doctorAvailability: false
-                })
-              }),
-              ({ event }) => {
-                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
-                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
-                }
-                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar disponibilidad";
-                orchestrator.sendToMachine(UI_MACHINE_ID, {
-                  type: "OPEN_SNACKBAR",
-                  message: errorMessage,
-                  severity: "error"
-                });
-              }
-            ],
-          },
-        },
-        {
-          id: "loadMyTurns",
-          src: fromPromise(async ({ input }: { input: { accessToken: string; isPatient: boolean; isDoctor: boolean } }) => {
-            if (!input.isPatient && !input.isDoctor) return [];
-            return await loadMyTurns({ accessToken: input.accessToken });
-          }),
-          input: ({ context }) => ({ 
-            accessToken: context.accessToken!, 
-            isPatient: context.userRole === "PATIENT",
-            isDoctor: context.userRole === "DOCTOR"
-          }),
-          onDone: {
-            actions: assign({
-              myTurns: ({ event }) => event.output,
-              loading: ({ context }) => ({ ...context.loading, myTurns: false }),
-            }),
-          },
-          onError: {
-            target: "idle",
-            actions: [
-              assign({
-                errors: ({ context, event }) => ({
-                  ...context.errors,
-                  myTurns: event.error instanceof Error ? event.error.message : "Error al cargar mis turnos"
-                }),
-                loading: ({ context }) => ({
-                  ...context.loading,
-                  myTurns: false
-                })
-              }),
-              ({ event }) => {
-                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
-                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
-                }
-                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar mis turnos";
-                orchestrator.sendToMachine(UI_MACHINE_ID, {
-                  type: "OPEN_SNACKBAR",
-                  message: errorMessage,
-                  severity: "error"
-                });
-              }
-            ],
-          },
-        },
-        {
-          id: "loadDoctorPatients",
-          src: fromPromise(async ({ input }: { input: { accessToken: string; isDoctor: boolean; doctorId: string | null } }) => {
-            if (!input.isDoctor || !input.doctorId) {
-              return [];
-            }
-            return await loadDoctorPatients({ accessToken: input.accessToken, doctorId: input.doctorId });
-          }),
-          input: ({ context }) => ({
-            accessToken: context.accessToken!,
-            isDoctor: context.userRole === "DOCTOR",
-            doctorId: context.doctorId
-          }),
-          onDone: {
-            actions: assign({
-              doctorPatients: ({ event }) => event.output,
-              loading: ({ context }) => ({ ...context.loading, doctorPatients: false }),
-            }),
-          },
-          onError: {
-            target: "idle",
-            actions: [
-              assign({
-                errors: ({ context, event }) => ({
-                  ...context.errors,
-                  doctorPatients: event.error instanceof Error ? event.error.message : "Error al cargar pacientes del doctor"
-                }),
-                loading: ({ context }) => ({
-                  ...context.loading,
-                  doctorPatients: false
-                })
-              }),
-              ({ event }) => {
-                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
-                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
-                }
-                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar pacientes del doctor";
-                orchestrator.sendToMachine(UI_MACHINE_ID, {
-                  type: "OPEN_SNACKBAR",
-                  message: errorMessage,
-                  severity: "error"
-                });
-              }
-            ],
-          },
-        },
-        {
-          id: "loadMyModifyRequests",
-          src: fromPromise(async ({ input }: { input: { accessToken: string; isPatient: boolean } }) => {
-            if (!input.isPatient) return [];
-            return await loadMyModifyRequests({ accessToken: input.accessToken });
-          }),
-          input: ({ context }) => ({
-            accessToken: context.accessToken!,
-            isPatient: context.userRole === "PATIENT"
-          }),
-          onDone: {
-            actions: assign({
-              myModifyRequests: ({ event }) => event.output,
-              loading: ({ context }) => ({ ...context.loading, myModifyRequests: false }),
-            }),
-          },
-          onError: {
-            target: "idle",
-            actions: [
-              assign({
-                errors: ({ context, event }) => ({
-                  ...context.errors,
-                  myModifyRequests: event.error instanceof Error ? event.error.message : "Error al cargar mis solicitudes de modificación"
-                }),
-                loading: ({ context }) => ({
-                  ...context.loading,
-                  myModifyRequests: false
-                })
-              }),
-              ({ event }) => {
-                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
-                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
-                }
-                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar mis solicitudes de modificación";
-                orchestrator.sendToMachine(UI_MACHINE_ID, {
-                  type: "OPEN_SNACKBAR",
-                  message: errorMessage,
-                  severity: "error"
-                });
-              }
-            ],
-          },
-        }
-      ],
-      always: {
-        target: "ready",
-        guard: ({ context }) => {
-          const isAdmin = context.userRole === "ADMIN";
-          const isDoctor = context.userRole === "DOCTOR";
-          const isPatient = context.userRole === "PATIENT";
-          return !context.loading.doctors && 
-                 (!isAdmin || !context.loading.pendingDoctors) && 
-                 (!isAdmin || !context.loading.adminStats) &&
-                 (!isDoctor || !context.loading.doctorAvailability) &&
-                 (!isDoctor || !context.loading.doctorPatients) &&
-                 (!isDoctor || !context.loading.doctorModifyRequests) &&
-                 (!isPatient || !context.loading.myModifyRequests) &&
-                 (!(isPatient || isDoctor) || !context.loading.myTurns);
+        LOAD_MY_MODIFY_REQUESTS: {
+          target: "fetchingMyModifyRequests",
+          guard: ({ context }) => !!context.accessToken,
         },
       },
     },
@@ -609,7 +213,7 @@ export const dataMachine = createMachine({
       },
       on: {
         SET_AUTH: {
-          target: "loadingInitialData",
+          target: "fetchingDoctors",
           actions: assign({
             accessToken: ({ event }) => event.accessToken,
             userRole: ({ event }) => event.userRole,
@@ -644,9 +248,6 @@ export const dataMachine = createMachine({
         RELOAD_ADMIN_STATS: {
           target: "fetchingAdminStats",
         },
-        RELOAD_ALL: {
-          target: "loadingInitialData",
-        },
         LOAD_AVAILABLE_TURNS: {
           target: "fetchingAvailableTurns",
           guard: ({ context, event }) => !!context.accessToken && !!(event as any).doctorId && !!(event as any).date,
@@ -671,22 +272,43 @@ export const dataMachine = createMachine({
       },
     },
     fetchingDoctors: {
-      entry: assign({
-        loading: ({ context }) => ({ ...context.loading, doctors: true }),
-        errors: ({ context }) => ({ ...context.errors, doctors: null }),
-      }),
+      entry: [
+        () => orchestrator.send({ type: "LOADING" }),
+        assign({
+          loading: ({ context }) => ({ ...context.loading, doctors: true }),
+          errors: ({ context }) => ({ ...context.errors, doctors: null }),
+        })
+      ],
       invoke: {
         src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
           return await loadDoctors(input);
         }),
         input: ({ context }) => ({ accessToken: context.accessToken! }),
-        onDone: {
-          target: "ready",
-          actions: assign({
-            doctors: ({ event }) => event.output,
-            loading: ({ context }) => ({ ...context.loading, doctors: false }),
-          }),
-        },
+        onDone: [
+          {
+            target: "fetchingPendingDoctors",
+            guard: ({ context }) => context.userRole === "ADMIN",
+            actions: assign({
+              doctors: ({ event }) => event.output,
+              loading: ({ context }) => ({ ...context.loading, doctors: false }),
+            }),
+          },
+          {
+            target: "fetchingMyTurns",
+            guard: ({ context }) => context.userRole === "DOCTOR" || context.userRole === "PATIENT",
+            actions: assign({
+              doctors: ({ event }) => event.output,
+              loading: ({ context }) => ({ ...context.loading, doctors: false }),
+            }),
+          },
+          {
+            target: "ready",
+            actions: assign({
+              doctors: ({ event }) => event.output,
+              loading: ({ context }) => ({ ...context.loading, doctors: false }),
+            }),
+          },
+        ],
         onError: {
           target: "idle",
           actions: [
@@ -727,7 +349,7 @@ export const dataMachine = createMachine({
         }),
         input: ({ context }) => ({ accessToken: context.accessToken! }),
         onDone: {
-          target: "ready",
+          target: "fetchingAdminStats",
           actions: assign({
             pendingDoctors: ({ event }) => event.output,
             loading: ({ context }) => ({ ...context.loading, pendingDoctors: false }),
@@ -877,21 +499,31 @@ export const dataMachine = createMachine({
           accessToken: context.accessToken!,
           status: (event as any).status
         }),
-        onDone: {
-          target: "ready",
-          actions: [
-            assign({
+        onDone: [
+          {
+            target: "fetchingDoctorPatients",
+            guard: ({ context }) => context.userRole === "DOCTOR",
+            actions: assign({
               myTurns: ({ event }) => event.output,
               loading: ({ context }) => ({ ...context.loading, myTurns: false }),
             }),
-            ({ context }) => {
-              // Auto-cargar modify requests para pacientes después de cargar turnos
-              if (context.userRole === "PATIENT") {
-                orchestrator.sendToMachine("data", { type: "LOAD_MY_MODIFY_REQUESTS" });
-              }
-            }
-          ],
-        },
+          },
+          {
+            target: "fetchingMyModifyRequests",
+            guard: ({ context }) => context.userRole === "PATIENT",
+            actions: assign({
+              myTurns: ({ event }) => event.output,
+              loading: ({ context }) => ({ ...context.loading, myTurns: false }),
+            }),
+          },
+          {
+            target: "ready",
+            actions: assign({
+              myTurns: ({ event }) => event.output,
+              loading: ({ context }) => ({ ...context.loading, myTurns: false }),
+            }),
+          },
+        ],
         onError: {
           target: "idle",
           actions: [
@@ -935,19 +567,11 @@ export const dataMachine = createMachine({
           doctorId: context.doctorId!
         }),
         onDone: {
-          target: "ready",
-          actions: [
-            assign({
-              doctorPatients: ({ event }) => event.output,
-              loading: ({ context }) => ({ ...context.loading, doctorPatients: false }),
-            }),
-            () => {
-              // Notify doctor machine that patients have been loaded
-              orchestrator.send({
-                type: "DATA_LOADED"
-              });
-            }
-          ],
+          target: "fetchingDoctorAvailability",
+          actions: assign({
+            doctorPatients: ({ event }) => event.output,
+            loading: ({ context }) => ({ ...context.loading, doctorPatients: false }),
+          }),
         },
         onError: {
           target: "idle",
@@ -992,7 +616,7 @@ export const dataMachine = createMachine({
           doctorId: (event as any).doctorId || context.doctorId!
         }),
         onDone: {
-          target: "ready",
+          target: "fetchingDoctorModifyRequests",
           actions: assign({
             doctorAvailability: ({ event }) => event.output,
             loading: ({ context }) => ({ ...context.loading, doctorAvailability: false }),
@@ -1044,18 +668,10 @@ export const dataMachine = createMachine({
         }),
         onDone: {
           target: "ready",
-          actions: [
-            assign({
-              doctorModifyRequests: ({ event }) => event.output,
-              loading: ({ context }) => ({ ...context.loading, doctorModifyRequests: false }),
-            }),
-            // Si no hay pacientes cargados, cargarlos automáticamente
-            ({ context, self }) => {
-              if (context.doctorPatients.length === 0 && !context.loading.doctorPatients) {
-                self.send({ type: "LOAD_DOCTOR_PATIENTS" });
-              }
-            }
-          ],
+          actions: assign({
+            doctorModifyRequests: ({ event }) => event.output,
+            loading: ({ context }) => ({ ...context.loading, doctorModifyRequests: false }),
+          }),
         },
         onError: {
           target: "idle",
@@ -1105,12 +721,10 @@ export const dataMachine = createMachine({
         input: ({ context }) => ({ accessToken: context.accessToken! }),
         onDone: {
           target: "ready",
-          actions: [
-            assign({
-              myModifyRequests: ({ event }) => event.output,
-              loading: ({ context }) => ({ ...context.loading, myModifyRequests: false }),
-            })
-          ],
+          actions: assign({
+            myModifyRequests: ({ event }) => event.output,
+            loading: ({ context }) => ({ ...context.loading, myModifyRequests: false }),
+          }),
         },
         onError: {
           target: "idle",
