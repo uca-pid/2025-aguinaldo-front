@@ -1,5 +1,5 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests, loadMyModifyRequests } from "../utils/MachineUtils/dataMachineUtils";
+import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests, loadMyModifyRequests, loadSpecialties } from "../utils/MachineUtils/dataMachineUtils";
 import { loadDoctorPatients, loadDoctorAvailability } from "../utils/MachineUtils/doctorMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, AdminStats } from "../models/Admin";
@@ -13,6 +13,7 @@ export const DATA_MACHINE_EVENT_TYPES = [
   "SET_AUTH",
   "CLEAR_ACCESS_TOKEN", 
   "RELOAD_DOCTORS",
+  "RELOAD_SPECIALTIES",
   "RELOAD_PENDING_DOCTORS", 
   "RELOAD_ADMIN_STATS",
   "RELOAD_ALL",
@@ -31,6 +32,7 @@ export interface DataMachineContext {
   doctorId: string | null;
   
   doctors: Doctor[];
+  specialties: string[];
   pendingDoctors: PendingDoctor[];
   adminStats: AdminStats;
   availableTurns: string[];
@@ -42,6 +44,7 @@ export interface DataMachineContext {
   
   loading: {
     doctors: boolean;
+    specialties: boolean;
     pendingDoctors: boolean;
     adminStats: boolean;
     availableTurns: boolean;
@@ -54,6 +57,7 @@ export interface DataMachineContext {
   
   errors: {
     doctors: string | null;
+    specialties: string | null;
     pendingDoctors: string | null;
     adminStats: string | null;
     availableTurns: string | null;
@@ -72,6 +76,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
   doctorId: null,
   
   doctors: [],
+  specialties: [],
   pendingDoctors: [],
   adminStats: { patients: 0, doctors: 0, pending: 0 },
   availableTurns: [],
@@ -83,6 +88,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
   
   loading: {
     doctors: false,
+    specialties: false,
     pendingDoctors: false,
     adminStats: false,
     availableTurns: false,
@@ -95,6 +101,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
   
   errors: {
     doctors: null,
+    specialties: null,
     pendingDoctors: null,
     adminStats: null,
     availableTurns: null,
@@ -110,6 +117,7 @@ export type DataMachineEvent =
   | { type: "SET_AUTH"; accessToken: string; userId: string; userRole: string; doctorId?: string }
   | { type: "CLEAR_ACCESS_TOKEN" }
   | { type: "RELOAD_DOCTORS" }
+  | { type: "RELOAD_SPECIALTIES" }
   | { type: "RELOAD_PENDING_DOCTORS" }
   | { type: "RELOAD_ADMIN_STATS" }
   | { type: "RELOAD_ALL" }
@@ -163,6 +171,10 @@ export const dataMachine = createMachine({
           target: "fetchingDoctors",
           guard: ({ context }) => !!context.accessToken,
         },
+        RELOAD_SPECIALTIES: {
+          target: "fetchingSpecialties",
+          guard: ({ context }) => !!context.accessToken,
+        },
         RELOAD_PENDING_DOCTORS: {
           target: "fetchingPendingDoctors",
           guard: ({ context }) => !!context.accessToken,
@@ -207,6 +219,7 @@ export const dataMachine = createMachine({
         return {
           loading: {
             doctors: true,
+            specialties: true,
             pendingDoctors: isAdmin,
             adminStats: isAdmin,
             availableTurns: false,
@@ -218,6 +231,7 @@ export const dataMachine = createMachine({
           },
           errors: {
             doctors: null,
+            specialties: null,
             pendingDoctors: null,
             adminStats: null,
             availableTurns: null,
@@ -260,6 +274,45 @@ export const dataMachine = createMachine({
                   orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
                 }
                 const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar doctores";
+                orchestrator.sendToMachine(UI_MACHINE_ID, {
+                  type: "OPEN_SNACKBAR",
+                  message: errorMessage,
+                  severity: "error"
+                });
+              }
+            ],
+          },
+        },
+        {
+          id: "loadSpecialties",
+          src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
+            return await loadSpecialties(input);
+          }),
+          input: ({ context }) => ({ accessToken: context.accessToken! }),
+          onDone: {
+            actions: assign({
+              specialties: ({ event }) => event.output,
+              loading: ({ context }) => ({ ...context.loading, specialties: false }),
+            }),
+          },
+          onError: {
+            target: "idle",
+            actions: [
+              assign({
+                errors: ({ context, event }) => ({
+                  ...context.errors,
+                  specialties: event.error instanceof Error ? event.error.message : "Error al cargar especialidades"
+                }),
+                loading: ({ context }) => ({
+                  ...context.loading,
+                  specialties: false
+                })
+              }),
+              ({ event }) => {
+                if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                  orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+                }
+                const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar especialidades";
                 orchestrator.sendToMachine(UI_MACHINE_ID, {
                   type: "OPEN_SNACKBAR",
                   message: errorMessage,
@@ -705,6 +758,52 @@ export const dataMachine = createMachine({
                 orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
               }
               const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar doctores";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
+            }
+          ],
+        },
+      },
+    },
+    
+    fetchingSpecialties: {
+      entry: assign({
+        loading: ({ context }) => ({ ...context.loading, specialties: true }),
+        errors: ({ context }) => ({ ...context.errors, specialties: null }),
+      }),
+      invoke: {
+        src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
+          return await loadSpecialties(input);
+        }),
+        input: ({ context }) => ({ accessToken: context.accessToken! }),
+        onDone: {
+          target: "ready",
+          actions: assign({
+            specialties: ({ event }) => event.output,
+            loading: ({ context }) => ({ ...context.loading, specialties: false }),
+          }),
+        },
+        onError: {
+          target: "idle",
+          actions: [
+            assign({
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                specialties: event.error instanceof Error ? event.error.message : "Error al cargar especialidades"
+              }),
+              loading: ({ context }) => ({
+                ...context.loading,
+                specialties: false
+              })
+            }),
+            ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+              }
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar especialidades";
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",
                 message: errorMessage,

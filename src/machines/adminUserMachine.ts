@@ -25,6 +25,7 @@ export interface AdminUserMachineContext {
     patients: number;
     doctors: number;
     pending: number;
+    specialties: string[];
   };
   lastOperation: {
     type: 'approve' | 'reject' | null;
@@ -43,6 +44,7 @@ export const AdminUserMachineDefaultContext: AdminUserMachineContext = {
     patients: 0,
     doctors: 0,
     pending: 0,
+    specialties:[]
   },
   lastOperation: null,
   selectedDoctor: null,
@@ -76,7 +78,12 @@ export const adminUserMachine = createMachine({
               const dataContext = dataSnapshot.context;
               return {
                 pendingDoctors: dataContext.pendingDoctors || [],
-                adminStats: dataContext.adminStats || { patients: 0, doctors: 0, pending: 0 },
+                adminStats: { 
+                  patients: dataContext.adminStats?.patients || 0, 
+                  doctors: dataContext.adminStats?.doctors || 0, 
+                  pending: dataContext.adminStats?.pending || 0,
+                  specialties: dataContext.specialties || []
+                },
                 loading: false
               };
             } catch (error) {

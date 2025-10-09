@@ -7,8 +7,16 @@ import {
 } from "@mui/material";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import "./AdminDashboard.css";
+import { useMachines } from "#/providers/MachineProvider";
 
 export default function AdminDoctors() {
+
+  const {  adminUserState, adminUserSend } = useMachines();
+  const adminContext = adminUserState.context;
+
+  const stats = adminContext.adminStats;
+  const loading = adminContext.loading;
+  const error = adminContext.error;
   return (
     <Box className="dashboard-container">
       <Container maxWidth="lg">
@@ -55,17 +63,14 @@ export default function AdminDoctors() {
             {/* Visual placeholder mockup */}
             <Box sx={{ display: 'flex', gap: 2, mb: 3, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Box sx={{ flex: '1 1 140px', p: 2, bgcolor: '#f1f5f9', borderRadius: 2, minWidth: '140px' }}>
-                <Typography variant="h6" sx={{ color: '#22577a', opacity: 0.7 }}>—</Typography>
+                <Typography variant="h6" sx={{ color: '#22577a', opacity: 0.7 }}>{adminContext.adminStats.doctors}</Typography>
                 <Typography variant="caption" sx={{ color: '#64748b' }}>Activos</Typography>
               </Box>
               <Box sx={{ flex: '1 1 140px', p: 2, bgcolor: '#f1f5f9', borderRadius: 2, minWidth: '140px' }}>
-                <Typography variant="h6" sx={{ color: '#22577a', opacity: 0.7 }}>—</Typography>
+                <Typography variant="h6" sx={{ color: '#22577a', opacity: 0.7 }}>{adminContext.adminStats.specialties.length || 0}</Typography>
                 <Typography variant="caption" sx={{ color: '#64748b' }}>Especialidades</Typography>
               </Box>
-              <Box sx={{ flex: '1 1 140px', p: 2, bgcolor: '#f1f5f9', borderRadius: 2, minWidth: '140px' }}>
-                <Typography variant="h6" sx={{ color: '#22577a', opacity: 0.7 }}>—</Typography>
-                <Typography variant="caption" sx={{ color: '#64748b' }}>Promedio ★</Typography>
-              </Box>
+            
             </Box>
 
             <Box sx={{ mt: 4, p: 3, bgcolor: '#f8fafc', borderRadius: 2, border: '1px dashed #cbd5e1' }}>
