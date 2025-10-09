@@ -1,0 +1,208 @@
+
+.admin-doctors-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 4rem;
+}
+
+.admin-doctors-paper {
+  padding: 3rem;
+  width: 100%;
+  max-width: 1200px;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Stats cards container */
+.stats-cards-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.stats-card {
+  flex: 1 1 140px;
+  padding: 1rem;
+  background-color: #f1f5f9;
+  border-radius: 0.5rem;
+  min-width: 140px;
+}
+
+.stats-card-number {
+  color: #22577a !important;
+  opacity: 0.7;
+}
+
+.stats-card-label {
+  color: #64748b !important;
+}
+
+.specialties-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #f8fafc;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.specialties-section:hover {
+  background-color: #f1f5f9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.specialties-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.specialties-title {
+  color: #0d2230 !important;
+  font-weight: 600 !important;
+}
+
+.specialties-chip {
+  color: #64748b !important;
+  border-color: #cbd5e1 !important;
+  font-weight: 500 !important;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.5rem;
+}
+
+
+.chart-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chart-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.chart-grid::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.chart-grid::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.chart-card {
+  padding: 1.25rem;
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #22577a15;
+  transition: all 0.2s ease;
+}
+
+.chart-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.chart-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.specialty-chip {
+  background-color: #22577a !important;
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  height: 36px !important;
+  max-width: 160px !important;
+}
+
+.specialty-chip .MuiChip-label {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+.doctor-count-container {
+  text-align: right;
+}
+
+.doctor-count-number {
+  color: #22577a !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+}
+
+.doctor-count-label {
+  color: #64748b !important;
+  font-weight: 500 !important;
+  font-size: 0.7rem !important;
+}
+
+
+.specialty-progress {
+  height: 6px !important;
+  border-radius: 1rem !important;
+  background-color: #22577a20 !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.specialty-progress .MuiLinearProgress-bar {
+  background-color: #22577a !important;
+  border-radius: 1rem !important;
+}
+
+.chart-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chart-footer-text {
+  color: #64748b !important;
+  font-size: 0.8rem !important;
+}
+
+.percentage-badge {
+  display: flex;
+  align-items: center;
+  background-color: #22577a15;
+  color: #22577a;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  min-width: 45px;
+  justify-content: center;
+}
+
+/* Loading and empty states */
+.loading-state, .empty-state {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #f8fafc;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.loading-text, .empty-text {
+  color: #94a3b8 !important;
+}

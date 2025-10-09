@@ -168,6 +168,14 @@ export const adminUserMachine = createMachine({
                 message: `Doctor aprobado exitosamente: ${approvalResponse.message}`,
                 severity: "success"
               });
+              
+      
+              orchestrator.sendToMachine(DATA_MACHINE_ID, {
+                type: "RELOAD_DOCTORS"
+              });
+              orchestrator.sendToMachine(DATA_MACHINE_ID, {
+                type: "RELOAD_SPECIALTIES" 
+              });
             }
           ],
         },
@@ -239,6 +247,14 @@ export const adminUserMachine = createMachine({
                 type: "OPEN_SNACKBAR",
                 message: `Doctor rechazado exitosamente: ${rejectionResponse.message}`,
                 severity: "success"
+              });
+              
+      
+              orchestrator.sendToMachine(DATA_MACHINE_ID, {
+                type: "RELOAD_DOCTORS"
+              });
+              orchestrator.sendToMachine(DATA_MACHINE_ID, {
+                type: "RELOAD_SPECIALTIES" 
               });
             }
           ],
