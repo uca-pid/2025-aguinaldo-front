@@ -51,6 +51,12 @@ vi.mock('../machines/notificationMachine', () => ({
   notificationMachine: { id: 'notification-machine' },
 }));
 
+vi.mock('../machines/medicalHistoryMachine', () => ({
+  MEDICAL_HISTORY_MACHINE_ID: 'medical-history-machine',
+  MEDICAL_HISTORY_MACHINE_EVENT_TYPES: ['MEDICAL_HISTORY_EVENT_1', 'MEDICAL_HISTORY_EVENT_2'],
+  medicalHistoryMachine: { id: 'medical-history-machine' },
+}));
+
 // Import the mocked module
 import { useStateMachine } from '../hooks/useStateMachine';
 
@@ -68,6 +74,7 @@ const TestComponent = () => {
       <div data-testid="admin-state">{JSON.stringify(machines.adminUserState)}</div>
       <div data-testid="profile-state">{JSON.stringify(machines.profileState)}</div>
       <div data-testid="notification-state">{JSON.stringify(machines.notificationState)}</div>
+      <div data-testid="medical-history-state">{JSON.stringify(machines.medicalHistoryState)}</div>
       <button
         data-testid="ui-send"
         onClick={() => machines.uiSend({ type: 'TOGGLE', key: 'test' })}
@@ -126,6 +133,7 @@ describe('MachineProvider', () => {
     adminUserState: { value: 'idle', context: {} },
     profileState: { value: 'idle', context: {} },
     notificationState: { value: 'idle', context: {} },
+    medicalHistoryState: null,
   };
 
   const mockSends = {
@@ -135,6 +143,7 @@ describe('MachineProvider', () => {
     adminUserSend: vi.fn(),
     profileSend: vi.fn(),
     notificationSend: vi.fn(),
+    medicalHistorySend: vi.fn(),
   };
 
   beforeEach(() => {
@@ -155,6 +164,8 @@ describe('MachineProvider', () => {
           return { state: mockStates.profileState, send: mockSends.profileSend };
         case 'notification-machine':
           return { state: mockStates.notificationState, send: mockSends.notificationSend };
+        case 'medical-history-machine':
+          return { state: mockStates.medicalHistoryState, send: mockSends.medicalHistorySend };
         default:
           return { state: null, send: vi.fn() };
       }
@@ -262,6 +273,8 @@ describe('MachineProvider', () => {
       profileSend: mockSends.profileSend,
       notificationState: mockStates.notificationState,
       notificationSend: mockSends.notificationSend,
+      medicalHistoryState: mockStates.medicalHistoryState,
+      medicalHistorySend: mockSends.medicalHistorySend,
     });
   });
 });

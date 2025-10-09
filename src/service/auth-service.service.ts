@@ -22,6 +22,14 @@ export class AuthService {
 
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        
+        // Handle validation errors with field-specific messages
+        if (response.status === 400 && (errorData as any)?.fieldErrors) {
+          const validationError = new Error('Validation failed');
+          (validationError as any).fieldErrors = (errorData as any).fieldErrors;
+          throw validationError;
+        }
+        
         throw new Error(
           errorData?.message || 
           errorData?.error ||
@@ -49,6 +57,14 @@ export class AuthService {
 
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        
+        // Handle validation errors with field-specific messages
+        if (response.status === 400 && (errorData as any)?.fieldErrors) {
+          const validationError = new Error('Validation failed');
+          (validationError as any).fieldErrors = (errorData as any).fieldErrors;
+          throw validationError;
+        }
+        
         throw new Error(
           errorData?.message || 
           errorData?.error ||

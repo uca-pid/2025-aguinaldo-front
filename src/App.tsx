@@ -30,8 +30,8 @@ function AppContent() {
 
   const userRole = authContext.authResponse?.role || '';
   const userStatus = authContext.authResponse?.status || '';
-  
-  const shouldHideHeader = userStatus !== "ACTIVE";
+
+  const isActive = userStatus === "ACTIVE";
 
   useEffect(() => {
     uiSend({ type: "ADD_NAVIGATE_HOOK", navigate, initialPath: window.location.pathname });
@@ -47,11 +47,17 @@ function AppContent() {
 
   const renderDoctorRoutes = () => (
     <>
-      <Route path="/doctor/enable-hours" element={<EnableHours />} />
-      <Route path="/doctor/view-patients" element={<ViewPatients />} />
-      <Route path="/doctor/view-turns" element={<DoctorViewTurns />} />
-      <Route path="/patient-detail" element={<PatientDetails />} />
-      <Route path="/doctor/turns-modifications" element={<TurnsModifications />} />
+      {isActive ? (
+        <>
+          <Route path="/doctor/enable-hours" element={<EnableHours />} />
+          <Route path="/doctor/view-patients" element={<ViewPatients />} />
+          <Route path="/doctor/view-turns" element={<DoctorViewTurns />} />
+          <Route path="/patient-detail" element={<PatientDetails />} />
+          <Route path="/doctor/turns-modifications" element={<TurnsModifications />} />
+        </>
+      ) : (
+        <Route path="/pending-activation" element={<PendingActivation />} />
+      )}
     </>
   );
 
@@ -66,7 +72,7 @@ function AppContent() {
   return (
       <Box>
         
-        {!shouldHideHeader && (
+        {isActive && (
           <>
             <Box className="app-header">
               <FloatingMenu />
@@ -86,7 +92,7 @@ function AppContent() {
           {userRole === 'PATIENT' && renderPatientRoutes()}
           
           <Route path="/profile" element={<ProfileScreen />} />
-          <Route path="/pending-activation" element={<PendingActivation />} />
+          
         </Routes>
         <SnackbarAlert />
         <ConfirmationModal />

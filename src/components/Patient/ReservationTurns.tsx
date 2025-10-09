@@ -30,7 +30,11 @@ const ReservationTurns: React.FC = () => {
     : [];
 
   const handleReasonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "reason"], value: e.target.value });
+    const value = e.target.value;
+    // Limit to 500 characters for security
+    if (value.length <= 500) {
+      turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "reason"], value });
+    }
   };    
 
   const handleProfessionChange = (event: SelectChangeEvent) => {
@@ -41,6 +45,7 @@ const ReservationTurns: React.FC = () => {
   
   const handleDoctorChange = (event: SelectChangeEvent) => {
     const selectedDoctor = turnContext.doctors.find((doctor: any) => doctor.id === event.target.value);
+    
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "doctorId"], value: event.target.value });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "profesionalSelected"], value: selectedDoctor ? `${selectedDoctor.name} ${selectedDoctor.surname}` : "" });
     
@@ -200,6 +205,8 @@ const ReservationTurns: React.FC = () => {
                   multiline
                   rows={3}
                   placeholder="Describe brevemente el motivo de tu consulta..."
+                  helperText={`${formValues.reason?.length || 0}/500 caracteres`}
+                  error={(formValues.reason?.length || 0) > 500}
                 />
                 
               </Box>
@@ -280,29 +287,33 @@ const ReservationTurns: React.FC = () => {
                         {formValues.dateSelected.format("DD/MM/YYYY")}
                       </Typography>
                       <Box className="reservation-time-grid">
-                        {turnContext.availableTurns
-                          .filter((timeSlot: string) => {
-                            const slotDateTime = dayjs(timeSlot);
-                            const now = dayjs();
-                            
-                            if (slotDateTime.isSame(now, 'day')) {
-                              return slotDateTime.isAfter(now);
-                            }
-                            
-                            return slotDateTime.isAfter(now, 'day');
-                          })
-                          .map((timeSlot: string, index: number) => (
-                            <Button
-                              key={index}
-                              className={`reservation-time-slot-button ${formValues.scheduledAt === timeSlot ? 'selected' : ''}`}
-                              onClick={() => handleTimeSelect(timeSlot)}
-                              variant={formValues.scheduledAt === timeSlot ? 'contained' : 'outlined'}
-                            >
-                              <Typography variant="body1" component="span" sx={{ fontWeight: 600 }}>
-                                {dayjs(timeSlot).format('HH:mm')}
-                              </Typography>
-                            </Button>
-                          ))}
+                        {(() => {
+                          return turnContext.availableTurns
+                            .filter((timeSlot: string) => {
+                              const slotDateTime = dayjs(timeSlot);
+                              const now = dayjs();
+                              
+                              if (slotDateTime.isSame(now, 'day')) {
+                                return slotDateTime.isAfter(now);
+                              }
+                              
+                              return slotDateTime.isAfter(now, 'day');
+                            })
+                            .map((timeSlot: string, index: number) => {
+                              return (
+                                <Button
+                                  key={index}
+                                  className={`reservation-time-slot-button ${formValues.scheduledAt === timeSlot ? 'selected' : ''}`}
+                                  onClick={() => handleTimeSelect(timeSlot)}
+                                  variant={formValues.scheduledAt === timeSlot ? 'contained' : 'outlined'}
+                                >
+                                  <Typography variant="body1" component="span" sx={{ fontWeight: 600 }}>
+                                    {dayjs(timeSlot).format('HH:mm')}
+                                  </Typography>
+                                </Button>
+                              );
+                            });
+                        })()}
                       </Box>
                     </Box>
                   ) : (

@@ -68,7 +68,8 @@ export const loadAdminStats = async ({ accessToken, isAdmin }: LoadAdminStatsPar
  * Load available turns for a specific doctor and date
  */
 export const loadAvailableTurns = async ({ accessToken, doctorId, date }: LoadAvailableTurnsParams): Promise<string[]> => {
-  return await TurnService.getAvailableTurns(doctorId, date, accessToken);
+  const result = await TurnService.getAvailableTurns(doctorId, date, accessToken);
+  return result;
 };
 
 /**

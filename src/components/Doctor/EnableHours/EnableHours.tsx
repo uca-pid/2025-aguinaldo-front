@@ -17,20 +17,26 @@ import {
   CalendarMonthOutlined, 
   CheckCircle,
   Add,
-  Delete
+  Delete,
+  KeyboardArrowUp,
+  KeyboardArrowDown
 } from '@mui/icons-material'
 import { motion, AnimatePresence } from "framer-motion"
 import { useMachines } from "#/providers/MachineProvider"
 import './EnableHours.css'
 
+
+
 const RangeRow = motion.create(Box);
 
 const EnableHours: React.FC = () => {
-    const { uiSend, doctorState, doctorSend } = useMachines();
+    const { uiSend, doctorState, doctorSend, uiState } = useMachines();
+    const uiContext = uiState.context;
     const doctorContext = doctorState.context;
     const availability = doctorContext.availability || [];
     const enabledDays = availability.filter((day: any) => day.enabled).length;
     const totalRanges = availability.reduce((total: any, day: any) => total + (day.enabled ? day.ranges.length : 0), 0);
+    const isMinimizedHoursWarning = uiContext.toggleStates?.['MinimizedHoursWarning'] || false;
 
     const saveAvailability = () => {
         if (!doctorContext.accessToken || !doctorContext.doctorId) {
@@ -152,29 +158,63 @@ const EnableHours: React.FC = () => {
                         >
                             <Card className="enablehours-no-config-card">
                                 <CardContent className="enablehours-no-config-content">
-                                    <Box className="enablehours-no-config-icon">
-                                        <CalendarMonthOutlined className="enablehours-no-config-calendar" />
-                                    </Box>
-                                    <Typography variant="h5" className="enablehours-no-config-title">
-                                        ¡Configura tu disponibilidad!
-                                    </Typography>
-                                    <Typography variant="body1" className="enablehours-no-config-description">
-                                        Actualmente no tienes días configurados para atender pacientes.
-                                        Activa al menos un día y configura tus horarios para comenzar a recibir citas.
-                                    </Typography>
-                                    <Box className="enablehours-no-config-steps">
-                                        <Typography variant="body2" className="enablehours-step-item">
-                                            <span className="enablehours-step-number">1</span>
-                                            Activa el interruptor de los días que quieras trabajar
-                                        </Typography>
-                                        <Typography variant="body2" className="enablehours-step-item">
-                                            <span className="enablehours-step-number">2</span>
-                                            Configura los horarios de inicio y fin
-                                        </Typography>
-                                        <Typography variant="body2" className="enablehours-step-item">
-                                            <span className="enablehours-step-number">3</span>
-                                            Guarda tu disponibilidad
-                                        </Typography>
+                                    <AnimatePresence>
+                                        {!isMinimizedHoursWarning && (
+                                            <motion.div
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: "auto" }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <Box className="enablehours-no-config-layout">
+                                                    <Box className="enablehours-no-config-left">
+                                                        <Box className="enablehours-no-config-icon">
+                                                            <CalendarMonthOutlined className="enablehours-no-config-calendar" />
+                                                        </Box>
+                                                        <Typography variant="h4" className="enablehours-no-config-title">
+                                                            ¡Configura tu disponibilidad!
+                                                        </Typography>
+                                                        <Typography variant="body1" className="enablehours-no-config-description">
+                                                            Actualmente no tienes días configurados para atender pacientes.
+                                                        </Typography>                                                
+                                                    </Box>
+                                                    <Box className="enablehours-no-config-divider"></Box>
+                                                    <Box className="enablehours-no-config-right">
+                                                        <Box className="enablehours-no-config-steps">
+                                                            <Box className="enablehours-step-card">
+                                                                <Box className="enablehours-step-number">1</Box>
+                                                                <Typography variant="body2" className="enablehours-step-text">
+                                                                    Activa el interruptor del día que deseas configurar
+                                                                </Typography>
+                                                            </Box>
+                                                            <Box className="enablehours-step-card">
+                                                                <Box className="enablehours-step-number">2</Box>
+                                                                <Typography variant="body2" className="enablehours-step-text">
+                                                                    Configura uno o más rangos de horarios
+                                                                </Typography>
+                                                            </Box>
+                                                            <Box className="enablehours-step-card">
+                                                                <Box className="enablehours-step-number">3</Box>
+                                                                <Typography variant="body2" className="enablehours-step-text">
+                                                                    Guarda tu disponibilidad
+                                                                </Typography>
+                                                            </Box>
+                                                        </Box>
+                                                    </Box>
+                                                </Box>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                    <Box className="enablehours-minimize-container">
+                                        <Button 
+                                            onClick={() => uiSend({ type: "TOGGLE", key: "MinimizedHoursWarning" })} 
+                                            size="small" 
+                                            startIcon={isMinimizedHoursWarning ? <KeyboardArrowDown /> : <KeyboardArrowUp />}
+                                            variant="text"
+                                            sx={{ color: '#c2410c', textTransform: 'none' }}
+                                        >
+                                            {isMinimizedHoursWarning ? 'Expandir' : 'Minimizar'}
+                                        </Button>
                                     </Box>
                                 </CardContent>
                             </Card>

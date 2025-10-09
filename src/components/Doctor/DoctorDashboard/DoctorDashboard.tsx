@@ -153,13 +153,13 @@ const DoctorDashboard: React.FC = () => {
 
             <DashboardCard
               type="doctor"
-              variant={hasConfiguredDays ? "accent" : "warning"}
+              variant={isLoading ? "accent" : (hasConfiguredDays ? "accent" : "warning")}
               icon={hasConfiguredDays ? <EventAvailableIcon className="doctor-action-icon" /> : <ErrorOutlineIcon className="doctor-action-icon" />}
               title="Disponibilidad"
-              description={hasConfiguredDays ? "Define los horarios disponibles para reservas" : "⚠️ No tienes horarios configurados"}
+              description={hasConfiguredDays ? "Define los horarios disponibles para reservas" : "No tienes horarios configurados"}
               buttonText={hasConfiguredDays ? "Configurar" : "Configurar Ahora"}
               onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/enable-hours" })}
-              warning={!hasConfiguredDays}
+              warning={!hasConfiguredDays && !isLoading}
             />
           </Box>
         </Container>

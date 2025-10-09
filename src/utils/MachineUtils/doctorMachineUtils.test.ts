@@ -6,14 +6,23 @@ import {
   saveDoctorAvailability
 } from './doctorMachineUtils'
 import { DoctorService } from '../../service/doctor-service.service'
+import { MedicalHistoryService } from '../../service/medical-history-service.service'
 
 // Mock the DoctorService
 vi.mock('../../service/doctor-service.service', () => ({
   DoctorService: {
     getDoctorPatients: vi.fn(),
     getAvailability: vi.fn(),
-    updateMedicalHistory: vi.fn(),
     saveAvailability: vi.fn()
+  }
+}))
+
+// Mock the MedicalHistoryService
+vi.mock('../../service/medical-history-service.service', () => ({
+  MedicalHistoryService: {
+    addMedicalHistory: vi.fn(),
+    updateMedicalHistory: vi.fn(),
+    deleteMedicalHistory: vi.fn(),
   }
 }))
 
@@ -62,7 +71,7 @@ describe('doctorMachineUtils', () => {
   })
 
   describe('updateMedicalHistory', () => {
-    it('should call DoctorService.updateMedicalHistory with correct parameters', async () => {
+    it('should call MedicalHistoryService.addMedicalHistory with correct parameters', async () => {
       const params = {
         accessToken: 'token123',
         doctorId: 'doctor456',
@@ -70,16 +79,32 @@ describe('doctorMachineUtils', () => {
         medicalHistory: 'Patient has allergies to penicillin'
       }
 
-      ;(DoctorService.updateMedicalHistory as Mock).mockResolvedValue(undefined)
+      const mockMedicalHistory = {
+        id: 'history-1',
+        content: 'Patient has allergies to penicillin',
+        patientId: 'patient789',
+        patientName: 'John',
+        patientSurname: 'Doe',
+        doctorId: 'doctor456',
+        doctorName: 'Dr. Jane',
+        doctorSurname: 'Smith',
+        createdAt: '2023-10-08T10:00:00Z',
+        updatedAt: '2023-10-08T10:00:00Z'
+      };
 
-      await expect(updateMedicalHistory(params)).resolves.not.toThrow()
+      ;(MedicalHistoryService.addMedicalHistory as Mock).mockResolvedValue(mockMedicalHistory)
 
-      expect(DoctorService.updateMedicalHistory).toHaveBeenCalledWith(
+      const result = await updateMedicalHistory(params)
+
+      expect(MedicalHistoryService.addMedicalHistory).toHaveBeenCalledWith(
         'token123',
         'doctor456',
-        'patient789',
-        'Patient has allergies to penicillin'
+        {
+          patientId: 'patient789',
+          content: 'Patient has allergies to penicillin'
+        }
       )
+      expect(result).toEqual(mockMedicalHistory)
     })
   })
 
@@ -88,6 +113,7 @@ describe('doctorMachineUtils', () => {
       const params = {
         accessToken: 'token123',
         doctorId: 'doctor456',
+        slotDurationMin: 30,
         availability: [
           {
             day: 'LUNES',
@@ -107,7 +133,6 @@ describe('doctorMachineUtils', () => {
       const result = await saveDoctorAvailability(params)
 
       expect(DoctorService.saveAvailability).toHaveBeenCalledWith('token123', 'doctor456', {
-        slotDurationMin: 30,
         weeklyAvailability: [
           {
             day: 'MONDAY',
@@ -128,6 +153,7 @@ describe('doctorMachineUtils', () => {
       const params = {
         accessToken: 'token123',
         doctorId: 'doctor456',
+        slotDurationMin: 30,
         availability: [
           {
             day: 'MIÉRCOLES',
@@ -142,7 +168,6 @@ describe('doctorMachineUtils', () => {
       await saveDoctorAvailability(params)
 
       expect(DoctorService.saveAvailability).toHaveBeenCalledWith('token123', 'doctor456', {
-        slotDurationMin: 30,
         weeklyAvailability: [
           {
             day: 'WEDNESDAY',
@@ -157,6 +182,7 @@ describe('doctorMachineUtils', () => {
       const params = {
         accessToken: 'token123',
         doctorId: 'doctor456',
+        slotDurationMin: 30,
         availability: [
           {
             day: 'LUNES',
@@ -177,7 +203,6 @@ describe('doctorMachineUtils', () => {
       await saveDoctorAvailability(params)
 
       expect(DoctorService.saveAvailability).toHaveBeenCalledWith('token123', 'doctor456', {
-        slotDurationMin: 30,
         weeklyAvailability: [
           {
             day: 'MONDAY',
@@ -192,6 +217,7 @@ describe('doctorMachineUtils', () => {
       const params = {
         accessToken: 'token123',
         doctorId: 'doctor456',
+        slotDurationMin: 30,
         availability: [
           {
             day: 'UNKNOWN_DAY',
@@ -206,7 +232,6 @@ describe('doctorMachineUtils', () => {
       await saveDoctorAvailability(params)
 
       expect(DoctorService.saveAvailability).toHaveBeenCalledWith('token123', 'doctor456', {
-        slotDurationMin: 30,
         weeklyAvailability: [
           {
             day: 'UNKNOWN_DAY',

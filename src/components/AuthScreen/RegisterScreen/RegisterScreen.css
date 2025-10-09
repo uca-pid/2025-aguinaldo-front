@@ -31,32 +31,32 @@
 }
 
 .register-chip {
-  padding: 16px 24px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
+  padding: 16px 24px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
 }
 
 .register-chip--patient {
-  background: #22577a;
-  color: white;
-  box-shadow: 0 4px 15px rgba(34, 87, 122, 0.3);
+  background: #22577a !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(34, 87, 122, 0.3) !important;
 }
 
 .register-chip--patient:hover {
-  background: #1f4f6f;
-  box-shadow: 0 6px 20px rgba(34, 87, 122, 0.4);
+  background: #1f4f6f !important;
+  box-shadow: 0 6px 20px rgba(34, 87, 122, 0.4) !important;
 }
 
 .register-chip--doctor {
-  background: #2d7d90;
-  color: white;
-  box-shadow: 0 4px 15px rgba(45, 125, 144, 0.3);
+  background: #2d7d90 !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(45, 125, 144, 0.3) !important;
 }
 
 .register-chip--doctor:hover {
-  background: #22577a;
-  box-shadow: 0 6px 20px rgba(45, 125, 144, 0.4);
+  background: #22577a !important;
+  box-shadow: 0 6px 20px rgba(45, 125, 144, 0.4) !important;
 }
 
 /* Doctor professional info section */
@@ -70,7 +70,7 @@
 
 .register-doctor-title {
   font-weight: 600;
-  margin-bottom: 24px;
+  margin-bottom: 16px !important;
   color: #22577a;
 }
 
@@ -129,7 +129,48 @@
 
 /* Register form specific spacing */
 .register-form-stack {
-  gap: 24px;
+  gap: 0 !important;
+}
+
+.register-form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 0 !important;
+}
+
+/* Form field styling with reserved space for error messages */
+.auth-field {
+  margin-bottom: 0 !important;
+}
+
+.auth-field .MuiFormHelperText-root {
+  min-height: 20px !important;
+  margin: 3px 14px 0 !important;
+}
+
+/* Doctor section specific spacing */
+.register-doctor-section .auth-field {
+  margin-bottom: 0 !important;
+}
+
+/* Form controls spacing */
+.register-form-control {
+  margin-bottom: 0 !important;
+}
+
+.register-form-control .MuiFormHelperText-root {
+  min-height: 20px !important;
+  margin: 3px 14px 0 !important;
+}
+
+/* Date picker specific styling */
+.register-date-picker {
+  margin-bottom: 0 !important;
+}
+
+.register-date-picker .MuiFormHelperText-root {
+  min-height: 20px !important;
+  margin: 3px 14px 0 !important;
 }
 
 /* Success message styling for register */
