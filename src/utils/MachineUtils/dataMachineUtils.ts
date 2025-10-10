@@ -41,6 +41,11 @@ export interface LoadMyModifyRequestsParams {
   accessToken: string;
 }
 
+export interface LoadTurnFilesParams {
+  accessToken: string;
+  turnIds: string[];
+}
+
 /**
  * Load all doctors
  */
@@ -92,4 +97,34 @@ export const loadDoctorModifyRequests = async ({ accessToken, doctorId }: LoadDo
  */
 export const loadMyModifyRequests = async ({ accessToken }: LoadMyModifyRequestsParams): Promise<any[]> => {
   return await TurnService.getMyModifyRequests(accessToken);
+};
+
+/**
+ * Load turn files information for all user's turns
+ */
+export const loadTurnFiles = async ({ accessToken, turnIds }: LoadTurnFilesParams): Promise<Record<string, any>> => {
+  const { StorageService } = await import("../../service/storage-service.service");
+  
+  const turnFiles: Record<string, any> = {};
+  
+  // Load file info for each turn in parallel
+  const filePromises = turnIds.map(async (turnId) => {
+    try {
+      const fileInfo = await StorageService.getTurnFileInfo(accessToken, turnId);
+      if (fileInfo) {
+        turnFiles[turnId] = fileInfo;
+      } else {
+        turnFiles[turnId] = null; // Explicitly mark as no file
+      }
+    } catch (error) {
+      // Only log actual errors, not 404s for turns without files
+      if (error instanceof Error && !error.message.includes('404')) {
+        console.error(`❌ Failed to load file info for turn ${turnId}:`, error);
+      }
+      turnFiles[turnId] = null; // Mark as no file on error
+    }
+  });
+  
+  await Promise.all(filePromises);
+  return turnFiles;
 };
