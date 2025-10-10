@@ -160,11 +160,10 @@ export const dataMachine = createMachine({
               userId: ({ event }) => event.userId,
               doctorId: ({ event }) => event.userRole === "DOCTOR" ? event.userId : null,
             }),
-            ({ event }) => {
+            () => {
               // Load notifications once when user authenticates
               orchestrator.sendToMachine("notification", {
-                type: "LOAD_NOTIFICATIONS",
-                accessToken: event.accessToken
+                type: "LOAD_NOTIFICATIONS"
               });
             }
           ],

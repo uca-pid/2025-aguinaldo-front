@@ -41,9 +41,8 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ open, onClose }) 
   };
 
   const handleMarkAllAsRead = () => {
-    notifications.forEach(notification => {
-      notificationSend({ type: "DELETE_NOTIFICATION", notificationId: notification.id });
-    });
+    // Delete all notifications in one batch operation
+    notificationSend({ type: "DELETE_ALL_NOTIFICATIONS" });
   };
 
   const getSeverityIcon = (message: string) => {
