@@ -1,11 +1,14 @@
 import { createMachine, assign, fromPromise } from 'xstate';
 import { MedicalHistory, CreateMedicalHistoryRequest, UpdateMedicalHistoryContentRequest } from '../models/MedicalHistory';
 import { MedicalHistoryService } from '../service/medical-history-service.service';
+import { TurnService } from '../service/turn-service.service';
+import { orchestrator } from '../core/Orchestrator';
 
 export const MEDICAL_HISTORY_MACHINE_ID = "medicalHistory"; 
 export const MEDICAL_HISTORY_MACHINE_EVENT_TYPES = [
   "LOAD_PATIENT_MEDICAL_HISTORY",
   "ADD_HISTORY_ENTRY",
+  "ADD_HISTORY_ENTRY_FOR_TURN",
   "UPDATE_HISTORY_ENTRY",
   "DELETE_HISTORY_ENTRY",
   "SELECT_HISTORY",
@@ -17,6 +20,13 @@ export const MEDICAL_HISTORY_MACHINE_EVENT_TYPES = [
 interface MedicalHistoryMachineContext {
   medicalHistories: MedicalHistory[];
   currentPatientId: string | null;
+  currentTurnId: string | null;
+  currentTurnInfo: {
+    patientName?: string;
+    scheduledAt?: string;
+    status?: string;
+  } | null;
+  patientTurns: any[]; // Store patient's turns for turn information display
   error: string | null;
   isLoading: boolean;
   selectedHistory: MedicalHistory | null;
@@ -29,6 +39,7 @@ interface MedicalHistoryMachineContext {
 export type MedicalHistoryMachineEvent =
   | { type: 'LOAD_PATIENT_MEDICAL_HISTORY'; patientId: string; accessToken: string }
   | { type: 'ADD_HISTORY_ENTRY'; content: string; accessToken: string; doctorId: string }
+  | { type: 'ADD_HISTORY_ENTRY_FOR_TURN'; turnId: string; content: string; accessToken: string; doctorId: string; turnInfo?: { patientName?: string; scheduledAt?: string; status?: string } }
   | { type: 'UPDATE_HISTORY_ENTRY'; historyId: string; content: string; accessToken: string; doctorId: string }
   | { type: 'DELETE_HISTORY_ENTRY'; historyId: string; accessToken: string; doctorId: string }
   | { type: 'SELECT_HISTORY'; history: MedicalHistory }
@@ -47,6 +58,9 @@ export const medicalHistoryMachine = createMachine({
   context: {
     medicalHistories: [],
     currentPatientId: null,
+    currentTurnId: null,
+    currentTurnInfo: null,
+    patientTurns: [],
     error: null,
     isLoading: false,
     selectedHistory: null,
@@ -69,6 +83,17 @@ export const medicalHistoryMachine = createMachine({
         ADD_HISTORY_ENTRY: {
           target: 'addingMedicalHistory',
           actions: assign({
+            newHistoryContent: ({ event }) => event.content,
+            accessToken: ({ event }) => event.accessToken,
+            doctorId: ({ event }) => event.doctorId,
+            error: () => null,
+          }),
+        },
+        ADD_HISTORY_ENTRY_FOR_TURN: {
+          target: 'addingMedicalHistoryForTurn',
+          actions: assign({
+            currentTurnId: ({ event }) => event.turnId,
+            currentTurnInfo: ({ event }) => event.turnInfo || null,
             newHistoryContent: ({ event }) => event.content,
             accessToken: ({ event }) => event.accessToken,
             doctorId: ({ event }) => event.doctorId,
@@ -137,7 +162,8 @@ export const medicalHistoryMachine = createMachine({
         onDone: {
           target: 'idle',
           actions: assign({
-            medicalHistories: ({ event }) => event.output,
+            medicalHistories: ({ event }) => event.output.medicalHistories,
+            patientTurns: ({ event }) => event.output.patientTurns,
           }),
         },
         onError: {
@@ -166,13 +192,87 @@ export const medicalHistoryMachine = createMachine({
               medicalHistories: ({ context, event }) => [...context.medicalHistories, event.output],
               newHistoryContent: () => '',
             }),
+            () => {
+              orchestrator.send({
+                type: 'OPEN_SNACKBAR',
+                message: 'Historia médica agregada exitosamente',
+                severity: 'success'
+              });
+            }
           ],
         },
         onError: {
           target: 'idle',
-          actions: assign({
-            error: ({ event }) => `Error adding medical history entry: ${event.error}`,
-          }),
+          actions: [
+            assign({
+              error: ({ event }) => `Error adding medical history entry: ${event.error}`,
+            }),
+            () => {
+              orchestrator.send({
+                type: 'OPEN_SNACKBAR',
+                message: 'Error al agregar historia médica',
+                severity: 'error'
+              });
+            }
+          ],
+        },
+      },
+    },
+    addingMedicalHistoryForTurn: {
+      entry: assign({ isLoading: () => true }),
+      exit: assign({ isLoading: () => false }),
+      invoke: {
+        src: 'addMedicalHistoryEntryForTurn',
+        input: ({ context }) => ({
+          turnId: context.currentTurnId!,
+          content: context.newHistoryContent,
+          accessToken: context.accessToken!,
+          doctorId: context.doctorId!,
+        }),
+        onDone: {
+          target: 'idle',
+          actions: [
+            assign({
+              medicalHistories: ({ context, event }) => [...context.medicalHistories, event.output],
+              newHistoryContent: () => '',
+              currentTurnId: () => null,
+              currentTurnInfo: () => null,
+            }),
+            ({ context }) => {
+              const turnInfo = context.currentTurnInfo;
+              const message = turnInfo 
+                ? `Historia médica agregada exitosamente para ${turnInfo.patientName} - ${new Date(turnInfo.scheduledAt || '').toLocaleDateString()}`
+                : 'Historia médica agregada exitosamente';
+              
+              orchestrator.send({
+                type: 'OPEN_SNACKBAR',
+                message,
+                severity: 'success'
+              });
+            }
+          ],
+        },
+        onError: {
+          target: 'idle',
+          actions: [
+            assign({
+              error: ({ event }) => `Error adding medical history entry for turn: ${event.error}`,
+              currentTurnId: () => null,
+              currentTurnInfo: () => null,
+            }),
+            ({ context }) => {
+              const turnInfo = context.currentTurnInfo;
+              const message = turnInfo 
+                ? `Error al agregar historia médica para ${turnInfo.patientName}`
+                : 'Error al agregar historia médica';
+              
+              orchestrator.send({
+                type: 'OPEN_SNACKBAR',
+                message,
+                severity: 'error'
+              });
+            }
+          ],
         },
       },
     },
@@ -197,13 +297,29 @@ export const medicalHistoryMachine = createMachine({
                 ),
               selectedHistory: ({ event }) => event.output,
             }),
+            () => {
+              orchestrator.send({
+                type: 'OPEN_SNACKBAR',
+                message: 'Historia médica actualizada exitosamente',
+                severity: 'success'
+              });
+            }
           ],
         },
         onError: {
           target: 'idle',
-          actions: assign({
-            error: ({ event }) => `Error updating medical history entry: ${event.error}`,
-          }),
+          actions: [
+            assign({
+              error: ({ event }) => `Error updating medical history entry: ${event.error}`,
+            }),
+            () => {
+              orchestrator.send({
+                type: 'OPEN_SNACKBAR',
+                message: 'Error al actualizar historia médica',
+                severity: 'error'
+              });
+            }
+          ],
         },
       },
     },
@@ -225,13 +341,29 @@ export const medicalHistoryMachine = createMachine({
                 context.medicalHistories.filter(h => h.id !== context.selectedHistory!.id),
               selectedHistory: () => null,
             }),
+            () => {
+              orchestrator.send({
+                type: 'OPEN_SNACKBAR',
+                message: 'Historia médica eliminada exitosamente',
+                severity: 'success'
+              });
+            }
           ],
         },
         onError: {
           target: 'idle',
-          actions: assign({
-            error: ({ event }) => `Error deleting medical history entry: ${event.error}`,
-          }),
+          actions: [
+            assign({
+              error: ({ event }) => `Error deleting medical history entry: ${event.error}`,
+            }),
+            () => {
+              orchestrator.send({
+                type: 'OPEN_SNACKBAR',
+                message: 'Error al eliminar historia médica',
+                severity: 'error'
+              });
+            }
+          ],
         },
       },
     },
@@ -239,11 +371,34 @@ export const medicalHistoryMachine = createMachine({
 }, {
   actors: {
     loadPatientMedicalHistory: fromPromise(async ({ input }: { input: { patientId: string; accessToken: string } }) => {
-      return await MedicalHistoryService.getPatientMedicalHistory(input.accessToken, input.patientId);
+      try {
+        // Load both medical history and patient turns in parallel
+        const [medicalHistories, patientTurns] = await Promise.all([
+          MedicalHistoryService.getPatientMedicalHistory(input.accessToken, input.patientId),
+          TurnService.getPatientTurns(input.patientId, input.accessToken).catch(() => []) // Don't fail if turns can't be loaded
+        ]);
+        
+        return {
+          medicalHistories,
+          patientTurns
+        };
+      } catch (error) {
+        // If medical history fails, still try to return what we can
+        const medicalHistories = await MedicalHistoryService.getPatientMedicalHistory(input.accessToken, input.patientId);
+        return {
+          medicalHistories,
+          patientTurns: []
+        };
+      }
     }),
-    addMedicalHistoryEntry: fromPromise(async ({ input }: { input: { patientId: string; content: string; accessToken: string; doctorId: string } }) => {
+    addMedicalHistoryEntry: fromPromise(async () => {
+      // Deprecated: This actor is kept for backward compatibility but should not be used
+      // Medical history is now associated with turns, not patients directly
+      throw new Error("addMedicalHistoryEntry is deprecated. Use addMedicalHistoryEntryForTurn instead.");
+    }),
+    addMedicalHistoryEntryForTurn: fromPromise(async ({ input }: { input: { turnId: string; content: string; accessToken: string; doctorId: string } }) => {
       const request: CreateMedicalHistoryRequest = {
-        patientId: input.patientId,
+        turnId: input.turnId,
         content: input.content,
       };
       return await MedicalHistoryService.addMedicalHistory(input.accessToken, input.doctorId, request);

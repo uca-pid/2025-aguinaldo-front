@@ -15,7 +15,7 @@ export interface UpdateMedicalHistoryParams {
 export interface AddMedicalHistoryParams {
   accessToken: string;
   doctorId: string;
-  patientId: string;
+  turnId: string;
   content: string;
 }
 
@@ -34,6 +34,12 @@ export interface DeleteMedicalHistoryParams {
 
 export interface LoadPatientMedicalHistoryParams {
   accessToken: string;
+  patientId: string;
+}
+
+export interface LoadTurnMedicalHistoryParams {
+  accessToken: string;
+  turnId: string;
   patientId: string;
 }
 
@@ -74,19 +80,11 @@ export const loadDoctorAvailability = async ({ accessToken, doctorId }: LoadAvai
   return await  DoctorService.getAvailability(accessToken, doctorId);
 };
 
-export const updateMedicalHistory = async ({accessToken, doctorId, patientId, medicalHistory}: UpdateMedicalHistoryParams): Promise<MedicalHistory> => {
-  // Since the new API works with individual entries, we'll add a new medical history entry
-  const request: CreateMedicalHistoryRequest = {
-    patientId,
-    content: medicalHistory
-  };
-  
-  return await MedicalHistoryService.addMedicalHistory(accessToken, doctorId, request);
-}
 
-export const addMedicalHistory = async ({accessToken, doctorId, patientId, content}: AddMedicalHistoryParams): Promise<MedicalHistory> => {
+
+export const addMedicalHistory = async ({accessToken, doctorId, turnId, content}: AddMedicalHistoryParams): Promise<MedicalHistory> => {
   const request: CreateMedicalHistoryRequest = {
-    patientId,
+    turnId,
     content
   };
   
@@ -103,6 +101,13 @@ export const deleteMedicalHistory = async ({accessToken, doctorId, historyId}: D
 
 export const loadPatientMedicalHistory = async ({accessToken, patientId}: LoadPatientMedicalHistoryParams): Promise<MedicalHistory[]> => {
   return await MedicalHistoryService.getPatientMedicalHistory(accessToken, patientId);
+}
+
+export const loadTurnMedicalHistory = async ({accessToken, turnId, patientId}: LoadTurnMedicalHistoryParams): Promise<MedicalHistory[]> => {
+  // Load all patient medical history and filter by turnId
+  // Note: This approach works since medical history is now associated with specific turns
+  const allHistory = await MedicalHistoryService.getPatientMedicalHistory(accessToken, patientId);
+  return allHistory.filter((history) => history.turnId === turnId);
 }
 
 export const saveDoctorAvailability = async ({ accessToken, doctorId, availability }: SaveAvailabilityParams): Promise<string> => {

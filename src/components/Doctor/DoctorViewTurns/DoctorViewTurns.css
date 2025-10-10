@@ -214,6 +214,22 @@
   color: #9ca3af !important;
 }
 
+.doctor-viewturns-history-btn {
+  background: linear-gradient(135deg, var(--verdigris) 0%, var(--lapis-lazuli) 100%) !important;
+  color: white !important;
+  border-radius: 6px !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  padding: 6px 12px !important;
+  font-size: 0.875rem !important;
+  border: 1px solid var(--verdigris) !important;
+}
+
+.doctor-viewturns-history-btn:hover {
+  background: linear-gradient(135deg, var(--lapis-lazuli) 0%, var(--indigo-dye) 100%) !important;
+  border-color: var(--lapis-lazuli) !important;
+}
+
 .doctor-viewturns-complete-btn {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
   color: white !important;
