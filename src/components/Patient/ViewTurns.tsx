@@ -269,7 +269,6 @@ const ViewTurns: React.FC = () => {
                       </Typography>
                     </Box>
                     <Box className="viewturns-turn-actions">
-                      {/* Botones principales de gestión de turnos */}
                       <Box className="viewturns-main-actions">
                         
                         {canCancelTurn(turn) && (
@@ -303,7 +302,6 @@ const ViewTurns: React.FC = () => {
                         )}
                       </Box>
                       
-                      {/* Botones de gestión de archivos */}
                       {canUploadFile(turn) && (
                         <Box className="viewturns-file-actions">
                           {(() => {
