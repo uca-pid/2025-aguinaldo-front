@@ -7,83 +7,52 @@ import {
 import { approveModifyRequest, rejectModifyRequest } from "#/utils/turnModificationsUtils";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
+import { orchestrator } from "#/core/Orchestrator";
 
 export default function ConfirmationModal() {
     const { uiState, uiSend, turnSend } = useMachines();
     const { authState } = useAuthMachine();
     const user: SignInResponse = authState?.context?.authResponse || {};
 
-    const getDialogContent = () => {
-        const action = uiState.context.confirmDialog.action;
-        
-        if (action === 'cancel_turn') {
-            return '¿Estás seguro de que quieres cancelar este turno? Esta acción no se puede deshacer.';
-        } else if (action === 'approve') {
-            return '¿Estás seguro de que quieres aprobar esta solicitud de modificación de turno?';
-        } else if (action === 'reject') {
-            return '¿Estás seguro de que quieres rechazar esta solicitud de modificación de turno?';
-        }
-        return '';
-    };
-
-    const getConfirmButtonText = () => {
-        const action = uiState.context.confirmDialog.action;
-        
-        if (action === 'cancel_turn') {
-            return 'Cancelar Turno';
-        } else if (action === 'approve') {
-            return 'Confirmar';
-        } else if (action === 'reject') {
-            return 'Confirmar';
-        }
-        return 'Confirmar';
-    };
-
-    const getConfirmButtonColor = () => {
-        const action = uiState.context.confirmDialog.action;
-        
-        if (action === 'cancel_turn') {
-            return 'error';
-        } else if (action === 'approve') {
-            return 'success';
-        } else if (action === 'reject') {
-            return 'error';
-        }
-        return 'primary';
-    };
+    const dialogData = uiState.context.confirmDialog;
 
     const handleConfirm = () => {
-        const action = uiState.context.confirmDialog.action;
+        const action = dialogData.action;
         
-        if (action === 'cancel_turn' && uiState.context.confirmDialog.turnId) {
+        if (action === 'cancel_turn' && dialogData.turnId) {
             turnSend({ 
                 type: "CANCEL_TURN", 
-                turnId: uiState.context.confirmDialog.turnId 
+                turnId: dialogData.turnId 
             });
-        } else if (action === 'approve' && uiState.context.confirmDialog.requestId) {
-            approveModifyRequest(uiState.context.confirmDialog.requestId, user.accessToken!);
-        } else if (action === 'reject' && uiState.context.confirmDialog.requestId) {
-            rejectModifyRequest(uiState.context.confirmDialog.requestId, user.accessToken!);
+        } else if (action === 'approve' && dialogData.requestId) {
+            approveModifyRequest(dialogData.requestId, user.accessToken!);
+        } else if (action === 'reject' && dialogData.requestId) {
+            rejectModifyRequest(dialogData.requestId, user.accessToken!);
+        } else if (action === 'delete_file' && dialogData.turnId) {
+            orchestrator.send({
+                type: "DELETE_TURN_FILE",
+                turnId: dialogData.turnId
+            });
         }
         
         uiSend({ type: "CLOSE_CONFIRMATION_DIALOG" });
     };
 
   return (
-    <Dialog open={uiState.context.confirmDialog.open} onClose={() => uiSend({ type: "CLOSE_CONFIRMATION_DIALOG" })}>
-        <DialogTitle>Confirmar Acción</DialogTitle>
+    <Dialog open={dialogData.open} onClose={() => uiSend({ type: "CLOSE_CONFIRMATION_DIALOG" })}>
+        <DialogTitle>{dialogData.title || 'Confirmar Acción'}</DialogTitle>
         <DialogContent>
           <Typography>
-            {getDialogContent()}
+            {dialogData.message || ''}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => uiSend({ type: "CLOSE_CONFIRMATION_DIALOG" })}>Cancelar</Button>
           <Button 
             onClick={handleConfirm}
-            color={getConfirmButtonColor() as any}
+            color={dialogData.confirmButtonColor || 'primary'}
           >
-            {getConfirmButtonText()}
+            {dialogData.confirmButtonText || 'Confirmar'}
           </Button>
         </DialogActions>
     </Dialog>
