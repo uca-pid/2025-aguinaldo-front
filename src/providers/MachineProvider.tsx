@@ -9,6 +9,7 @@ import { adminUserMachine, ADMIN_USER_MACHINE_ID, ADMIN_USER_MACHINE_EVENT_TYPES
 import { profileMachine, PROFILE_MACHINE_ID, PROFILE_MACHINE_EVENT_TYPES, type ProfileMachineEvent } from '../machines/profileMachine';
 import { notificationMachine, NOTIFICATION_MACHINE_ID, NOTIFICATION_MACHINE_EVENT_TYPES, type NotificationMachineEvent } from '../machines/notificationMachine';
 import { medicalHistoryMachine, MEDICAL_HISTORY_MACHINE_ID, MEDICAL_HISTORY_MACHINE_EVENT_TYPES, type MedicalHistoryMachineEvent } from '#/machines/medicalHistoryMachine';
+import { filesMachine, FILES_MACHINE_ID, FILES_MACHINE_EVENT_TYPES, type FilesMachineEvent } from '../machines/filesMachine';
 
 interface MachineInstances {
     uiState: any;
@@ -25,6 +26,8 @@ interface MachineInstances {
     notificationSend: (event: NotificationMachineEvent) => void;
     medicalHistoryState:any;
     medicalHistorySend: (event: MedicalHistoryMachineEvent) => void;
+    filesState: any;
+    filesSend: (event: FilesMachineEvent) => void;
 }
 
 interface MachineProviderProps {
@@ -76,6 +79,12 @@ orchestrator.registerMachine({
 });
 
 orchestrator.registerMachine({
+  id: FILES_MACHINE_ID,
+  machine: filesMachine,
+  eventTypes: FILES_MACHINE_EVENT_TYPES
+});
+
+orchestrator.registerMachine({
   id: DOCTOR_MACHINE_ID,
   machine: doctorMachine,
   eventTypes: DOCTOR_MACHINE_EVENT_TYPES
@@ -89,6 +98,7 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
   const { state: profileState, send: profileSend } = useStateMachine(PROFILE_MACHINE_ID);
   const { state: notificationState, send: notificationSend } = useStateMachine(NOTIFICATION_MACHINE_ID);
   const { state: medicalHistoryState, send: medicalHistorySend } = useStateMachine(MEDICAL_HISTORY_MACHINE_ID);
+  const { state: filesState, send: filesSend } = useStateMachine(FILES_MACHINE_ID);
 
   const machines: MachineInstances = {
       uiState: uiState,
@@ -105,6 +115,8 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       notificationSend: notificationSend,
       medicalHistoryState:medicalHistoryState,
       medicalHistorySend: medicalHistorySend,
+      filesState: filesState,
+      filesSend: filesSend,
   };
 
   return (

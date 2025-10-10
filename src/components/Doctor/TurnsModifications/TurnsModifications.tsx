@@ -86,8 +86,24 @@ const TurnsModifications: React.FC = () => {
                     id={request.id}
                     title={getPatientName(request.patientId)}
                     avatarContent={<ListAltIcon sx={{ fontSize: 28 }} />}
-                    onApprove={(id) => uiSend({ type: "OPEN_CONFIRMATION_DIALOG", action: 'approve', requestId: String(id) })}
-                    onReject={(id) => uiSend({ type: "OPEN_CONFIRMATION_DIALOG", action: 'reject', requestId: String(id) })}
+                    onApprove={(id) => uiSend({ 
+                      type: "OPEN_CONFIRMATION_DIALOG", 
+                      action: 'approve', 
+                      requestId: String(id),
+                      title: "Aprobar Solicitud",
+                      message: "¿Estás seguro de que quieres aprobar esta solicitud de modificación de turno?",
+                      confirmButtonText: "Aprobar",
+                      confirmButtonColor: "success"
+                    })}
+                    onReject={(id) => uiSend({ 
+                      type: "OPEN_CONFIRMATION_DIALOG", 
+                      action: 'reject', 
+                      requestId: String(id),
+                      title: "Rechazar Solicitud",
+                      message: "¿Estás seguro de que quieres rechazar esta solicitud de modificación de turno?",
+                      confirmButtonText: "Rechazar",
+                      confirmButtonColor: "error"
+                    })}
                     isLoading={uiState.context.toggleStates.loadingApprove === request.id || uiState.context.toggleStates.loadingReject === request.id}
                   >
                     <Typography variant="body2" color="text.secondary">

@@ -4,13 +4,18 @@ import {
   Typography, 
   Container,
   Avatar,
-  Badge
+  Badge,
+  Card,
+  CardContent
 } from "@mui/material";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import PersonIcon from "@mui/icons-material/Person";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import LoadingThreeDotsJumping from "../../shared/PageLoadingScreen/LoadingThreeDots";
 import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
 import { useMachines } from "#/providers/MachineProvider";
@@ -23,6 +28,7 @@ import DashboardUpcomingCard from "../../shared/DashboardUpcomingCard/DashboardU
 import dayjs from "dayjs";
 import "./DoctorDashboard.css";
 import { useDataMachine } from "#/providers/DataProvider";
+import { turnsOfTheMonth, upComingTurns } from "#/utils/filterTurns";
 
 const DoctorDashboard: React.FC = () => {
   const { dataState } = useDataMachine();
@@ -50,6 +56,11 @@ const DoctorDashboard: React.FC = () => {
     })
     .slice(0, 10)
     .sort((a: any, b: any) => dayjs(a.scheduledAt).diff(dayjs(b.scheduledAt)));
+
+ 
+  const pastTurnsThisMonth = turnsOfTheMonth(turnContext?.myTurns || []);
+  const totalUpcomingTurns = upComingTurns(turnContext?.myTurns || []);
+  const averageTurnDuration = 45; 
     
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -92,6 +103,71 @@ const DoctorDashboard: React.FC = () => {
               </Box>
             </Box>
           </Box>
+
+          
+          {!isLoading && (
+            <Box className="admin-stats-container">
+              <Box className="admin-stats-item">
+                <Card className="admin-stats-card">
+                  <CardContent className="admin-stats-content">
+                    <Box className="admin-stats-layout">
+                      <div className="admin-stats-icon-wrapper">
+                        <CheckCircleIcon className="admin-stats-icon" />
+                      </div>
+                      <Box className="admin-stats-text">
+                        <Typography variant="h4" className="admin-stats-number">
+                          {pastTurnsThisMonth}
+                        </Typography>
+                        <Typography variant="body1" className="admin-stats-label">
+                          Turnos Pasados
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Box>
+              
+              <Box className="admin-stats-item">
+                <Card className="admin-stats-card">
+                  <CardContent className="admin-stats-content">
+                    <Box className="admin-stats-layout">
+                      <div className="admin-stats-icon-wrapper">
+                        <ScheduleIcon className="admin-stats-icon" />
+                      </div>
+                      <Box className="admin-stats-text">
+                        <Typography variant="h4" className="admin-stats-number">
+                          {totalUpcomingTurns}
+                        </Typography>
+                        <Typography variant="body1" className="admin-stats-label">
+                          Turnos Próximos
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Box>
+              
+              <Box className="admin-stats-item">
+                <Card className="admin-stats-card">
+                  <CardContent className="admin-stats-content">
+                    <Box className="admin-stats-layout">
+                      <div className="admin-stats-icon-wrapper">
+                        <AccessTimeIcon className="admin-stats-icon" />
+                      </div>
+                      <Box className="admin-stats-text">
+                        <Typography variant="h4" className="admin-stats-number">
+                          {averageTurnDuration}
+                        </Typography>
+                        <Typography variant="body1" className="admin-stats-label">
+                          Minutos Promedio
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Box>
+            </Box>
+          )}
 
           <Box className="dashboard-actions-container">
             <DashboardCard

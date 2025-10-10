@@ -1,14 +1,54 @@
-import {
-  Box,
-  Typography,
-  Container,
-  Avatar,
-  Paper
-} from "@mui/material";
+import {Box,Typography,Container,Avatar,Paper,LinearProgress,Chip} from "@mui/material";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import { orchestrator } from "#/core/Orchestrator";
+import { DATA_MACHINE_ID } from "#/machines/dataMachine";
 import "./AdminDashboard.css";
+import "./AdminDoctors.css";
+import { useMachines } from "#/providers/MachineProvider";
 
 export default function AdminDoctors() {
+
+  const {  adminUserState, } = useMachines();
+  const adminContext = adminUserState.context;
+
+
+  const specialties = adminContext.adminStats.specialties || [];
+  const loading = adminContext.loading;
+
+  const getActualDoctors = () => {
+    try {
+      const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
+      return dataSnapshot.context.doctors || [];
+    } catch (error) {
+      console.warn("Could not get doctors data:", error);
+      return [];
+    }
+  };
+
+
+  const getRealSpecialtyData = () => {
+    const doctors = getActualDoctors();
+    const specialtyCounts: { [key: string]: number } = {};
+    
+    doctors.forEach((doctor: any) => {
+      const specialty = doctor.specialty;
+      if (specialty) {
+        specialtyCounts[specialty] = (specialtyCounts[specialty] || 0) + 1;
+      }
+    });
+
+    return specialties.map((specialty: string) => ({
+      specialty,
+      count: specialtyCounts[specialty] || 0,
+      color: '#22577a'
+    }));
+  };
+
+
+  const chartData = getRealSpecialtyData();
+  
+  const totalActiveDoctors = getActualDoctors().length;
+
   return (
     <Box className="dashboard-container">
       <Container maxWidth="lg">
@@ -28,51 +68,97 @@ export default function AdminDoctors() {
           </Box>
         </Box>
 
-        {/* Placeholder */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
-          <Paper 
-            sx={{ 
-              p: 8, 
-              maxWidth: 700,
-              textAlign: 'center',
-              bgcolor: 'rgba(255, 255, 255, 0.9)',
-              borderRadius: 4,
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)'
-            }}
-          >
-            <LocalHospitalIcon 
-              sx={{ 
-                fontSize: 100, 
-                color: '#22577a', 
-                mb: 4,
-                opacity: 0.5
-              }} 
-            />
-            <Typography variant="h5" gutterBottom sx={{ color: '#0d2230', fontWeight: 600, mb: 4 }}>
-              Análisis de Doctores
-            </Typography>
+   
+        <Box className="admin-doctors-container">
+          <Paper className="admin-doctors-paper">
             
-            {/* Visual placeholder mockup */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 3, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Box sx={{ flex: '1 1 140px', p: 2, bgcolor: '#f1f5f9', borderRadius: 2, minWidth: '140px' }}>
-                <Typography variant="h6" sx={{ color: '#22577a', opacity: 0.7 }}>—</Typography>
-                <Typography variant="caption" sx={{ color: '#64748b' }}>Activos</Typography>
+           
+            <Box className="stats-cards-container">
+              <Box className="stats-card">
+                <Typography variant="h6" className="stats-card-number">{adminContext.adminStats.doctors}</Typography>
+                <Typography variant="caption" className="stats-card-label">Activos</Typography>
               </Box>
-              <Box sx={{ flex: '1 1 140px', p: 2, bgcolor: '#f1f5f9', borderRadius: 2, minWidth: '140px' }}>
-                <Typography variant="h6" sx={{ color: '#22577a', opacity: 0.7 }}>—</Typography>
-                <Typography variant="caption" sx={{ color: '#64748b' }}>Especialidades</Typography>
+              <Box className="stats-card">
+                <Typography variant="h6" className="stats-card-number">{adminContext.adminStats.specialties.length || 0}</Typography>
+                <Typography variant="caption" className="stats-card-label">Especialidades</Typography>
               </Box>
-              <Box sx={{ flex: '1 1 140px', p: 2, bgcolor: '#f1f5f9', borderRadius: 2, minWidth: '140px' }}>
-                <Typography variant="h6" sx={{ color: '#22577a', opacity: 0.7 }}>—</Typography>
-                <Typography variant="caption" sx={{ color: '#64748b' }}>Promedio ★</Typography>
-              </Box>
+            
             </Box>
 
-            <Box sx={{ mt: 4, p: 3, bgcolor: '#f8fafc', borderRadius: 2, border: '1px dashed #cbd5e1' }}>
-              <Typography variant="body2" sx={{ color: '#94a3b8' }}>
-                📊 Gráficos · 📈 Tendencias · 🏥 Rendimiento
-              </Typography>
-            </Box>
+            {!loading && specialties.length > 0 && (
+              <Box className="specialties-section">
+                <Box className="specialties-header">
+                  <Typography variant="h6" className="specialties-title">
+                    Distribución por Especialidades
+                  </Typography>
+                  {specialties.length > 6 && (
+                    <Chip 
+                      label={`${specialties.length} especialidades`}
+                      size="small"
+                      variant="outlined"
+                      className="specialties-chip"
+                    />
+                  )}
+                </Box>
+            
+                <Box className="chart-grid">
+                  {chartData.map((item: any, index: number) => (
+                    <Box 
+                      key={index} 
+                      className="chart-card"
+                    >
+                      <Box className="chart-card-header">
+                        <Chip 
+                          label={item.specialty}
+                          className="specialty-chip"
+                        />
+                        <Box className="doctor-count-container">
+                          <Typography variant="h6" className="doctor-count-number">
+                            {item.count}
+                          </Typography>
+                          <Typography variant="caption" className="doctor-count-label">
+                            doctores
+                          </Typography>
+                        </Box>
+                      </Box>
+                      
+                      <LinearProgress
+                        variant="determinate"
+                        value={totalActiveDoctors > 0 ? (item.count / totalActiveDoctors) * 100 : 0}
+                        className="specialty-progress"
+                      />
+                      
+                      <Box className="chart-footer">
+                        <Typography variant="body2" className="chart-footer-text">
+                          {item.count === 0 ? "Sin doctores" : "Del total"}
+                        </Typography>
+                        <Box className="percentage-badge">
+                          {totalActiveDoctors > 0 ? Math.round((item.count / totalActiveDoctors) * 100) : 0}%
+                        </Box>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {loading && (
+              <Box className="loading-state">
+                <Typography variant="body2" className="loading-text">
+                  Cargando datos de especialidades...
+                </Typography>
+              </Box>
+            )}
+
+            {!loading && specialties.length === 0 && (
+              <Box className="empty-state">
+                <Typography variant="body2" className="empty-text">
+                  No hay especialidades disponibles
+                </Typography>
+              </Box>
+            )}
+
+            
           </Paper>
         </Box>
       </Container>

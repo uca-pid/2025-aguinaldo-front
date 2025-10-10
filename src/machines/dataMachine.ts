@@ -1,5 +1,5 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests, loadMyModifyRequests } from "../utils/MachineUtils/dataMachineUtils";
+import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests, loadMyModifyRequests, loadSpecialties, loadTurnFiles } from "../utils/MachineUtils/dataMachineUtils";
 import { loadDoctorPatients, loadDoctorAvailability } from "../utils/MachineUtils/doctorMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, AdminStats } from "../models/Admin";
@@ -13,6 +13,7 @@ export const DATA_MACHINE_EVENT_TYPES = [
   "SET_AUTH",
   "CLEAR_ACCESS_TOKEN", 
   "RELOAD_DOCTORS",
+  "RELOAD_SPECIALTIES",
   "RELOAD_PENDING_DOCTORS", 
   "RELOAD_ADMIN_STATS",
   "LOAD_AVAILABLE_TURNS",
@@ -20,7 +21,10 @@ export const DATA_MACHINE_EVENT_TYPES = [
   "LOAD_DOCTOR_PATIENTS",
   "LOAD_DOCTOR_AVAILABILITY",
   "LOAD_DOCTOR_MODIFY_REQUESTS",
-  "LOAD_MY_MODIFY_REQUESTS"
+  "LOAD_MY_MODIFY_REQUESTS",
+  "LOAD_TURN_FILES",
+  "UPDATE_TURN_FILE",
+  "REMOVE_TURN_FILE"
 ];
 
 export interface DataMachineContext {
@@ -30,6 +34,7 @@ export interface DataMachineContext {
   doctorId: string | null;
   
   doctors: Doctor[];
+  specialties: string[];
   pendingDoctors: PendingDoctor[];
   adminStats: AdminStats;
   availableTurns: string[];
@@ -38,9 +43,11 @@ export interface DataMachineContext {
   doctorAvailability: any[];
   doctorModifyRequests: TurnModifyRequest[];
   myModifyRequests: TurnModifyRequest[];
+  turnFiles: Record<string, any>;
   
   loading: {
     doctors: boolean;
+    specialties: boolean;
     pendingDoctors: boolean;
     adminStats: boolean;
     availableTurns: boolean;
@@ -49,10 +56,12 @@ export interface DataMachineContext {
     doctorAvailability: boolean;
     doctorModifyRequests: boolean;
     myModifyRequests: boolean;
+    turnFiles: boolean;
   };
   
   errors: {
     doctors: string | null;
+    specialties: string | null;
     pendingDoctors: string | null;
     adminStats: string | null;
     availableTurns: string | null;
@@ -61,6 +70,7 @@ export interface DataMachineContext {
     doctorAvailability: string | null;
     doctorModifyRequests: string | null;
     myModifyRequests: string | null;
+    turnFiles: string | null;
   };
 }
 
@@ -71,6 +81,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
   doctorId: null,
   
   doctors: [],
+  specialties: [],
   pendingDoctors: [],
   adminStats: { patients: 0, doctors: 0, pending: 0 },
   availableTurns: [],
@@ -79,9 +90,11 @@ export const DataMachineDefaultContext: DataMachineContext = {
   doctorAvailability: [],
   doctorModifyRequests: [],
   myModifyRequests: [],
+  turnFiles: {},
   
   loading: {
     doctors: false,
+    specialties: false,
     pendingDoctors: false,
     adminStats: false,
     availableTurns: false,
@@ -90,10 +103,12 @@ export const DataMachineDefaultContext: DataMachineContext = {
     doctorAvailability: false,
     doctorModifyRequests: false,
     myModifyRequests: false,
+    turnFiles: false,
   },
   
   errors: {
     doctors: null,
+    specialties: null,
     pendingDoctors: null,
     adminStats: null,
     availableTurns: null,
@@ -102,6 +117,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
     doctorAvailability: null,
     doctorModifyRequests: null,
     myModifyRequests: null,
+    turnFiles: null,
   },
 };
 
@@ -109,6 +125,7 @@ export type DataMachineEvent =
   | { type: "SET_AUTH"; accessToken: string; userId: string; userRole: string; doctorId?: string }
   | { type: "CLEAR_ACCESS_TOKEN" }
   | { type: "RELOAD_DOCTORS" }
+  | { type: "RELOAD_SPECIALTIES" }
   | { type: "RELOAD_PENDING_DOCTORS" }
   | { type: "RELOAD_ADMIN_STATS" }
   | { type: "LOAD_AVAILABLE_TURNS"; doctorId: string; date: string }
@@ -116,7 +133,10 @@ export type DataMachineEvent =
   | { type: "LOAD_DOCTOR_PATIENTS" }
   | { type: "LOAD_DOCTOR_AVAILABILITY"; doctorId?: string }
   | { type: "LOAD_DOCTOR_MODIFY_REQUESTS"; doctorId?: string }
-  | { type: "LOAD_MY_MODIFY_REQUESTS" };
+  | { type: "LOAD_MY_MODIFY_REQUESTS" }
+  | { type: "LOAD_TURN_FILES" }
+  | { type: "UPDATE_TURN_FILE"; turnId: string; fileInfo: any }
+  | { type: "REMOVE_TURN_FILE"; turnId: string };
 
 export const dataMachine = createMachine({
   id: "data",
@@ -156,6 +176,10 @@ export const dataMachine = createMachine({
         },
         RELOAD_DOCTORS: {
           target: "fetchingDoctors",
+          guard: ({ context }) => !!context.accessToken,
+        },
+        RELOAD_SPECIALTIES: {
+          target: "fetchingSpecialties",
           guard: ({ context }) => !!context.accessToken,
         },
         RELOAD_PENDING_DOCTORS: {
@@ -204,6 +228,12 @@ export const dataMachine = createMachine({
             type: "LOAD_NOTIFICATIONS",
             accessToken: context.accessToken!
           });
+          
+          if ((context.userRole === "PATIENT" || context.userRole === "DOCTOR") && 
+              context.myTurns?.length > 0 && 
+              Object.keys(context.turnFiles).length === 0) {
+            orchestrator.sendToMachine("data", { type: "LOAD_TURN_FILES" });
+          }
         }, 0);
       },
       exit: () => {
@@ -237,6 +267,7 @@ export const dataMachine = createMachine({
             doctorAvailability: [],
             doctorModifyRequests: [],
             myModifyRequests: [],
+            turnFiles: {},
           }),
         },
         RELOAD_DOCTORS: {
@@ -268,6 +299,33 @@ export const dataMachine = createMachine({
         LOAD_MY_MODIFY_REQUESTS: {
           target: "fetchingMyModifyRequests",
           guard: ({ context }) => !!context.accessToken,
+        },
+        LOAD_TURN_FILES: {
+          target: "fetchingTurnFiles",
+          guard: ({ context }) => {
+            const canLoad = !!context.accessToken && (context.userRole === "PATIENT" || context.userRole === "DOCTOR");
+            return canLoad;
+          },
+        },
+        UPDATE_TURN_FILE: {
+          actions: assign({
+            turnFiles: ({ context, event }) => {
+              const newTurnFiles = {
+                ...context.turnFiles,
+                [(event as any).turnId]: (event as any).fileInfo
+              };
+              return newTurnFiles;
+            }
+          })
+        },
+        REMOVE_TURN_FILE: {
+          actions: assign({
+            turnFiles: ({ context, event }) => {
+              const newTurnFiles = { ...context.turnFiles };
+              delete newTurnFiles[(event as any).turnId];
+              return newTurnFiles;
+            }
+          })
         },
       },
     },
@@ -327,6 +385,52 @@ export const dataMachine = createMachine({
                 orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
               }
               const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar doctores";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
+            }
+          ],
+        },
+      },
+    },
+    
+    fetchingSpecialties: {
+      entry: assign({
+        loading: ({ context }) => ({ ...context.loading, specialties: true }),
+        errors: ({ context }) => ({ ...context.errors, specialties: null }),
+      }),
+      invoke: {
+        src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
+          return await loadSpecialties(input);
+        }),
+        input: ({ context }) => ({ accessToken: context.accessToken! }),
+        onDone: {
+          target: "ready",
+          actions: assign({
+            specialties: ({ event }) => event.output,
+            loading: ({ context }) => ({ ...context.loading, specialties: false }),
+          }),
+        },
+        onError: {
+          target: "idle",
+          actions: [
+            assign({
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                specialties: event.error instanceof Error ? event.error.message : "Error al cargar especialidades"
+              }),
+              loading: ({ context }) => ({
+                ...context.loading,
+                specialties: false
+              })
+            }),
+            ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+              }
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar especialidades";
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",
                 message: errorMessage,
@@ -744,6 +848,67 @@ export const dataMachine = createMachine({
                 orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
               }
               const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar mis solicitudes de modificación";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
+            }
+          ],
+        },
+      },
+    },
+    fetchingTurnFiles: {
+      entry: assign({
+        loading: ({ context }) => {
+          return { ...context.loading, turnFiles: true };
+        },
+        errors: ({ context }) => ({ ...context.errors, turnFiles: null }),
+      }),
+      invoke: {
+        src: fromPromise(async ({ input }: { input: { accessToken: string; turnIds: string[] } }) => {
+          return await loadTurnFiles({ accessToken: input.accessToken, turnIds: input.turnIds });
+        }),
+        input: ({ context }) => {
+          const validTurns = context.myTurns?.filter((turn: any) => 
+            turn.status !== 'CANCELED' && turn.status !== 'CANCELLED'
+          ) || [];
+          
+          const input = {
+            accessToken: context.accessToken!,
+            turnIds: validTurns.map((turn: any) => turn.id)
+          };
+          return input;
+        },
+        onDone: {
+          target: "ready",
+          actions: assign({
+            turnFiles: ({ context, event }) => {
+              return { ...context.turnFiles, ...event.output };
+            },
+            loading: ({ context }) => ({ ...context.loading, turnFiles: false }),
+          }),
+        },
+        onError: {
+          target: "ready",
+          actions: [
+            assign({
+              loading: ({ context }) => {
+                return { ...context.loading, turnFiles: false };
+              },
+              errors: ({ context, event }) => {
+                console.error('❌ fetchingTurnFiles: Error occurred:', event.error);
+                return {
+                  ...context.errors,
+                  turnFiles: event.error instanceof Error ? event.error.message : "Error al cargar archivos de turnos"
+                };
+              }
+            }),
+            ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+              }
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar archivos de turnos";
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",
                 message: errorMessage,
