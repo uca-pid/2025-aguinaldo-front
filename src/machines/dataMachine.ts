@@ -151,12 +151,21 @@ export const dataMachine = createMachine({
       on: {
         SET_AUTH: {
           target: "fetchingDoctors",
-          actions: assign({
-            accessToken: ({ event }) => event.accessToken,
-            userRole: ({ event }) => event.userRole,
-            userId: ({ event }) => event.userId,
-            doctorId: ({ event }) => event.userRole === "DOCTOR" ? event.userId : null,
-          }),
+          actions: [
+            assign({
+              accessToken: ({ event }) => event.accessToken,
+              userRole: ({ event }) => event.userRole,
+              userId: ({ event }) => event.userId,
+              doctorId: ({ event }) => event.userRole === "DOCTOR" ? event.userId : null,
+            }),
+            ({ event }) => {
+              // Load notifications once when user authenticates
+              orchestrator.sendToMachine("notification", {
+                type: "LOAD_NOTIFICATIONS",
+                accessToken: event.accessToken
+              });
+            }
+          ],
         },
         CLEAR_ACCESS_TOKEN: {
           actions: assign({
@@ -223,10 +232,6 @@ export const dataMachine = createMachine({
           orchestrator.send({
             type: "DATA_LOADED",
             doctorAvailability: context.doctorAvailability
-          });
-          orchestrator.sendToMachine("notification", {
-            type: "LOAD_NOTIFICATIONS",
-            accessToken: context.accessToken!
           });
           
           if ((context.userRole === "PATIENT" || context.userRole === "DOCTOR") && 
