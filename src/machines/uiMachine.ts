@@ -15,10 +15,14 @@ export interface UiMachineContext {
   };
   confirmDialog: {
     open: boolean;
-    action: 'approve' | 'reject' | 'cancel_turn' | null;
+    action: 'approve' | 'reject' | 'cancel_turn' | 'delete_file' | null;
     requestId: string | null;
     turnId: string | null;
     turnData?: any;
+    title?: string;
+    message?: string;
+    confirmButtonText?: string;
+    confirmButtonColor?: 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning';
   };
 }
 
@@ -28,8 +32,8 @@ export type UiMachineEvent =
   | { type: "NAVIGATE"; to: string | null }
   | { type: "OPEN_SNACKBAR"; message: string; severity: 'success' | 'error' | 'warning' | 'info' }
   | { type: "CLOSE_SNACKBAR" }
-  | { type: "OPEN_CONFIRMATION_DIALOG"; action: 'approve' | 'reject'; requestId: string }
-  | { type: "OPEN_CANCEL_TURN_DIALOG"; turnId: string; turnData?: any }
+  | { type: "OPEN_CONFIRMATION_DIALOG"; action: 'approve' | 'reject' | 'delete_file'; requestId?: string; turnId?: string; title?: string; message?: string; confirmButtonText?: string; confirmButtonColor?: 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' }
+  | { type: "OPEN_CANCEL_TURN_DIALOG"; turnId: string; turnData?: any; title?: string; message?: string; confirmButtonText?: string; confirmButtonColor?: 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' }
   | { type: "CLOSE_CONFIRMATION_DIALOG" };
 
 export const uiMachine = createMachine({
@@ -47,7 +51,7 @@ export const uiMachine = createMachine({
       message: "",
       severity: "info" as const,
     },
-    confirmDialog: { open: false, action: null, requestId: null, turnId: null, turnData: null },
+    confirmDialog: { open: false, action: null, requestId: null, turnId: null, turnData: null, title: undefined, message: undefined, confirmButtonText: undefined, confirmButtonColor: undefined },
   },
   types: { 
     context: {} as UiMachineContext,
@@ -112,9 +116,13 @@ export const uiMachine = createMachine({
             confirmDialog: ({ event }) => ({
               open: true,
               action: event.action,
-              requestId: event.requestId,
-              turnId: null,
+              requestId: event.requestId || null,
+              turnId: event.turnId || null,
               turnData: null,
+              title: event.title || 'Confirmar Acción',
+              message: event.message || '',
+              confirmButtonText: event.confirmButtonText || 'Confirmar',
+              confirmButtonColor: event.confirmButtonColor || 'primary',
             }),
           }),
         },
@@ -126,6 +134,10 @@ export const uiMachine = createMachine({
               requestId: null,
               turnId: event.turnId,
               turnData: event.turnData,
+              title: event.title || 'Confirmar Acción',
+              message: event.message || '¿Estás seguro de que quieres cancelar este turno? Esta acción no se puede deshacer.',
+              confirmButtonText: event.confirmButtonText || 'Cancelar Turno',
+              confirmButtonColor: event.confirmButtonColor || 'error',
             }),
           }),
         },
@@ -137,6 +149,10 @@ export const uiMachine = createMachine({
               requestId: null,
               turnId: null,
               turnData: null,
+              title: undefined,
+              message: undefined,
+              confirmButtonText: undefined,
+              confirmButtonColor: undefined,
             }),
           }),
         },
