@@ -28,3 +28,47 @@ export function filterTurns (myTurns: any, statusFilter: any) {
       return dayjs(b.scheduledAt).valueOf() - dayjs(a.scheduledAt).valueOf();
     })
 }
+
+
+
+export function turnsOfTheMonth (myTurns: any) {
+    const currentMonth = dayjs().month();
+    const currentYear = dayjs().year();
+    const currentDay = dayjs().date();
+    
+    return myTurns.filter((turn: any) => {
+      const turnDate = dayjs(turn.scheduledAt);
+      const isCurrentMonth = turnDate.month() === currentMonth && turnDate.year() === currentYear;
+      const isPast = turnDate.date() <= currentDay;
+      
+      return isCurrentMonth && isPast;
+    }).length;
+}
+
+export function upComingTurns (myTurns: any) {
+    const now = dayjs();
+    
+    return myTurns.filter((turn: any) => {
+      const turnDate = dayjs(turn.scheduledAt);
+      const isUpcoming = turnDate.isAfter(now);
+      const isScheduled = turn.status === 'SCHEDULED';
+      
+      return isUpcoming && isScheduled;
+    }).length;
+}
+
+
+export function allPastTurnsThisMonth (myTurns: any) {
+    const currentMonth = dayjs().month();
+    const currentYear = dayjs().year();
+    const currentDay = dayjs().date();
+    
+    return myTurns.filter((turn: any) => {
+      const turnDate = dayjs(turn.scheduledAt);
+      const isCurrentMonth = turnDate.month() === currentMonth && turnDate.year() === currentYear;
+      const isPast = turnDate.date() <= currentDay;
+      const isCompleted = turn.status != 'CANCELED';
+      
+      return isCurrentMonth && isPast && isCompleted ;
+    }).length;
+}

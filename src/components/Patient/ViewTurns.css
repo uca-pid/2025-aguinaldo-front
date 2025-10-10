@@ -132,8 +132,26 @@
 
 .viewturns-turn-actions {
   display: flex !important;
-  gap: 16px !important;
+  flex-direction: column !important;
+  gap: 12px !important;
   align-items: flex-end !important;
+}
+
+/* Container para botones principales (modificar/cancelar) */
+.viewturns-main-actions {
+  display: flex !important;
+  gap: 16px !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+}
+
+/* Container para botones de archivos */
+.viewturns-file-actions {
+  display: flex !important;
+  gap: 8px !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
 }
 
 /* Status Chips */
@@ -197,6 +215,76 @@
 .viewturns-modify-btn:disabled {
   background-color: var(--tea-green) !important;
   color: var(--indigo-dye) !important;
+}
+
+/* File Upload Button */
+.viewturns-upload-btn {
+  background-color: transparent !important;
+  color: var(--lapis-lazuli) !important;
+  border: 1px solid var(--lapis-lazuli) !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.viewturns-upload-btn:hover:not(:disabled) {
+  background-color: var(--lapis-lazuli) !important;
+  color: white !important;
+}
+
+.viewturns-upload-btn:disabled {
+  background-color: var(--tea-green) !important;
+  color: var(--indigo-dye) !important;
+  border-color: var(--tea-green) !important;
+}
+
+/* View File Button */
+.viewturns-view-file-btn {
+  background-color: transparent !important;
+  color: var(--indigo-dye) !important;
+  border: 1px solid var(--indigo-dye) !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.viewturns-view-file-btn:hover:not(:disabled) {
+  background-color: var(--indigo-dye) !important;
+  color: white !important;
+}
+
+/* Delete File Button */
+.viewturns-delete-file-btn {
+  background-color: transparent !important;
+  color: #ef4444 !important;
+  border: 1px solid #ef4444 !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.viewturns-delete-file-btn:hover:not(:disabled) {
+  background-color: #ef4444 !important;
+  color: white !important;
+}
+
+.viewturns-delete-file-btn:disabled {
+  background-color: var(--tea-green) !important;
+  color: var(--indigo-dye) !important;
+  border-color: var(--tea-green) !important;
+}
+
+/* Loading File Info Button */
+.viewturns-load-file-info-btn {
+  background-color: transparent !important;
+  color: var(--indigo-dye) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
 }
 
 /* Loading States */
@@ -325,13 +413,26 @@
 
 @media (max-width: 600px) {
   .viewturns-turn-actions {
+    align-items: stretch !important;
+  }
+
+  .viewturns-main-actions {
     flex-direction: column !important;
     gap: 12px !important;
-    width: 100% !important;
+    justify-content: stretch !important;
+  }
+
+  .viewturns-file-actions {
+    flex-direction: column !important;
+    gap: 8px !important;
+    justify-content: stretch !important;
   }
 
   .viewturns-cancel-btn,
-  .viewturns-modify-btn {
+  .viewturns-modify-btn,
+  .viewturns-upload-btn,
+  .viewturns-view-file-btn,
+  .viewturns-delete-file-btn {
     width: 100% !important;
     padding: 10px 16px !important;
     font-size: 0.9rem !important;

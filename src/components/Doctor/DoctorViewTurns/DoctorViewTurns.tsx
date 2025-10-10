@@ -29,7 +29,11 @@ const ViewTurns: React.FC = () => {
     uiSend({ 
       type: "OPEN_CANCEL_TURN_DIALOG", 
       turnId,
-      turnData
+      turnData,
+      title: "Cancelar Turno",
+      message: "¿Estás seguro de que quieres cancelar este turno? Esta acción no se puede deshacer.",
+      confirmButtonText: "Cancelar Turno",
+      confirmButtonColor: "error"
     });
   };
 
