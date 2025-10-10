@@ -18,13 +18,15 @@ import SnackbarAlert from './components/shared/SnackbarAlert/SnackbarAlert'
 import PendingActivation from './components/Doctor/PendingActivation/PendingActivation'
 import TurnsModifications from './components/Doctor/TurnsModifications/TurnsModifications'
 import FloatingMenu from './components/shared/FloatingMenu/FloatingMenu'
+import NotificationBell from './components/Notifications/NotificationBell'
+import NotificationModal from './components/Notifications/NotificationModal'
 import { useEffect } from 'react'
 import { useMachines } from './providers/MachineProvider'
 import ConfirmationModal from './components/shared/ConfirmationModal/ConfirmationModal'
 
 function AppContent() {
   const { authState } = useAuthMachine();
-  const { uiSend } = useMachines();
+  const { uiSend, uiState } = useMachines();
   const navigate = useNavigate();
   const authContext = authState.context;
 
@@ -32,10 +34,15 @@ function AppContent() {
   const userStatus = authContext.authResponse?.status || '';
 
   const isActive = userStatus === "ACTIVE";
+  const isNotificationModalOpen = uiState?.context?.notificationModal?.open || false;
 
   useEffect(() => {
     uiSend({ type: "ADD_NAVIGATE_HOOK", navigate, initialPath: window.location.pathname });
   }, [uiSend, navigate]);
+
+  const handleCloseNotificationModal = () => {
+    uiSend({ type: "CLOSE_NOTIFICATION_MODAL" });
+  };
 
   const renderAdminRoutes = () => (
     <>
@@ -74,12 +81,14 @@ function AppContent() {
         
         {isActive && (
           <>
-            <Box className="app-header">
-              <FloatingMenu />
-              <Box onClick={() => uiSend({ type: "NAVIGATE", to: '/' })} style={{ cursor: 'pointer' }}>
-                <h2>MediBook</h2>
+            <Box className="app-header" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <FloatingMenu />
+                <Box onClick={() => uiSend({ type: "NAVIGATE", to: '/' })} style={{ cursor: 'pointer', marginLeft: '16px' }}>
+                  <h2>MediBook</h2>
+                </Box>
               </Box>
-             
+              <NotificationBell />
             </Box>
           </>
         )}
@@ -96,6 +105,10 @@ function AppContent() {
         </Routes>
         <SnackbarAlert />
         <ConfirmationModal />
+        <NotificationModal 
+          open={isNotificationModalOpen} 
+          onClose={handleCloseNotificationModal} 
+        />
       </Box>
   );
 }
