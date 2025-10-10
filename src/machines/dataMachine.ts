@@ -44,6 +44,7 @@ export interface DataMachineContext {
   doctorModifyRequests: TurnModifyRequest[];
   myModifyRequests: TurnModifyRequest[];
   turnFiles: Record<string, any>;
+  turnFilesLoaded: boolean; // Add flag to track if turn files have been loaded
   
   loading: {
     doctors: boolean;
@@ -91,6 +92,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
   doctorModifyRequests: [],
   myModifyRequests: [],
   turnFiles: {},
+  turnFilesLoaded: false,
   
   loading: {
     doctors: false,
@@ -181,6 +183,8 @@ export const dataMachine = createMachine({
             doctorPatients: [],
             doctorAvailability: [],
             doctorModifyRequests: [],
+            turnFiles: {},
+            turnFilesLoaded: false, // Reset the flag
           }),
         },
         RELOAD_DOCTORS: {
@@ -234,9 +238,10 @@ export const dataMachine = createMachine({
             doctorAvailability: context.doctorAvailability
           });
           
+          // Only load turn files if user is patient/doctor, has turns, and hasn't loaded files yet
           if ((context.userRole === "PATIENT" || context.userRole === "DOCTOR") && 
               context.myTurns?.length > 0 && 
-              Object.keys(context.turnFiles).length === 0) {
+              !context.turnFilesLoaded) {
             orchestrator.sendToMachine("data", { type: "LOAD_TURN_FILES" });
           }
         }, 0);
@@ -273,6 +278,7 @@ export const dataMachine = createMachine({
             doctorModifyRequests: [],
             myModifyRequests: [],
             turnFiles: {},
+            turnFilesLoaded: false, // Reset the flag
           }),
         },
         RELOAD_DOCTORS: {
@@ -614,6 +620,7 @@ export const dataMachine = createMachine({
             guard: ({ context }) => context.userRole === "DOCTOR",
             actions: assign({
               myTurns: ({ event }) => event.output,
+              turnFilesLoaded: false, // Reset flag when new turns are loaded
               loading: ({ context }) => ({ ...context.loading, myTurns: false }),
             }),
           },
@@ -622,6 +629,7 @@ export const dataMachine = createMachine({
             guard: ({ context }) => context.userRole === "PATIENT",
             actions: assign({
               myTurns: ({ event }) => event.output,
+              turnFilesLoaded: false, // Reset flag when new turns are loaded
               loading: ({ context }) => ({ ...context.loading, myTurns: false }),
             }),
           },
@@ -629,6 +637,7 @@ export const dataMachine = createMachine({
             target: "ready",
             actions: assign({
               myTurns: ({ event }) => event.output,
+              turnFilesLoaded: false, // Reset flag when new turns are loaded
               loading: ({ context }) => ({ ...context.loading, myTurns: false }),
             }),
           },
@@ -891,6 +900,7 @@ export const dataMachine = createMachine({
             turnFiles: ({ context, event }) => {
               return { ...context.turnFiles, ...event.output };
             },
+            turnFilesLoaded: true, // Set flag to true when files are loaded
             loading: ({ context }) => ({ ...context.loading, turnFiles: false }),
           }),
         },
@@ -901,6 +911,7 @@ export const dataMachine = createMachine({
               loading: ({ context }) => {
                 return { ...context.loading, turnFiles: false };
               },
+              turnFilesLoaded: true, // Set flag to true even on error to prevent infinite loop
               errors: ({ context, event }) => {
                 console.error('❌ fetchingTurnFiles: Error occurred:', event.error);
                 return {
