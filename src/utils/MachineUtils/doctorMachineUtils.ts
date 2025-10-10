@@ -10,6 +10,7 @@ export interface UpdateMedicalHistoryParams {
   doctorId: string;
   patientId: string;
   medicalHistory: string;
+  turnId?: string; // Optional turn ID for turn-based medical history
 }
 
 export interface AddMedicalHistoryParams {
@@ -82,13 +83,105 @@ export const loadDoctorAvailability = async ({ accessToken, doctorId }: LoadAvai
 
 
 
+
+
+
+
+
+
+
+
+
 export const addMedicalHistory = async ({accessToken, doctorId, turnId, content}: AddMedicalHistoryParams): Promise<MedicalHistory> => {
-  const request: CreateMedicalHistoryRequest = {
+  try {
+    const request: CreateMedicalHistoryRequest = {
+      turnId,
+      content
+    };
+
+    console.log('Creating medical history entry for turn:', turnId);
+    const result = await MedicalHistoryService.addMedicalHistory(accessToken, doctorId, request);
+    console.log('Medical history entry created successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('Failed to add medical history:', error);
+    throw error;
+  }
+}
+
+export const updateMedicalHistory = async ({accessToken, doctorId, patientId, medicalHistory, turnId}: UpdateMedicalHistoryParams & {turnId?: string}): Promise<MedicalHistory> => {
+  console.log('Updating medical history:', {
+    patientId,
     turnId,
-    content
-  };
-  
-  return await MedicalHistoryService.addMedicalHistory(accessToken, doctorId, request);
+    content: medicalHistory?.substring(0, 20) + '...',
+  });
+
+  try {
+    // Get all medical history entries for this patient
+    const historyEntries = await MedicalHistoryService.getPatientMedicalHistory(accessToken, patientId);
+    console.log(`Found ${historyEntries.length} history entries for patient`);
+    
+    // Check if turnId is provided - for turn-based medical history
+    if (turnId) {
+      console.log('Turn ID provided, looking for existing history for this turn');
+      // Look for an existing medical history entry for this turn
+      const turnEntry = historyEntries.find(entry => entry.turnId === turnId);
+      
+      if (turnEntry) {
+        console.log('Found existing entry for turn, updating it');
+        // Update the existing turn entry
+        return await MedicalHistoryService.updateMedicalHistory(
+          accessToken, 
+          doctorId, 
+          turnEntry.id, 
+          { content: medicalHistory }
+        );
+      } else {
+        console.log('No existing entry for turn, creating new one');
+        // Create a new medical history entry for this turn
+        return await addMedicalHistory({
+          accessToken,
+          doctorId,
+          turnId,
+          content: medicalHistory
+        });
+      }
+    } else {
+      console.log('No turn ID provided, using legacy behavior');
+      // Legacy behavior for general patient medical history (not turn-specific)
+      if (historyEntries.length > 0) {
+        // Update the most recent entry
+        const mostRecentEntry = historyEntries.sort((a, b) => 
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        )[0];
+        
+        console.log('Updating most recent entry:', mostRecentEntry.id);
+        return await MedicalHistoryService.updateMedicalHistory(
+          accessToken, 
+          doctorId, 
+          mostRecentEntry.id, 
+          { content: medicalHistory }
+        );
+      } else {
+        console.log('No history entries found for patient');
+        // No existing history entries, but in this case we should create one
+        if (turnId) {
+          return await addMedicalHistory({
+            accessToken,
+            doctorId,
+            turnId,
+            content: medicalHistory
+          });
+        } else {
+          // Really no way to create an entry without a turnId
+          throw new Error("No medical history entries found for this patient and no turn ID provided");
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error updating medical history:', error);
+    throw error;
+  }
 }
 
 export const updateMedicalHistoryEntry = async ({accessToken, doctorId, historyId, content}: UpdateMedicalHistoryEntryParams): Promise<MedicalHistory> => {
@@ -127,22 +220,22 @@ export const saveDoctorAvailability = async ({ accessToken, doctorId, availabili
     weeklyAvailability: availability.map((day: DayAvailability) => {
       const spanishDay = day.day.toUpperCase();
       const englishDay = dayMapping[spanishDay] || spanishDay;
-            
+
       return {
         day: englishDay,
         enabled: day.enabled,
         ranges: (day.ranges || []).filter(range => {
           if (!range.start || !range.end) return false;
-          
+
           const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
           const isValidStart = timeRegex.test(range.start);
           const isValidEnd = timeRegex.test(range.end);
-          
+
           if (!isValidStart || !isValidEnd) {
             console.warn(`Invalid time format: start=${range.start}, end=${range.end}`);
             return false;
           }
-          
+
           return true;
         })
       };
@@ -150,5 +243,5 @@ export const saveDoctorAvailability = async ({ accessToken, doctorId, availabili
   };
 
   await  DoctorService.saveAvailability(accessToken, doctorId, availabilityRequest);
-  return "Availability saved successfully";
-};
+
+  return "Availability saved successfully";}

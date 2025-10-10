@@ -75,31 +75,37 @@ const ViewTurns: React.FC = () => {
   };
 
   const handleAddMedicalHistory = (turn: any) => {
+    console.log('Adding medical history for turn:', turn.id, 'patient:', turn.patientId);
+    
+    // First, load medical history for this patient to check for existing entries
     medicalHistorySend({
       type: 'LOAD_PATIENT_MEDICAL_HISTORY',
       patientId: turn.patientId,
       accessToken: user.accessToken,
     });
 
-    const existingHistory = medicalHistoryState.context.medicalHistories?.find(
-      (history: any) => history.turnId === turn.id
-    );
-    
-    if (existingHistory) {
-      uiSend({
-        type: 'OPEN_SNACKBAR',
-        message: 'Ya existe una entrada de historia médica para este turno',
-        severity: 'info'
-      });
-      return;
-    }
+    // Wait a bit for the medical histories to load before checking
+    setTimeout(() => {
+      const existingHistory = medicalHistoryState.context.medicalHistories?.find(
+        (history: any) => history.turnId === turn.id
+      );
+      
+      if (existingHistory) {
+        uiSend({
+          type: 'OPEN_SNACKBAR',
+          message: 'Ya existe una entrada de historia médica para este turno',
+          severity: 'info'
+        });
+        return;
+      }
 
-    medicalHistorySend({
-      type: 'SELECT_HISTORY',
-      history: { id: turn.id, ...turn }
-    });
-    
-    uiSend({ type: 'TOGGLE', key: 'medicalHistoryDialog' });
+      medicalHistorySend({
+        type: 'SELECT_HISTORY',
+        history: { id: turn.id, ...turn }
+      });
+      
+      uiSend({ type: 'TOGGLE', key: 'medicalHistoryDialog' });
+    }, 300); // Short delay to allow medical history to load
   };
 
   const handleSaveMedicalHistory = () => {
@@ -110,6 +116,8 @@ const ViewTurns: React.FC = () => {
       return;
     }
 
+    console.log('Sending ADD_HISTORY_ENTRY_FOR_TURN event for turn:', selectedTurn.id);
+    
     medicalHistorySend({
       type: 'ADD_HISTORY_ENTRY_FOR_TURN',
       turnId: selectedTurn.id,
