@@ -25,6 +25,7 @@ export interface AdminUserMachineContext {
     patients: number;
     doctors: number;
     pending: number;
+    specialties: string[];
   };
   lastOperation: {
     type: 'approve' | 'reject' | null;
@@ -43,6 +44,7 @@ export const AdminUserMachineDefaultContext: AdminUserMachineContext = {
     patients: 0,
     doctors: 0,
     pending: 0,
+    specialties:[]
   },
   lastOperation: null,
   selectedDoctor: null,
@@ -76,7 +78,12 @@ export const adminUserMachine = createMachine({
               const dataContext = dataSnapshot.context;
               return {
                 pendingDoctors: dataContext.pendingDoctors || [],
-                adminStats: dataContext.adminStats || { patients: 0, doctors: 0, pending: 0 },
+                adminStats: { 
+                  patients: dataContext.adminStats?.patients || 0, 
+                  doctors: dataContext.adminStats?.doctors || 0, 
+                  pending: dataContext.adminStats?.pending || 0,
+                  specialties: dataContext.specialties || []
+                },
                 loading: false
               };
             } catch (error) {
@@ -161,6 +168,14 @@ export const adminUserMachine = createMachine({
                 message: `Doctor aprobado exitosamente: ${approvalResponse.message}`,
                 severity: "success"
               });
+              
+      
+              orchestrator.sendToMachine(DATA_MACHINE_ID, {
+                type: "RELOAD_DOCTORS"
+              });
+              orchestrator.sendToMachine(DATA_MACHINE_ID, {
+                type: "RELOAD_SPECIALTIES" 
+              });
             }
           ],
         },
@@ -232,6 +247,14 @@ export const adminUserMachine = createMachine({
                 type: "OPEN_SNACKBAR",
                 message: `Doctor rechazado exitosamente: ${rejectionResponse.message}`,
                 severity: "success"
+              });
+              
+      
+              orchestrator.sendToMachine(DATA_MACHINE_ID, {
+                type: "RELOAD_DOCTORS"
+              });
+              orchestrator.sendToMachine(DATA_MACHINE_ID, {
+                type: "RELOAD_SPECIALTIES" 
               });
             }
           ],

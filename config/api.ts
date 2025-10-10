@@ -23,6 +23,7 @@ export const API_CONFIG = {
     DOCTOR_MODIFY_REQUEST: '/api/turns/modify-requests',
     
     GET_DOCTORS: '/api/doctors',
+    GET_SPECIALTIES: '/api/doctors/specialties',
     GET_DOCTOR_PATIENTS: '/api/doctors/{doctorId}/patients',
     SAVE_DOCTOR_AVAILABILITY: '/api/doctors/{doctorId}/availability',
     GET_DOCTOR_AVAILABLE_SLOTS: '/api/doctors/{doctorId}/available-slots',

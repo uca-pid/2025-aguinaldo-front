@@ -37,6 +37,10 @@ export interface LoadMyModifyRequestsParams {
   accessToken: string;
 }
 
+export interface LoadSpecialtiesParams {
+  accessToken: string;
+}
+
 export interface LoadTurnFilesParams {
   accessToken: string;
   turnIds: string[];
@@ -44,6 +48,13 @@ export interface LoadTurnFilesParams {
 
 export const loadDoctors = async ({ accessToken }: LoadDoctorsParams): Promise<Doctor[]> => {
   return await TurnService.getDoctors(accessToken);
+};
+
+/**
+ * Load all specialties
+ */
+export const loadSpecialties = async ({ accessToken }: LoadSpecialtiesParams): Promise<string[]> => {
+  return await AdminService.getSpecialties(accessToken);
 };
 
 export const loadPendingDoctors = async ({ accessToken, isAdmin }: LoadPendingDoctorsParams): Promise<PendingDoctor[]> => {
