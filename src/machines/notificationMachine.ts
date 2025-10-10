@@ -1,12 +1,14 @@
 import { createMachine, assign, fromPromise } from "xstate";
+import { orchestrator } from "#/core/Orchestrator";
 import { NotificationService, NotificationResponse } from '../service/notification-service.service';
+import { UI_MACHINE_ID } from "./uiMachine";
 
 export const NOTIFICATION_MACHINE_ID = "notification";
 export const NOTIFICATION_MACHINE_EVENT_TYPES = [
-  "SET_AUTH",
   "LOAD_NOTIFICATIONS",
   "DELETE_NOTIFICATION",
-  "DELETE_ALL_NOTIFICATIONS",
+  "NOTIFICATION_CLOSED",
+  "UPDATE_INDEX",
   "ALL_NOTIFICATIONS_SHOWN",
 ];
 
@@ -19,10 +21,10 @@ export interface NotificationMachineContext {
 }
 
 export type NotificationMachineEvent =
-  | { type: "SET_AUTH"; accessToken: string }
-  | { type: "LOAD_NOTIFICATIONS"; accessToken?: string }
+  | { type: "LOAD_NOTIFICATIONS"; accessToken: string }
   | { type: "DELETE_NOTIFICATION"; notificationId: string }
-  | { type: "DELETE_ALL_NOTIFICATIONS" }
+  | { type: "NOTIFICATION_CLOSED" }
+  | { type: "UPDATE_INDEX"; index: number }
   | { type: "ALL_NOTIFICATIONS_SHOWN" };
 
 export const notificationMachine = createMachine({
@@ -42,15 +44,10 @@ export const notificationMachine = createMachine({
   states: {
     idle: {
       on: {
-        SET_AUTH: {
-          actions: assign({
-            accessToken: ({ event }) => event.accessToken,
-          }),
-        },
         LOAD_NOTIFICATIONS: {
           target: "loadingNotifications",
           actions: assign({
-            accessToken: ({ event, context }) => event.accessToken || context.accessToken,
+            accessToken: ({ event }) => event.accessToken,
           }),
         },
       },
@@ -65,7 +62,7 @@ export const notificationMachine = createMachine({
           accessToken: context.accessToken,
         }),
         onDone: {
-          target: "ready",
+          target: "showingNotifications",
           actions: assign({
             notifications: ({ event }) => event.output,
             currentNotificationIndex: 0,
@@ -81,68 +78,91 @@ export const notificationMachine = createMachine({
         },
       },
     },
-    ready: {
+    showingNotifications: {
+      entry: ({ context }) => {
+        if (context.notifications.length > 0) {
+          const notification = context.notifications[context.currentNotificationIndex];
+          const severity = notification.message.toLowerCase().includes('rechazada') || 
+                          notification.message.toLowerCase().includes('cancelado') 
+                          ? 'warning' : 'success';
+          orchestrator.sendToMachine(UI_MACHINE_ID, {
+            type: "OPEN_SNACKBAR",
+            message: notification.message,
+            severity: severity
+          });
+        }
+      },
       on: {
-        LOAD_NOTIFICATIONS: {
-          target: "loadingNotifications",
-          actions: assign({
-            accessToken: ({ event, context }) => event.accessToken || context.accessToken,
-          }),
+        NOTIFICATION_CLOSED: {
+          actions: ({ context }) => {
+            const currentNotification = context.notifications[context.currentNotificationIndex];
+            if (currentNotification) {
+              orchestrator.sendToMachine(NOTIFICATION_MACHINE_ID, {
+                type: "DELETE_NOTIFICATION",
+                notificationId: currentNotification.id
+              });
+            }
+          },
         },
-        DELETE_NOTIFICATION: "deletingNotification",
-        DELETE_ALL_NOTIFICATIONS: "deletingAllNotifications",
+        LOAD_NOTIFICATIONS: "loadingNotifications",
       },
     },
     deletingNotification: {
       invoke: {
         src: fromPromise(async ({ input }) => {
           await NotificationService.deleteNotification(input.notificationId, input.accessToken);
-          return input.notificationId; // Return the ID so we can use it in onDone
         }),
         input: ({ context, event }) => ({
           notificationId: (event as any).notificationId,
           accessToken: context.accessToken,
         }),
         onDone: {
-          target: "loadingNotifications",
+          target: "showingNotifications",
+          actions: [
+            assign(({ context }) => {
+              const remainingNotifications = context.notifications.filter(
+                (_, index) => index !== context.currentNotificationIndex
+              );
+              return {
+                notifications: remainingNotifications,
+                currentNotificationIndex: 0,
+              };
+            }),
+            ({ context }) => {
+              // Check if there are more notifications after removal
+              const remainingNotifications = context.notifications.filter(
+                (_, index) => index !== context.currentNotificationIndex
+              );
+              
+              if (remainingNotifications.length === 0) {
+                orchestrator.sendToMachine(NOTIFICATION_MACHINE_ID, {
+                  type: "ALL_NOTIFICATIONS_SHOWN"
+                });
+              }
+            },
+          ],
         },
         onError: {
-          target: "loadingNotifications",
-          actions: assign({
-            error: ({ event }) => (event.error as Error)?.message || "Failed to delete notification",
-          }),
-        },
-      },
-    },
-    deletingAllNotifications: {
-      invoke: {
-        src: fromPromise(async ({ input }) => {
-          // Delete all notifications sequentially
-          const promises = input.notificationIds.map((id: string) => 
-            NotificationService.deleteNotification(id, input.accessToken)
-          );
-          await Promise.all(promises);
-        }),
-        input: ({ context }) => ({
-          notificationIds: context.notifications.map(n => n.id),
-          accessToken: context.accessToken,
-        }),
-        onDone: {
-          target: "loadingNotifications",
-        },
-        onError: {
-          target: "loadingNotifications",
-          actions: assign({
-            error: ({ event }) => (event.error as Error)?.message || "Failed to delete notifications",
+          target: "showingNotifications",
+          actions: assign(({ context }) => {
+            // Remove the notification even if delete failed (optimistic update)
+            const remainingNotifications = context.notifications.filter(
+              (_, index) => index !== context.currentNotificationIndex
+            );
+            return {
+              notifications: remainingNotifications,
+              currentNotificationIndex: 0,
+            };
           }),
         },
       },
     },
   },
   on: {
-    SET_AUTH: {
+    DELETE_NOTIFICATION: ".deletingNotification",
+    UPDATE_INDEX: {
       actions: assign({
-        accessToken: ({ event }) => event.accessToken,
+        currentNotificationIndex: ({ event }) => (event as any).index,
       }),
     },
     ALL_NOTIFICATIONS_SHOWN: {
