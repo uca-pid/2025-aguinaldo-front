@@ -14,6 +14,7 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import "./ViewTurns.css";
 import { orchestrator } from "#/core/Orchestrator";
 import { filterTurns } from "#/utils/filterTurns";
+import ConfirmationModal from "#/components/shared/ConfirmationModal/ConfirmationModal";
 
 const ViewTurns: React.FC = () => {
   const { turnState, turnSend, uiSend, filesState, filesSend } = useMachines();
@@ -37,7 +38,11 @@ const ViewTurns: React.FC = () => {
     uiSend({ 
       type: "OPEN_CANCEL_TURN_DIALOG", 
       turnId,
-      turnData
+      turnData,
+      title: "Cancelar Turno",
+      message: "¿Estás seguro de que quieres cancelar este turno? Esta acción no se puede deshacer.",
+      confirmButtonText: "Cancelar Turno",
+      confirmButtonColor: "error"
     });
   };
 
@@ -70,14 +75,15 @@ const ViewTurns: React.FC = () => {
   };
 
   const handleDeleteFile = (turnId: string) => {
-    if (window.confirm('¿Está seguro que desea eliminar el archivo de este turno?')) {
-      if (dataContext.accessToken) {
-        filesSend({
-          type: "DELETE_TURN_FILE",
-          turnId
-        });
-      }
-    }
+    uiSend({
+      type: "OPEN_CONFIRMATION_DIALOG",
+      action: "delete_file",
+      turnId,
+      title: "Eliminar Archivo",
+      message: "¿Estás seguro de que quieres eliminar este archivo? Esta acción no se puede deshacer.",
+      confirmButtonText: "Eliminar Archivo",
+      confirmButtonColor: "error"
+    });
   };
 
   const getStatusLabel = (status: string) => {
@@ -435,6 +441,7 @@ const ViewTurns: React.FC = () => {
         accept=".pdf,.jpg,.jpeg,.png"
         onChange={handleFileChange}
       />
+      <ConfirmationModal />
     </Box>
   );
 };
