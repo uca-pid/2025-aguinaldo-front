@@ -39,7 +39,7 @@ export class StorageService {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
+        const errorData = await response.json().catch(() => ({ error: `Upload failed! Status: ${response.status}` }));
         throw new Error(errorData.error || `Upload failed! Status: ${response.status}`);
       }
 
@@ -150,13 +150,13 @@ export class StorageService {
       throw new Error('El archivo no puede superar los 5MB');
     }
 
-    if (!allowedTypes.includes(file.type)) {
-      throw new Error('Solo se permiten archivos PDF, JPG y PNG');
+    const extension = file.name.substring(file.name.lastIndexOf('.'));
+    if (!allowedExtensions.includes(extension.toLowerCase())) {
+      throw new Error('Extensión de archivo no válida');
     }
 
-    const extension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-    if (!allowedExtensions.includes(extension)) {
-      throw new Error('Extensión de archivo no válida');
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error('Solo se permiten archivos PDF, JPG y PNG');
     }
   }
 }
