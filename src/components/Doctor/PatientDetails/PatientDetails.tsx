@@ -102,6 +102,12 @@ const PatientDetails: React.FC = () => {
     return fileInfo;
   };
 
+  const truncateFileName = (fileName: string | undefined) => {
+    if (!fileName) return 'Ver archivo';
+    const maxLength = 20;
+    return fileName.length > maxLength ? `${fileName.substring(0, maxLength)}...` : fileName;
+  };
+
   const getTurnStatusLabel = (status: string) => {
     switch (status) {
       case 'SCHEDULED':
@@ -440,9 +446,6 @@ const PatientDetails: React.FC = () => {
                             {fileStatus === "has-file" && fileInfo && (
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                 <AttachFile sx={{ fontSize: 16, color: '#1976d2' }} />
-                                <Typography variant="caption" sx={{ color: '#1976d2' }}>
-                                  Archivo subido por el paciente:
-                                </Typography>
                                 <Button
                                   variant="text"
                                   size="small"
@@ -452,10 +455,14 @@ const PatientDetails: React.FC = () => {
                                     fontSize: '0.75rem',
                                     color: '#1976d2',
                                     minWidth: 'auto',
-                                    p: 0
+                                    p: 0,
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(25, 118, 210, 0.04)',
+                                      textDecoration: 'underline'
+                                    }
                                   }}
                                 >
-                                  {fileInfo.fileName || 'Ver archivo'}
+                                  {truncateFileName(fileInfo.fileName)}
                                 </Button>
                               </Box>
                             )}
