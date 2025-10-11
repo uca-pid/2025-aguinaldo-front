@@ -10,9 +10,15 @@ import { BrowserRouter } from "react-router-dom";
 import { DataProvider } from "./providers/DataProvider";
 import LoginLoadingScreen from "./components/shared/LoadingScreens/LoginLoadingScreen";
 import LogoutLoadingScreen from "./components/shared/LoadingScreens/LogoutLoadingScreen";
+import AuthCheckingScreen from "./components/shared/LoadingScreens/AuthCheckingScreen";
 
 const AppRouter = () => {
   const { authState } = useAuthMachine();
+
+  // Show auth checking loading when the app is checking localStorage for existing auth
+  if (authState?.value === 'checkingAuth') {
+    return <AuthCheckingScreen />;
+  }
 
   // Show login loading when authenticating
   if (authState?.context?.loading) {
