@@ -16,7 +16,7 @@ import Event from "@mui/icons-material/Event";
 import "./ReservationTurns.css";
 
 const ReservationTurns: React.FC = () => {
-  const { uiSend, turnState, turnSend } = useMachines();  
+  const { turnState, turnSend } = useMachines();  
   const turnContext = turnState.context;
   const formValues = turnContext.takeTurn;
 
@@ -88,13 +88,6 @@ const ReservationTurns: React.FC = () => {
     if (!formValues.scheduledAt) return;
     try {
       turnSend({ type: "CREATE_TURN" });
-      
-      setTimeout(() => {
-        if (!turnContext.error) {
-          uiSend({ type: "NAVIGATE", to: "/patient" });
-          turnSend({ type: "RESET_TAKE_TURN" });
-        }
-      }, 500);
     } catch (error) {
       console.error('Error creating turn:', error);
     }
