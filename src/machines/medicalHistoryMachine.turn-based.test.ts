@@ -2,6 +2,13 @@ import { describe, it, expect, vi } from 'vitest';
 import { createActor } from 'xstate';
 import { medicalHistoryMachine, type MedicalHistoryMachineEvent } from './medicalHistoryMachine';
 
+// Mock the orchestrator
+vi.mock('../core/Orchestrator', () => ({
+  orchestrator: {
+    sendToMachine: vi.fn(),
+  },
+}));
+
 // Mock the MedicalHistoryService
 vi.mock('../service/medical-history-service.service', () => ({
   MedicalHistoryService: {

@@ -23,8 +23,9 @@ vi.mock('../../service/medical-history-service.service', () => ({
     addMedicalHistory: vi.fn(),
     updateMedicalHistory: vi.fn(),
     deleteMedicalHistory: vi.fn(),
+    getPatientMedicalHistory: vi.fn(),
   }
-}))
+}));
 
 describe('doctorMachineUtils', () => {
   beforeEach(() => {
@@ -76,7 +77,8 @@ describe('doctorMachineUtils', () => {
         accessToken: 'token123',
         doctorId: 'doctor456',
         patientId: 'patient789',
-        medicalHistory: 'Patient has allergies to penicillin'
+        medicalHistory: 'Patient has allergies to penicillin',
+        turnId: 'turn-123'
       }
 
       const mockMedicalHistory = {
@@ -92,6 +94,7 @@ describe('doctorMachineUtils', () => {
         updatedAt: '2023-10-08T10:00:00Z'
       };
 
+      ;(MedicalHistoryService.getPatientMedicalHistory as Mock).mockResolvedValue([])
       ;(MedicalHistoryService.addMedicalHistory as Mock).mockResolvedValue(mockMedicalHistory)
 
       const result = await updateMedicalHistory(params)
@@ -100,7 +103,7 @@ describe('doctorMachineUtils', () => {
         'token123',
         'doctor456',
         {
-          patientId: 'patient789',
+          turnId: 'turn-123',
           content: 'Patient has allergies to penicillin'
         }
       )
