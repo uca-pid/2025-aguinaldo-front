@@ -961,7 +961,6 @@ describe('dataMachine', () => {
 
       expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith('notification', {
         type: 'LOAD_NOTIFICATIONS',
-        accessToken: 'token123',
       });
     });
   });

@@ -45,6 +45,7 @@ export interface DataMachineContext {
   doctorModifyRequests: TurnModifyRequest[];
   myModifyRequests: TurnModifyRequest[];
   turnFiles: Record<string, any>;
+  turnFilesLoaded: boolean; // Add flag to track if turn files have been loaded
   
   loading: {
     doctors: boolean;
@@ -92,6 +93,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
   doctorModifyRequests: [],
   myModifyRequests: [],
   turnFiles: {},
+  turnFilesLoaded: false,
   
   loading: {
     doctors: false,
@@ -153,12 +155,20 @@ export const dataMachine = createMachine({
       on: {
         SET_AUTH: {
           target: "fetchingDoctors",
-          actions: assign({
-            accessToken: ({ event }) => event.accessToken,
-            userRole: ({ event }) => event.userRole,
-            userId: ({ event }) => event.userId,
-            doctorId: ({ event }) => event.userRole === "DOCTOR" ? event.userId : null,
-          }),
+          actions: [
+            assign({
+              accessToken: ({ event }) => event.accessToken,
+              userRole: ({ event }) => event.userRole,
+              userId: ({ event }) => event.userId,
+              doctorId: ({ event }) => event.userRole === "DOCTOR" ? event.userId : null,
+            }),
+            () => {
+              // Load notifications once when user authenticates
+              orchestrator.sendToMachine("notification", {
+                type: "LOAD_NOTIFICATIONS"
+              });
+            }
+          ],
         },
         CLEAR_ACCESS_TOKEN: {
           actions: assign({
@@ -174,6 +184,8 @@ export const dataMachine = createMachine({
             doctorPatients: [],
             doctorAvailability: [],
             doctorModifyRequests: [],
+            turnFiles: {},
+            turnFilesLoaded: false, // Reset the flag
           }),
         },
         RELOAD_DOCTORS: {
@@ -226,14 +238,11 @@ export const dataMachine = createMachine({
             type: "DATA_LOADED",
             doctorAvailability: context.doctorAvailability
           });
-          orchestrator.sendToMachine("notification", {
-            type: "LOAD_NOTIFICATIONS",
-            accessToken: context.accessToken!
-          });
           
+          // Only load turn files if user is patient/doctor, has turns, and hasn't loaded files yet
           if ((context.userRole === "PATIENT" || context.userRole === "DOCTOR") && 
               context.myTurns?.length > 0 && 
-              Object.keys(context.turnFiles).length === 0) {
+              !context.turnFilesLoaded) {
             orchestrator.sendToMachine("data", { type: "LOAD_TURN_FILES" });
           }
         }, 0);
@@ -270,6 +279,7 @@ export const dataMachine = createMachine({
             doctorModifyRequests: [],
             myModifyRequests: [],
             turnFiles: {},
+            turnFilesLoaded: false, // Reset the flag
           }),
         },
         RELOAD_DOCTORS: {
@@ -281,15 +291,25 @@ export const dataMachine = createMachine({
         RELOAD_ADMIN_STATS: {
           target: "fetchingAdminStats",
         },
-        RELOAD_ALL: {
-          actions: ({ context }) => {
-            if (context.userRole === "ADMIN") {
-              orchestrator.sendToMachine("data", { type: "RELOAD_DOCTORS" });
-              orchestrator.sendToMachine("data", { type: "RELOAD_PENDING_DOCTORS" });
-              orchestrator.sendToMachine("data", { type: "RELOAD_ADMIN_STATS" });
-            }
+        RELOAD_ALL: [
+          {
+            guard: ({ context }) => context.userRole === "ADMIN",
+            actions: ({ self }) => {
+              // Send multiple reload events for ADMIN
+              setTimeout(() => {
+                self.send({ type: "RELOAD_DOCTORS" });
+                self.send({ type: "RELOAD_PENDING_DOCTORS" });
+                self.send({ type: "RELOAD_ADMIN_STATS" });
+              }, 0);
+            },
           },
-        },
+          {
+            actions: () => {
+              // For non-admin users, just reload doctors
+              // Could be extended for other roles
+            },
+          },
+        ],
         LOAD_AVAILABLE_TURNS: {
           target: "fetchingAvailableTurns",
           guard: ({ context, event }) => !!context.accessToken && !!(event as any).doctorId && !!(event as any).date,
@@ -620,6 +640,7 @@ export const dataMachine = createMachine({
             guard: ({ context }) => context.userRole === "DOCTOR",
             actions: assign({
               myTurns: ({ event }) => event.output,
+              turnFilesLoaded: false, // Reset flag when new turns are loaded
               loading: ({ context }) => ({ ...context.loading, myTurns: false }),
             }),
           },
@@ -628,6 +649,7 @@ export const dataMachine = createMachine({
             guard: ({ context }) => context.userRole === "PATIENT",
             actions: assign({
               myTurns: ({ event }) => event.output,
+              turnFilesLoaded: false, // Reset flag when new turns are loaded
               loading: ({ context }) => ({ ...context.loading, myTurns: false }),
             }),
           },
@@ -635,6 +657,7 @@ export const dataMachine = createMachine({
             target: "ready",
             actions: assign({
               myTurns: ({ event }) => event.output,
+              turnFilesLoaded: false, // Reset flag when new turns are loaded
               loading: ({ context }) => ({ ...context.loading, myTurns: false }),
             }),
           },
@@ -897,6 +920,7 @@ export const dataMachine = createMachine({
             turnFiles: ({ context, event }) => {
               return { ...context.turnFiles, ...event.output };
             },
+            turnFilesLoaded: true, // Set flag to true when files are loaded
             loading: ({ context }) => ({ ...context.loading, turnFiles: false }),
           }),
         },
@@ -907,6 +931,7 @@ export const dataMachine = createMachine({
               loading: ({ context }) => {
                 return { ...context.loading, turnFiles: false };
               },
+              turnFilesLoaded: true, // Set flag to true even on error to prevent infinite loop
               errors: ({ context, event }) => {
                 console.error('❌ fetchingTurnFiles: Error occurred:', event.error);
                 return {

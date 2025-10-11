@@ -6,8 +6,8 @@ import type { MedicalHistory } from '../models/MedicalHistory';
 vi.mock('#/core/Orchestrator', () => ({
   orchestrator: {
     send: vi.fn(),
+    sendToMachine: vi.fn(),
     registerMachine: vi.fn(),
-    sendToMachine: vi.fn(), // Add this to prevent uncaught exceptions
   }
 }));
 
