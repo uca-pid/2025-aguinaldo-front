@@ -1,27 +1,27 @@
+import React from "react";
 import { 
   Box, Button, Typography, CircularProgress, Chip, FormControl, InputLabel, Select, MenuItem, Avatar,
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, Tooltip
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
-import { useDataMachine } from "#/providers/DataProvider";
 import dayjs from "dayjs";
 import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { filterTurns } from "#/utils/filterTurns";
 import ListAltIcon from "@mui/icons-material/ListAlt";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
+import HistoryIcon from "@mui/icons-material/History";
 import "./DoctorViewTurns.css";
 
 const ViewTurns: React.FC = () => {
-  const { turnState, turnSend, uiSend } = useMachines();
+  
+  const { turnState, turnSend, uiState,uiSend, medicalHistorySend, medicalHistoryState } = useMachines();
   const { authState } = useAuthMachine();
-  const { dataState } = useDataMachine();
   const authContext = authState?.context;
   const user = authContext?.authResponse as SignInResponse;
   
   const turnContext = turnState.context;
-  const dataContext = dataState.context;
   const showTurnsContext = turnContext.showTurns;
   const { cancellingTurnId, isCancellingTurn } = turnContext;
 
@@ -62,32 +62,82 @@ const ViewTurns: React.FC = () => {
     return turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt);
   };
 
-  const truncateFileName = (fileName: string | undefined) => {
-    if (!fileName) return 'Archivo del paciente';
-    const maxLength = 20;
-    return fileName.length > maxLength ? `${fileName.substring(0, maxLength)}...` : fileName;
+  const canAddMedicalHistory = (turn: any) => {
+    if (!turn.patientId) return false;
+    return turn.status === 'COMPLETED' || (turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt));
   };
 
-  const getTurnFileInfo = (turnId: string) => {
-    const fileInfo = dataContext.turnFiles?.[turnId] || null;
-    return fileInfo;
+  const getMedicalHistoryButtonTooltip = (turn: any) => {
+    if (!turn.patientId) return "Este turno no tiene paciente asignado";
+    if (turn.status === 'CANCELED') return "No se puede agregar historia a turnos cancelados";
+    if (turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt)) return "Solo se puede agregar historia después de la consulta";
+    return "";
   };
 
-  const getFileStatus = (turnId: string) => {
-    if (dataContext.loading.turnFiles) {
-      return "loading";
-    }
+  const handleAddMedicalHistory = (turn: any) => {
+    console.log('Adding medical history for turn:', turn.id, 'patient:', turn.patientId);
     
-    if (!dataContext.turnFiles) {
-      return "no-data";
-    }
+    // First, load medical history for this patient to check for existing entries
+    medicalHistorySend({
+      type: 'LOAD_PATIENT_MEDICAL_HISTORY',
+      patientId: turn.patientId,
+      accessToken: user.accessToken,
+    });
+
+    // Wait a bit for the medical histories to load before checking
+    setTimeout(() => {
+      const existingHistory = medicalHistoryState.context.medicalHistories?.find(
+        (history: any) => history.turnId === turn.id
+      );
+      
+      if (existingHistory) {
+        uiSend({
+          type: 'OPEN_SNACKBAR',
+          message: 'Ya existe una entrada de historia médica para este turno',
+          severity: 'info'
+        });
+        return;
+      }
+
+      medicalHistorySend({
+        type: 'SELECT_HISTORY',
+        history: { id: turn.id, ...turn }
+      });
+      
+      uiSend({ type: 'TOGGLE', key: 'medicalHistoryDialog' });
+    }, 300); // Short delay to allow medical history to load
+  };
+
+  const handleSaveMedicalHistory = () => {
+    const selectedTurn = medicalHistoryState.context.selectedHistory;
+    const newContent = medicalHistoryState.context.newHistoryContent;
     
-    const fileInfo = dataContext.turnFiles[turnId];
-    if (fileInfo) {
-      return "has-file";
-    } else {
-      return "no-file";
+    if (!newContent.trim() || !selectedTurn || !user.accessToken || !user.id) {
+      return;
     }
+
+    console.log('Sending ADD_HISTORY_ENTRY_FOR_TURN event for turn:', selectedTurn.id);
+    
+    medicalHistorySend({
+      type: 'ADD_HISTORY_ENTRY_FOR_TURN',
+      turnId: selectedTurn.id,
+      content: newContent.trim(),
+      accessToken: user.accessToken,
+      doctorId: user.id,
+      turnInfo: {
+        patientName: selectedTurn.patientName,
+        scheduledAt: selectedTurn.scheduledAt,
+        status: selectedTurn.status,
+      },
+    });
+
+    uiSend({ type: 'TOGGLE', key: 'medicalHistoryDialog' });
+    medicalHistorySend({ type: 'CLEAR_SELECTION' });
+  };
+
+  const handleCloseMedicalHistoryDialog = () => {
+    uiSend({ type: 'TOGGLE', key: 'medicalHistoryDialog' });
+    medicalHistorySend({ type: 'CLEAR_SELECTION' });
   };
 
   return (
@@ -199,95 +249,53 @@ const ViewTurns: React.FC = () => {
                             Motivo: {turn.reason}
                           </Typography>
                         )}
-                        
-                        {(() => {
-                          const fileStatus = getFileStatus(turn.id);
-                          if (fileStatus === "has-file") {
-                            return (
-                              <Typography variant="body2" sx={{ 
-                                color: '#1976d2', 
-                                fontWeight: 500, 
-                                mt: 0.5,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 0.5
-                              }}>
-                                ! Archivo subido por el paciente
-                              </Typography>
-                            );
-                          }
-                          return null;
-                        })()}
                       </Box>
                       <Box className="viewturns-turn-actions">
-                        <Box className="viewturns-main-actions">
-                          {canCancelTurn(turn) && (
-                            <Button 
-                              variant="contained" 
-                              size="small"
-                              className="viewturns-cancel-btn"
-                              onClick={() => handleCancelTurn(turn.id)}
-                              disabled={isCancellingTurn && cancellingTurnId === turn.id}
-                            >
-                              {isCancellingTurn && cancellingTurnId === turn.id ? (
-                                <>
-                                  <CircularProgress size={16} sx={{ mr: 1 }} />
-                                  Cancelando...
-                                </>
-                              ) : (
-                                'Cancelar turno'
-                              )}
-                            </Button>
-                          )}
-                        </Box>
-                        
-                        <Box className="viewturns-file-actions">
-                          {(() => {
-                            const fileStatus = getFileStatus(turn.id);
-                            
-                            if (fileStatus === "loading" || fileStatus === "no-data") {
-                              return (
-                                <Button
-                                  variant="text"
-                                  size="small"
-                                  disabled
-                                  className="viewturns-load-file-info-btn"
-                                >
-                                  <CircularProgress size={16} sx={{ mr: 1 }} />
-                                  {fileStatus === "loading" ? "Verificando archivos..." : "Cargando información de archivos..."}
-                                </Button>
-                              );
-                            }
-                            
-                            if (fileStatus === "has-file") {
-                              const fileInfo = getTurnFileInfo(turn.id);
-                              return (
-                                <Button
-                                  variant="outlined"
-                                  size="small"
-                                  startIcon={<AttachFileIcon />}
-                                  onClick={() => window.open(fileInfo?.url, '_blank')}
-                                  className="viewturns-view-file-btn"
-                                  sx={{ 
-                                    textTransform: 'none',
-                                    fontSize: '0.875rem',
-                                    backgroundColor: '#e3f2fd',
-                                    borderColor: '#2196f3',
-                                    color: '#1976d2',
-                                    '&:hover': {
-                                      backgroundColor: '#bbdefb',
-                                      borderColor: '#1976d2'
-                                    }
-                                  }}
-                                >
-                                  {truncateFileName(fileInfo?.fileName)}
-                                </Button>
-                              );
-                            }
-                            
-                            return null;
-                          })()}
-                        </Box>
+                        {canAddMedicalHistory(turn) ? (
+                          <Button 
+                            variant="outlined" 
+                            size="small"
+                            className="viewturns-history-btn"
+                            onClick={() => handleAddMedicalHistory(turn)}
+                            startIcon={<HistoryIcon />}
+                            sx={{ mr: 1 }}
+                          >
+                            Agregar Historia
+                          </Button>
+                        ) : (
+                          <Tooltip title={getMedicalHistoryButtonTooltip(turn)} arrow>
+                            <span>
+                              <Button 
+                                variant="outlined" 
+                                size="small"
+                                className="viewturns-history-btn"
+                                disabled
+                                startIcon={<HistoryIcon />}
+                                sx={{ mr: 1 }}
+                              >
+                                Agregar Historia
+                              </Button>
+                            </span>
+                          </Tooltip>
+                        )}
+                        {canCancelTurn(turn) && (
+                          <Button 
+                            variant="contained" 
+                            size="small"
+                            className="viewturns-cancel-btn"
+                            onClick={() => handleCancelTurn(turn.id)}
+                            disabled={isCancellingTurn && cancellingTurnId === turn.id}
+                          >
+                            {isCancellingTurn && cancellingTurnId === turn.id ? (
+                              <>
+                                <CircularProgress size={16} sx={{ mr: 1 }} />
+                                Cancelando...
+                              </>
+                            ) : (
+                              'Cancelar turno'
+                            )}
+                          </Button>
+                        )}
                       </Box>
                     </Box>
                   </Box>
@@ -305,6 +313,51 @@ const ViewTurns: React.FC = () => {
             </Box>
             </Box>
           </Box>
+
+          {/* Medical History Dialog - Using State Machines */}
+          <Dialog 
+            open={uiState.context.toggleStates.medicalHistoryDialog || false}
+            onClose={handleCloseMedicalHistoryDialog}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle>
+              Agregar Historia Médica
+            </DialogTitle>
+            <DialogContent>
+              <TextField
+                autoFocus
+                multiline
+                rows={6}
+                fullWidth
+                label="Observaciones Médicas"
+                placeholder="Ingrese diagnóstico, tratamiento, observaciones del paciente..."
+                value={medicalHistoryState.context.newHistoryContent || ''}
+                onChange={(e) => medicalHistorySend({ type: 'SET_NEW_CONTENT', content: e.target.value })}
+                variant="outlined"
+                margin="normal"
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseMedicalHistoryDialog}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleSaveMedicalHistory}
+                variant="contained"
+                disabled={!(medicalHistoryState.context.newHistoryContent || '').trim() || medicalHistoryState.context.isLoading}
+              >
+                {medicalHistoryState.context.isLoading ? (
+                  <>
+                    <CircularProgress size={16} sx={{ mr: 1 }} />
+                    Guardando...
+                  </>
+                ) : (
+                  'Guardar Historia'
+                )}
+              </Button>
+            </DialogActions>
+          </Dialog>
       </Box>
     </LocalizationProvider>
   );
