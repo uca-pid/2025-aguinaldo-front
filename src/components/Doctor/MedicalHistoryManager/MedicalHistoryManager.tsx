@@ -1,7 +1,7 @@
 import React from 'react';
-import {Box,Typography,Paper,Button,TextField,Alert,CircularProgress,Dialog,DialogTitle,DialogContent,DialogActions,
+import {Box,Typography,Paper,Button,Alert,CircularProgress,Dialog,DialogTitle,DialogContent,DialogActions,
   IconButton,Card,CardContent,CardActions,Slide,Grow} from '@mui/material';
-import {Add,Delete,PersonOutlined,AccessTime,Warning} from '@mui/icons-material';
+import {Delete,PersonOutlined,AccessTime,Warning} from '@mui/icons-material';
 import type { MedicalHistory } from '../../../models/MedicalHistory';
 import { useMachines } from '#/providers/MachineProvider';
 import { formatDateTime } from '../../../utils/dateTimeUtils';
