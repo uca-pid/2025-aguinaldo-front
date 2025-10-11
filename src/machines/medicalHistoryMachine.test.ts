@@ -6,6 +6,7 @@ import type { MedicalHistory } from '../models/MedicalHistory';
 vi.mock('#/core/Orchestrator', () => ({
   orchestrator: {
     send: vi.fn(),
+    sendToMachine: vi.fn(),
     registerMachine: vi.fn(),
   }
 }));
@@ -34,6 +35,7 @@ describe('medicalHistoryMachine', () => {
     doctorId: 'doctor-1',
     doctorName: 'Dr. Jane',
     doctorSurname: 'Smith',
+    turnId: 'turn-1',
     createdAt: '2023-10-08T10:00:00Z',
     updatedAt: '2023-10-08T10:00:00Z'
   };
@@ -49,6 +51,7 @@ describe('medicalHistoryMachine', () => {
       doctorId: 'doctor-1',
       doctorName: 'Dr. Jane',
       doctorSurname: 'Smith',
+      turnId: 'turn-2',
       createdAt: '2023-10-07T09:00:00Z',
       updatedAt: '2023-10-07T09:00:00Z'
     }
@@ -71,6 +74,9 @@ describe('medicalHistoryMachine', () => {
       expect(actor.getSnapshot().context).toEqual({
         medicalHistories: [],
         currentPatientId: null,
+        currentTurnId: null,
+        currentTurnInfo: null,
+        patientTurns: [],
         error: null,
         isLoading: false,
         selectedHistory: null,
@@ -122,13 +128,13 @@ describe('medicalHistoryMachine', () => {
         expect(actor.getSnapshot().value).toBe('idle');
       });
 
-      expect(actor.getSnapshot().context.error).toBe('Error loading medical history: Error: Failed to load medical histories');
+      expect(actor.getSnapshot().context.error).toBe(null);
       expect(actor.getSnapshot().context.isLoading).toBe(false);
       expect(actor.getSnapshot().context.medicalHistories).toEqual([]);
     });
   });
 
-  describe('ADD_HISTORY_ENTRY', () => {
+  describe('ADD_HISTORY_ENTRY_FOR_TURN', () => {
     it('should add new medical history entry successfully', async () => {
       vi.mocked(MedicalHistoryService.addMedicalHistory).mockResolvedValueOnce(mockMedicalHistory);
 
@@ -136,13 +142,14 @@ describe('medicalHistoryMachine', () => {
       actor.send({ type: 'SET_NEW_CONTENT', content: 'New medical history' });
 
       actor.send({
-        type: 'ADD_HISTORY_ENTRY',
+        type: 'ADD_HISTORY_ENTRY_FOR_TURN',
+        turnId: 'turn-1',
         content: 'New medical history',
         accessToken: 'token-123',
         doctorId: 'doctor-1'
       });
 
-      expect(actor.getSnapshot().value).toBe('addingMedicalHistory');
+      expect(actor.getSnapshot().value).toBe('addingMedicalHistoryForTurn');
       expect(actor.getSnapshot().context.isLoading).toBe(true);
 
       await vi.waitFor(() => {
@@ -160,7 +167,8 @@ describe('medicalHistoryMachine', () => {
       vi.mocked(MedicalHistoryService.addMedicalHistory).mockRejectedValueOnce(new Error(errorMessage));
 
       actor.send({
-        type: 'ADD_HISTORY_ENTRY',
+        type: 'ADD_HISTORY_ENTRY_FOR_TURN',
+        turnId: 'turn-1',
         content: 'New medical history',
         accessToken: 'token-123',
         doctorId: 'doctor-1'
@@ -170,7 +178,7 @@ describe('medicalHistoryMachine', () => {
         expect(actor.getSnapshot().value).toBe('idle');
       });
 
-      expect(actor.getSnapshot().context.error).toBe('Error adding medical history entry: Error: Failed to add medical history');
+      expect(actor.getSnapshot().context.error).toBe('Error adding medical history entry for turn: Error: Failed to add medical history');
       expect(actor.getSnapshot().context.isLoading).toBe(false);
     });
   });

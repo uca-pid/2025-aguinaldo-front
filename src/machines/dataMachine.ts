@@ -16,6 +16,7 @@ export const DATA_MACHINE_EVENT_TYPES = [
   "RELOAD_SPECIALTIES",
   "RELOAD_PENDING_DOCTORS", 
   "RELOAD_ADMIN_STATS",
+  "RELOAD_ALL",
   "LOAD_AVAILABLE_TURNS",
   "LOAD_MY_TURNS",
   "LOAD_DOCTOR_PATIENTS",
@@ -130,6 +131,7 @@ export type DataMachineEvent =
   | { type: "RELOAD_SPECIALTIES" }
   | { type: "RELOAD_PENDING_DOCTORS" }
   | { type: "RELOAD_ADMIN_STATS" }
+  | { type: "RELOAD_ALL" }
   | { type: "LOAD_AVAILABLE_TURNS"; doctorId: string; date: string }
   | { type: "LOAD_MY_TURNS"; status?: string }
   | { type: "LOAD_DOCTOR_PATIENTS" }
@@ -289,6 +291,25 @@ export const dataMachine = createMachine({
         RELOAD_ADMIN_STATS: {
           target: "fetchingAdminStats",
         },
+        RELOAD_ALL: [
+          {
+            guard: ({ context }) => context.userRole === "ADMIN",
+            actions: ({ self }) => {
+              // Send multiple reload events for ADMIN
+              setTimeout(() => {
+                self.send({ type: "RELOAD_DOCTORS" });
+                self.send({ type: "RELOAD_PENDING_DOCTORS" });
+                self.send({ type: "RELOAD_ADMIN_STATS" });
+              }, 0);
+            },
+          },
+          {
+            actions: () => {
+              // For non-admin users, just reload doctors
+              // Could be extended for other roles
+            },
+          },
+        ],
         LOAD_AVAILABLE_TURNS: {
           target: "fetchingAvailableTurns",
           guard: ({ context, event }) => !!context.accessToken && !!(event as any).doctorId && !!(event as any).date,
