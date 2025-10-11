@@ -5,7 +5,7 @@ import { medicalHistoryMachine, type MedicalHistoryMachineEvent } from './medica
 // Mock the orchestrator
 vi.mock('../core/Orchestrator', () => ({
   orchestrator: {
-    send: vi.fn(),
+    sendToMachine: vi.fn(),
   },
 }));
 

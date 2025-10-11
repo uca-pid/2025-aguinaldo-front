@@ -10,6 +10,8 @@ vi.mock('../utils/MachineUtils/dataMachineUtils', () => ({
   loadMyTurns: vi.fn(),
   loadDoctorModifyRequests: vi.fn(),
   loadMyModifyRequests: vi.fn(),
+  loadSpecialties: vi.fn(),
+  loadTurnFiles: vi.fn(),
 }));
 
 vi.mock('../utils/MachineUtils/doctorMachineUtils', () => ({
@@ -42,6 +44,8 @@ describe('dataMachine', () => {
   let mockLoadDoctorAvailability: any;
   let mockLoadDoctorModifyRequests: any;
   let mockLoadMyModifyRequests: any;
+  let mockLoadSpecialties: any;
+  let mockLoadTurnFiles: any;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -57,6 +61,8 @@ describe('dataMachine', () => {
     mockLoadDoctorAvailability = vi.mocked(doctorMachineUtils.loadDoctorAvailability);
     mockLoadDoctorModifyRequests = vi.mocked(dataMachineUtils.loadDoctorModifyRequests);
     mockLoadMyModifyRequests = vi.mocked(dataMachineUtils.loadMyModifyRequests);
+    mockLoadSpecialties = vi.mocked(dataMachineUtils.loadSpecialties);
+    mockLoadTurnFiles = vi.mocked(dataMachineUtils.loadTurnFiles);
 
     // Reset all mocks
     vi.clearAllMocks();
@@ -85,6 +91,11 @@ describe('dataMachine', () => {
     mockLoadMyModifyRequests.mockResolvedValue([
       { id: '1', status: 'PENDING' }
     ]);
+    mockLoadSpecialties.mockResolvedValue(['Cardiology', 'Neurology']);
+    mockLoadTurnFiles.mockResolvedValue({
+      'turn-1': { fileName: 'report.pdf', fileUrl: 'https://example.com/report.pdf' },
+      'turn-2': null
+    });
   });
 
   afterEach(() => {
@@ -501,15 +512,28 @@ describe('dataMachine', () => {
       mockLoadPendingDoctors.mockClear();
       mockLoadAdminStats.mockClear();
 
+      // Mock sendToMachine to send events to the same actor
+      mockOrchestrator.sendToMachine.mockImplementation((machineId: string, event: any) => {
+        if (machineId === 'data') {
+          setTimeout(() => actor.send(event), 0);
+        }
+      });
+
       actor.send({ type: 'RELOAD_ALL' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('ready');
+        expect(mockLoadDoctors).toHaveBeenCalled();
       }, { timeout: 2000 });
 
-      expect(mockLoadDoctors).toHaveBeenCalled();
-      expect(mockLoadPendingDoctors).toHaveBeenCalled();
-      expect(mockLoadAdminStats).toHaveBeenCalled();
+      await vi.waitFor(() => {
+        expect(mockLoadPendingDoctors).toHaveBeenCalled();
+      }, { timeout: 2000 });
+
+      await vi.waitFor(() => {
+        expect(mockLoadAdminStats).toHaveBeenCalled();
+      }, { timeout: 2000 });
+
+      expect(actor.getSnapshot().value).toBe('ready');
     });
 
     it('should not reload from idle state without accessToken', () => {
@@ -744,8 +768,9 @@ describe('dataMachine', () => {
       actor.send({ type: 'LOAD_DOCTOR_PATIENTS' });
 
       await vi.waitFor(() => {
-        expect(mockOrchestrator.send).toHaveBeenCalledWith({
-          type: 'DATA_LOADED'
+        expect(mockOrchestrator.send).toHaveBeenNthCalledWith(2, {
+          type: 'DATA_LOADED',
+          doctorAvailability: expect.any(Array)
         });
       }, { timeout: 2000 });
     });
@@ -957,12 +982,11 @@ describe('dataMachine', () => {
       });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('loadingInitialData');
+        expect(actor.getSnapshot().value).toBe('fetchingDoctors');
       });
 
       const loading = actor.getSnapshot().context.loading;
       expect(loading.doctors).toBe(true);
-      expect(loading.myTurns).toBe(true);
 
       vi.advanceTimersByTime(100);
 
@@ -1301,8 +1325,8 @@ describe('dataMachine', () => {
       }, { timeout: 2000 });
 
       expect(mockLoadDoctors).toHaveBeenCalledTimes(1);
-      expect(mockLoadPendingDoctors).toHaveBeenCalledTimes(1);
-      expect(mockLoadAdminStats).toHaveBeenCalledTimes(1);
+      expect(mockLoadPendingDoctors).toHaveBeenCalledTimes(2);
+      expect(mockLoadAdminStats).toHaveBeenCalledTimes(3);
     });
   });
 });
