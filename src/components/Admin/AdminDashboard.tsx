@@ -17,15 +17,24 @@ import { SignInResponse } from "#/models/Auth";
 import DashboardCard from "../shared/DashboardCard/DashboardCard";
 import "./AdminDashboard.css";
 import LoadingThreeDotsJumping from "../shared/PageLoadingScreen/LoadingThreeDots";
+import { useDataMachine } from "#/providers/DataProvider";
 
 export default function AdminDashboard() {
   const { authState } = useAuthMachine();
   const user = authState.context.authResponse as SignInResponse | null;
   const { uiSend, adminUserState, adminUserSend } = useMachines();
+  const { dataState } = useDataMachine();
   const adminContext = adminUserState.context;
+  const dataContext = dataState.context;
 
   const stats = adminContext.adminStats;
-  const loading = adminContext.loading;
+  
+  // Admin dashboard needs to wait for ALL admin-specific data to be loaded
+  const loading = adminContext.loading || 
+                  dataContext.loading?.doctors || 
+                  dataContext.loading?.pendingDoctors || 
+                  dataContext.loading?.adminStats ||
+                  dataContext.loading?.specialties;
   const error = adminContext.error;
 
   const handleRetry = () => {

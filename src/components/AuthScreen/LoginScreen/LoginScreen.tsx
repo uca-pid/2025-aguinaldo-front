@@ -34,7 +34,8 @@ function LoginScreen() {
   const formContext = uiContext.toggleStates || {};
   const showPassword = formContext["showPassword"] ?? false;
   
-  const isSuccess = authResponse && 'accessToken' in authResponse && authResponse.accessToken;
+  // Check if user is actually authenticated based on auth machine state, not just token presence
+  const isSuccess = authContext.isAuthenticated && authState?.value === 'authenticated';
 
   const isMobile = useMediaQuery(useTheme().breakpoints.down("sm"));
 
