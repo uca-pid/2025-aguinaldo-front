@@ -14,6 +14,8 @@ export interface NotificationMachineContext {
   notifications: NotificationResponse[];
   currentNotificationIndex: number;
   isLoading: boolean;
+  isDeletingNotification: boolean;
+  isDeletingAllNotifications: boolean;
   error: string | null;
   accessToken: string | null;
 }
@@ -32,6 +34,8 @@ export const notificationMachine = createMachine({
     notifications: [],
     currentNotificationIndex: 0,
     isLoading: false,
+    isDeletingNotification: false,
+    isDeletingAllNotifications: false,
     error: null,
     accessToken: null,
   } as NotificationMachineContext,
@@ -89,11 +93,21 @@ export const notificationMachine = createMachine({
             accessToken: ({ event, context }) => event.accessToken || context.accessToken,
           }),
         },
-        DELETE_NOTIFICATION: "deletingNotification",
-        DELETE_ALL_NOTIFICATIONS: "deletingAllNotifications",
+        DELETE_NOTIFICATION: {
+          target: "deletingNotification",
+          guard: ({ context }) => !context.isDeletingNotification && !context.isDeletingAllNotifications,
+        },
+        DELETE_ALL_NOTIFICATIONS: {
+          target: "deletingAllNotifications",
+          guard: ({ context }) => !context.isDeletingNotification && !context.isDeletingAllNotifications,
+        },
       },
     },
     deletingNotification: {
+      entry: assign({ 
+        isDeletingNotification: true, 
+        error: null 
+      }),
       invoke: {
         src: fromPromise(async ({ input }) => {
           await NotificationService.deleteNotification(input.notificationId, input.accessToken);
@@ -105,16 +119,24 @@ export const notificationMachine = createMachine({
         }),
         onDone: {
           target: "loadingNotifications",
+          actions: assign({
+            isDeletingNotification: false,
+          }),
         },
         onError: {
-          target: "loadingNotifications",
+          target: "ready",
           actions: assign({
+            isDeletingNotification: false,
             error: ({ event }) => (event.error as Error)?.message || "Failed to delete notification",
           }),
         },
       },
     },
     deletingAllNotifications: {
+      entry: assign({ 
+        isDeletingAllNotifications: true, 
+        error: null 
+      }),
       invoke: {
         src: fromPromise(async ({ input }) => {
           // Delete all notifications sequentially
@@ -129,10 +151,14 @@ export const notificationMachine = createMachine({
         }),
         onDone: {
           target: "loadingNotifications",
+          actions: assign({
+            isDeletingAllNotifications: false,
+          }),
         },
         onError: {
-          target: "loadingNotifications",
+          target: "ready",
           actions: assign({
+            isDeletingAllNotifications: false,
             error: ({ event }) => (event.error as Error)?.message || "Failed to delete notifications",
           }),
         },
