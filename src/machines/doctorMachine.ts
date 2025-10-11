@@ -3,6 +3,7 @@ import { saveDoctorAvailability, updateMedicalHistory } from "../utils/MachineUt
 import { orchestrator } from "#/core/Orchestrator";
 import { DATA_MACHINE_ID } from "./dataMachine";
 import { UI_MACHINE_ID } from "./uiMachine";
+import { MEDICAL_HISTORY_MACHINE_ID } from "./medicalHistoryMachine";
 import type { Patient } from "../models/Doctor";
 
 export const DOCTOR_MACHINE_ID = "doctor";
@@ -111,11 +112,42 @@ const doctorMachine = createMachine({
               }),
             },
             SELECT_PATIENT: {
-              actions: assign({
-                selectedPatient: ({ event }) => event.patient,
-                editedHistory: '',
-                isSavingHistory: false,
-              }),
+              actions: [
+                assign({
+                  selectedPatient: ({ event }) => event.patient,
+                  editedHistory: '',
+                  isSavingHistory: false,
+                }),
+                ({ event, context }) => {
+                  // Load medical history for the selected patient
+                  if (context.accessToken && event.patient.id) {
+                    try {
+                      // Check if we need to load medical history for this patient
+                      const medicalHistorySnapshot = orchestrator.getSnapshot(MEDICAL_HISTORY_MACHINE_ID);
+                      const medicalHistoryContext = medicalHistorySnapshot.context;
+                      
+                      if (medicalHistoryContext.currentPatientId !== event.patient.id || medicalHistoryContext.medicalHistories.length === 0) {
+                        orchestrator.sendToMachine(MEDICAL_HISTORY_MACHINE_ID, {
+                          type: "LOAD_PATIENT_MEDICAL_HISTORY",
+                          patientId: event.patient.id,
+                          accessToken: context.accessToken
+                        });
+                      }
+                      
+                      // Load turns if not already loaded
+                      const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
+                      const dataContext = dataSnapshot.context;
+                      if (!dataContext.myTurns || dataContext.myTurns.length === 0) {
+                        orchestrator.sendToMachine(DATA_MACHINE_ID, {
+                          type: "LOAD_MY_TURNS"
+                        });
+                      }
+                    } catch (error) {
+                      console.error('Error loading patient data:', error);
+                    }
+                  }
+                }
+              ],
             },
             CLEAR_PATIENT_SELECTION: {
               actions: assign({

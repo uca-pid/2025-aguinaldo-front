@@ -1,34 +1,146 @@
-import {Avatar,Box,Button,Chip,Divider,Typography,Alert,CircularProgress,Paper} from "@mui/material"
+import React from "react"
+import {Avatar,Box,Button,Chip,Divider,Typography,Alert,CircularProgress,Paper,TextField} from "@mui/material"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { useMachines } from "#/providers/MachineProvider"
 import { ArrowBack, PersonOutlined, BadgeOutlined, EmailOutlined,PhoneOutlined,CakeOutlined,WcOutlined,
-  FiberManualRecordOutlined} from '@mui/icons-material'
+  FiberManualRecordOutlined, AttachFile, History, Save} from '@mui/icons-material'
 import { calculateAge } from "#/models/Doctor"
 import './PatientDetails.css'
 import { useDataMachine } from "#/providers/DataProvider"
-import MedicalHistoryManager from "../MedicalHistoryManager/MedicalHistoryManager"
+import { useAuthMachine } from "#/providers/AuthProvider"
+import dayjs from "dayjs"
+import type { TurnResponse } from "#/models/Turn"
+import type { MedicalHistory } from "#/models/MedicalHistory"
 
 const PatientDetails: React.FC = () => {
   const { dataState, dataSend } = useDataMachine();
-  const { uiSend, doctorState, doctorSend } = useMachines();
+  const { uiSend, doctorState, doctorSend, medicalHistoryState, medicalHistorySend } = useMachines();
+  const { authState } = useAuthMachine();
 
   const doctorContext = doctorState.context;
   const dataContext = dataState.context;
+  const authContext = authState?.context;
+  const medicalHistoryContext = medicalHistoryState.context;
 
   const isLoading = dataContext.loading.doctorPatients;
   const error = dataContext.errors.doctorPatients;
 
   const patient = doctorContext.selectedPatient;
 
+  const patientTurns: TurnResponse[] = dataContext.myTurns?.filter((turn: any) => 
+    turn.patientId === patient?.id
+  ) || [];
+
+  const medicalHistories: MedicalHistory[] = medicalHistoryContext.medicalHistories || [];
+
+  const handleEditMedicalHistory = (turnId: string, currentContent: string) => {
+    medicalHistorySend({
+      type: "SELECT_HISTORY",
+      history: { turnId, content: currentContent } as MedicalHistory
+    });
+    medicalHistorySend({
+      type: "SET_EDIT_CONTENT", 
+      content: currentContent
+    });
+  };
+
+  const handleSaveMedicalHistory = async (turnId: string) => {
+    if (!authContext?.authResponse?.accessToken || !authContext?.authResponse?.id || !medicalHistoryContext.editingContent?.trim()) {
+      return;
+    }
+
+    const existingHistory = medicalHistories.find(h => h.turnId === turnId);
+
+    if (existingHistory) {
+      medicalHistorySend({
+        type: "UPDATE_HISTORY_ENTRY",
+        historyId: existingHistory.id,
+        content: medicalHistoryContext.editingContent.trim(),
+        accessToken: authContext.authResponse.accessToken,
+        doctorId: authContext.authResponse.id
+      });
+    } else {
+      medicalHistorySend({
+        type: "ADD_HISTORY_ENTRY_FOR_TURN",
+        turnId,
+        content: medicalHistoryContext.editingContent.trim(),
+        accessToken: authContext.authResponse.accessToken,
+        doctorId: authContext.authResponse.id
+      });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    medicalHistorySend({ type: "CLEAR_SELECTION" });
+  };
+
+  const getMedicalHistoryForTurn = (turnId: string): string => {
+    const history = medicalHistories.find(h => h.turnId === turnId);
+    return history?.content || '';
+  };
+
+  const getFileStatus = (turnId: string) => {
+    if (dataContext.loading.turnFiles) {
+      return "loading";
+    }
+    
+    if (!dataContext.turnFiles) {
+      return "no-data";
+    }
+    
+    const fileInfo = dataContext.turnFiles[turnId];
+    if (fileInfo) {
+      return "has-file";
+    } else {
+      return "no-file";
+    }
+  };
+
+  const getTurnFileInfo = (turnId: string) => {
+    const fileInfo = dataContext.turnFiles?.[turnId] || null;
+    return fileInfo;
+  };
+
+  const truncateFileName = (fileName: string | undefined) => {
+    if (!fileName) return 'Ver archivo';
+    const maxLength = 20;
+    return fileName.length > maxLength ? `${fileName.substring(0, maxLength)}...` : fileName;
+  };
+
+  const getTurnStatusLabel = (status: string) => {
+    switch (status) {
+      case 'SCHEDULED':
+        return 'Programado';
+      case 'CANCELED':
+        return 'Cancelado';
+      case 'COMPLETED':
+        return 'Completado';
+      case 'AVAILABLE':
+        return 'Disponible';
+      default:
+        return status;
+    }
+  };
+
+  const getTurnStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'scheduled':
+        return 'primary';
+      case 'completed':
+        return 'success';
+      case 'canceled':
+        return 'error';
+      case 'available':
+        return 'default';
+      default:
+        return 'default';
+    }
+  };
+
   const handleBack = () => {
     uiSend({ type: "NAVIGATE", to: "/doctor/view-patients" });
     doctorSend({ type: "CLEAR_PATIENT_SELECTION" });
-  };
-
-  const handleHistoryUpdate = () => {
-
-    dataSend({ type: "RETRY_DOCTOR_PATIENTS" });
   };
 
   const getInitials = (name: string, surname: string) => {
@@ -289,12 +401,166 @@ const PatientDetails: React.FC = () => {
   
           <Box sx={{ flex: '1 1 400px', minWidth: 0 }}>
             <Paper elevation={1} sx={{ p: 3 }} className="patient-details-medical-history-paper">
-              <MedicalHistoryManager
-                patientId={patient.id}
-                patientName={patient.name}
-                patientSurname={patient.surname}
-                onHistoryUpdate={handleHistoryUpdate}
-              />
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <History color="primary" />
+                Historia Clínica por Turno
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+
+              {medicalHistoryContext.isLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress />
+                </Box>
+              ) : patientTurns.filter(turn => turn.status !== 'CANCELED' && turn.status !== 'CANCELLED').length === 0 ? (
+                <Paper elevation={0} sx={{ p: 3, textAlign: 'center', backgroundColor: '#f8fafc' }}>
+                  <Typography variant="body2" color="textSecondary">
+                    No hay turnos válidos registrados con este paciente.
+                  </Typography>
+                </Paper>
+              ) : (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {patientTurns
+                    .filter(turn => turn.status !== 'CANCELED' && turn.status !== 'CANCELLED')
+                    .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime())
+                    .map((turn) => {
+                      const currentHistory = getMedicalHistoryForTurn(turn.id);
+                      const isEditing = medicalHistoryContext.selectedHistory?.turnId === turn.id;
+                      const fileStatus = getFileStatus(turn.id);
+                      const fileInfo = getTurnFileInfo(turn.id);
+
+                      return (
+                        <Paper key={turn.id} elevation={2} sx={{ p: 2 }}>
+                          <Box sx={{ mb: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
+                              </Typography>
+                              <Chip
+                                label={getTurnStatusLabel(turn.status)}
+                                color={getTurnStatusColor(turn.status) as any}
+                                size="small"
+                              />
+                            </Box>
+                            
+                            {/* File attachment info */}
+                            {fileStatus === "has-file" && fileInfo && (
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                <AttachFile sx={{ fontSize: 16, color: '#1976d2' }} />
+                                <Button
+                                  variant="text"
+                                  size="small"
+                                  onClick={() => window.open(fileInfo.url, '_blank')}
+                                  sx={{ 
+                                    textTransform: 'none',
+                                    fontSize: '0.75rem',
+                                    color: '#1976d2',
+                                    minWidth: 'auto',
+                                    p: 0,
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(25, 118, 210, 0.04)',
+                                      textDecoration: 'underline'
+                                    }
+                                  }}
+                                >
+                                  {truncateFileName(fileInfo.fileName)}
+                                </Button>
+                              </Box>
+                            )}
+                          </Box>
+
+                          <Box>
+                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                              Historia Médica:
+                            </Typography>
+                            
+                            {isEditing ? (
+                              <Box>
+                                <TextField
+                                  fullWidth
+                                  multiline
+                                  minRows={4}
+                                  maxRows={10}
+                                  value={medicalHistoryContext.editingContent || ''}
+                                  onChange={(e) => medicalHistorySend({ 
+                                    type: "SET_EDIT_CONTENT", 
+                                    content: e.target.value 
+                                  })}
+                                  placeholder="Ingrese observaciones médicas, diagnóstico, tratamiento..."
+                                  variant="outlined"
+                                  size="small"
+                                />
+                                <Box sx={{ mt: 1, display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                                  <Button
+                                    size="small"
+                                    onClick={handleCancelEdit}
+                                    disabled={medicalHistoryContext.isLoading}
+                                  >
+                                    Cancelar
+                                  </Button>
+                                  <Button
+                                    size="small"
+                                    variant="contained"
+                                    startIcon={medicalHistoryContext.isLoading ? <CircularProgress size={16} /> : <Save />}
+                                    onClick={() => handleSaveMedicalHistory(turn.id)}
+                                    disabled={medicalHistoryContext.isLoading || !medicalHistoryContext.editingContent?.trim()}
+                                  >
+                                    {medicalHistoryContext.isLoading ? 'Guardando...' : 'Guardar'}
+                                  </Button>
+                                </Box>
+                              </Box>
+                            ) : (
+                              <Box>
+                                {currentHistory ? (
+                                  <Paper 
+                                    elevation={0} 
+                                    sx={{ 
+                                      p: 2, 
+                                      backgroundColor: '#f8fafc',
+                                      border: '1px solid #e2e8f0',
+                                      mb: 1
+                                    }}
+                                  >
+                                    <Typography 
+                                      variant="body2" 
+                                      sx={{ 
+                                        whiteSpace: 'pre-wrap',
+                                        wordBreak: 'break-word'
+                                      }}
+                                    >
+                                      {currentHistory}
+                                    </Typography>
+                                  </Paper>
+                                ) : (
+                                  <Paper 
+                                    elevation={0} 
+                                    sx={{ 
+                                      p: 2, 
+                                      backgroundColor: '#fafafa',
+                                      border: '1px dashed #ccc',
+                                      mb: 1
+                                    }}
+                                  >
+                                    <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic' }}>
+                                      No hay historia médica registrada para este turno
+                                    </Typography>
+                                  </Paper>
+                                )}
+                                <Button
+                                  size="small"
+                                  startIcon={<History />}
+                                  onClick={() => handleEditMedicalHistory(turn.id, currentHistory)}
+                                  sx={{ mt: 1 }}
+                                >
+                                  {currentHistory ? 'Editar Historia' : 'Agregar Historia'}
+                                </Button>
+                              </Box>
+                            )}
+                          </Box>
+                        </Paper>
+                      );
+                    })}
+                </Box>
+              )}
             </Paper>
           </Box>
 
