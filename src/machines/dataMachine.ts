@@ -16,6 +16,7 @@ export const DATA_MACHINE_EVENT_TYPES = [
   "RELOAD_SPECIALTIES",
   "RELOAD_PENDING_DOCTORS", 
   "RELOAD_ADMIN_STATS",
+  "RELOAD_ALL",
   "LOAD_AVAILABLE_TURNS",
   "LOAD_MY_TURNS",
   "LOAD_DOCTOR_PATIENTS",
@@ -128,6 +129,7 @@ export type DataMachineEvent =
   | { type: "RELOAD_SPECIALTIES" }
   | { type: "RELOAD_PENDING_DOCTORS" }
   | { type: "RELOAD_ADMIN_STATS" }
+  | { type: "RELOAD_ALL" }
   | { type: "LOAD_AVAILABLE_TURNS"; doctorId: string; date: string }
   | { type: "LOAD_MY_TURNS"; status?: string }
   | { type: "LOAD_DOCTOR_PATIENTS" }
@@ -278,6 +280,15 @@ export const dataMachine = createMachine({
         },
         RELOAD_ADMIN_STATS: {
           target: "fetchingAdminStats",
+        },
+        RELOAD_ALL: {
+          actions: ({ context }) => {
+            if (context.userRole === "ADMIN") {
+              orchestrator.sendToMachine("data", { type: "RELOAD_DOCTORS" });
+              orchestrator.sendToMachine("data", { type: "RELOAD_PENDING_DOCTORS" });
+              orchestrator.sendToMachine("data", { type: "RELOAD_ADMIN_STATS" });
+            }
+          },
         },
         LOAD_AVAILABLE_TURNS: {
           target: "fetchingAvailableTurns",
