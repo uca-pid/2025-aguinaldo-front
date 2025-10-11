@@ -2,7 +2,7 @@ import { createMachine, assign } from "xstate";
 import { orchestrator } from "#/core/Orchestrator";
 
 export const UI_MACHINE_ID = "ui";
-export const UI_MACHINE_EVENT_TYPES = ["TOGGLE", "NAVIGATE", "OPEN_SNACKBAR", "CLOSE_SNACKBAR", "OPEN_CONFIRMATION_DIALOG", "OPEN_CANCEL_TURN_DIALOG", "CLOSE_CONFIRMATION_DIALOG", "OPEN_NOTIFICATION_MODAL", "CLOSE_NOTIFICATION_MODAL"];
+export const UI_MACHINE_EVENT_TYPES = ["TOGGLE", "NAVIGATE", "OPEN_SNACKBAR", "CLOSE_SNACKBAR", "OPEN_CONFIRMATION_DIALOG", "OPEN_CANCEL_TURN_DIALOG", "CLOSE_CONFIRMATION_DIALOG"];
 
 export interface UiMachineContext {
   toggleStates: Record<string, boolean>;
@@ -24,9 +24,6 @@ export interface UiMachineContext {
     confirmButtonText?: string;
     confirmButtonColor?: 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning';
   };
-  notificationModal: {
-    open: boolean;
-  };
 }
 
 export type UiMachineEvent =
@@ -37,9 +34,7 @@ export type UiMachineEvent =
   | { type: "CLOSE_SNACKBAR" }
   | { type: "OPEN_CONFIRMATION_DIALOG"; action: 'approve' | 'reject' | 'delete_file'; requestId?: string; turnId?: string; title?: string; message?: string; confirmButtonText?: string; confirmButtonColor?: 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' }
   | { type: "OPEN_CANCEL_TURN_DIALOG"; turnId: string; turnData?: any; title?: string; message?: string; confirmButtonText?: string; confirmButtonColor?: 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' }
-  | { type: "CLOSE_CONFIRMATION_DIALOG" }
-  | { type: "OPEN_NOTIFICATION_MODAL" }
-  | { type: "CLOSE_NOTIFICATION_MODAL" };
+  | { type: "CLOSE_CONFIRMATION_DIALOG" };
 
 export const uiMachine = createMachine({
   id: "ui",
@@ -57,7 +52,6 @@ export const uiMachine = createMachine({
       severity: "info" as const,
     },
     confirmDialog: { open: false, action: null, requestId: null, turnId: null, turnData: null, title: undefined, message: undefined, confirmButtonText: undefined, confirmButtonColor: undefined },
-    notificationModal: { open: false },
   },
   types: { 
     context: {} as UiMachineContext,
@@ -159,20 +153,6 @@ export const uiMachine = createMachine({
               message: undefined,
               confirmButtonText: undefined,
               confirmButtonColor: undefined,
-            }),
-          }),
-        },
-        OPEN_NOTIFICATION_MODAL: {
-          actions: assign({
-            notificationModal: () => ({
-              open: true,
-            }),
-          }),
-        },
-        CLOSE_NOTIFICATION_MODAL: {
-          actions: assign({
-            notificationModal: () => ({
-              open: false,
             }),
           }),
         },

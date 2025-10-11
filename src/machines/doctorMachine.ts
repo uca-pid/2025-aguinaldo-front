@@ -43,6 +43,7 @@ export interface DoctorMachineContext {
   selectedPatient: Patient | null;
   editedHistory: string;
   isSavingHistory: boolean;
+  currentTurnId: string | null; // For associating medical history with a turn
   
   availability: DayAvailability[];
   slotDurationMin: number | null;
@@ -64,7 +65,7 @@ export type DoctorMachineEvent =
   | { type: "CLEAR_PATIENT_SELECTION" }
   | { type: "START_EDIT_HISTORY" }
   | { type: "UPDATE_HISTORY"; value: string }
-  | { type: "SAVE_HISTORY" }
+  | { type: "SAVE_HISTORY"; turnId?: string }
   | { type: "DATA_LOADED" };
 
 const doctorMachine = createMachine({
@@ -79,7 +80,8 @@ const doctorMachine = createMachine({
     patients: [],
     selectedPatient: null,
     editedHistory: '',
-    isSavingHistory: false,    
+    isSavingHistory: false,
+    currentTurnId: null,
     availability: [
       { day: "Lunes", enabled: false, ranges: [{ start: "", end: "" }] },
       { day: "Martes", enabled: false, ranges: [{ start: "", end: "" }] },
@@ -132,7 +134,12 @@ const doctorMachine = createMachine({
                 editedHistory: ({ event }) => event.value,
               }),
             },
-            SAVE_HISTORY: "savingHistory",
+            SAVE_HISTORY: {
+              actions: assign({
+                currentTurnId: ({ event }) => event.type === 'SAVE_HISTORY' && 'turnId' in event ? event.turnId || null : null,
+              }),
+              target: "savingHistory",
+            },
           },
         },
         
@@ -157,7 +164,8 @@ const doctorMachine = createMachine({
               accessToken: context.accessToken!,
               doctorId: context.doctorId!,
               patientId: context.selectedPatient!.id,
-              medicalHistory: context.editedHistory
+              medicalHistory: context.editedHistory,
+              turnId: context.currentTurnId || undefined
             }),
 
             onDone: {
@@ -166,6 +174,7 @@ const doctorMachine = createMachine({
                 assign({
                   isSavingHistory: false,
                   editedHistory: '',
+                  currentTurnId: null, // Reset the turnId after saving
                   selectedPatient: ({ context }) => 
                     context.selectedPatient 
                       ? { ...context.selectedPatient, medicalHistory: context.editedHistory }

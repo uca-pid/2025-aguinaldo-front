@@ -1,7 +1,7 @@
 import React from 'react';
 import {Box,Typography,Paper,Button,TextField,Alert,CircularProgress,Dialog,DialogTitle,DialogContent,DialogActions,
   IconButton,Card,CardContent,CardActions,Slide,Grow} from '@mui/material';
-import {Add,Delete,Save,PersonOutlined,AccessTime,Warning} from '@mui/icons-material';
+import {Add,Delete,PersonOutlined,AccessTime,Warning} from '@mui/icons-material';
 import type { MedicalHistory } from '../../../models/MedicalHistory';
 import { useMachines } from '#/providers/MachineProvider';
 import { formatDateTime } from '../../../utils/dateTimeUtils';
@@ -24,13 +24,12 @@ const MedicalHistoryManager: React.FC<MedicalHistoryManagerProps> = ({patientId,
   const histories = medicalHistoryState.context.medicalHistories || [];
   const loading = medicalHistoryState.context.isLoading;
   const error = medicalHistoryState.context.error;
-  const newContent = medicalHistoryState.context.newHistoryContent || '';
+
 
   const sortedHistories = [...histories].sort((a, b) => 
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
-  const isAddDialogOpen = uiState.context.toggleStates.addMedicalHistoryDialog || false;
   const isDeleteDialogOpen = uiState.context.toggleStates.deleteMedicalHistoryDialog || false;
   const isViewDialogOpen = uiState.context.toggleStates.viewMedicalHistoryDialog || false;
   const currentPatientId = medicalHistoryState.context.currentPatientId
@@ -41,18 +40,6 @@ const MedicalHistoryManager: React.FC<MedicalHistoryManagerProps> = ({patientId,
   if (patientId && accessToken && (patientId !== currentPatientId || currentPatientId === null)) {
     medicalHistorySend({type: 'LOAD_PATIENT_MEDICAL_HISTORY',patientId,accessToken,});
   }
-
-  const handleOpenAddDialog = () => {
-    uiSend({ type: 'TOGGLE', key: 'addMedicalHistoryDialog' });
-    medicalHistorySend({ type: 'SET_NEW_CONTENT', content: '' });
-  };
-
-  const handleAddHistory = () => {
-    if (!newContent.trim() || !accessToken || !doctorId) return;
-    medicalHistorySend({type: 'ADD_HISTORY_ENTRY',content: newContent.trim(),accessToken,doctorId,});
-    uiSend({ type: 'TOGGLE', key: 'addMedicalHistoryDialog' });
-    onHistoryUpdate?.();
-  };
 
   const handleDeleteHistory = (historyId: string) => {
     if (isViewDialogOpen) {
@@ -95,11 +82,6 @@ const MedicalHistoryManager: React.FC<MedicalHistoryManagerProps> = ({patientId,
     medicalHistorySend({ type: 'CLEAR_SELECTION' });
   };
 
-  const handleCloseAddDialog = () => {
-    uiSend({ type: 'TOGGLE', key: 'addMedicalHistoryDialog' });
-    medicalHistorySend({ type: 'SET_NEW_CONTENT', content: '' });
-  };
-
   if (loading) {
     return (
       <Box className="loading-container">
@@ -114,14 +96,6 @@ const MedicalHistoryManager: React.FC<MedicalHistoryManagerProps> = ({patientId,
         <Typography variant="h6" className="medical-history-title">
           Historia Clínica
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={handleOpenAddDialog}
-          className="add-button"
-        >
-          Nueva Entrada
-        </Button>
       </Box>
 
       {loading && <CircularProgress className="loading-spinner" />}
@@ -136,6 +110,9 @@ const MedicalHistoryManager: React.FC<MedicalHistoryManagerProps> = ({patientId,
         <Paper elevation={2} className="empty-state">
           <Typography variant="body2" color="textSecondary">
             No hay entradas en la historia clínica para este paciente.
+          </Typography>
+          <Typography variant="caption" color="textSecondary" sx={{ mt: 1, display: 'block' }}>
+            Tip: Agregue historia clínica desde la vista de turnos para asociarla correctamente con la consulta.
           </Typography>
         </Paper>
       )}
@@ -165,7 +142,6 @@ const MedicalHistoryManager: React.FC<MedicalHistoryManagerProps> = ({patientId,
                       <Typography variant="caption" color="textSecondary" className="timestamp-info">
                         <AccessTime fontSize="small" />
                         {formatDateTime(history.createdAt, 'DD/MM/YYYY HH:mm')}
-                        {history.updatedAt !== history.createdAt && ' (Actualizada)'}
                       </Typography>
                     </Box>
                   </Box>
@@ -201,46 +177,6 @@ const MedicalHistoryManager: React.FC<MedicalHistoryManagerProps> = ({patientId,
         </Grow>
       )}
 
-
-      <Dialog
-        open={isAddDialogOpen}
-        onClose={handleCloseAddDialog}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          Agregar Nueva Entrada - {patientName} {patientSurname}
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            multiline
-            rows={6}
-            value={newContent}
-            onChange={(e) => medicalHistorySend({ type: 'SET_NEW_CONTENT', content: e.target.value })}
-            placeholder="Ingrese el contenido de la historia clínica..."
-            helperText={`${newContent.length}/5000 caracteres`}
-            error={newContent.length > 5000}
-            disabled={loading}
-            className="add-dialog-textfield"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseAddDialog} disabled={loading}>
-            Cancelar
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleAddHistory}
-            startIcon={loading ? <CircularProgress size={16} /> : <Save />}
-            disabled={loading || newContent.length > 5000 || !newContent.trim()}
-          >
-            Agregar Entrada
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-
       <Dialog
         open={isViewDialogOpen}
         onClose={handleCloseViewDialog}
@@ -270,32 +206,23 @@ const MedicalHistoryManager: React.FC<MedicalHistoryManagerProps> = ({patientId,
             
             <DialogContent className="view-dialog-content">
               <Box className="content-timestamp-container">
-                <Grow in={true} timeout={800} style={{ transformOrigin: 'center top' }}>
-                  <Typography variant="caption" className="content-timestamp">
-                    <AccessTime fontSize="small" />
-                    Creado: {formatDateTime(selectedHistoryForView.createdAt, 'DD/MM/YYYY HH:mm')}
-                    {selectedHistoryForView.updatedAt !== selectedHistoryForView.createdAt && (
-                      <span className="updated-timestamp">
-                        • Actualizado: {formatDateTime(selectedHistoryForView.updatedAt, 'DD/MM/YYYY HH:mm')}
-                      </span>
-                    )}
-                  </Typography>
-                </Grow>
+                <Typography variant="caption" className="content-timestamp">
+                  <AccessTime fontSize="small" />
+                  {formatDateTime(selectedHistoryForView.createdAt, 'DD/MM/YYYY HH:mm')}
+                </Typography>
               </Box>
               
-              <Slide in={true} direction="up" timeout={1000}>
-                <Paper 
-                  elevation={0}
-                  className="content-paper"
+              <Paper 
+                elevation={0}
+                className="content-paper"
+              >
+                <Typography 
+                  variant="body1" 
+                  className="content-text"
                 >
-                  <Typography 
-                    variant="body1" 
-                    className="content-text"
-                  >
-                    {selectedHistoryForView.content}
-                  </Typography>
-                </Paper>
-              </Slide>
+                  {selectedHistoryForView.content}
+                </Typography>
+              </Paper>
             </DialogContent>
             
             <DialogActions className="view-dialog-actions">

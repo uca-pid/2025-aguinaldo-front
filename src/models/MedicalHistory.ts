@@ -9,10 +9,11 @@ export interface MedicalHistory {
   doctorId: string;
   doctorName: string;
   doctorSurname: string;
+  turnId: string;
 }
 
 export interface CreateMedicalHistoryRequest {
-  patientId: string;
+  turnId: string;
   content: string;
 }
 
