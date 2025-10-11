@@ -18,53 +18,95 @@ vi.mock('../../service/auth-service.service', () => ({
 describe('authMachineUtils', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Reset global fetch mock
+    global.fetch = vi.fn()
   })
 
   describe('checkStoredAuth', () => {
-    it('should return authenticated when tokens exist', () => {
+    it('should return authenticated when tokens exist and are valid', async () => {
       const mockAuthData = {
         accessToken: 'access-token',
         refreshToken: 'refresh-token'
       }
       ;(AuthService.getStoredAuthData as Mock).mockReturnValue(mockAuthData)
+      
+      // Mock fetch for token validation
+      ;(global.fetch as Mock).mockResolvedValue({
+        ok: true
+      })
 
-      const result = checkStoredAuth()
+      const result = await checkStoredAuth()
 
       expect(result.authData).toEqual(mockAuthData)
       expect(result.isAuthenticated).toBe(true)
       expect(AuthService.getStoredAuthData).toHaveBeenCalled()
     })
 
-    it('should return not authenticated when access token is missing', () => {
+    it('should return not authenticated when access token is missing', async () => {
       const mockAuthData = {
         refreshToken: 'refresh-token'
       }
       ;(AuthService.getStoredAuthData as Mock).mockReturnValue(mockAuthData)
 
-      const result = checkStoredAuth()
+      const result = await checkStoredAuth()
 
       expect(result.authData).toEqual(mockAuthData)
       expect(result.isAuthenticated).toBe(false)
     })
 
-    it('should return not authenticated when refresh token is missing', () => {
+    it('should return not authenticated when refresh token is missing', async () => {
       const mockAuthData = {
         accessToken: 'access-token'
       }
       ;(AuthService.getStoredAuthData as Mock).mockReturnValue(mockAuthData)
 
-      const result = checkStoredAuth()
+      const result = await checkStoredAuth()
 
       expect(result.authData).toEqual(mockAuthData)
       expect(result.isAuthenticated).toBe(false)
     })
 
-    it('should return not authenticated when no auth data exists', () => {
+    it('should return not authenticated when no auth data exists', async () => {
       ;(AuthService.getStoredAuthData as Mock).mockReturnValue(null)
 
-      const result = checkStoredAuth()
+      const result = await checkStoredAuth()
 
       expect(result.authData).toBeNull()
+      expect(result.isAuthenticated).toBe(false)
+    })
+
+    it('should return not authenticated when token validation fails', async () => {
+      const mockAuthData = {
+        accessToken: 'invalid-token',
+        refreshToken: 'refresh-token'
+      }
+      ;(AuthService.getStoredAuthData as Mock).mockReturnValue(mockAuthData)
+      
+      // Mock fetch for failed token validation
+      ;(global.fetch as Mock).mockResolvedValue({
+        ok: false,
+        status: 401
+      })
+
+      const result = await checkStoredAuth()
+
+      expect(result.authData).toEqual(mockAuthData)
+      expect(result.isAuthenticated).toBe(false)
+    })
+
+    it('should return not authenticated when token validation throws an error', async () => {
+      const mockAuthData = {
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token'
+      }
+      ;(AuthService.getStoredAuthData as Mock).mockReturnValue(mockAuthData)
+      
+      // Mock fetch to throw an error
+      ;(global.fetch as Mock).mockRejectedValue(new Error('Network error'))
+
+      const result = await checkStoredAuth()
+
+      expect(result.authData).toEqual(mockAuthData)
       expect(result.isAuthenticated).toBe(false)
     })
   })

@@ -93,22 +93,59 @@ export const authMachine = createMachine({
   },
   states: {
     checkingAuth: {
-      entry: assign(() => {
-        const { authData, isAuthenticated } = checkStoredAuth();
-        return {
-          authResponse: authData,
-          isAuthenticated
-        };
-      }),
-      always: [
-        {
-          target: "authenticated",
-          guard: ({ context }) => context.isAuthenticated
-        },
-        {
-          target: "idle"
+      invoke: {
+        src: fromPromise(async () => {
+          return await checkStoredAuth();
+        }),
+        onDone: [
+          {
+            target: "authenticated",
+            guard: ({ event }) => event.output.isAuthenticated,
+            actions: assign(({ event }) => ({
+              authResponse: event.output.authData,
+              isAuthenticated: event.output.isAuthenticated
+            }))
+          },
+          {
+            target: "idle",
+            actions: [
+              assign(({ event }) => ({
+                authResponse: event.output.authData,
+                isAuthenticated: event.output.isAuthenticated
+              })),
+              ({ event }) => {
+                // If we had auth data but token validation failed, show message and navigate
+                if (event.output.authData && !event.output.isAuthenticated) {
+                  orchestrator.send({ type: "NAVIGATE", to: "/" });
+                  orchestrator.send({ 
+                    type: "OPEN_SNACKBAR", 
+                    message: "Sesión expirada. Por favor, vuelve a iniciar sesión.", 
+                    severity: "warning" 
+                  });
+                }
+              }
+            ]
+          }
+        ],
+        onError: {
+          target: "idle",
+          actions: [
+            assign(() => ({
+              authResponse: null,
+              isAuthenticated: false
+            })),
+            () => {
+              // Navigate to login when auth check fails
+              orchestrator.send({ type: "NAVIGATE", to: "/" });
+              orchestrator.send({ 
+                type: "OPEN_SNACKBAR", 
+                message: "Sesión expirada. Por favor, vuelve a iniciar sesión.", 
+                severity: "warning" 
+              });
+            }
+          ]
         }
-      ]
+      }
     },
     authenticated: {
       on: {

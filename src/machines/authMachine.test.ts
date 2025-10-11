@@ -47,7 +47,7 @@ describe('authMachine', () => {
     vi.clearAllMocks();
 
     // Setup default mocks
-    vi.mocked(checkStoredAuth).mockReturnValue({
+    vi.mocked(checkStoredAuth).mockResolvedValue({
       authData: null,
       isAuthenticated: false
     });
@@ -64,16 +64,21 @@ describe('authMachine', () => {
   });
 
   describe('initial state', () => {
-    it('should start in checkingAuth state and transition to idle when not authenticated', () => {
+    it('should start in checkingAuth state and transition to idle when not authenticated', async () => {
       actor = createActor(authMachine);
       actor.start();
 
-      // Should transition to idle since checkStoredAuth returns isAuthenticated: false
-      expect(actor.getSnapshot().value).toBe('idle');
+      // Should start in checkingAuth state
+      expect(actor.getSnapshot().value).toBe('checkingAuth');
+
+      // Wait for async transition to complete
+      await vi.waitFor(() => {
+        expect(actor.getSnapshot().value).toBe('idle');
+      });
     });
 
-    it('should check stored auth on initialization', () => {
-      vi.mocked(checkStoredAuth).mockReturnValue({
+    it('should check stored auth on initialization', async () => {
+      vi.mocked(checkStoredAuth).mockResolvedValue({
         authData: { accessToken: 'token123', id: '1', role: 'PATIENT' },
         isAuthenticated: true
       });
@@ -81,14 +86,16 @@ describe('authMachine', () => {
       actor = createActor(authMachine);
       actor.start();
 
-      expect(vi.mocked(checkStoredAuth)).toHaveBeenCalled();
-      expect(actor.getSnapshot().context.isAuthenticated).toBe(true);
+      await vi.waitFor(() => {
+        expect(vi.mocked(checkStoredAuth)).toHaveBeenCalled();
+        expect(actor.getSnapshot().context.isAuthenticated).toBe(true);
+      });
     });
   });
 
   describe('checkingAuth state', () => {
-    it('should transition to authenticated when user is authenticated', () => {
-      vi.mocked(checkStoredAuth).mockReturnValue({
+    it('should transition to authenticated when user is authenticated', async () => {
+      vi.mocked(checkStoredAuth).mockResolvedValue({
         authData: { accessToken: 'token123', id: '1', role: 'PATIENT', status: 'ACTIVE' },
         isAuthenticated: true
       });
@@ -96,20 +103,24 @@ describe('authMachine', () => {
       actor = createActor(authMachine);
       actor.start();
 
-      expect(actor.getSnapshot().value).toBe('authenticated');
-      expect(actor.getSnapshot().context.isAuthenticated).toBe(true);
+      await vi.waitFor(() => {
+        expect(actor.getSnapshot().value).toBe('authenticated');
+        expect(actor.getSnapshot().context.isAuthenticated).toBe(true);
+      });
     });
 
-    it('should transition to idle when user is not authenticated', () => {
+    it('should transition to idle when user is not authenticated', async () => {
       actor = createActor(authMachine);
       actor.start();
 
-      expect(actor.getSnapshot().value).toBe('idle');
-      expect(actor.getSnapshot().context.isAuthenticated).toBe(false);
+      await vi.waitFor(() => {
+        expect(actor.getSnapshot().value).toBe('idle');
+        expect(actor.getSnapshot().context.isAuthenticated).toBe(false);
+      });
     });
 
-    it('should navigate to pending activation for inactive users', () => {
-      vi.mocked(checkStoredAuth).mockReturnValue({
+    it('should navigate to pending activation for inactive users', async () => {
+      vi.mocked(checkStoredAuth).mockResolvedValue({
         authData: { accessToken: 'token123', id: '1', role: 'PATIENT', status: 'PENDING' },
         isAuthenticated: true
       });
@@ -117,7 +128,9 @@ describe('authMachine', () => {
       actor = createActor(authMachine);
       actor.start();
 
-      expect(actor.getSnapshot().value).toBe('authenticated');
+      await vi.waitFor(() => {
+        expect(actor.getSnapshot().value).toBe('authenticated');
+      });
 
       // Wait for the setTimeout to execute
       vi.runAllTimers();
@@ -128,14 +141,18 @@ describe('authMachine', () => {
       });
     });
 
-    it('should set auth data for active users', () => {
-      vi.mocked(checkStoredAuth).mockReturnValue({
+    it('should set auth data for active users', async () => {
+      vi.mocked(checkStoredAuth).mockResolvedValue({
         authData: { accessToken: 'token123', id: '1', role: 'PATIENT', status: 'ACTIVE' },
         isAuthenticated: true
       });
 
       actor = createActor(authMachine);
       actor.start();
+
+      await vi.waitFor(() => {
+        expect(actor.getSnapshot().value).toBe('authenticated');
+      });
 
       vi.runAllTimers();
 
@@ -149,14 +166,18 @@ describe('authMachine', () => {
   });
 
   describe('authenticated state', () => {
-    beforeEach(() => {
-      vi.mocked(checkStoredAuth).mockReturnValue({
+    beforeEach(async () => {
+      vi.mocked(checkStoredAuth).mockResolvedValue({
         authData: { accessToken: 'token123', id: '1', role: 'PATIENT', status: 'ACTIVE' },
         isAuthenticated: true
       });
 
       actor = createActor(authMachine);
       actor.start();
+      
+      await vi.waitFor(() => {
+        expect(actor.getSnapshot().value).toBe('authenticated');
+      });
     });
 
     it('should handle LOGOUT event', () => {
@@ -173,14 +194,19 @@ describe('authMachine', () => {
   });
 
   describe('loggingOut state', () => {
-    beforeEach(() => {
-      vi.mocked(checkStoredAuth).mockReturnValue({
+    beforeEach(async () => {
+      vi.mocked(checkStoredAuth).mockResolvedValue({
         authData: { accessToken: 'token123', id: '1', role: 'PATIENT', status: 'ACTIVE' },
         isAuthenticated: true
       });
 
       actor = createActor(authMachine);
       actor.start();
+      
+      await vi.waitFor(() => {
+        expect(actor.getSnapshot().value).toBe('authenticated');
+      });
+      
       actor.send({ type: 'LOGOUT' });
     });
 
@@ -255,41 +281,49 @@ describe('authMachine', () => {
   });
 
   describe('validating state', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       actor = createActor(authMachine);
       actor.start();
-      actor.send({ type: 'SUBMIT' });
+      
+      // Wait for initial auth check to complete
+      await vi.waitFor(() => {
+        expect(actor.getSnapshot().value).toBe('idle');
+      });
     });
 
     it('should transition to submitting when form is valid', () => {
       mockFormValidation.validateField.mockReturnValue('');
       mockFormValidation.checkFormValidation.mockReturnValue(false);
 
+      actor.send({ type: 'SUBMIT' });
+
       // The transition should happen automatically based on the guard
       expect(actor.getSnapshot().value).toBe('submitting');
     });
 
     it('should transition to idle when form is invalid', () => {
-      // Create a fresh actor for this test
-      const testActor = createActor(authMachine);
-      testActor.start();
-
       // Add a field that will be validated (starts with "user" since isPatient is true)
-      testActor.send({ type: 'UPDATE_FORM', key: 'userEmail', value: 'invalid-email' });
+      actor.send({ type: 'UPDATE_FORM', key: 'userEmail', value: 'invalid-email' });
       mockFormValidation.validateField.mockReturnValue('Invalid email format');
 
       // Send SUBMIT - should go to validating, then immediately to idle due to invalid form
-      testActor.send({ type: 'SUBMIT' });
+      actor.send({ type: 'SUBMIT' });
 
-      expect(testActor.getSnapshot().value).toBe('idle');
-      expect(testActor.getSnapshot().context.hasErrorsOrEmpty).toBe(true);
+      expect(actor.getSnapshot().value).toBe('idle');
+      expect(actor.getSnapshot().context.hasErrorsOrEmpty).toBe(true);
     });
   });
 
   describe('submitting state', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       actor = createActor(authMachine);
       actor.start();
+      
+      // Wait for initial auth check to complete
+      await vi.waitFor(() => {
+        expect(actor.getSnapshot().value).toBe('idle');
+      });
+      
       actor.send({ type: 'TOGGLE_MODE', mode: 'login' });
       actor.send({ type: 'SUBMIT' });
     });
@@ -300,9 +334,14 @@ describe('authMachine', () => {
   });
 
   describe('context management', () => {
-    it('should initialize with default context', () => {
+    it('should initialize with default context', async () => {
       actor = createActor(authMachine);
       actor.start();
+
+      // Wait for initial auth check to complete
+      await vi.waitFor(() => {
+        expect(actor.getSnapshot().value).toBe('idle');
+      });
 
       const context = actor.getSnapshot().context;
       expect(context.mode).toBe('login');
@@ -314,9 +353,14 @@ describe('authMachine', () => {
       expect(context.formErrors).toEqual({});
     });
 
-    it('should maintain context across state transitions', () => {
+    it('should maintain context across state transitions', async () => {
       actor = createActor(authMachine);
       actor.start();
+
+      // Wait for initial auth check to complete
+      await vi.waitFor(() => {
+        expect(actor.getSnapshot().value).toBe('idle');
+      });
 
       actor.send({ type: 'UPDATE_FORM', key: 'email', value: 'test@example.com' });
       actor.send({ type: 'TOGGLE_USER_TYPE', isPatient: false });
