@@ -514,7 +514,20 @@ export const turnMachine = createMachine({
                     message: "Turno creado exitosamente", 
                     severity: "success" 
                   });
-                }
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { type: "NAVIGATE", to: "/patient" });
+                },
+                // Reset the form after successful creation
+                assign({
+                  takeTurn: {
+                    professionSelected: "",
+                    profesionalSelected: "",
+                    doctorId: "",
+                    dateSelected: null,
+                    timeSelected: null,
+                    scheduledAt: null,
+                    reason: "",
+                  }
+                })
               ],
             },
             onError: {

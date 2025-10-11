@@ -74,12 +74,18 @@ export const notificationMachine = createMachine({
             notifications: ({ event }) => event.output,
             currentNotificationIndex: 0,
             isLoading: false,
+            // Clear deletion flags when reload is complete
+            isDeletingNotification: false,
+            isDeletingAllNotifications: false,
           }),
         },
         onError: {
           target: "idle",
           actions: assign({
             isLoading: false,
+            // Clear deletion flags even on error
+            isDeletingNotification: false,
+            isDeletingAllNotifications: false,
             error: ({ event }) => (event.error as Error)?.message || "Failed to load notifications",
           }),
         },
@@ -120,7 +126,8 @@ export const notificationMachine = createMachine({
         onDone: {
           target: "loadingNotifications",
           actions: assign({
-            isDeletingNotification: false,
+            // Keep isDeletingNotification true during reload
+            // It will be set to false when notifications are successfully reloaded
           }),
         },
         onError: {
@@ -152,7 +159,8 @@ export const notificationMachine = createMachine({
         onDone: {
           target: "loadingNotifications",
           actions: assign({
-            isDeletingAllNotifications: false,
+            // Keep isDeletingAllNotifications true during reload
+            // It will be set to false when notifications are successfully reloaded
           }),
         },
         onError: {
