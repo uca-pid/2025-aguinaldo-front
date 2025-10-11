@@ -13,6 +13,8 @@ import {
   Avatar,
   Fade,
   Paper,
+  CircularProgress,
+  Backdrop,
 } from '@mui/material';
 import { 
   Close, 
@@ -35,14 +37,20 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ open, onClose }) 
   const { notificationState, notificationSend } = useMachines();
   
   const notifications: NotificationResponse[] = notificationState?.context?.notifications || [];
+  const isDeletingNotification = notificationState?.context?.isDeletingNotification || false;
+  const isDeletingAllNotifications = notificationState?.context?.isDeletingAllNotifications || false;
 
   const handleDeleteNotification = (notificationId: string) => {
-    notificationSend({ type: "DELETE_NOTIFICATION", notificationId });
+    if (!isDeletingNotification && !isDeletingAllNotifications) {
+      notificationSend({ type: "DELETE_NOTIFICATION", notificationId });
+    }
   };
 
   const handleMarkAllAsRead = () => {
-    // Delete all notifications in one batch operation
-    notificationSend({ type: "DELETE_ALL_NOTIFICATIONS" });
+    if (!isDeletingNotification && !isDeletingAllNotifications) {
+      // Delete all notifications in one batch operation
+      notificationSend({ type: "DELETE_ALL_NOTIFICATIONS" });
+    }
   };
 
   const getSeverityIcon = (message: string) => {
@@ -60,9 +68,10 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ open, onClose }) 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={isDeletingAllNotifications ? undefined : onClose}
       maxWidth="md"
       fullWidth
+      disableEscapeKeyDown={isDeletingAllNotifications}
       PaperProps={{
         sx: {
           maxHeight: '85vh',
@@ -72,6 +81,33 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ open, onClose }) 
         },
       }}
     >
+      {/* Loading Backdrop for Delete All Operation */}
+      <Backdrop
+        open={isDeletingAllNotifications}
+        sx={{
+          position: 'absolute',
+          zIndex: 1,
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(4px)',
+        }}
+      >
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          gap: 2,
+          color: '#22577a' 
+        }}>
+          <CircularProgress size={48} color="inherit" />
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Eliminando notificaciones...
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Por favor espera mientras se procesan las eliminaciones
+          </Typography>
+        </Box>
+      </Backdrop>
+
       <DialogTitle 
         sx={{ 
           background: 'linear-gradient(135deg, #22577a 0%, #2d7d90 100%)',
@@ -112,7 +148,8 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ open, onClose }) 
               variant="outlined"
               size="small"
               onClick={handleMarkAllAsRead}
-              startIcon={<MarkEmailRead />}
+              disabled={isDeletingAllNotifications || isDeletingNotification}
+              startIcon={isDeletingAllNotifications ? <CircularProgress size={16} color="inherit" /> : <MarkEmailRead />}
               sx={{ 
                 color: 'white',
                 borderColor: 'rgba(255, 255, 255, 0.3)',
@@ -120,20 +157,28 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ open, onClose }) 
                   borderColor: 'rgba(255, 255, 255, 0.6)',
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',
                 },
+                '&:disabled': {
+                  color: 'rgba(255, 255, 255, 0.5)',
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
+                },
                 textTransform: 'none',
                 fontWeight: 500,
               }}
             >
-              Marcar todas como leídas
+              {isDeletingAllNotifications ? 'Eliminando...' : 'Marcar todas como leídas'}
             </Button>
           )}
           <IconButton 
             onClick={onClose} 
             size="small"
+            disabled={isDeletingAllNotifications}
             sx={{ 
               color: 'white',
               '&:hover': {
                 backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              },
+              '&:disabled': {
+                color: 'rgba(255, 255, 255, 0.5)',
               }
             }}
           >
@@ -279,16 +324,23 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ open, onClose }) 
                       <IconButton
                         onClick={() => handleDeleteNotification(notification.id)}
                         size="small"
+                        disabled={isDeletingNotification || isDeletingAllNotifications}
                         sx={{ 
                           ml: 1,
                           color: '#64748b',
                           '&:hover': {
                             backgroundColor: 'rgba(239, 68, 68, 0.1)',
                             color: '#ef4444',
+                          },
+                          '&:disabled': {
+                            color: '#94a3b8',
                           }
                         }}
                       >
-                        <Delete />
+                        {isDeletingNotification ? 
+                          <CircularProgress size={20} color="inherit" /> : 
+                          <Delete />
+                        }
                       </IconButton>
                     </Box>
                   </ListItem>

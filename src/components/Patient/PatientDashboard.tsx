@@ -17,14 +17,22 @@ import DashboardUpcomingCard from "../shared/DashboardUpcomingCard/DashboardUpco
 import dayjs from "dayjs";
 import "./PatientDashboard.css";
 import LoadingThreeDotsJumping from "../shared/PageLoadingScreen/LoadingThreeDots";
+import { useDataMachine } from "#/providers/DataProvider";
 
 const PatientDashboard: React.FC = () => {
   const { uiSend, turnState } = useMachines();
   const { authState } = useAuthMachine();
+  const { dataState } = useDataMachine();
   const user: SignInResponse = authState?.context?.authResponse || {};
   const turnContext = turnState?.context || {};
+  const dataContext = dataState.context;
 
-  const isLoading= turnContext.isLoadingMyTurns;
+  // Patient dashboard needs to wait for ALL patient-specific data to be loaded
+  const isLoading = dataContext.loading?.doctors || 
+                   dataContext.loading?.myTurns || 
+                   dataContext.loading?.myModifyRequests ||
+                   dataContext.loading?.turnFiles ||
+                   turnContext.isLoadingMyTurns;
   
   const upcomingTurns = (turnContext.myTurns || [])
     .filter((turn: any) => {

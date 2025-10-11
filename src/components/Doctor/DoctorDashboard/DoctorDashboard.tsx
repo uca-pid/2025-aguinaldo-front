@@ -44,7 +44,14 @@ const DoctorDashboard: React.FC = () => {
   const hasConfiguredDays = availability.some((day: any) => day.enabled && day.ranges?.length > 0);
   const pendingModifyRequests: TurnModifyRequest[] = dataContext.doctorModifyRequests?.filter((r: TurnModifyRequest) => r.status === "PENDING") || [];
 
-  const isLoading= dataContext.loading?.availableTurns ||dataContext.loading?.myTurns ||dataContext.loading?.doctorPatients|| dataContext.loading?.doctorAvailability|| dataContext.loading?.doctorModifyRequests || doctorContext.isLoadingAvailability;
+  // Doctor dashboard needs to wait for ALL doctor-specific data to be loaded
+  const isLoading = dataContext.loading?.doctors || 
+                   dataContext.loading?.myTurns || 
+                   dataContext.loading?.doctorPatients || 
+                   dataContext.loading?.doctorAvailability || 
+                   dataContext.loading?.doctorModifyRequests ||
+                   dataContext.loading?.turnFiles ||
+                   doctorContext.isLoadingAvailability;
   
   const upcomingTurns = (turnContext?.myTurns || [])
     .filter((turn: any) => {
