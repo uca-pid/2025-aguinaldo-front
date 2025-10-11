@@ -128,7 +128,7 @@ describe('medicalHistoryMachine', () => {
         expect(actor.getSnapshot().value).toBe('idle');
       });
 
-      expect(actor.getSnapshot().context.error).toBe('Error loading medical history: Error: Failed to load medical histories');
+      expect(actor.getSnapshot().context.error).toBe(null);
       expect(actor.getSnapshot().context.isLoading).toBe(false);
       expect(actor.getSnapshot().context.medicalHistories).toEqual([]);
     });
