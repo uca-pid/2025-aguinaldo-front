@@ -3,8 +3,6 @@ import { MedicalHistoryService } from "../../service/medical-history-service.ser
 import type { Patient } from "../../models/Doctor";
 import type { MedicalHistory, CreateMedicalHistoryRequest } from "../../models/MedicalHistory";
 
-
-
 export interface UpdateMedicalHistoryParams {
   accessToken: string;
   doctorId: string;

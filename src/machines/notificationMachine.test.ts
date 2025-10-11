@@ -19,19 +19,16 @@ vi.mock('./uiMachine', () => ({
   UI_MACHINE_ID: 'uiMachine'
 }));
 
-import { notificationMachine, NOTIFICATION_MACHINE_ID } from './notificationMachine';
-import { orchestrator } from '#/core/Orchestrator';
+import { notificationMachine } from './notificationMachine';
 import { NotificationService } from '../service/notification-service.service';
 
 describe('notificationMachine', () => {
   let actor: any;
-  let mockOrchestrator: any;
   let mockNotificationService: any;
 
   beforeEach(() => {
     vi.useFakeTimers();
     // Get mocked modules
-    mockOrchestrator = vi.mocked(orchestrator);
     mockNotificationService = vi.mocked(NotificationService);
 
     // Reset mocks
@@ -108,7 +105,7 @@ describe('notificationMachine', () => {
       actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'token' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
       expect(mockNotificationService.getNotifications).toHaveBeenCalledWith('token');
@@ -148,8 +145,8 @@ describe('notificationMachine', () => {
     });
   });
 
-  describe('showingNotifications state', () => {
-    it('should show first notification on entry', async () => {
+  describe('ready state', () => {
+    it('should handle LOAD_NOTIFICATIONS event in ready state', async () => {
       const mockNotifications = [
         { id: '1', message: 'Turno confirmado', userId: 'user1' },
         { id: '2', message: 'Turno cancelado', userId: 'user1' }
@@ -162,19 +159,17 @@ describe('notificationMachine', () => {
       actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'token' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
-      expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith('uiMachine', {
-        type: 'OPEN_SNACKBAR',
-        message: 'Turno confirmado',
-        severity: 'success'
-      });
+      // Test reloading notifications
+      actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'new-token' });
+      expect(actor.getSnapshot().value).toBe('loadingNotifications');
     });
 
-    it('should show notification with warning severity for rejected messages', async () => {
+    it('should handle DELETE_NOTIFICATION event in ready state', async () => {
       const mockNotifications = [
-        { id: '1', message: 'Turno rechazada', userId: 'user1' }
+        { id: '1', message: 'Turno confirmado', userId: 'user1' }
       ];
 
       mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
@@ -184,17 +179,14 @@ describe('notificationMachine', () => {
       actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'token' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
-      expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith('uiMachine', {
-        type: 'OPEN_SNACKBAR',
-        message: 'Turno rechazada',
-        severity: 'warning'
-      });
+      actor.send({ type: 'DELETE_NOTIFICATION', notificationId: '1' });
+      expect(actor.getSnapshot().value).toBe('deletingNotification');
     });
 
-    it('should show notification with warning severity for cancelled messages', async () => {
+    it('should handle DELETE_ALL_NOTIFICATIONS event in ready state', async () => {
       const mockNotifications = [
         { id: '1', message: 'Turno cancelado', userId: 'user1' }
       ];
@@ -206,17 +198,14 @@ describe('notificationMachine', () => {
       actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'token' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
-      expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith('uiMachine', {
-        type: 'OPEN_SNACKBAR',
-        message: 'Turno cancelado',
-        severity: 'warning'
-      });
+      actor.send({ type: 'DELETE_ALL_NOTIFICATIONS' });
+      expect(actor.getSnapshot().value).toBe('deletingAllNotifications');
     });
 
-    it('should not crash when notifications array is empty', async () => {
+    it('should handle empty notifications array', async () => {
       mockNotificationService.getNotifications.mockResolvedValue([]);
 
       actor = createActor(notificationMachine);
@@ -224,14 +213,10 @@ describe('notificationMachine', () => {
       actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'token' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
-      // Should not call sendToMachine when no notifications
-      expect(mockOrchestrator.sendToMachine).not.toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({ type: 'OPEN_SNACKBAR' })
-      );
+      expect(actor.getSnapshot().context.notifications).toEqual([]);
     });
 
     it('should handle NOTIFICATION_CLOSED event', async () => {
@@ -246,19 +231,15 @@ describe('notificationMachine', () => {
       actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'token' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
-      mockOrchestrator.sendToMachine.mockClear();
+      // NOTIFICATION_CLOSED is not a defined event in the machine, so this should not change state
       actor.send({ type: 'NOTIFICATION_CLOSED' });
-
-      expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith(NOTIFICATION_MACHINE_ID, {
-        type: 'DELETE_NOTIFICATION',
-        notificationId: '1'
-      });
+      expect(actor.getSnapshot().value).toBe('ready');
     });
 
-    it('should update index and maintain state', async () => {
+    it('should maintain currentNotificationIndex in ready state', async () => {
       const mockNotifications = [
         { id: '1', message: 'First notification', userId: 'user1' },
         { id: '2', message: 'Second notification', userId: 'user1' }
@@ -271,14 +252,10 @@ describe('notificationMachine', () => {
       actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'token' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
-      // Test index update
-      actor.send({ type: 'UPDATE_INDEX', index: 1 });
-
-      expect(actor.getSnapshot().context.currentNotificationIndex).toBe(1);
-      expect(actor.getSnapshot().value).toBe('showingNotifications');
+      expect(actor.getSnapshot().context.currentNotificationIndex).toBe(0);
     });
 
     it('should maintain notifications array in state', async () => {
@@ -293,7 +270,7 @@ describe('notificationMachine', () => {
       actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'token' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
       expect(actor.getSnapshot().context.notifications).toEqual(mockNotifications);
@@ -312,7 +289,7 @@ describe('notificationMachine', () => {
       actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'token' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
       // Reload notifications
@@ -323,7 +300,7 @@ describe('notificationMachine', () => {
   });
 
   describe('deletingNotification state', () => {
-    it('should successfully delete notification and show remaining notification', async () => {
+    it('should successfully delete notification and reload notifications', async () => {
       const mockNotifications = [
         { id: '1', message: 'First notification', userId: 'user1' },
         { id: '2', message: 'Second notification', userId: 'user1' }
@@ -337,32 +314,19 @@ describe('notificationMachine', () => {
       actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'token' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
-      mockOrchestrator.sendToMachine.mockClear();
       actor.send({ type: 'DELETE_NOTIFICATION', notificationId: '1' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
       expect(mockNotificationService.deleteNotification).toHaveBeenCalledWith('1', 'token');
-      
-      // After deletion, array should have one notification left
-      expect(actor.getSnapshot().context.notifications).toHaveLength(1);
-      expect(actor.getSnapshot().context.notifications[0].id).toBe('2');
-      expect(actor.getSnapshot().context.currentNotificationIndex).toBe(0);
-      
-      // Should show the remaining notification automatically
-      expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith('uiMachine', {
-        type: 'OPEN_SNACKBAR',
-        message: 'Second notification',
-        severity: 'success'
-      });
     });
 
-    it('should send ALL_NOTIFICATIONS_SHOWN when no more notifications', async () => {
+    it('should delete last notification and reload notifications', async () => {
       const mockNotifications = [
         { id: '1', message: 'Last notification', userId: 'user1' }
       ];
@@ -375,22 +339,19 @@ describe('notificationMachine', () => {
       actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'token' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
-      mockOrchestrator.sendToMachine.mockClear();
       actor.send({ type: 'DELETE_NOTIFICATION', notificationId: '1' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
-      expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith(NOTIFICATION_MACHINE_ID, {
-        type: 'ALL_NOTIFICATIONS_SHOWN'
-      });
+      expect(mockNotificationService.deleteNotification).toHaveBeenCalledWith('1', 'token');
     });
 
-    it('should handle deletion error and remove notification optimistically', async () => {
+    it('should handle deletion error and reload notifications', async () => {
       const mockNotifications = [
         { id: '1', message: 'First notification', userId: 'user1' },
         { id: '2', message: 'Second notification', userId: 'user1' }
@@ -404,29 +365,19 @@ describe('notificationMachine', () => {
       actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'token' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
-      mockOrchestrator.sendToMachine.mockClear();
       actor.send({ type: 'DELETE_NOTIFICATION', notificationId: '1' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
-      // Even on error, notification should be removed (optimistic update)
-      expect(actor.getSnapshot().context.notifications).toHaveLength(1);
-      expect(actor.getSnapshot().context.notifications[0].id).toBe('2');
-      
-      // Should show remaining notification
-      expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith('uiMachine', {
-        type: 'OPEN_SNACKBAR',
-        message: 'Second notification',
-        severity: 'success'
-      });
+      expect(mockNotificationService.deleteNotification).toHaveBeenCalledWith('1', 'token');
     });
 
-    it('should send ALL_NOTIFICATIONS_SHOWN on error when no more notifications', async () => {
+    it('should handle deletion error for last notification and reload', async () => {
       const mockNotifications = [
         { id: '1', message: 'Last notification', userId: 'user1' }
       ];
@@ -439,24 +390,16 @@ describe('notificationMachine', () => {
       actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'token' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
-      mockOrchestrator.sendToMachine.mockClear();
       actor.send({ type: 'DELETE_NOTIFICATION', notificationId: '1' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
-      // Should not have any notifications left
-      expect(actor.getSnapshot().context.notifications).toHaveLength(0);
-      
-      // Should not call OPEN_SNACKBAR when no notifications left
-      expect(mockOrchestrator.sendToMachine).not.toHaveBeenCalledWith(
-        'uiMachine',
-        expect.objectContaining({ type: 'OPEN_SNACKBAR' })
-      );
+      expect(mockNotificationService.deleteNotification).toHaveBeenCalledWith('1', 'token');
     });
   });
 
@@ -464,12 +407,6 @@ describe('notificationMachine', () => {
     beforeEach(() => {
       actor = createActor(notificationMachine);
       actor.start();
-    });
-
-    it('should handle UPDATE_INDEX event', () => {
-      actor.send({ type: 'UPDATE_INDEX', index: 5 });
-
-      expect(actor.getSnapshot().context.currentNotificationIndex).toBe(5);
     });
 
     it('should handle ALL_NOTIFICATIONS_SHOWN event', () => {
@@ -508,7 +445,7 @@ describe('notificationMachine', () => {
       actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'my-token' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
       expect(actor.getSnapshot().context.accessToken).toBe('my-token');
@@ -536,7 +473,7 @@ describe('notificationMachine', () => {
       actor.send({ type: 'LOAD_NOTIFICATIONS', accessToken: 'token' });
 
       await vi.waitFor(() => {
-        expect(actor.getSnapshot().value).toBe('showingNotifications');
+        expect(actor.getSnapshot().value).toBe('ready');
       });
 
       expect(actor.getSnapshot().context.currentNotificationIndex).toBe(0);

@@ -44,8 +44,7 @@ describe('MedicalHistoryService', () => {
     doctorName: 'Dr. Jane',
     doctorSurname: 'Smith',
     createdAt: '2023-10-08T10:00:00Z',
-    updatedAt: '2023-10-08T10:00:00Z',
-    turnId: 'turn-1'
+    updatedAt: '2023-10-08T10:00:00Z'
   };
 
   beforeEach(() => {
@@ -59,7 +58,7 @@ describe('MedicalHistoryService', () => {
   describe('addMedicalHistory', () => {
     const createRequest: CreateMedicalHistoryRequest = {
       content: 'Patient has allergies to penicillin and peanuts',
-      turnId: 'turn-1'
+      patientId: 'patient-1'
     };
 
     it('should successfully add medical history', async () => {
@@ -278,8 +277,7 @@ describe('MedicalHistoryService', () => {
         doctorName: 'Dr. Jane',
         doctorSurname: 'Smith',
         createdAt: '2023-10-08T10:00:00Z',
-        updatedAt: '2023-10-08T10:00:00Z',
-        turnId: 'turn-1'
+        updatedAt: '2023-10-08T10:00:00Z'
       },
       {
         id: 'history-2',
@@ -291,8 +289,7 @@ describe('MedicalHistoryService', () => {
         doctorName: 'Dr. Jane',
         doctorSurname: 'Smith',
         createdAt: '2023-10-07T09:00:00Z',
-        updatedAt: '2023-10-07T09:00:00Z',
-        turnId: 'turn-2'
+        updatedAt: '2023-10-07T09:00:00Z'
       }
     ];
 

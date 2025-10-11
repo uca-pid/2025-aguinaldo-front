@@ -25,7 +25,7 @@ vi.mock('../../service/medical-history-service.service', () => ({
     deleteMedicalHistory: vi.fn(),
     getPatientMedicalHistory: vi.fn(),
   }
-}));
+}))
 
 describe('doctorMachineUtils', () => {
   beforeEach(() => {

@@ -466,7 +466,7 @@ export const turnMachine = createMachine({
                     isLoadingMyTurns: false,
                   };
                 } catch (error) {
-                  return {};
+                  return { isLoadingMyTurns: false };
                 }
               }),
             },
