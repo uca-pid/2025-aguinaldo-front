@@ -86,6 +86,20 @@ export const uiMachine = createMachine({
             if (event.to) {
               context.navigate(event.to);
               context.currentPath = event.to;
+
+              if (event.to.startsWith('/patient-detail?patientId=') && context.currentPath !== event.to) {
+                const patientId = event.to.split('patientId=')[1];
+                
+                if (patientId) {
+                  orchestrator.send({
+                    type: "SELECT_PATIENT",
+                    patientId: patientId
+                  });
+                }
+                else{
+                  orchestrator.send({ type: "CLEAR_PATIENT_SELECTION" });
+                }
+              }
             }
           },
         },

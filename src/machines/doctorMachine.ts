@@ -42,6 +42,7 @@ export interface DoctorMachineContext {
   
   patients: Patient[];
   selectedPatient: Patient | null;
+  selectedPatientId: string | null;
   editedHistory: string;
   isSavingHistory: boolean;
   currentTurnId: string | null; // For associating medical history with a turn
@@ -62,7 +63,7 @@ export type DoctorMachineEvent =
   | { type: "UPDATE_RANGE"; dayIndex: number; rangeIndex: number; field: "start" | "end"; value: string }
   | { type: "SAVE_AVAILABILITY" }
   | { type: "SET_PATIENT_SEARCH"; searchTerm: string }
-  | { type: "SELECT_PATIENT"; patient: Patient }
+  | { type: "SELECT_PATIENT"; patientId: string }
   | { type: "CLEAR_PATIENT_SELECTION" }
   | { type: "START_EDIT_HISTORY" }
   | { type: "UPDATE_HISTORY"; value: string }
@@ -80,6 +81,7 @@ const doctorMachine = createMachine({
     
     patients: [],
     selectedPatient: null,
+    selectedPatientId: null,
     editedHistory: '',
     isSavingHistory: false,
     currentTurnId: null,
@@ -107,54 +109,27 @@ const doctorMachine = createMachine({
             RESET: {
               actions: assign({
                 selectedPatient: null,
+                selectedPatientId: null,
                 editedHistory: '',
                 isSavingHistory: false,
               }),
             },
             SELECT_PATIENT: {
-              actions: [
-                assign({
-                  selectedPatient: ({ event }) => event.patient,
-                  editedHistory: '',
-                  isSavingHistory: false,
-                }),
-                ({ event, context }) => {
-                  // Load medical history for the selected patient
-                  if (context.accessToken && event.patient.id) {
-                    try {
-                      // Check if we need to load medical history for this patient
-                      const medicalHistorySnapshot = orchestrator.getSnapshot(MEDICAL_HISTORY_MACHINE_ID);
-                      const medicalHistoryContext = medicalHistorySnapshot.context;
-                      
-                      if (medicalHistoryContext.currentPatientId !== event.patient.id || medicalHistoryContext.medicalHistories.length === 0) {
-                        orchestrator.sendToMachine(MEDICAL_HISTORY_MACHINE_ID, {
-                          type: "LOAD_PATIENT_MEDICAL_HISTORY",
-                          patientId: event.patient.id,
-                          accessToken: context.accessToken
-                        });
-                      }
-                      
-                      // Load turns if not already loaded
-                      const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
-                      const dataContext = dataSnapshot.context;
-                      if (!dataContext.myTurns || dataContext.myTurns.length === 0) {
-                        orchestrator.sendToMachine(DATA_MACHINE_ID, {
-                          type: "LOAD_MY_TURNS"
-                        });
-                      }
-                    } catch (error) {
-                      console.error('Error loading patient data:', error);
-                    }
-                  }
-                }
-              ],
+              actions: assign({
+                selectedPatientId: ({ event }) => event.patientId,
+              }),
+              target: "selectingPatient",
             },
             CLEAR_PATIENT_SELECTION: {
-              actions: assign({
+              actions: [assign({
                 selectedPatient: null,
+                selectedPatientId: null,
                 editedHistory: '',
                 isSavingHistory: false,
               }),
+              () => {
+                orchestrator.send({ type: "NAVIGATE", to: "/doctor/view-patients" });
+              }],
             },
             START_EDIT_HISTORY: {
               actions: [assign({
@@ -172,7 +147,48 @@ const doctorMachine = createMachine({
               }),
               target: "savingHistory",
             },
+            DATA_LOADED: {
+              guard: ({ context }) => !!context.selectedPatientId && !context.selectedPatient,
+              target: "selectingPatient",
+            },
           },
+        },
+        
+        selectingPatient: {
+          entry: [
+            ({ context }) => {
+              if (context.accessToken && context.selectedPatientId) {
+                orchestrator.sendToMachine(MEDICAL_HISTORY_MACHINE_ID, {
+                  type: "LOAD_PATIENT_MEDICAL_HISTORY",
+                  patientId: context.selectedPatientId,
+                  accessToken: context.accessToken
+                });
+                orchestrator.sendToMachine(DATA_MACHINE_ID, {
+                  type: "LOAD_MY_TURNS"
+                });
+              }
+            },
+            assign({
+              selectedPatient: ({ context }) => {
+                try {
+                  const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
+                  const dataContext = dataSnapshot.context;
+                  const patients = dataContext.doctorPatients || [];
+                  const patient = patients.find((p: any) => p.id === context.selectedPatientId);
+                  return patient || null;
+                } catch (error) {
+                  console.error('Error finding patient by ID:', error);
+                  return null;
+                }
+              },
+            }),
+            ({ context }) => {
+              if (context.selectedPatient) {
+                orchestrator.send({ type: "NAVIGATE", to: `/patient-detail?patientId=${context.selectedPatient.id}` });
+              }
+            }
+          ],
+          always: { target: "idle" }
         },
         
         savingHistory: {

@@ -15,7 +15,7 @@ import type { MedicalHistory } from "#/models/MedicalHistory"
 
 const PatientDetails: React.FC = () => {
   const { dataState, dataSend } = useDataMachine();
-  const { uiSend, doctorState, doctorSend, medicalHistoryState, medicalHistorySend } = useMachines();
+  const { doctorState, doctorSend, medicalHistoryState, medicalHistorySend } = useMachines();
   const { authState } = useAuthMachine();
 
   const doctorContext = doctorState.context;
@@ -139,7 +139,6 @@ const PatientDetails: React.FC = () => {
   };
 
   const handleBack = () => {
-    uiSend({ type: "NAVIGATE", to: "/doctor/view-patients" });
     doctorSend({ type: "CLEAR_PATIENT_SELECTION" });
   };
 
@@ -271,18 +270,55 @@ const PatientDetails: React.FC = () => {
     return (
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Box className="patient-details-container">
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={handleBack}
-            className="patient-details-back-button"
-            variant="outlined"
-            sx={{ mb: 2 }}
-          >
-            Volver
-          </Button>
-          <Alert severity="warning">
-            No se encontró el paciente solicitado.
-          </Alert>
+          <Box className="shared-header">
+            <Box className="shared-header-layout">
+              <Box className="shared-back-button-container">
+                <Button
+                  startIcon={<ArrowBack />}
+                  onClick={handleBack}
+                  className="shared-back-button"
+                  variant="outlined"
+                >
+                  Volver
+                </Button>
+              </Box>
+
+              <Box className="shared-header-content">
+                <Avatar className="shared-header-icon" sx={{ backgroundColor: '#ff9800' }}>
+                  <PersonOutlined sx={{ fontSize: 28 }} />
+                </Avatar>
+                <Box>
+                  <Typography variant="h4" component="h1" className="shared-header-title">
+                    Paciente No Encontrado
+                  </Typography>
+                  <Typography variant="h6" className="shared-header-subtitle">
+                    No se pudo encontrar la información del paciente
+                  </Typography>
+                </Box>
+              </Box>
+              <Box className="shared-header-spacer"></Box>
+            </Box>
+          </Box>
+
+          <Box className="patient-details-content">
+            <Box sx={{ flex: '1 1 100%', display: 'flex', justifyContent: 'center' }}>
+              <Paper elevation={1} sx={{ p: 4, maxWidth: 500, textAlign: 'center' }}>
+                <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+                  No se encontró el paciente solicitado
+                </Typography>
+                <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
+                  Es posible que el paciente haya sido eliminado o que no tengas permisos para acceder a esta información.
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={handleBack}
+                  sx={{ mt: 1 }}
+                >
+                  Volver a la lista de pacientes
+                </Button>
+              </Paper>
+            </Box>
+          </Box>
         </Box>
       </LocalizationProvider>
     );
