@@ -39,12 +39,21 @@ describe('doctorMachine', () => {
     vi.clearAllMocks();
 
     // Setup default mocks
-    mockOrchestrator.getSnapshot.mockReturnValue({
-      context: {
-        doctorPatients: [],
-        doctorAvailability: null
+    mockOrchestrator.getSnapshot.mockImplementation((machineId: string) => {
+      if (machineId === 'dataMachine') {
+        return {
+          context: {
+            doctorPatients: [],
+            doctorAvailability: null
+          }
+        };
       }
+      return { context: {} };
     });
+
+    // Mock orchestrator methods
+    mockOrchestrator.send = vi.fn();
+    mockOrchestrator.sendToMachine = vi.fn();
   });
 
   afterEach(() => {
@@ -113,11 +122,16 @@ describe('doctorMachine', () => {
         { id: '2', name: 'Patient', surname: '2', email: 'patient2@test.com', dni: 87654321, status: 'ACTIVE', medicalHistory: 'History 2' }
       ];
 
-      mockOrchestrator.getSnapshot.mockReturnValue({
-        context: {
-          doctorPatients: mockPatients,
-          doctorAvailability: null
+      mockOrchestrator.getSnapshot.mockImplementation((machineId: string) => {
+        if (machineId === 'dataMachine') {
+          return {
+            context: {
+              doctorPatients: mockPatients,
+              doctorAvailability: null
+            }
+          };
         }
+        return { context: {} };
       });
 
       actor.send({ type: 'DATA_LOADED' });
@@ -126,16 +140,21 @@ describe('doctorMachine', () => {
     });
 
     it('should handle DATA_LOADED event with availability data', () => {
-      mockOrchestrator.getSnapshot.mockReturnValue({
-        context: {
-          doctorPatients: [],
-          doctorAvailability: {
-            weeklyAvailability: [
-              { day: 'MONDAY', enabled: true, ranges: [{ start: '09:00', end: '17:00' }] },
-              { day: 'TUESDAY', enabled: false, ranges: [{ start: '', end: '' }] }
-            ]
-          }
+      mockOrchestrator.getSnapshot.mockImplementation((machineId: string) => {
+        if (machineId === 'dataMachine') {
+          return {
+            context: {
+              doctorPatients: [],
+              doctorAvailability: {
+                weeklyAvailability: [
+                  { day: 'MONDAY', enabled: true, ranges: [{ start: '09:00', end: '17:00' }] },
+                  { day: 'TUESDAY', enabled: false, ranges: [{ start: '', end: '' }] }
+                ]
+              }
+            }
+          };
         }
+        return { context: {} };
       });
 
       actor.send({ type: 'DATA_LOADED' });
@@ -165,11 +184,29 @@ describe('doctorMachine', () => {
         medicalHistory: 'Previous history'
       };
 
-      actor.send({ type: 'SELECT_PATIENT', patient });
+      // Mock the data machine to have the patient
+      mockOrchestrator.getSnapshot.mockImplementation((machineId: string) => {
+        if (machineId === 'dataMachine') {
+          return {
+            context: {
+              doctorPatients: [patient],
+              doctorAvailability: null
+            }
+          };
+        }
+        return { context: {} };
+      });
 
+      actor.send({ type: 'SELECT_PATIENT', patientId: '1' });
+
+      // The machine should set the selectedPatientId and transition to selectingPatient
+      expect(actor.getSnapshot().context.selectedPatientId).toBe('1');
+      // It should then immediately find the patient and transition back to idle with selectedPatient set
       expect(actor.getSnapshot().context.selectedPatient).toEqual(patient);
-      expect(actor.getSnapshot().context.editedHistory).toBe('');
-      expect(actor.getSnapshot().context.isSavingHistory).toBe(false);
+      expect(actor.getSnapshot().value).toEqual({
+        patientManagement: 'idle',
+        availability: 'idle'
+      });
     });
 
     it('should handle CLEAR_PATIENT_SELECTION event', () => {
@@ -183,13 +220,29 @@ describe('doctorMachine', () => {
         status: 'ACTIVE',
         medicalHistory: 'History'
       };
-      actor.send({ type: 'SELECT_PATIENT', patient });
+
+      // Mock the data machine to have the patient
+      mockOrchestrator.getSnapshot.mockImplementation((machineId: string) => {
+        if (machineId === 'dataMachine') {
+          return {
+            context: {
+              doctorPatients: [patient],
+              doctorAvailability: null
+            }
+          };
+        }
+        return { context: {} };
+      });
+
+      actor.send({ type: 'SELECT_PATIENT', patientId: '1' });
+      expect(actor.getSnapshot().context.selectedPatientId).toBe('1');
       expect(actor.getSnapshot().context.selectedPatient).toEqual(patient);
 
       // Then clear selection
       actor.send({ type: 'CLEAR_PATIENT_SELECTION' });
 
       expect(actor.getSnapshot().context.selectedPatient).toBe(null);
+      expect(actor.getSnapshot().context.selectedPatientId).toBe(null);
       expect(actor.getSnapshot().context.editedHistory).toBe('');
       expect(actor.getSnapshot().context.isSavingHistory).toBe(false);
     });
@@ -205,13 +258,28 @@ describe('doctorMachine', () => {
         status: 'ACTIVE',
         medicalHistory: 'History'
       };
-      actor.send({ type: 'SELECT_PATIENT', patient });
+
+      // Mock the data machine to have the patient
+      mockOrchestrator.getSnapshot.mockImplementation((machineId: string) => {
+        if (machineId === 'dataMachine') {
+          return {
+            context: {
+              doctorPatients: [patient],
+              doctorAvailability: null
+            }
+          };
+        }
+        return { context: {} };
+      });
+
+      actor.send({ type: 'SELECT_PATIENT', patientId: '1' });
       actor.send({ type: 'START_EDIT_HISTORY' });
 
       // Reset
       actor.send({ type: 'RESET' });
 
       expect(actor.getSnapshot().context.selectedPatient).toBe(null);
+      expect(actor.getSnapshot().context.selectedPatientId).toBe(null);
       expect(actor.getSnapshot().context.editedHistory).toBe('');
       expect(actor.getSnapshot().context.isSavingHistory).toBe(false);
     });
@@ -226,7 +294,24 @@ describe('doctorMachine', () => {
         status: 'ACTIVE',
         medicalHistory: 'Existing history'
       };
-      actor.send({ type: 'SELECT_PATIENT', patient });
+
+      // Mock the data machine to have the patient
+      mockOrchestrator.getSnapshot.mockImplementation((machineId: string) => {
+        if (machineId === 'dataMachine') {
+          return {
+            context: {
+              doctorPatients: [patient],
+              doctorAvailability: null
+            }
+          };
+        }
+        return { context: {} };
+      });
+
+      // First, we need to trigger patient selection and ensure the patient is loaded
+      actor.send({ type: 'SELECT_PATIENT', patientId: '1' });
+      
+      // Now the selectedPatient should be set, so we can start editing history
       actor.send({ type: 'START_EDIT_HISTORY' });
 
       expect(actor.getSnapshot().context.editedHistory).toBe('Existing history');
@@ -248,8 +333,24 @@ describe('doctorMachine', () => {
         status: 'ACTIVE',
         medicalHistory: 'History'
       };
+
+      // Mock the data machine to have the patient
+      mockOrchestrator.getSnapshot.mockImplementation((machineId: string) => {
+        if (machineId === 'dataMachine') {
+          return {
+            context: {
+              doctorPatients: [patient],
+              doctorAvailability: null
+            }
+          };
+        }
+        return { context: {} };
+      });
+
       actor.send({ type: 'SET_AUTH', accessToken: 'token', userId: 'doctor-1' });
-      actor.send({ type: 'SELECT_PATIENT', patient });
+      actor.send({ type: 'SELECT_PATIENT', patientId: '1' });
+      
+      // Now the selectedPatient should be set, so we can save history
       actor.send({ type: 'SAVE_HISTORY' });
 
       expect(actor.getSnapshot().value).toEqual({
@@ -343,11 +444,26 @@ describe('doctorMachine', () => {
         status: 'ACTIVE',
         medicalHistory: 'History'
       };
+
+      // Mock the data machine to have the patient
+      mockOrchestrator.getSnapshot.mockImplementation((machineId: string) => {
+        if (machineId === 'dataMachine') {
+          return {
+            context: {
+              doctorPatients: [patient],
+              doctorAvailability: null
+            }
+          };
+        }
+        return { context: {} };
+      });
       
       actor = createActor(doctorMachine);
       actor.start();
       actor.send({ type: 'SET_AUTH', accessToken: 'token', userId: 'doctor-1' });
-      actor.send({ type: 'SELECT_PATIENT', patient });
+      actor.send({ type: 'SELECT_PATIENT', patientId: '1' });
+      
+      // Now the selectedPatient should be set, so we can save history
       actor.send({ type: 'SAVE_HISTORY' });
 
       expect(actor.getSnapshot().context.isSavingHistory).toBe(true);
@@ -371,13 +487,6 @@ describe('doctorMachine', () => {
       actor = createActor(doctorMachine);
       actor.start();
 
-      // Set auth
-      actor.send({ type: 'SET_AUTH', accessToken: 'token', userId: 'doctor-1' });
-      
-      // Set patient search
-      actor.send({ type: 'SET_PATIENT_SEARCH', searchTerm: 'John' });
-      
-      // Select a patient
       const patient: Patient = {
         id: '1',
         name: 'John',
@@ -387,7 +496,28 @@ describe('doctorMachine', () => {
         status: 'ACTIVE',
         medicalHistory: 'History'
       };
-      actor.send({ type: 'SELECT_PATIENT', patient });
+
+      // Mock the data machine to have the patient
+      mockOrchestrator.getSnapshot.mockImplementation((machineId: string) => {
+        if (machineId === 'dataMachine') {
+          return {
+            context: {
+              doctorPatients: [patient],
+              doctorAvailability: null
+            }
+          };
+        }
+        return { context: {} };
+      });
+
+      // Set auth
+      actor.send({ type: 'SET_AUTH', accessToken: 'token', userId: 'doctor-1' });
+      
+      // Set patient search
+      actor.send({ type: 'SET_PATIENT_SEARCH', searchTerm: 'John' });
+      
+      // Select a patient
+      actor.send({ type: 'SELECT_PATIENT', patientId: '1' });
 
       // Update availability
       actor.send({ type: 'TOGGLE_DAY', index: 0 });
@@ -417,7 +547,21 @@ describe('doctorMachine', () => {
         status: 'ACTIVE',
         medicalHistory: 'History'
       };
-      actor.send({ type: 'SELECT_PATIENT', patient });
+
+      // Mock the data machine to have the patient
+      mockOrchestrator.getSnapshot.mockImplementation((machineId: string) => {
+        if (machineId === 'dataMachine') {
+          return {
+            context: {
+              doctorPatients: [patient],
+              doctorAvailability: null
+            }
+          };
+        }
+        return { context: {} };
+      });
+
+      actor.send({ type: 'SELECT_PATIENT', patientId: '1' });
 
       // Update availability (availability state)
       actor.send({ type: 'TOGGLE_DAY', index: 1 });
