@@ -33,6 +33,9 @@ const PatientDetails: React.FC = () => {
   ) || [];
 
   const medicalHistories: MedicalHistory[] = medicalHistoryContext.medicalHistories || [];
+  
+  // Check if we're in the process of selecting a patient
+  const isSelectingPatient = doctorState.matches({ patientManagement: 'selectingPatient' });
 
   const handleEditMedicalHistory = (turnId: string, currentContent: string) => {
     medicalHistorySend({
@@ -223,14 +226,25 @@ const PatientDetails: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  // Show loading state if data is loading OR if we're actively selecting a patient
+  if (isLoading || isSelectingPatient) {
     return (
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Box className="patient-details-container">
-          <Box className="patient-details-loading">
-            <CircularProgress size={40} />
-            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+          <Box className="patient-details-loading" sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            minHeight: '60vh',
+            gap: 2
+          }}>
+            <CircularProgress size={60} thickness={4} />
+            <Typography variant="h5" gutterBottom sx={{ mt: 2, fontWeight: 500 }}>
               Cargando información del paciente...
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              Por favor espere un momento
             </Typography>
           </Box>
         </Box>
