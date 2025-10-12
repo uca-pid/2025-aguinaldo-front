@@ -239,12 +239,12 @@ export const dataMachine = createMachine({
             doctorAvailability: context.doctorAvailability
           });
           
-          // Only load turn files if user is patient/doctor, has turns, and hasn't loaded files yet
           if ((context.userRole === "PATIENT" || context.userRole === "DOCTOR") && 
               context.myTurns?.length > 0 && 
               !context.turnFilesLoaded) {
             orchestrator.sendToMachine("data", { type: "LOAD_TURN_FILES" });
           }
+          
         }, 0);
       },
       exit: () => {
@@ -288,6 +288,9 @@ export const dataMachine = createMachine({
         RELOAD_PENDING_DOCTORS: {
           target: "fetchingPendingDoctors",
         },
+        RELOAD_SPECIALTIES: {
+          target: "fetchingSpecialties",
+        },
         RELOAD_ADMIN_STATS: {
           target: "fetchingAdminStats",
         },
@@ -300,6 +303,7 @@ export const dataMachine = createMachine({
                 self.send({ type: "RELOAD_DOCTORS" });
                 self.send({ type: "RELOAD_PENDING_DOCTORS" });
                 self.send({ type: "RELOAD_ADMIN_STATS" });
+                self.send({ type: "RELOAD_SPECIALTIES" });
               }, 0);
             },
           },
@@ -375,7 +379,7 @@ export const dataMachine = createMachine({
         input: ({ context }) => ({ accessToken: context.accessToken! }),
         onDone: [
           {
-            target: "fetchingPendingDoctors",
+            target: "fetchingSpecialties",
             guard: ({ context }) => context.userRole === "ADMIN",
             actions: assign({
               doctors: ({ event }) => event.output,
@@ -428,21 +432,25 @@ export const dataMachine = createMachine({
     },
     
     fetchingSpecialties: {
-      entry: assign({
-        loading: ({ context }) => ({ ...context.loading, specialties: true }),
-        errors: ({ context }) => ({ ...context.errors, specialties: null }),
-      }),
+      entry: [
+        assign({
+          loading: ({ context }) => ({ ...context.loading, specialties: true }),
+          errors: ({ context }) => ({ ...context.errors, specialties: null }),
+        }),
+      ],
       invoke: {
         src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
           return await loadSpecialties(input);
         }),
         input: ({ context }) => ({ accessToken: context.accessToken! }),
         onDone: {
-          target: "ready",
-          actions: assign({
-            specialties: ({ event }) => event.output,
-            loading: ({ context }) => ({ ...context.loading, specialties: false }),
-          }),
+          target: "fetchingPendingDoctors",
+          actions: [
+            assign({
+              specialties: ({ event }) => event.output,
+              loading: ({ context }) => ({ ...context.loading, specialties: false }),
+            }),
+          ],
         },
         onError: {
           target: "idle",

@@ -10,8 +10,6 @@ export default function AdminDoctors() {
 
   const {  adminUserState, } = useMachines();
   const adminContext = adminUserState.context;
-
-
   const specialties = adminContext.adminStats.specialties || [];
   const loading = adminContext.loading;
 
