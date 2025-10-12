@@ -16,7 +16,8 @@ vi.mock('@mui/icons-material', () => ({
   Schedule: vi.fn(),
   Notifications: vi.fn(),
   Person: vi.fn(),
-  ExitToApp: vi.fn()
+  ExitToApp: vi.fn(),
+  BarChart: vi.fn()
 }))
 
 describe('sideBarMenuUtils', () => {
@@ -31,6 +32,7 @@ describe('sideBarMenuUtils', () => {
       expect(iconMap.Notifications).toBeDefined()
       expect(iconMap.Person).toBeDefined()
       expect(iconMap.ExitToApp).toBeDefined()
+      expect(iconMap.BarChart).toBeDefined()
     })
   })
 
@@ -205,7 +207,7 @@ describe('sideBarMenuUtils', () => {
       const doctorMenu = getDoctorMenuItems(mockHandleLogout)
 
       expect(result).toEqual(doctorMenu)
-      expect(result).toHaveLength(7)
+      expect(result).toHaveLength(8)
     })
 
     it('should return patient menu items for PATIENT role', () => {
