@@ -15,7 +15,7 @@ import type { MedicalHistory } from "#/models/MedicalHistory"
 
 const PatientDetails: React.FC = () => {
   const { dataState, dataSend } = useDataMachine();
-  const { uiSend, doctorState, doctorSend, medicalHistoryState, medicalHistorySend } = useMachines();
+  const { doctorState, doctorSend, medicalHistoryState, medicalHistorySend } = useMachines();
   const { authState } = useAuthMachine();
 
   const doctorContext = doctorState.context;
@@ -33,6 +33,12 @@ const PatientDetails: React.FC = () => {
   ) || [];
 
   const medicalHistories: MedicalHistory[] = medicalHistoryContext.medicalHistories || [];
+  
+  const isSelectingPatient = doctorState.matches({ patientManagement: 'selectingPatient' });
+  
+  // Check if we're on the patient-detail route without a patient ID
+  const isPatientDetailRoute = window.location.pathname === '/patient-detail';
+  const hasPatientIdParam = window.location.search.includes('patientId=');
 
   const handleEditMedicalHistory = (turnId: string, currentContent: string) => {
     medicalHistorySend({
@@ -139,7 +145,6 @@ const PatientDetails: React.FC = () => {
   };
 
   const handleBack = () => {
-    uiSend({ type: "NAVIGATE", to: "/doctor/view-patients" });
     doctorSend({ type: "CLEAR_PATIENT_SELECTION" });
   };
 
@@ -224,14 +229,25 @@ const PatientDetails: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  // Show loading state if data is loading OR if we're actively selecting a patient
+  if (isLoading || isSelectingPatient) {
     return (
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Box className="patient-details-container">
-          <Box className="patient-details-loading">
-            <CircularProgress size={40} />
-            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+          <Box className="patient-details-loading" sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            minHeight: '60vh',
+            gap: 2
+          }}>
+            <CircularProgress size={60} thickness={4} />
+            <Typography variant="h5" gutterBottom sx={{ mt: 2, fontWeight: 500 }}>
               Cargando información del paciente...
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              Por favor espere un momento
             </Typography>
           </Box>
         </Box>
@@ -267,25 +283,78 @@ const PatientDetails: React.FC = () => {
     );
   }
 
-  if (!patient) {
+  // Only show "not found" if:
+  // 1. We're in idle state (not actively selecting)
+  // 2. There's a selectedPatientId (we tried to find someone)
+  // 3. But no patient was found (selectedPatient is null)
+  // 4. AND we had attempts to find the patient (patientSelectionAttempts > 0)
+  // OR if we're on the patient-detail route without a patientId parameter
+  const shouldShowNotFound = !patient && (
+    (doctorState.matches({ patientManagement: 'idle' }) && doctorContext.selectedPatientId && doctorContext.patientSelectionAttempts > 0) ||
+    (isPatientDetailRoute && !hasPatientIdParam && !doctorContext.selectedPatientId)
+  );
+  
+  if (shouldShowNotFound) {
     return (
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Box className="patient-details-container">
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={handleBack}
-            className="patient-details-back-button"
-            variant="outlined"
-            sx={{ mb: 2 }}
-          >
-            Volver
-          </Button>
-          <Alert severity="warning">
-            No se encontró el paciente solicitado.
-          </Alert>
+          <Box className="shared-header">
+            <Box className="shared-header-layout">
+              <Box className="shared-back-button-container">
+                <Button
+                  startIcon={<ArrowBack />}
+                  onClick={handleBack}
+                  className="shared-back-button"
+                  variant="outlined"
+                >
+                  Volver
+                </Button>
+              </Box>
+
+              <Box className="shared-header-content">
+                <Avatar className="shared-header-icon" sx={{ backgroundColor: '#ff9800' }}>
+                  <PersonOutlined sx={{ fontSize: 28 }} />
+                </Avatar>
+                <Box>
+                  <Typography variant="h4" component="h1" className="shared-header-title">
+                    Paciente No Encontrado
+                  </Typography>
+                  <Typography variant="h6" className="shared-header-subtitle">
+                    No se pudo encontrar la información del paciente
+                  </Typography>
+                </Box>
+              </Box>
+              <Box className="shared-header-spacer"></Box>
+            </Box>
+          </Box>
+
+          <Box className="patient-details-content">
+            <Box sx={{ flex: '1 1 100%', display: 'flex', justifyContent: 'center' }}>
+              <Paper elevation={1} sx={{ p: 4, maxWidth: 500, textAlign: 'center' }}>
+                <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+                  No se encontró el paciente solicitado
+                </Typography>
+                <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
+                  Es posible que el paciente haya sido eliminado o que no tengas permisos para acceder a esta información.
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={handleBack}
+                  sx={{ mt: 1 }}
+                >
+                  Volver a la lista de pacientes
+                </Button>
+              </Paper>
+            </Box>
+          </Box>
         </Box>
       </LocalizationProvider>
     );
+  }
+  
+  // If patient is null for any other reason, don't show anything (navigation in progress)
+  if (!patient) {
+    return null;
   }
 
   return (

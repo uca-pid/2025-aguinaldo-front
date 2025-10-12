@@ -68,10 +68,25 @@ export const uiMachine = createMachine({
     idle: {
       on: { 
         ADD_NAVIGATE_HOOK: {
-          actions: assign({
-            navigate: ({ event }: any) => event.navigate,
-            currentPath: ({ event }: any) => event.initialPath || '/',
-          }),
+          actions: [
+            assign({
+              navigate: ({ event }: any) => event.navigate,
+              currentPath: ({ event }: any) => event.initialPath || '/',
+            }),
+            ({ event }: any) => {
+              // Handle initial path if it's a patient detail page
+              const initialPath = event.initialPath || '/';
+              if (initialPath.startsWith('/patient-detail?patientId=')) {
+                const patientId = initialPath.split('patientId=')[1];
+                if (patientId) {
+                  orchestrator.send({
+                    type: "SELECT_PATIENT",
+                    patientId: patientId
+                  });
+                }
+              }
+            }
+          ],
         },
         TOGGLE: {
           actions: assign({
@@ -84,8 +99,23 @@ export const uiMachine = createMachine({
         NAVIGATE: {
           actions: ({ context, event }) => {
             if (event.to) {
+              const previousPath = context.currentPath;
               context.navigate(event.to);
               context.currentPath = event.to;
+
+              if (event.to.startsWith('/patient-detail?patientId=') && previousPath !== event.to) {
+                const patientId = event.to.split('patientId=')[1];
+                
+                if (patientId) {
+                  orchestrator.send({
+                    type: "SELECT_PATIENT",
+                    patientId: patientId
+                  });
+                }
+                else{
+                  orchestrator.send({ type: "CLEAR_PATIENT_SELECTION" });
+                }
+              }
             }
           },
         },

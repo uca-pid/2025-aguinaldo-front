@@ -4,6 +4,7 @@ import { NotificationService, NotificationResponse } from '../service/notificati
 export const NOTIFICATION_MACHINE_ID = "notification";
 export const NOTIFICATION_MACHINE_EVENT_TYPES = [
   "SET_AUTH",
+  "CLEAR_ACCESS_TOKEN",
   "LOAD_NOTIFICATIONS",
   "DELETE_NOTIFICATION",
   "DELETE_ALL_NOTIFICATIONS",
@@ -22,6 +23,7 @@ export interface NotificationMachineContext {
 
 export type NotificationMachineEvent =
   | { type: "SET_AUTH"; accessToken: string }
+  | { type: "CLEAR_ACCESS_TOKEN" }
   | { type: "LOAD_NOTIFICATIONS"; accessToken?: string }
   | { type: "DELETE_NOTIFICATION"; notificationId: string }
   | { type: "DELETE_ALL_NOTIFICATIONS" }
@@ -177,6 +179,17 @@ export const notificationMachine = createMachine({
     SET_AUTH: {
       actions: assign({
         accessToken: ({ event }) => event.accessToken,
+      }),
+    },
+    CLEAR_ACCESS_TOKEN: {
+      actions: assign({
+        notifications: [],
+        currentNotificationIndex: 0,
+        isLoading: false,
+        isDeletingNotification: false,
+        isDeletingAllNotifications: false,
+        error: null,
+        accessToken: null,
       }),
     },
     ALL_NOTIFICATIONS_SHOWN: {

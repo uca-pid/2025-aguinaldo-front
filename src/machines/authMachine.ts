@@ -116,6 +116,7 @@ export const authMachine = createMachine({
               ({ event }) => {
                 // If we had auth data but token validation failed, show message and navigate
                 if (event.output.authData && !event.output.isAuthenticated) {
+                  orchestrator.send({ type: "CLEAR_ACCESS_TOKEN" });
                   orchestrator.send({ type: "NAVIGATE", to: "/" });
                   orchestrator.send({ 
                     type: "OPEN_SNACKBAR", 
@@ -136,6 +137,7 @@ export const authMachine = createMachine({
             })),
             () => {
               // Navigate to login when auth check fails
+              orchestrator.send({ type: "CLEAR_ACCESS_TOKEN" });
               orchestrator.send({ type: "NAVIGATE", to: "/" });
               orchestrator.send({ 
                 type: "OPEN_SNACKBAR", 
@@ -195,6 +197,7 @@ export const authMachine = createMachine({
             loggingOut: false // Reset loggingOut flag
           })),
           () => {
+            orchestrator.send({ type: "CLEAR_ACCESS_TOKEN" });
             orchestrator.send({ type: "NAVIGATE", to: "/" });
           }
           ],
@@ -207,6 +210,7 @@ export const authMachine = createMachine({
             loggingOut: false // Reset loggingOut flag even on error
           })),
           () => {
+            orchestrator.send({ type: "CLEAR_ACCESS_TOKEN" });
             orchestrator.send({ type: "NAVIGATE", to: "/" });
           }
           ],
@@ -462,6 +466,7 @@ export const authMachine = createMachine({
             })),
             () => {
               // Navigate to login on refresh failure
+              orchestrator.send({ type: "CLEAR_ACCESS_TOKEN" });
               orchestrator.send({ type: "NAVIGATE", to: "/" });
               orchestrator.send({ 
                 type: "OPEN_SNACKBAR", 

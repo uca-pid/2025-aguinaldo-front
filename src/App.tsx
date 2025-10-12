@@ -37,7 +37,7 @@ function AppContent() {
   const isNotificationModalOpen = uiState?.context?.notificationModal?.open || false;
 
   useEffect(() => {
-    uiSend({ type: "ADD_NAVIGATE_HOOK", navigate, initialPath: window.location.pathname });
+    uiSend({ type: "ADD_NAVIGATE_HOOK", navigate, initialPath: window.location.pathname + window.location.search });
   }, [uiSend, navigate]);
 
   const handleCloseNotificationModal = () => {

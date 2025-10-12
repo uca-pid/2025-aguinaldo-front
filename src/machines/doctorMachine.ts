@@ -21,6 +21,7 @@ export const DOCTOR_MACHINE_EVENT_TYPES = [
   "START_EDIT_HISTORY",
   "UPDATE_HISTORY",
   "SAVE_HISTORY",
+  "PATIENTS_LOADED",
   "DATA_LOADED"
 ];
 
@@ -42,9 +43,11 @@ export interface DoctorMachineContext {
   
   patients: Patient[];
   selectedPatient: Patient | null;
+  selectedPatientId: string | null;
   editedHistory: string;
   isSavingHistory: boolean;
   currentTurnId: string | null; // For associating medical history with a turn
+  patientSelectionAttempts: number; // Track attempts to find patient
   
   availability: DayAvailability[];
   slotDurationMin: number | null;
@@ -62,12 +65,12 @@ export type DoctorMachineEvent =
   | { type: "UPDATE_RANGE"; dayIndex: number; rangeIndex: number; field: "start" | "end"; value: string }
   | { type: "SAVE_AVAILABILITY" }
   | { type: "SET_PATIENT_SEARCH"; searchTerm: string }
-  | { type: "SELECT_PATIENT"; patient: Patient }
+  | { type: "SELECT_PATIENT"; patientId: string }
   | { type: "CLEAR_PATIENT_SELECTION" }
   | { type: "START_EDIT_HISTORY" }
   | { type: "UPDATE_HISTORY"; value: string }
   | { type: "SAVE_HISTORY"; turnId?: string }
-  | { type: "DATA_LOADED" };
+  | { type: "PATIENTS_LOADED" };
 
 const doctorMachine = createMachine({
   id: "doctor",
@@ -80,9 +83,11 @@ const doctorMachine = createMachine({
     
     patients: [],
     selectedPatient: null,
+    selectedPatientId: null,
     editedHistory: '',
     isSavingHistory: false,
     currentTurnId: null,
+    patientSelectionAttempts: 0,
     availability: [
       { day: "Lunes", enabled: false, ranges: [{ start: "", end: "" }] },
       { day: "Martes", enabled: false, ranges: [{ start: "", end: "" }] },
@@ -107,54 +112,28 @@ const doctorMachine = createMachine({
             RESET: {
               actions: assign({
                 selectedPatient: null,
+                selectedPatientId: null,
                 editedHistory: '',
                 isSavingHistory: false,
               }),
             },
             SELECT_PATIENT: {
-              actions: [
-                assign({
-                  selectedPatient: ({ event }) => event.patient,
-                  editedHistory: '',
-                  isSavingHistory: false,
-                }),
-                ({ event, context }) => {
-                  // Load medical history for the selected patient
-                  if (context.accessToken && event.patient.id) {
-                    try {
-                      // Check if we need to load medical history for this patient
-                      const medicalHistorySnapshot = orchestrator.getSnapshot(MEDICAL_HISTORY_MACHINE_ID);
-                      const medicalHistoryContext = medicalHistorySnapshot.context;
-                      
-                      if (medicalHistoryContext.currentPatientId !== event.patient.id || medicalHistoryContext.medicalHistories.length === 0) {
-                        orchestrator.sendToMachine(MEDICAL_HISTORY_MACHINE_ID, {
-                          type: "LOAD_PATIENT_MEDICAL_HISTORY",
-                          patientId: event.patient.id,
-                          accessToken: context.accessToken
-                        });
-                      }
-                      
-                      // Load turns if not already loaded
-                      const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
-                      const dataContext = dataSnapshot.context;
-                      if (!dataContext.myTurns || dataContext.myTurns.length === 0) {
-                        orchestrator.sendToMachine(DATA_MACHINE_ID, {
-                          type: "LOAD_MY_TURNS"
-                        });
-                      }
-                    } catch (error) {
-                      console.error('Error loading patient data:', error);
-                    }
-                  }
-                }
-              ],
+              actions: assign({
+                selectedPatientId: ({ event }) => event.patientId,
+                patientSelectionAttempts: 0, // Reset attempts when selecting new patient
+              }),
+              target: "selectingPatient",
             },
             CLEAR_PATIENT_SELECTION: {
-              actions: assign({
+              actions: [assign({
                 selectedPatient: null,
+                selectedPatientId: null,
                 editedHistory: '',
                 isSavingHistory: false,
               }),
+              () => {
+                orchestrator.send({ type: "NAVIGATE", to: "/doctor/view-patients" });
+              }],
             },
             START_EDIT_HISTORY: {
               actions: [assign({
@@ -172,7 +151,76 @@ const doctorMachine = createMachine({
               }),
               target: "savingHistory",
             },
+            PATIENTS_LOADED: {
+              guard: ({ context }) => {
+                const hasId = !!context.selectedPatientId;
+                const hasPatient = !!context.selectedPatient;
+                return hasId && !hasPatient;
+              },
+              target: "selectingPatient",
+            },
           },
+        },
+        
+        selectingPatient: {
+          entry: [
+            ({ context }) => {
+              if (context.accessToken && context.selectedPatientId) {
+                orchestrator.sendToMachine(MEDICAL_HISTORY_MACHINE_ID, {
+                  type: "LOAD_PATIENT_MEDICAL_HISTORY",
+                  patientId: context.selectedPatientId,
+                  accessToken: context.accessToken
+                });
+                orchestrator.sendToMachine(DATA_MACHINE_ID, {
+                  type: "LOAD_MY_TURNS"
+                });
+              }
+            },
+            assign({
+              selectedPatient: ({ context }) => {
+                try {
+                  const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
+                  const dataContext = dataSnapshot.context;
+                  const patients = dataContext.doctorPatients || [];
+                  const patient = patients.find((p: any) => p.id === context.selectedPatientId);
+                  return patient || null;
+                } catch (error) {
+                  console.error('Error finding patient by ID:', error);
+                  return null;
+                }
+              },
+              patientSelectionAttempts: ({ context }) => context.patientSelectionAttempts + 1,
+            }),
+            ({ context }) => {
+              if (context.selectedPatient) {
+                orchestrator.send({ type: "NAVIGATE", to: `/patient-detail?patientId=${context.selectedPatient.id}` });
+              } else if (context.patientSelectionAttempts >= 2) {
+                // Patient not found after data loaded, show error and navigate away
+                orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                  type: "OPEN_SNACKBAR", 
+                  message: "Paciente no encontrado", 
+                  severity: "error" 
+                });
+                orchestrator.send({ type: "NAVIGATE", to: "/doctor/view-patients" });
+              }
+            }
+          ],
+          always: [
+            {
+              guard: ({ context }) => !!context.selectedPatient || context.patientSelectionAttempts >= 2,
+              target: "idle",
+              actions: assign({
+                selectedPatientId: ({ context }) => context.selectedPatient ? context.selectedPatientId : null,
+                patientSelectionAttempts: 0,
+              })
+            }
+          ],
+          on: {
+            PATIENTS_LOADED: {
+              target: "selectingPatient",
+              reenter: true
+            }
+          }
         },
         
         savingHistory: {
@@ -400,56 +448,61 @@ const doctorMachine = createMachine({
       }),
     },
     DATA_LOADED: {
-      actions: assign(() => {
-        try {
-          const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
-          const dataContext = dataSnapshot.context;
-          
-          const dayMapping: { [key: string]: string } = {
-            "MONDAY": "Lunes",
-            "TUESDAY": "Martes", 
-            "WEDNESDAY": "Miércoles",
-            "THURSDAY": "Jueves",
-            "FRIDAY": "Viernes",
-            "SATURDAY": "Sábado",
-            "SUNDAY": "Domingo"
-          };
-          
-          const availabilityData = dataContext.doctorAvailability as any;
-          if (availabilityData && availabilityData.weeklyAvailability && availabilityData.weeklyAvailability.length > 0) {
+      actions: [
+        assign(() => {
+          try {
+            const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID);
+            const dataContext = dataSnapshot.context;
+            
+            const dayMapping: { [key: string]: string } = {
+              "MONDAY": "Lunes",
+              "TUESDAY": "Martes", 
+              "WEDNESDAY": "Miércoles",
+              "THURSDAY": "Jueves",
+              "FRIDAY": "Viernes",
+              "SATURDAY": "Sábado",
+              "SUNDAY": "Domingo"
+            };
+            
+            const availabilityData = dataContext.doctorAvailability as any;
+            if (availabilityData && availabilityData.weeklyAvailability && availabilityData.weeklyAvailability.length > 0) {
+              return {
+                availability: availabilityData.weeklyAvailability.map((day: any) => ({
+                  day: dayMapping[day.day] || day.day,
+                  enabled: day.enabled,
+                  ranges: day.ranges || [{ start: "", end: "" }]
+                })),
+                slotDurationMin: availabilityData.slotDurationMin,
+                patients: dataContext.doctorPatients || [],
+                isLoadingAvailability: false,
+                availabilityError: null,
+              };
+            }
+            
             return {
-              availability: availabilityData.weeklyAvailability.map((day: any) => ({
-                day: dayMapping[day.day] || day.day,
-                enabled: day.enabled,
-                ranges: day.ranges || [{ start: "", end: "" }]
-              })),
-              slotDurationMin: availabilityData.slotDurationMin,
               patients: dataContext.doctorPatients || [],
+              slotDurationMin: null,
               isLoadingAvailability: false,
               availabilityError: null,
+              availability: [
+                { day: "Lunes", enabled: false, ranges: [{ start: "", end: "" }] },
+                { day: "Martes", enabled: false, ranges: [{ start: "", end: "" }] },
+                { day: "Miércoles", enabled: false, ranges: [{ start: "", end: "" }] },
+                { day: "Jueves", enabled: false, ranges: [{ start: "", end: "" }] },
+                { day: "Viernes", enabled: false, ranges: [{ start: "", end: "" }] },
+                { day: "Sábado", enabled: false, ranges: [{ start: "", end: "" }] },
+                { day: "Domingo", enabled: false, ranges: [{ start: "", end: "" }] },
+              ],
             };
+          } catch (error) {
+            console.warn("Could not get dataMachine snapshot:", error);
+            return {};
           }
-          
-          return {
-            patients: dataContext.doctorPatients || [],
-            slotDurationMin: null,
-            isLoadingAvailability: false,
-            availabilityError: null,
-            availability: [
-              { day: "Lunes", enabled: false, ranges: [{ start: "", end: "" }] },
-              { day: "Martes", enabled: false, ranges: [{ start: "", end: "" }] },
-              { day: "Miércoles", enabled: false, ranges: [{ start: "", end: "" }] },
-              { day: "Jueves", enabled: false, ranges: [{ start: "", end: "" }] },
-              { day: "Viernes", enabled: false, ranges: [{ start: "", end: "" }] },
-              { day: "Sábado", enabled: false, ranges: [{ start: "", end: "" }] },
-              { day: "Domingo", enabled: false, ranges: [{ start: "", end: "" }] },
-            ],
-          };
-        } catch (error) {
-          console.warn("Could not get dataMachine snapshot:", error);
-          return {};
+        }),
+        ({ self }) => {
+          self.send({ type: "PATIENTS_LOADED" });
         }
-      }),
+      ],
     },
   },
 });

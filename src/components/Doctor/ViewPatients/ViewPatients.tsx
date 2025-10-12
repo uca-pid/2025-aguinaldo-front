@@ -23,7 +23,7 @@ import { useDataMachine } from "#/providers/DataProvider"
 
 const ViewPatients: React.FC = () => {
     const { dataState, dataSend } = useDataMachine();
-    const { uiSend, doctorState, doctorSend } = useMachines();
+    const { doctorState, doctorSend } = useMachines();
 
     const doctorContext = doctorState.context;
     const dataContext = dataState.context;
@@ -34,8 +34,7 @@ const ViewPatients: React.FC = () => {
     const searchTerm = doctorContext.patientSearchTerm;
 
     const handlePatientClick = (patient: Patient) => {
-        doctorSend({ type: "SELECT_PATIENT", patient });
-        uiSend({ type: "NAVIGATE", to: `/patient-detail` });
+        doctorSend({ type: "SELECT_PATIENT", patientId: patient.id });
     };
 
     const filteredPatients = patients.filter(patient =>
