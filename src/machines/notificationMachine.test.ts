@@ -430,6 +430,36 @@ describe('notificationMachine', () => {
       expect(actor.getSnapshot().context.notifications).toEqual([]);
       expect(actor.getSnapshot().context.currentNotificationIndex).toBe(0);
     });
+
+    it('should handle CLEAR_ACCESS_TOKEN event and reset all state', () => {
+      // Set up a machine with various state
+      actor = createActor(notificationMachine, {
+        input: {
+          notifications: [
+            { id: '1', message: 'Test', userId: 'user1' },
+            { id: '2', message: 'Test 2', userId: 'user1' }
+          ],
+          currentNotificationIndex: 1,
+          isLoading: true,
+          isDeletingNotification: true,
+          isDeletingAllNotifications: true,
+          error: 'Some error',
+          accessToken: 'token'
+        }
+      });
+      actor.start();
+
+      actor.send({ type: 'CLEAR_ACCESS_TOKEN' });
+
+      const context = actor.getSnapshot().context;
+      expect(context.notifications).toEqual([]);
+      expect(context.currentNotificationIndex).toBe(0);
+      expect(context.isLoading).toBe(false);
+      expect(context.isDeletingNotification).toBe(false);
+      expect(context.isDeletingAllNotifications).toBe(false);
+      expect(context.error).toBeNull();
+      expect(context.accessToken).toBeNull();
+    });
   });
 
   describe('context management', () => {
