@@ -34,8 +34,11 @@ const PatientDetails: React.FC = () => {
 
   const medicalHistories: MedicalHistory[] = medicalHistoryContext.medicalHistories || [];
   
-  // Check if we're in the process of selecting a patient
   const isSelectingPatient = doctorState.matches({ patientManagement: 'selectingPatient' });
+  
+  // Check if we're on the patient-detail route without a patient ID
+  const isPatientDetailRoute = window.location.pathname === '/patient-detail';
+  const hasPatientIdParam = window.location.search.includes('patientId=');
 
   const handleEditMedicalHistory = (turnId: string, currentContent: string) => {
     medicalHistorySend({
@@ -280,7 +283,18 @@ const PatientDetails: React.FC = () => {
     );
   }
 
-  if (!patient) {
+  // Only show "not found" if:
+  // 1. We're in idle state (not actively selecting)
+  // 2. There's a selectedPatientId (we tried to find someone)
+  // 3. But no patient was found (selectedPatient is null)
+  // 4. AND we had attempts to find the patient (patientSelectionAttempts > 0)
+  // OR if we're on the patient-detail route without a patientId parameter
+  const shouldShowNotFound = !patient && (
+    (doctorState.matches({ patientManagement: 'idle' }) && doctorContext.selectedPatientId && doctorContext.patientSelectionAttempts > 0) ||
+    (isPatientDetailRoute && !hasPatientIdParam && !doctorContext.selectedPatientId)
+  );
+  
+  if (shouldShowNotFound) {
     return (
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Box className="patient-details-container">
@@ -336,6 +350,11 @@ const PatientDetails: React.FC = () => {
         </Box>
       </LocalizationProvider>
     );
+  }
+  
+  // If patient is null for any other reason, don't show anything (navigation in progress)
+  if (!patient) {
+    return null;
   }
 
   return (
