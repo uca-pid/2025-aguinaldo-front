@@ -38,7 +38,7 @@ describe('sideBarMenuUtils', () => {
     it('should return correct menu items for doctor', () => {
       const menuItems = getDoctorMenuItems(mockHandleLogout)
 
-      expect(menuItems).toHaveLength(7)
+      expect(menuItems).toHaveLength(8)
       expect(menuItems[0]).toEqual({
         id: 'dashboard',
         title: 'Inicio',
@@ -70,12 +70,18 @@ describe('sideBarMenuUtils', () => {
         path: '/doctor/turns-modifications'
       })
       expect(menuItems[5]).toEqual({
+        id: 'metrics',
+        title: 'Métricas',
+        iconComponent: expect.any(Function),
+        path: '/doctor/metrics'
+      })
+      expect(menuItems[6]).toEqual({
         id: 'profile',
         title: 'Mi Perfil',
         iconComponent: expect.any(Function),
         path: '/profile'
       })
-      expect(menuItems[6]).toEqual({
+      expect(menuItems[7]).toEqual({
         id: 'logout',
         title: 'Cerrar Sesión',
         iconComponent: expect.any(Function),
