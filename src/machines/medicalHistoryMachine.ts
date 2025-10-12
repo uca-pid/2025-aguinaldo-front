@@ -72,6 +72,10 @@ export const medicalHistoryMachine = createMachine({
       on: {
         LOAD_PATIENT_MEDICAL_HISTORY: {
           target: 'loadingMedicalHistory',
+          guard: ({ context, event }) => {
+            // Only load if it's a different patient or if we don't have data yet
+            return context.currentPatientId !== event.patientId || context.medicalHistories.length === 0;
+          },
           actions: assign({
             currentPatientId: ({ event }) => event.patientId,
             accessToken: ({ event }) => event.accessToken,
@@ -183,6 +187,8 @@ export const medicalHistoryMachine = createMachine({
               newHistoryContent: () => '',
               currentTurnId: () => null,
               currentTurnInfo: () => null,
+              selectedHistory: () => null,
+              editingContent: () => '',
             }),
             ({ context }) => {
               const turnInfo = context.currentTurnInfo;
@@ -233,6 +239,8 @@ export const medicalHistoryMachine = createMachine({
               error: ({ event }) => `Error adding medical history entry for turn: ${event.error}`,
               currentTurnId: () => null,
               currentTurnInfo: () => null,
+              selectedHistory: () => null,
+              editingContent: () => '',
             }),
             ({ context, event }) => {
               const error = event.error as Error | { message?: string } | unknown;
@@ -288,7 +296,8 @@ export const medicalHistoryMachine = createMachine({
                 context.medicalHistories.map(h =>
                   h.id === event.output.id ? event.output : h
                 ),
-              selectedHistory: ({ event }) => event.output,
+              selectedHistory: () => null,
+              editingContent: () => '',
             }),
             () => {
               orchestrator.sendToMachine(UI_MACHINE_ID, {
@@ -304,6 +313,8 @@ export const medicalHistoryMachine = createMachine({
           actions: [
             assign({
               error: ({ event }) => `Error updating medical history entry: ${event.error}`,
+              selectedHistory: () => null,
+              editingContent: () => '',
             }),
             () => {
               orchestrator.sendToMachine(UI_MACHINE_ID, {
