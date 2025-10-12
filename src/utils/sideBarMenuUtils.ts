@@ -6,7 +6,8 @@ import {
   Schedule as ScheduleIcon,
   Notifications as NotificationsIcon,
   Person as PersonIcon,
-  ExitToApp as ExitIcon
+  ExitToApp as ExitIcon,
+  BarChart as BarChartIcon
 } from '@mui/icons-material';
 
 export interface MenuItem {
@@ -26,6 +27,7 @@ export const iconMap = {
   Notifications: NotificationsIcon,
   Person: PersonIcon,
   ExitToApp: ExitIcon,
+  BarChart: BarChartIcon,
 };
 
 export const getDoctorMenuItems = (handleLogout: () => void): MenuItem[] => [
@@ -58,6 +60,12 @@ export const getDoctorMenuItems = (handleLogout: () => void): MenuItem[] => [
     title: 'Solicitudes',
     iconComponent: NotificationsIcon,
     path: '/doctor/turns-modifications'
+  },
+  {
+    id: 'metrics',
+    title: 'Métricas',
+    iconComponent: BarChartIcon,
+    path: '/doctor/metrics'
   },
   {
     id: 'profile',
