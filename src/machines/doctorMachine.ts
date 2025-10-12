@@ -70,7 +70,8 @@ export type DoctorMachineEvent =
   | { type: "START_EDIT_HISTORY" }
   | { type: "UPDATE_HISTORY"; value: string }
   | { type: "SAVE_HISTORY"; turnId?: string }
-  | { type: "PATIENTS_LOADED" };
+  | { type: "PATIENTS_LOADED" }
+  | { type: "DATA_LOADED" };
 
 const doctorMachine = createMachine({
   id: "doctor",
