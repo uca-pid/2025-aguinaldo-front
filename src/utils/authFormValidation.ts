@@ -1,13 +1,6 @@
-import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import dayjs from "./dayjs.config";
 import type { AuthMachineContext } from "../machines/authMachine";
 
-// Extend dayjs with plugins
-dayjs.extend(customParseFormat);
-dayjs.extend(isSameOrAfter);
-dayjs.extend(isSameOrBefore);
 
 export const validateField = (key: string, value: any, context: AuthMachineContext) => {
   if (context.mode === "login" && !["email", "password"].includes(key)) {

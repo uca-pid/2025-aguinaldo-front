@@ -1,5 +1,6 @@
 import { API_CONFIG, buildApiUrl, getAuthenticatedFetchOptions } from '../../config/api';
 import { orchestrator } from '#/core/Orchestrator';
+import dayjs from '#/utils/dayjs.config';
 import type {
   Doctor,
   TurnCreateRequest,
@@ -8,10 +9,8 @@ import type {
 } from '../models/Turn';
 import type { TurnModifyRequest } from '../models/TurnModifyRequest';
 
-// Utility function to handle authentication errors centrally
 async function handleAuthError(error: Response, retryFn?: () => Promise<any>): Promise<void> {
   if (error.status === 401) {
-    // Send auth error event to orchestrator
     orchestrator.sendToMachine('auth', { 
       type: 'HANDLE_AUTH_ERROR', 
       error,
@@ -254,9 +253,8 @@ export class TurnService {
   }
 
   static async getAvailableDates(doctorId: string, accessToken: string): Promise<string[]> {
-    // Use available-slots endpoint with a 60-day range and extract unique dates
-    const fromDate = new Date().toISOString().split('T')[0];
-    const toDate = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const fromDate = dayjs().tz('America/Argentina/Buenos_Aires').format('YYYY-MM-DD');
+    const toDate = dayjs().tz('America/Argentina/Buenos_Aires').add(60, 'day').format('YYYY-MM-DD');
     
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTOR_AVAILABLE_SLOTS.replace('{doctorId}', doctorId) + `?fromDate=${fromDate}&toDate=${toDate}`);
     

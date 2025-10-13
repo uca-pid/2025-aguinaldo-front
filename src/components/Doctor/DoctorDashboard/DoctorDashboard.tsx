@@ -21,7 +21,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import DashboardCard from "../../shared/DashboardCard/DashboardCard";
 import DashboardUpcomingCard from "../../shared/DashboardUpcomingCard/DashboardUpcomingCard";
-import dayjs from "dayjs";
+import dayjs from "#/utils/dayjs.config";
 import "./DoctorDashboard.css";
 import { useDataMachine } from "#/providers/DataProvider";
 

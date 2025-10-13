@@ -3,6 +3,7 @@ import { MedicalHistory, CreateMedicalHistoryRequest, UpdateMedicalHistoryConten
 import { MedicalHistoryService } from '../service/medical-history-service.service';
 import { orchestrator } from '../core/Orchestrator';
 import { UI_MACHINE_ID } from './uiMachine';
+import { formatDate } from '../utils/dateTimeUtils';
 
 export const MEDICAL_HISTORY_MACHINE_ID = "medicalHistory"; 
 export const MEDICAL_HISTORY_MACHINE_EVENT_TYPES = [
@@ -193,7 +194,7 @@ export const medicalHistoryMachine = createMachine({
             ({ context }) => {
               const turnInfo = context.currentTurnInfo;
               const message = turnInfo 
-                ? `Historia médica agregada exitosamente para ${turnInfo.patientName} - ${new Date(turnInfo.scheduledAt || '').toLocaleDateString()}`
+                ? `Historia médica agregada exitosamente para ${turnInfo.patientName} - ${formatDate(turnInfo.scheduledAt || '')}`
                 : 'Historia médica agregada exitosamente';
               
               console.log('History added successfully, sending notification:', message);

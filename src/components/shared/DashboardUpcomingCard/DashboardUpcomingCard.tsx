@@ -5,7 +5,7 @@ import {
   Typography,
   CircularProgress
 } from "@mui/material";
-import dayjs from "dayjs";
+import dayjs from "#/utils/dayjs.config";
 import "./DashboardUpcomingCard.css";
 
 type CardType = 'patient' | 'doctor';

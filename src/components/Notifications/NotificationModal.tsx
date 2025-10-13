@@ -27,6 +27,7 @@ import {
 } from '@mui/icons-material';
 import { useMachines } from '#/providers/MachineProvider';
 import { NotificationResponse } from '#/service/notification-service.service';
+import { formatDateTime } from '#/utils/dateTimeUtils';
 
 interface NotificationModalProps {
   open: boolean;
@@ -309,13 +310,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ open, onClose }) 
                                 fontWeight: 500,
                               }}
                             >
-                              {new Date(notification.createdAt).toLocaleString('es-AR', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
+                              {formatDateTime(notification.createdAt)}
                             </Typography>
                           </Box>
                         )}

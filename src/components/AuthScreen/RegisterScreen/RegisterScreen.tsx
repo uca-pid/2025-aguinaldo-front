@@ -22,7 +22,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalHospital, Person } from "@mui/icons-material";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import Logo from "#/assets/favicon.svg";
-import dayjs from 'dayjs';
+import dayjs from '#/utils/dayjs.config';
 import 'dayjs/locale/es';
 import "./RegisterScreen.css";
 
