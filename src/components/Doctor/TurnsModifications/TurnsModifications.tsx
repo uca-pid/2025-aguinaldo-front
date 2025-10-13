@@ -2,7 +2,7 @@ import {
   Box, Typography, Avatar, Chip, Paper, CircularProgress
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
-import dayjs from "dayjs";
+import dayjs from "#/utils/dayjs.config";
 import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import { Patient } from "#/models/Doctor"

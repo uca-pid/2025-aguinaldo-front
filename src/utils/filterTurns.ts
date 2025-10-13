@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import dayjs from "./dayjs.config";
 
 export function filterTurns (myTurns: any, statusFilter: any) {
     return myTurns.filter((turn: any) => {

@@ -1,5 +1,6 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "../utils/dayjs.config";
+import { Dayjs } from "dayjs";
 import { createTurn, cancelTurn } from "../utils/MachineUtils/turnMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { Doctor, TurnResponse } from "../models/Turn";

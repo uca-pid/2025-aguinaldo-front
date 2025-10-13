@@ -2,6 +2,7 @@ import { DoctorService, type DoctorAvailabilityRequest } from "../../service/doc
 import { MedicalHistoryService } from "../../service/medical-history-service.service";
 import type { Patient } from "../../models/Doctor";
 import type { MedicalHistory, CreateMedicalHistoryRequest } from "../../models/MedicalHistory";
+import dayjs from "#/utils/dayjs.config";
 
 export interface UpdateMedicalHistoryParams {
   accessToken: string;
@@ -150,7 +151,7 @@ export const updateMedicalHistory = async ({accessToken, doctorId, patientId, me
       if (historyEntries.length > 0) {
         // Update the most recent entry
         const mostRecentEntry = historyEntries.sort((a, b) => 
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          dayjs(b.updatedAt).valueOf() - dayjs(a.updatedAt).valueOf()
         )[0];
         
         console.log('Updating most recent entry:', mostRecentEntry.id);

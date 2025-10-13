@@ -1,4 +1,5 @@
 import type { MedicalHistory } from './MedicalHistory';
+import dayjs from '#/utils/dayjs.config';
 
 export interface Patient {
   id: string;
@@ -22,12 +23,12 @@ export interface ApiErrorResponse {
 export const calculateAge = (birthdate: string | undefined): number | null => {
   if (!birthdate) return null;
   
-  const today = new Date();
-  const birth = new Date(birthdate);
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
+  const today = dayjs().tz('America/Argentina/Buenos_Aires');
+  const birth = dayjs(birthdate).tz('America/Argentina/Buenos_Aires');
+  let age = today.year() - birth.year();
+  const monthDiff = today.month() - birth.month();
   
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+  if (monthDiff < 0 || (monthDiff === 0 && today.date() < birth.date())) {
     age--;
   }
   

@@ -3,6 +3,7 @@ import { StorageService } from '../service/storage-service.service';
 import { orchestrator } from "#/core/Orchestrator";
 import { DATA_MACHINE_ID } from "./dataMachine";
 import { UI_MACHINE_ID } from "./uiMachine";
+import dayjs from "#/utils/dayjs.config";
 
 export const FILES_MACHINE_ID = "files";
 export const FILES_MACHINE_EVENT_TYPES = [
@@ -121,7 +122,7 @@ export const filesMachine = createMachine({
                 fileInfo: {
                   url: event.output.url,
                   fileName: event.output.fileName,
-                  uploadedAt: new Date().toISOString()
+                  uploadedAt: dayjs().toISOString()
                 }
               };
               
