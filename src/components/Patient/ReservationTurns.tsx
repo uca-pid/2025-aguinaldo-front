@@ -11,7 +11,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { DateCalendar } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
-import dayjs from "dayjs";
+import dayjs from "#/utils/dayjs.config";
 import Event from "@mui/icons-material/Event";
 import "./ReservationTurns.css";
 

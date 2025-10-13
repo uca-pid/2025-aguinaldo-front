@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { filterAvailableTimeSlots, formatDateTime, formatTime, shouldDisableDate } from './dateTimeUtils'
-import dayjs from 'dayjs'
+import dayjs from './dayjs.config'
 
-// Mock dayjs
-vi.mock('dayjs', () => {
+// Mock dayjs with timezone support
+vi.mock('./dayjs.config', () => {
   const mockDayjs = vi.fn()
 
-  // Create a mock "now" instance
+  // Create a mock "now" instance with timezone support
   const createNowInstance = () => ({
     isSame: vi.fn((other, unit) => {
       if (unit === 'day') {
@@ -15,6 +15,7 @@ vi.mock('dayjs', () => {
       return false
     }),
     isAfter: vi.fn().mockReturnValue(false),
+    tz: vi.fn().mockReturnThis(),
     format: vi.fn().mockReturnValue('2024-01-15 10:00'),
     day: vi.fn().mockReturnValue(1),
     __isNow: true
@@ -50,6 +51,7 @@ vi.mock('dayjs', () => {
         }
         return true
       }),
+      tz: vi.fn().mockReturnThis(),
       format: vi.fn().mockImplementation((fmt) => {
         if (fmt === 'YYYY-MM-DD') return date.split(' ')[0]
         if (fmt === 'DD/MM/YYYY HH:mm') return '15/01/2024 10:00'

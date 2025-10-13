@@ -1,0 +1,53 @@
+@import "../../shared/Dashboard/Dashboard.css";
+
+.doctor-header-avatar {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+}
+
+.doctor-header-subtitle {
+  color: #64748b !important;
+}
+
+
+.back-button-container {
+  margin-bottom: 16px;
+}
+
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+
+.additional-metrics-container {
+  margin-top: 24px !important;
+}
+
+
+.summary-section {
+  margin-top: 32px !important;
+}
+
+.summary-title {
+  margin-bottom: 16px !important;
+  font-weight: bold !important;
+}
+
+.summary-item {
+  margin-bottom: 8px !important;
+}
+
+.summary-item:last-child {
+  margin-bottom: 0 !important;
+}

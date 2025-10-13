@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+import "./utils/dayjs.config";
 import App from "./App";
 import { MachineProvider } from "./providers/MachineProvider";
 import { AuthProvider } from "./providers/AuthProvider";
@@ -15,17 +16,14 @@ import AuthCheckingScreen from "./components/shared/LoadingScreens/AuthCheckingS
 const AppRouter = () => {
   const { authState } = useAuthMachine();
 
-  // Show auth checking loading when the app is checking localStorage for existing auth
   if (authState?.value === 'checkingAuth') {
     return <AuthCheckingScreen />;
   }
 
-  // Show login loading when authenticating
   if (authState?.context?.loading) {
     return <LoginLoadingScreen />;
   }
 
-  // Show logout loading when logging out
   if (authState?.context?.loggingOut) {
     return <LogoutLoadingScreen />;
   }

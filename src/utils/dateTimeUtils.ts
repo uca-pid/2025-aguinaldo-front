@@ -1,17 +1,14 @@
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "./dayjs.config";
+import { Dayjs } from "dayjs";
 
-/**
- * Utility functions for date and time operations
- */
 
-/**
- * Filter available time slots to exclude past times
- */
+
+
 export const filterAvailableTimeSlots = (timeSlots: string[]): string[] => {
-  const now = dayjs();
+  const now = dayjs().tz('America/Argentina/Buenos_Aires');
   
   return timeSlots.filter((timeSlot: string) => {
-    const slotDateTime = dayjs(timeSlot);
+    const slotDateTime = dayjs(timeSlot).tz('America/Argentina/Buenos_Aires');
     
     if (slotDateTime.isSame(now, 'day')) {
       return slotDateTime.isAfter(now);
@@ -21,23 +18,28 @@ export const filterAvailableTimeSlots = (timeSlots: string[]): string[] => {
   });
 };
 
-/**
- * Format datetime for display
- */
+
 export const formatDateTime = (dateTime: string, format: string = 'DD/MM/YYYY HH:mm'): string => {
-  return dayjs(dateTime).format(format);
+  return dayjs(dateTime).tz('America/Argentina/Buenos_Aires').format(format);
 };
 
-/**
- * Format time only for display
- */
+
 export const formatTime = (dateTime: string): string => {
-  return dayjs(dateTime).format('HH:mm');
+  return dayjs(dateTime).tz('America/Argentina/Buenos_Aires').format('HH:mm');
 };
 
-/**
- * Check if a date should be disabled in calendar
- */
+export const formatDate = (dateTime: string): string => {
+  return dayjs(dateTime).tz('America/Argentina/Buenos_Aires').format('DD/MM/YYYY');
+};
+
+export const dayjsArgentina = (dateTime?: string | Date | dayjs.Dayjs) => {
+  return dayjs(dateTime).tz('America/Argentina/Buenos_Aires');
+};
+
+export const nowArgentina = () => {
+  return dayjs().tz('America/Argentina/Buenos_Aires');
+};
+
 export const shouldDisableDate = (date: Dayjs, availableDates: string[]): boolean => {
   const dateString = date.format('YYYY-MM-DD');
   return !availableDates.includes(dateString);

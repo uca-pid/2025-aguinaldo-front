@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import dayjs from "./dayjs.config";
 
 export function filterTurns (myTurns: any, statusFilter: any) {
     return myTurns.filter((turn: any) => {
@@ -41,7 +41,7 @@ export function turnsOfTheMonth (myTurns: any) {
       const isCurrentMonth = turnDate.month() === currentMonth && turnDate.year() === currentYear;
       const isPast = turnDate.date() <= currentDay;
       
-      return isCurrentMonth && isPast;
+      return isCurrentMonth && isPast && turn.status != 'CANCELED';
     }).length;
 }
 

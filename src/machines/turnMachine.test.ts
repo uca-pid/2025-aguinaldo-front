@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createActor } from 'xstate';
-import dayjs from 'dayjs';
+import dayjs from '../utils/dayjs.config';
 
 // Mock dependencies BEFORE importing the machine
 vi.mock('#/core/Orchestrator', () => ({
