@@ -508,16 +508,7 @@ export const turnMachine = createMachine({
                   isCreatingTurn: false,
                   error: null,
                 }),
-                () => {
-                  orchestrator.sendToMachine(DATA_MACHINE_ID, { type: "LOAD_MY_TURNS" });
-                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
-                    type: "OPEN_SNACKBAR", 
-                    message: "Turno creado exitosamente", 
-                    severity: "success" 
-                  });
-                  orchestrator.sendToMachine(UI_MACHINE_ID, { type: "NAVIGATE", to: "/patient" });
-                },
-                // Reset the form after successful creation
+
                 assign({
                   takeTurn: {
                     professionSelected: "",
@@ -527,8 +518,22 @@ export const turnMachine = createMachine({
                     timeSelected: null,
                     scheduledAt: null,
                     reason: "",
-                  }
-                })
+                  },
+                  availableDates: [],
+                  isLoadingAvailableDates: false,
+                }),
+
+                () => {
+                  orchestrator.sendToMachine("turn", { type: "RESET_TAKE_TURN" });
+                  
+                  orchestrator.sendToMachine(DATA_MACHINE_ID, { type: "LOAD_MY_TURNS" });
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: "Turno creado exitosamente", 
+                    severity: "success" 
+                  });
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { type: "NAVIGATE", to: "/patient" });
+                },                
               ],
             },
             onError: {
