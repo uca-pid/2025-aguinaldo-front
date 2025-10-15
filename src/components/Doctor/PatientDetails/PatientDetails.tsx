@@ -34,7 +34,7 @@ const PatientDetails: React.FC = () => {
 
   const medicalHistories: MedicalHistory[] = medicalHistoryContext.medicalHistories || [];
   
-  const isSelectingPatient = doctorState.matches({ patientManagement: 'selectingPatient' });
+  //const isSelectingPatient = doctorState.matches({ patientManagement: 'selectingPatient' });
   
   // Check if we're on the patient-detail route without a patient ID
   const isPatientDetailRoute = window.location.pathname === '/patient-detail';
@@ -226,7 +226,7 @@ const PatientDetails: React.FC = () => {
   };
 
   // Show loading state if data is loading OR if we're actively selecting a patient
-  if (isLoading || isSelectingPatient) {
+  if (isLoading ) {
     return (
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Box className="patient-details-container">
