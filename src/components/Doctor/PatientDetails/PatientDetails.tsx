@@ -23,7 +23,7 @@ const PatientDetails: React.FC = () => {
   const authContext = authState?.context;
   const medicalHistoryContext = medicalHistoryState.context;
 
-  const isLoading = dataContext.loading.doctorPatients;
+  const isSelectingPatient = doctorState.matches({ patientManagement: 'selectingPatient' });
   const error = dataContext.errors.doctorPatients;
 
   const patient = doctorContext.selectedPatient;
@@ -225,32 +225,6 @@ const PatientDetails: React.FC = () => {
     }
   };
 
-  // Show loading state if data is loading OR if we're actively selecting a patient
-  if (isLoading ) {
-    return (
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <Box className="patient-details-container">
-          <Box className="patient-details-loading" sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            minHeight: '60vh',
-            gap: 2
-          }}>
-            <CircularProgress size={60} thickness={4} />
-            <Typography variant="h5" gutterBottom sx={{ mt: 2, fontWeight: 500 }}>
-              Cargando información del paciente...
-            </Typography>
-            <Typography variant="body2" color="textSecondary">
-              Por favor espere un momento
-            </Typography>
-          </Box>
-        </Box>
-      </LocalizationProvider>
-    );
-  }
-
   if (error) {
     return (
       <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -402,64 +376,76 @@ const PatientDetails: React.FC = () => {
               </Typography>
               <Divider sx={{ mb: 2 }} />
               
-              <Box className="patient-details-info-grid">
-                <Box className="patient-details-info-item">
-                  <Typography variant="body2" color="textSecondary" className="patient-details-label">
-                    <BadgeOutlined fontSize="small" sx={{ mr: 1 }} />
-                    DNI
-                  </Typography>
-                  <Typography variant="body1" className="patient-details-value">
-                    {patient.dni}
-                  </Typography>
+              {isSelectingPatient ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress />
                 </Box>
-
-                <Box className="patient-details-info-item">
-                  <Typography variant="body2" color="textSecondary" className="patient-details-label">
-                    <EmailOutlined fontSize="small" sx={{ mr: 1 }} />
-                    Email
-                  </Typography>
-                  <Typography variant="body1" className="patient-details-value">
-                    {patient.email}
-                  </Typography>
-                </Box>
-
-                {patient.phone && (
+              ) : patient ? (
+                <Box className="patient-details-info-grid">
                   <Box className="patient-details-info-item">
                     <Typography variant="body2" color="textSecondary" className="patient-details-label">
-                      <PhoneOutlined fontSize="small" sx={{ mr: 1 }} />
-                      Teléfono
+                      <BadgeOutlined fontSize="small" sx={{ mr: 1 }} />
+                      DNI
                     </Typography>
                     <Typography variant="body1" className="patient-details-value">
-                      {patient.phone}
+                      {patient.dni}
                     </Typography>
                   </Box>
-                )}
 
-                <Box className="patient-details-info-item">
-                  <Typography variant="body2" color="textSecondary" className="patient-details-label">
-                    <CakeOutlined fontSize="small" sx={{ mr: 1 }} />
-                    Fecha de Nacimiento
-                  </Typography>
-                  <Typography variant="body1" className="patient-details-value">
-                    {formatBirthdate(patient.birthdate)}
-                    {calculateAge(patient.birthdate) && (
-                      <Typography variant="body2" color="textSecondary" component="span" sx={{ ml: 1 }}>
-                        ({calculateAge(patient.birthdate)} años)
+                  <Box className="patient-details-info-item">
+                    <Typography variant="body2" color="textSecondary" className="patient-details-label">
+                      <EmailOutlined fontSize="small" sx={{ mr: 1 }} />
+                      Email
+                    </Typography>
+                    <Typography variant="body1" className="patient-details-value">
+                      {patient.email}
+                    </Typography>
+                  </Box>
+
+                  {patient.phone && (
+                    <Box className="patient-details-info-item">
+                      <Typography variant="body2" color="textSecondary" className="patient-details-label">
+                        <PhoneOutlined fontSize="small" sx={{ mr: 1 }} />
+                        Teléfono
                       </Typography>
-                    )}
-                  </Typography>
-                </Box>
+                      <Typography variant="body1" className="patient-details-value">
+                        {patient.phone}
+                      </Typography>
+                    </Box>
+                  )}
 
-                <Box className="patient-details-info-item">
-                  <Typography variant="body2" color="textSecondary" className="patient-details-label">
-                    {getGenderIcon(patient.gender)}
-                    <span style={{ marginLeft: 8 }}>Género</span>
-                  </Typography>
-                  <Typography variant="body1" className="patient-details-value">
-                    {getGenderLabel(patient.gender)}
-                  </Typography>
+                  <Box className="patient-details-info-item">
+                    <Typography variant="body2" color="textSecondary" className="patient-details-label">
+                      <CakeOutlined fontSize="small" sx={{ mr: 1 }} />
+                      Fecha de Nacimiento
+                    </Typography>
+                    <Typography variant="body1" className="patient-details-value">
+                      {formatBirthdate(patient.birthdate)}
+                      {calculateAge(patient.birthdate) && (
+                        <Typography variant="body2" color="textSecondary" component="span" sx={{ ml: 1 }}>
+                          ({calculateAge(patient.birthdate)} años)
+                        </Typography>
+                      )}
+                    </Typography>
+                  </Box>
+
+                  <Box className="patient-details-info-item">
+                    <Typography variant="body2" color="textSecondary" className="patient-details-label">
+                      {getGenderIcon(patient.gender)}
+                      <span style={{ marginLeft: 8 }}>Género</span>
+                    </Typography>
+                    <Typography variant="body1" className="patient-details-value">
+                      {getGenderLabel(patient.gender)}
+                    </Typography>
+                  </Box>
                 </Box>
-              </Box>
+              ) : (
+                <Paper elevation={0} sx={{ p: 3, textAlign: 'center', backgroundColor: '#f8fafc' }}>
+                  <Typography variant="body2" color="textSecondary">
+                    No se pudo cargar la información del paciente.
+                  </Typography>
+                </Paper>
+              )}
             </Paper>
           </Box>
 
