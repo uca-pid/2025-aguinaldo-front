@@ -74,7 +74,6 @@ export const uiMachine = createMachine({
               currentPath: ({ event }: any) => event.initialPath || '/',
             }),
             ({ event }: any) => {
-              // Handle initial path if it's a patient detail page
               const initialPath = event.initialPath || '/';
               if (initialPath.startsWith('/patient-detail?patientId=')) {
                 const patientId = initialPath.split('patientId=')[1];
@@ -84,6 +83,26 @@ export const uiMachine = createMachine({
                     patientId: patientId
                   });
                 }
+              }
+              try {
+               
+                if ((initialPath.startsWith('/patient/view-turns') || initialPath.startsWith('/doctor/view-turns')) && initialPath.includes('turnId=')) {
+                  const query = initialPath.split('?')[1] || '';
+                  const params = new URLSearchParams(query);
+                  const turnId = params.get('turnId');
+                  if (turnId) {
+                    orchestrator.send({
+                      type: 'OPEN_CANCEL_TURN_DIALOG',
+                      turnId,
+                      title: 'Cancelar Turno',
+                      message: '¿Estás seguro de que quieres cancelar este turno? Esta acción no se puede deshacer.',
+                      confirmButtonText: 'Cancelar Turno',
+                      confirmButtonColor: 'error'
+                    });
+                  }
+                }
+              } catch (e) {
+               
               }
             }
           ],
