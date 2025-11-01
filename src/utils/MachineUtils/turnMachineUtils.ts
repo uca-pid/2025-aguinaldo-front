@@ -29,6 +29,11 @@ export interface CompleteTurnParams {
   turnId: string;
 }
 
+export interface NoShowTurnParams {
+  accessToken: string;
+  turnId: string;
+}
+
 export interface ModifyTurnParams {
   accessToken: string;
   turnId: string;
@@ -100,6 +105,25 @@ export const completeTurn = async ({ accessToken, turnId }: CompleteTurnParams):
   if (!response.ok) {
     const errorData = await response.text();
     throw new Error(`Failed to complete turn: ${errorData}`);
+  }
+};
+
+/**
+ * Mark a turn as no-show
+ */
+export const noShowTurn = async ({ accessToken, turnId }: NoShowTurnParams): Promise<void> => {
+  const url = buildApiUrl(`/api/turns/${turnId}/no-show`);
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    throw new Error(`Failed to mark turn as no-show: ${errorData}`);
   }
 };
 

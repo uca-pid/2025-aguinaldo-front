@@ -1,7 +1,7 @@
 import { createMachine, assign, fromPromise } from "xstate";
 import dayjs from "../utils/dayjs.config";
 import { Dayjs } from "dayjs";
-import { createTurn, cancelTurn, completeTurn } from "../utils/MachineUtils/turnMachineUtils";
+import { createTurn, cancelTurn, completeTurn, noShowTurn } from "../utils/MachineUtils/turnMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { Doctor, TurnResponse } from "../models/Turn";
 import { DATA_MACHINE_ID } from "./dataMachine";
@@ -22,6 +22,7 @@ export const TURN_MACHINE_EVENT_TYPES = [
   "CREATE_TURN",
   "CANCEL_TURN",
   "COMPLETE_TURN",
+  "NO_SHOW_TURN",
   "CLEAR_CANCEL_SUCCESS",
   "SUBMIT_MODIFY_REQUEST",
   "LOAD_MODIFY_AVAILABLE_SLOTS",
@@ -87,6 +88,7 @@ export type TurnMachineEvent =
   | { type: "CREATE_TURN" }
   | { type: "CANCEL_TURN"; turnId: string }
   | { type: "COMPLETE_TURN"; turnId: string }
+  | { type: "NO_SHOW_TURN"; turnId: string }
   | { type: "CLEAR_CANCEL_SUCCESS" }
   | { type: "SUBMIT_MODIFY_REQUEST" }
   | { type: "LOAD_MODIFY_AVAILABLE_SLOTS"; doctorId: string; date: string }
@@ -657,6 +659,56 @@ export const turnMachine = createMachine({
             },
           },
         },
+        noShowingTurn: {
+          entry: assign({
+            isCancellingTurn: true,
+          }),
+          invoke: {
+            src: fromPromise(async ({ input }: { input: { accessToken: string; turnId: string } }) => {
+              return await noShowTurn(input);
+            }),
+            input: ({ context }) => ({
+              accessToken: context.accessToken!,
+              turnId: context.cancellingTurnId!
+            }),
+            onDone: {
+              target: "idle",
+              actions: [
+                assign({
+                  isCancellingTurn: false,
+                  cancellingTurnId: null,
+                  cancelSuccess: "Turno marcado como no asistió",
+                }),
+                () => {
+                  orchestrator.sendToMachine(DATA_MACHINE_ID, { type: "LOAD_MY_TURNS" });
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: "Turno marcado como no asistió exitosamente", 
+                    severity: "info" 
+                  });
+                }
+              ],
+            },
+            onError: {
+              target: "idle",
+              actions: [
+                assign({
+                  isCancellingTurn: false,
+                  cancellingTurnId: null,
+                  error: ({ event }) => (event.error as Error)?.message || "Error al marcar el turno como no asistió",
+                }),
+                ({ event }) => {
+                  const errorMessage = (event.error as Error)?.message || "Error al marcar el turno como no asistió";
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: errorMessage, 
+                    severity: "error" 
+                  });
+                }
+              ],
+            },
+          },
+        },
       },
     },
   },
@@ -670,6 +722,12 @@ export const turnMachine = createMachine({
     },
     COMPLETE_TURN: {
       target: ".dataManagement.completingTurn",
+      actions: assign({
+        cancellingTurnId: ({ event }) => event.turnId,
+      }),
+    },
+    NO_SHOW_TURN: {
+      target: ".dataManagement.noShowingTurn",
       actions: assign({
         cancellingTurnId: ({ event }) => event.turnId,
       }),

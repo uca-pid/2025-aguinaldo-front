@@ -30,9 +30,9 @@ export default function ConfirmationModal() {
                 turnId: dialogData.turnId 
             });
         } else if (action === 'no_show_turn' && dialogData.turnId) {
-            // For no-show, we use cancel turn endpoint
+            // For no-show, we use the no-show endpoint
             turnSend({ 
-                type: "CANCEL_TURN", 
+                type: "NO_SHOW_TURN", 
                 turnId: dialogData.turnId 
             });
         } else if (action === 'approve' && dialogData.requestId) {
