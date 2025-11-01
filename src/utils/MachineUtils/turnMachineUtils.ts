@@ -24,6 +24,11 @@ export interface CancelTurnParams {
   turnId: string;
 }
 
+export interface CompleteTurnParams {
+  accessToken: string;
+  turnId: string;
+}
+
 export interface ModifyTurnParams {
   accessToken: string;
   turnId: string;
@@ -76,6 +81,25 @@ export const cancelTurn = async ({ accessToken, turnId }: CancelTurnParams): Pro
   if (!response.ok) {
     const errorData = await response.text();
     throw new Error(`Failed to cancel turn: ${errorData}`);
+  }
+};
+
+/**
+ * Complete a turn
+ */
+export const completeTurn = async ({ accessToken, turnId }: CompleteTurnParams): Promise<void> => {
+  const url = buildApiUrl(`/api/turns/${turnId}/complete`);
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    throw new Error(`Failed to complete turn: ${errorData}`);
   }
 };
 

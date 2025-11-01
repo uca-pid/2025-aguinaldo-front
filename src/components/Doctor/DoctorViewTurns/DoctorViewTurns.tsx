@@ -62,7 +62,37 @@ const ViewTurns: React.FC = () => {
     return turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt);
   };
 
+  const isPastScheduledTurn = (turn: any) => {
+    return turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt);
+  };
 
+  const handleCompleteTurn = (turnId: string) => {
+    if (!user.accessToken) return;
+    const turnData = filteredTurns.find((turn: any) => turn.id === turnId);
+    uiSend({ 
+      type: "OPEN_COMPLETE_TURN_DIALOG", 
+      turnId,
+      turnData,
+      title: "Marcar Turno como Completado",
+      message: "¿Confirmas que este turno fue atendido exitosamente?",
+      confirmButtonText: "Marcar Completado",
+      confirmButtonColor: "success"
+    });
+  };
+
+  const handleNoShowTurn = (turnId: string) => {
+    if (!user.accessToken) return;
+    const turnData = filteredTurns.find((turn: any) => turn.id === turnId);
+    uiSend({ 
+      type: "OPEN_NO_SHOW_TURN_DIALOG", 
+      turnId,
+      turnData,
+      title: "Marcar Turno como No Asistió",
+      message: "¿Confirmas que el paciente no asistió a este turno?",
+      confirmButtonText: "No Asistió",
+      confirmButtonColor: "error"
+    });
+  };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -181,7 +211,7 @@ const ViewTurns: React.FC = () => {
                             <Button 
                               variant="contained" 
                               size="small"
-                              className="viewturns-cancel-btn"
+                              className="doctor-viewturns-cancel-btn"
                               onClick={() => handleCancelTurn(turn.id)}
                               disabled={isCancellingTurn && cancellingTurnId === turn.id}
                             >
@@ -194,6 +224,42 @@ const ViewTurns: React.FC = () => {
                                 'Cancelar turno'
                               )}
                             </Button>
+                          )}
+                          {isPastScheduledTurn(turn) && (
+                            <>
+                              <Button 
+                                variant="contained" 
+                                size="small"
+                                className="doctor-viewturns-complete-btn"
+                                onClick={() => handleCompleteTurn(turn.id)}
+                                disabled={isCancellingTurn && cancellingTurnId === turn.id}
+                              >
+                                {isCancellingTurn && cancellingTurnId === turn.id ? (
+                                  <>
+                                    <CircularProgress size={16} sx={{ mr: 1 }} />
+                                    Procesando...
+                                  </>
+                                ) : (
+                                  'Completado'
+                                )}
+                              </Button>
+                              <Button 
+                                variant="contained" 
+                                size="small"
+                                className="doctor-viewturns-noshow-btn"
+                                onClick={() => handleNoShowTurn(turn.id)}
+                                disabled={isCancellingTurn && cancellingTurnId === turn.id}
+                              >
+                                {isCancellingTurn && cancellingTurnId === turn.id ? (
+                                  <>
+                                    <CircularProgress size={16} sx={{ mr: 1 }} />
+                                    Procesando...
+                                  </>
+                                ) : (
+                                  'No Asistió'
+                                )}
+                              </Button>
+                            </>
                           )}
                         </Box>
                       </Box>
