@@ -94,6 +94,8 @@ const ViewTurns: React.FC = () => {
         return 'Cancelado';
       case 'AVAILABLE':
         return 'Disponible';
+      case 'COMPLETED':
+        return 'Completado';
       default:
         return status;
     }
@@ -193,24 +195,25 @@ const ViewTurns: React.FC = () => {
                   label="Estado del turno"
                   onChange={(e) => turnSend({
                     type: "UPDATE_FORM",
-                    path: ["statusFilter"],
+                    path: ["showTurns", "statusFilter"],
                     value: e.target.value
                   })}
                 >
                   <MenuItem value="">Todos los estados</MenuItem>
                   <MenuItem value="SCHEDULED">Programados</MenuItem>
                   <MenuItem value="CANCELED">Cancelados</MenuItem>
+                  <MenuItem value="COMPLETED">Completados</MenuItem>
                 </Select>
               </FormControl>
 
               {showTurnsContext.statusFilter && (
                 <Button
                   variant="outlined"
-                  onClick={() => turnSend({
-                    type: "UPDATE_FORM",
-                    path: ["statusFilter"],
-                    value: ""
-                  })}
+                    onClick={() => turnSend({
+                      type: "UPDATE_FORM",
+                      path: ["showTurns", "statusFilter"],
+                      value: ""
+                    })}
                   className="viewturns-clear-filter-btn"
                 >
                   Limpiar filtro
