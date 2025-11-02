@@ -1,0 +1,189 @@
+/* Specialty Distribution Component */
+.specialty-distribution-section {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  margin: 3rem;
+
+}
+
+.specialty-distribution-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.specialty-distribution-title {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem !important;
+}
+
+.specialty-distribution-subtitle {
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+
+.specialty-count-chip {
+  color: #64748b !important;
+  border-color: #cbd5e1 !important;
+  font-weight: 500 !important;
+}
+
+/* Grid Layout */
+.specialty-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* Specialty Cards */
+.specialty-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.specialty-card:hover {
+  background: #f1f5f9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.specialty-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.specialty-chip {
+  background-color: #22577a !important;
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  height: 36px !important;
+  max-width: 180px !important;
+}
+
+.specialty-chip .MuiChip-label {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+.doctor-count-container {
+  text-align: right;
+}
+
+.doctor-count-number {
+  color: #22577a !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+}
+
+.doctor-count-label {
+  color: #64748b !important;
+  font-weight: 500 !important;
+  font-size: 0.7rem !important;
+}
+
+/* Progress Bar */
+.specialty-progress {
+  height: 6px !important;
+  border-radius: 1rem !important;
+  background-color: #22577a20 !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.specialty-progress .MuiLinearProgress-bar {
+  background-color: #22577a !important;
+  border-radius: 1rem !important;
+}
+
+/* Footer */
+.specialty-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.specialty-footer-text {
+  color: #64748b !important;
+  font-size: 0.8rem !important;
+}
+
+.percentage-badge {
+  display: flex;
+  align-items: center;
+  background-color: #22577a15;
+  color: #22577a;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Loading State */
+.specialty-distribution-loading {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  border: 2px dashed #cbd5e1;
+}
+
+.loading-text {
+  color: #64748b !important;
+  font-style: italic;
+}
+
+/* Empty State */
+.specialty-distribution-empty {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 2px dashed #cbd5e1;
+}
+
+.empty-title {
+  color: #475569 !important;
+  font-weight: 600 !important;
+  margin-bottom: 1rem !important;
+}
+
+.empty-subtitle {
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .specialty-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .specialty-distribution-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .specialty-card {
+    padding: 0.75rem;
+  }
+}

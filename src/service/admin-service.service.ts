@@ -121,6 +121,32 @@ export class AdminService {
     }
   }
 
+  static async getAdminRatings(accessToken: string): Promise<any> {
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_ADMIN_RATINGS);
+    
+    try {
+      const response = await fetch(url, {
+        ...getAuthenticatedFetchOptions(accessToken),
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData?.message || 
+          errorData?.error ||
+          `Failed to fetch admin ratings! Status: ${response.status}`
+        );
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Failed to fetch admin ratings:', error);
+      throw error;
+    }
+  }
+
   static async getSpecialties(accessToken: string): Promise<string[]> {
     const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_SPECIALTIES);
     
