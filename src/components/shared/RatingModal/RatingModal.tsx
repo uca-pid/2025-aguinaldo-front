@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, Typography, FormControl, InputLabel, Select, MenuItem,
@@ -11,16 +10,12 @@ import { useMachines } from '#/providers/MachineProvider';
 import { TurnService } from '#/service/turn-service.service';
 import { orchestrator } from '#/core/Orchestrator';
 import { UI_MACHINE_ID } from '#/machines/uiMachine';
-import { DATA_MACHINE_ID } from '#/machines/dataMachine';
 import dayjs from '#/utils/dayjs.config';
 import './RatingModal.css';
 
-const RatingModal: React.FC = () => {
-  const { uiState } = useMachines();
+const RatingModal = () => {
+  const { uiState, ratingState, ratingSend } = useMachines();
   const { dataState } = useDataMachine();
-  const [rating, setRating] = React.useState<number>(0);
-  const [subcategories, setSubcategories] = React.useState<string[]>([]);
-  const [loading, setLoading] = React.useState(false);
 
   const modalData = uiState.context.ratingModal;
   const open = modalData.open;
@@ -30,26 +25,20 @@ const RatingModal: React.FC = () => {
   const accessToken = dataState.context.accessToken;
   const turnsNeedingRating = dataState.context.turnsNeedingRating || [];
   
-  // Calcular posición actual y total para mostrar progreso
+  const rating = ratingState?.context?.rating || 0;
+  const subcategories = ratingState?.context?.subcategories || [];
+  const loading = ratingState?.context?.loading || false;
+  
   const currentTurnIndex = turnsNeedingRating.findIndex((t: any) => t.id === turn?.id);
   const currentPosition = currentTurnIndex >= 0 ? currentTurnIndex + 1 : 1;
   const totalTurns = turnsNeedingRating.length;
   const showProgress = totalTurns > 1;
   
-  if (open && ratingSubcategories.length === 0) {
-    orchestrator.sendToMachine(DATA_MACHINE_ID, { 
-      type: "LOAD_RATING_SUBCATEGORIES", 
-      role: "PATIENT" 
-    });
-  }
-
   const handleClose = () => {
   };
 
   const handleSuccessfulSubmit = () => {
-    setRating(0);
-    setSubcategories([]);
-    setLoading(false);
+    ratingSend({ type: 'RESET_RATING' });
     
     const currentTurnIndex = turnsNeedingRating.findIndex((t: any) => t.id === turn?.id);
     const nextTurnIndex = currentTurnIndex + 1;
@@ -70,7 +59,7 @@ const RatingModal: React.FC = () => {
       return;
     }
 
-    setLoading(true);
+    ratingSend({ type: 'START_SUBMIT' });
     try {
       await TurnService.createRating(
         turn.id,
@@ -84,6 +73,7 @@ const RatingModal: React.FC = () => {
         severity: "success"
       });
 
+      ratingSend({ type: 'SUBMIT_SUCCESS' });
       handleSuccessfulSubmit();
     } catch (error) {
       orchestrator.sendToMachine(UI_MACHINE_ID, {
@@ -91,8 +81,7 @@ const RatingModal: React.FC = () => {
         message: error instanceof Error ? error.message : "Error al enviar la calificación",
         severity: "error"
       });
-    } finally {
-      setLoading(false);
+      ratingSend({ type: 'SUBMIT_ERROR' });
     }
   };
 
@@ -154,7 +143,7 @@ const RatingModal: React.FC = () => {
             <Rating
               name="rating"
               value={rating}
-              onChange={(_, newValue) => setRating(newValue || 0)}
+              onChange={(_, newValue) => ratingSend({ type: 'SET_RATING', rating: newValue || 0 })}
               size="large"
               className="rating-modal-stars"
             />
@@ -182,7 +171,7 @@ const RatingModal: React.FC = () => {
               onChange={(e) => {
                 const value = e.target.value as string[];
                 if (value.length <= 3) {
-                  setSubcategories(value);
+                  ratingSend({ type: 'SET_SUBCATEGORIES', subcategories: value });
                 }
               }}
               input={<OutlinedInput label="Selecciona aspectos a destacar (máximo 3)" />}

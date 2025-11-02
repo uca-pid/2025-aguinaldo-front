@@ -233,12 +233,23 @@ export const uiMachine = createMachine({
           }),
         },
         OPEN_RATING_MODAL: {
-          actions: assign({
-            ratingModal: ({ event }) => ({
-              open: true,
-              turn: event.turn,
+          actions: [
+            assign({
+              ratingModal: ({ event }) => ({
+                open: true,
+                turn: event.turn,
+              }),
             }),
-          }),
+            () => {
+              const dataSnapshot = orchestrator.getSnapshot("data");
+              if (dataSnapshot?.context?.ratingSubcategories?.length === 0) {
+                orchestrator.sendToMachine("data", { 
+                  type: "LOAD_RATING_SUBCATEGORIES", 
+                  role: "PATIENT" 
+                });
+              }
+            }
+          ],
         },
         CLOSE_RATING_MODAL: {
           actions: assign({

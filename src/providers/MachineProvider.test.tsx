@@ -63,6 +63,12 @@ vi.mock('../machines/filesMachine', () => ({
   filesMachine: { id: 'files-machine' },
 }));
 
+vi.mock('../machines/ratingMachine', () => ({
+  RATING_MACHINE_ID: 'rating-machine',
+  RATING_MACHINE_EVENT_TYPES: ['RATING_EVENT_1', 'RATING_EVENT_2'],
+  ratingMachine: { id: 'rating-machine' },
+}));
+
 // Import the mocked module
 import { useStateMachine } from '../hooks/useStateMachine';
 
@@ -141,6 +147,7 @@ describe('MachineProvider', () => {
     notificationState: { value: 'idle', context: {} },
     medicalHistoryState: null,
     filesState: null,
+    ratingState: null,
   };
 
   const mockSends = {
@@ -152,6 +159,7 @@ describe('MachineProvider', () => {
     notificationSend: vi.fn(),
     medicalHistorySend: vi.fn(),
     filesSend: vi.fn(),
+    ratingSend: vi.fn(),
   };
 
   beforeEach(() => {
@@ -176,6 +184,8 @@ describe('MachineProvider', () => {
           return { state: mockStates.medicalHistoryState, send: mockSends.medicalHistorySend };
         case 'files-machine':
           return { state: mockStates.filesState, send: mockSends.filesSend };
+        case 'rating-machine':
+          return { state: mockStates.ratingState, send: mockSends.ratingSend };
         default:
           return { state: null, send: vi.fn() };
       }
@@ -287,6 +297,8 @@ describe('MachineProvider', () => {
       medicalHistorySend: mockSends.medicalHistorySend,
       filesState: mockStates.filesState,
       filesSend: mockSends.filesSend,
+      ratingState: mockStates.ratingState,
+      ratingSend: mockSends.ratingSend,
     });
   });
 });
