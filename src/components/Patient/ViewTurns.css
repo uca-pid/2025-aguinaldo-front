@@ -175,6 +175,11 @@
   color: #dc2626 !important;
 }
 
+.viewturns-status-chip.status-no_show {
+  background: #fef3c7 !important;
+  color: #d97706 !important;
+}
+
 /* Cancel Button - matching PendingScreen reject button style */
 .viewturns-cancel-btn {
   background-color: #ef4444 !important;

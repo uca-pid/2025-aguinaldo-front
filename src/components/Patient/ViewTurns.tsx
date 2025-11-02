@@ -92,6 +92,8 @@ const ViewTurns: React.FC = () => {
         return 'Programado';
       case 'CANCELED':
         return 'Cancelado';
+      case 'NO_SHOW':
+        return 'No Asistió';
       case 'AVAILABLE':
         return 'Disponible';
       case 'COMPLETED':
@@ -202,6 +204,7 @@ const ViewTurns: React.FC = () => {
                   <MenuItem value="">Todos los estados</MenuItem>
                   <MenuItem value="SCHEDULED">Programados</MenuItem>
                   <MenuItem value="CANCELED">Cancelados</MenuItem>
+                  <MenuItem value="NO_SHOW">No Asistió</MenuItem>
                   <MenuItem value="COMPLETED">Completados</MenuItem>
                 </Select>
               </FormControl>
@@ -242,9 +245,9 @@ const ViewTurns: React.FC = () => {
                         {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
                         {turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt) ? (
                           <Chip 
-                            label="Vencido" 
+                            label="Programado" 
                             size="small"
-                            color="default"
+                            className="viewturns-status-chip status-scheduled"
                             sx={{ ml: 1, fontSize: '0.75rem' }} 
                           />
                         ) : !hasPendingModifyRequest(turn.id) ? (

@@ -46,7 +46,8 @@ export default defineConfig({
         'src/models/',
         '**/*.d.ts',
         '**/*.config.*',
-        '**/index.ts'
+        '**/index.ts',
+        'dist/'
       ]
     }
   },
