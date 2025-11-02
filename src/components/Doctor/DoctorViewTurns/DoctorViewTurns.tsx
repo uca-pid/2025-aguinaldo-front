@@ -4,7 +4,6 @@ import {
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
-import { useDataMachine } from "#/providers/DataProvider";
 import dayjs from "#/utils/dayjs.config";
 import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -17,7 +16,6 @@ const ViewTurns: React.FC = () => {
   
   const { turnState, turnSend, uiSend } = useMachines();
   const { authState } = useAuthMachine();
-  const { dataState } = useDataMachine();
   const authContext = authState?.context;
   const user = authContext?.authResponse as SignInResponse;
   
@@ -26,7 +24,6 @@ const ViewTurns: React.FC = () => {
   const { cancellingTurnId, isCancellingTurn } = turnContext;
 
   const filteredTurns = filterTurns(turnContext.myTurns, showTurnsContext.statusFilter);
-  const turnsNeedingRating = dataState.context.turnsNeedingRating || [];
 
   const handleCancelTurn = (turnId: string) => {
     if (!user.accessToken) return;
@@ -75,8 +72,8 @@ const ViewTurns: React.FC = () => {
     return turn.status === 'COMPLETED';
   };
 
-  const turnNeedsRating = (turnId: string) => {
-    return turnsNeedingRating.some((turn: any) => turn.id === turnId);
+  const turnNeedsRating = (turn: any) => {
+    return turn.needsDoctorRating === true;
   };
 
   const handleCompleteTurn = (turnId: string) => {
@@ -284,7 +281,7 @@ const ViewTurns: React.FC = () => {
                               </Button>
                             </>
                           )}
-                          {isCompletedTurn(turn) && turnNeedsRating(turn.id) && (
+                          {isCompletedTurn(turn) && turnNeedsRating(turn) && (
                             <Button 
                               variant="contained" 
                               size="small"

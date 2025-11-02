@@ -40,6 +40,8 @@ export interface TurnResponse {
   patientName: string;
   scheduledAt: string;
   status: string;
+  needsPatientRating?: boolean;
+  needsDoctorRating?: boolean;
 }
 
 export interface ApiErrorResponse {

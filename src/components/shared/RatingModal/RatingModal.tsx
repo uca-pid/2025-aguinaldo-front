@@ -52,14 +52,16 @@ const RatingModal = () => {
   const handleSuccessfulSubmit = () => {
     ratingSend({ type: 'RESET_RATING' });
     
-    const currentTurnIndex = turnsNeedingRating.findIndex((t: any) => t.id === turn?.id);
-    const nextTurnIndex = currentTurnIndex + 1;
-    
-    // Reload turns for doctors to update the UI
+    // Doctors: just reload turns and close modal
     if (isDoctor) {
       orchestrator.sendToMachine("data", { type: "LOAD_MY_TURNS" });
-      orchestrator.sendToMachine("data", { type: "LOAD_TURNS_NEEDING_RATING" });
+      orchestrator.sendToMachine(UI_MACHINE_ID, { type: "CLOSE_RATING_MODAL" });
+      return;
     }
+    
+    // Patients: check for next turn to rate
+    const currentTurnIndex = turnsNeedingRating.findIndex((t: any) => t.id === turn?.id);
+    const nextTurnIndex = currentTurnIndex + 1;
     
     if (nextTurnIndex < turnsNeedingRating.length) {
       const nextTurn = turnsNeedingRating[nextTurnIndex];
