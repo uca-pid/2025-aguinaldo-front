@@ -7,6 +7,8 @@ import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useDataMachine } from '#/providers/DataProvider';
 import { useMachines } from '#/providers/MachineProvider';
+import { useAuthMachine } from '#/providers/AuthProvider';
+import { SignInResponse } from '#/models/Auth';
 import { TurnService } from '#/service/turn-service.service';
 import { orchestrator } from '#/core/Orchestrator';
 import { UI_MACHINE_ID } from '#/machines/uiMachine';
@@ -16,6 +18,8 @@ import './RatingModal.css';
 const RatingModal = () => {
   const { uiState, ratingState, ratingSend } = useMachines();
   const { dataState } = useDataMachine();
+  const { authState } = useAuthMachine();
+  const user = authState?.context?.authResponse as SignInResponse;
 
   const modalData = uiState.context.ratingModal;
   const open = modalData.open;
@@ -34,12 +38,28 @@ const RatingModal = () => {
   const totalTurns = turnsNeedingRating.length;
   const showProgress = totalTurns > 1;
   
+  const isDoctor = user?.role === 'DOCTOR';
+  const displayName = isDoctor ? turn?.patientName : `Dr. ${turn?.doctorName}`;
+  const displayInfo = isDoctor ? 'Paciente' : (turn?.doctorSpecialty || 'Medicina General');
+  
   const handleClose = () => {
+    if (isDoctor) {
+      ratingSend({ type: 'RESET_RATING' });
+      orchestrator.sendToMachine(UI_MACHINE_ID, { type: "CLOSE_RATING_MODAL" });
+    }
   };
 
   const handleSuccessfulSubmit = () => {
     ratingSend({ type: 'RESET_RATING' });
     
+    // Doctors: just reload turns and close modal
+    if (isDoctor) {
+      orchestrator.sendToMachine("data", { type: "LOAD_MY_TURNS" });
+      orchestrator.sendToMachine(UI_MACHINE_ID, { type: "CLOSE_RATING_MODAL" });
+      return;
+    }
+    
+    // Patients: check for next turn to rate
     const currentTurnIndex = turnsNeedingRating.findIndex((t: any) => t.id === turn?.id);
     const nextTurnIndex = currentTurnIndex + 1;
     
@@ -93,7 +113,7 @@ const RatingModal = () => {
       onClose={handleClose}
       maxWidth="sm"
       fullWidth
-      disableEscapeKeyDown={true}
+      disableEscapeKeyDown={!isDoctor}
       className="rating-modal"
     >
       <DialogTitle className="rating-modal-header">        
@@ -118,10 +138,10 @@ const RatingModal = () => {
             <Box className="rating-modal-doctor-info">
               <Box className="rating-modal-doctor-details">
                 <Typography variant="h6" className="rating-modal-doctor-name">
-                  Dr. {turn.doctorName}
+                  {displayName}
                 </Typography>
                 <Typography variant="body2" className="rating-modal-doctor-specialty">
-                  {turn.doctorSpecialty || 'Medicina General'}
+                  {displayInfo}
                 </Typography>
                 <Box className="rating-modal-appointment-details">
                   <AccessTimeIcon fontSize="small" color="action" />

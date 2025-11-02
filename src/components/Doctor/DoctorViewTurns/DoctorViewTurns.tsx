@@ -68,6 +68,14 @@ const ViewTurns: React.FC = () => {
     return turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt);
   };
 
+  const isCompletedTurn = (turn: any) => {
+    return turn.status === 'COMPLETED';
+  };
+
+  const turnNeedsRating = (turn: any) => {
+    return turn.needsDoctorRating === true;
+  };
+
   const handleCompleteTurn = (turnId: string) => {
     if (!user.accessToken) return;
     const turnData = filteredTurns.find((turn: any) => turn.id === turnId);
@@ -94,6 +102,16 @@ const ViewTurns: React.FC = () => {
       confirmButtonText: "No Asistió",
       confirmButtonColor: "error"
     });
+  };
+
+  const handleRatePatient = (turnId: string) => {
+    const turnToRate = filteredTurns.find((turn: any) => turn.id === turnId);
+    if (turnToRate) {
+      uiSend({ 
+        type: "OPEN_RATING_MODAL", 
+        turn: turnToRate 
+      });
+    }
   };
 
   return (
@@ -262,6 +280,16 @@ const ViewTurns: React.FC = () => {
                                 )}
                               </Button>
                             </>
+                          )}
+                          {isCompletedTurn(turn) && turnNeedsRating(turn) && (
+                            <Button 
+                              variant="contained" 
+                              size="small"
+                              className="doctor-viewturns-rate-btn"
+                              onClick={() => handleRatePatient(turn.id)}
+                            >
+                              Calificar Paciente
+                            </Button>
                           )}
                         </Box>
                       </Box>
