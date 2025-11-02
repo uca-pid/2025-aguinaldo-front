@@ -237,7 +237,7 @@
 .reservation-time-slot-button:hover {
   border-color: var(--lapis-lazuli) !important;
   background: var(--tea-green) !important;
-  transform: translateY(-1px) !important;
+  transform: none !important;
   box-shadow: 0 2px 8px rgba(34, 87, 122, 0.15) !important;
 }
 
@@ -250,7 +250,7 @@
 
 .reservation-time-slot-button.selected:hover {
   background: linear-gradient(135deg, var(--gunmetal) 0%, var(--lapis-lazuli) 100%) !important;
-  transform: translateY(-1px) !important;
+  transform: none !important;
   box-shadow: 0 6px 16px rgba(34, 87, 122, 0.4) !important;
 }
 
@@ -398,11 +398,40 @@
     padding: 12px 4px;
   }
 
+  /* Ensure chips and menu items don't zoom on hover anywhere in this component */
+  /* MUI classes targeted to be safe and specific to this component's usage */
+  .ReservationTurnsChipOverride .MuiChip-root,
+  .reservation-select .MuiList-root .MuiMenuItem-root,
+  .reservation-select .MuiList-root .MuiMenuItem-root:hover,
+  .reservation-time-slot-button,
+  .reservation-time-slot-button:hover {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Also disable hover transform for chips globally inside this component */
+  .MuiChip-root:hover {
+    transform: none !important;
+  }
+
   .reservation-form-section,
   .reservation-calendar-section,
   .reservation-time-section {
     padding: 16px !important;
   }
+
+/* Global safety: disable unexpected hover/zoom effects on chips, menu items and time-slot buttons */
+.MuiChip-root,
+.MuiChip-root:hover,
+.MuiMenuItem-root,
+.MuiMenuItem-root:hover,
+.reservation-time-slot-button,
+.reservation-time-slot-button:hover {
+  transition: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
 
   .reservation-time-grid {
     grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)) !important;

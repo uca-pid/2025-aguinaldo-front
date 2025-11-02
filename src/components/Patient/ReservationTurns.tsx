@@ -1,6 +1,6 @@
 import { 
   Box, Button, FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, 
-  TextField, Typography, CircularProgress, Container, Avatar, Rating
+  TextField, Typography, CircularProgress, Container, Avatar, Rating, Chip, Stack, Checkbox, ListItemText
 } from "@mui/material";
 import React from "react";
 import { useMachines } from "#/providers/MachineProvider";
@@ -14,6 +14,7 @@ import { Dayjs } from "dayjs";
 import dayjs from "#/utils/dayjs.config";
 import Event from "@mui/icons-material/Event";
 import "./ReservationTurns.css";
+import { buildAvailableSubcats, buildDoctorSubcatMap, buildFilteredDoctors, requestRatedCountsForDoctors } from "#/utils/reservationUtils";
 
 const ReservationTurns: React.FC = () => {
   const { turnState, turnSend } = useMachines();  
@@ -25,9 +26,83 @@ const ReservationTurns: React.FC = () => {
   const isProfessionSelected = !!formValues.professionSelected;
   const isDoctorSelected = !!formValues.doctorId;
 
-  const filteredDoctors = isProfessionSelected
+ 
+
+  let ratedCountsSnapshot: Record<string, { subcategory: string | null; count: number }[]> = {};
+  try {
+    const dataSnapshot = orchestrator.getSnapshot(DATA_MACHINE_ID as any);
+    ratedCountsSnapshot = dataSnapshot?.context?.ratedSubcategoryCounts || {};
+  } catch (e) {
+    ratedCountsSnapshot = {};
+  }
+
+  const doctorsBySpecialty = isProfessionSelected
     ? turnContext.doctors.filter((doctor: any) => doctor.specialty.toLowerCase() === formValues.professionSelected.toLowerCase())
     : [];
+  const availableSubcats = buildAvailableSubcats(ratedCountsSnapshot);
+
+  const doctorSubcatMap = buildDoctorSubcatMap(ratedCountsSnapshot);
+
+  // derive the final filteredDoctors applying score and subcategory filters
+  const minScore = formValues.filterMinScore ?? null;
+  const selectedSubcats = formValues.filterSelectedSubcats ?? [];
+  const filteredDoctors = buildFilteredDoctors(doctorsBySpecialty, doctorSubcatMap, minScore, selectedSubcats);
+
+  // use three palette variables from shared CSS so colors match the app theme
+  const SUBCAT_COLOR_VARS = ['var(--lapis-lazuli)', 'var(--verdigris)', 'var(--emerald)'];
+
+  // color by top position (0 = top1, 1 = top2, 2 = top3)
+  const getColorForTop = (index: number) => {
+    return SUBCAT_COLOR_VARS[index % SUBCAT_COLOR_VARS.length];
+  };
+
+  // Resolve CSS variable or rgb/hex value into a hex string like #rrggbb
+  const resolveToHex = (value: string): string | null => {
+    if (!value) return null;
+    // if it's a CSS var(...) reference, read the computed value
+    const varMatch = value.match(/^var\((--[a-zA-Z0-9-_]+)\)$/);
+    let resolved = value;
+    if (varMatch && typeof window !== 'undefined') {
+      const prop = varMatch[1];
+      const computed = getComputedStyle(document.documentElement).getPropertyValue(prop);
+      if (computed) resolved = computed.trim();
+    }
+
+    // if rgb(...) convert to hex
+    const rgbMatch = resolved.match(/rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)/i);
+    if (rgbMatch) {
+      const r = parseInt(rgbMatch[1], 10);
+      const g = parseInt(rgbMatch[2], 10);
+      const b = parseInt(rgbMatch[3], 10);
+      const toHex = (n: number) => n.toString(16).padStart(2, '0');
+      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    }
+
+    // already hex?
+    const hexMatch = resolved.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+    if (hexMatch) {
+      let h = hexMatch[0];
+      // expand short form #abc -> #aabbcc
+      if (h.length === 4) {
+        h = `#${h[1]}${h[1]}${h[2]}${h[2]}${h[3]}${h[3]}`;
+      }
+      return h.toLowerCase();
+    }
+
+    return null;
+  };
+
+  const getContrastColor = (cssVarOrHex: string) => {
+    const hex = resolveToHex(cssVarOrHex);
+    if (!hex) return '#fff';
+    const c = hex.replace('#', '');
+    const r = parseInt(c.substring(0, 2), 16);
+    const g = parseInt(c.substring(2, 4), 16);
+    const b = parseInt(c.substring(4, 6), 16);
+    // relative luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.6 ? '#000' : '#fff';
+  };
 
   const selectedDoctor = turnContext.doctors.find((d: any) => d.id === formValues.doctorId) ?? null;
 
@@ -43,6 +118,12 @@ const ReservationTurns: React.FC = () => {
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "professionSelected"], value: event.target.value });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "doctorId"], value: "" });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "profesionalSelected"], value: "" });
+
+    // Immediately request rated-subcategory counts for doctors of the newly selected profession
+    const doctorsToFetch = turnContext.doctors.filter((doctor: any) => doctor.specialty.toLowerCase() === String(event.target.value).toLowerCase());
+    if (doctorsToFetch.length) {
+      requestRatedCountsForDoctors(doctorsToFetch);
+    }
   };
   
   const handleDoctorChange = (event: SelectChangeEvent) => {
@@ -64,6 +145,11 @@ const ReservationTurns: React.FC = () => {
       });
     }
   };
+
+
+  // Rated-subcategory counts are requested via machine events. When the profession changes
+  // we send doctor ids to the data machine (see handleProfessionChange). This avoids using
+  // useEffect/useState in the component and centralizes network logic in the machines.
 
   const handleDateChange = (newValue: Dayjs | null) => {
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "dateSelected"], value: newValue });
@@ -163,6 +249,72 @@ const ReservationTurns: React.FC = () => {
                   {turnContext.isLoadingDoctors && <FormHelperText>Cargando especialidades...</FormHelperText>}
                 </FormControl>
 
+                
+                <Box sx={{ display: 'flex', gap: 1, mb: 1, flexWrap: 'wrap' }}>
+                  <FormControl size="small" sx={{ minWidth: 160 }}>
+                    <InputLabel id="min-score-label">Puntaje mínimo</InputLabel>
+                    <Select
+                      labelId="min-score-label"
+                      id="min-score-select"
+                      value={minScore != null ? String(minScore) : ''}
+                      label="Puntaje mínimo"
+                      onChange={(e: SelectChangeEvent) => { const v = e.target.value as string; turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "filterMinScore"], value: v === '' ? null : Number(v) }); }}
+                    >
+                      <MenuItem value="">
+                        <em>Cualquiera</em>
+                      </MenuItem>
+                      {[0, 1, 2, 3, 4, 5].map(v => (
+                        <MenuItem key={v} value={v}>{v}+</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  <FormControl size="small" sx={{ minWidth: 200 }}>
+                    <InputLabel id="subcat-select-label">Subcategorías</InputLabel>
+                    <Select
+                      labelId="subcat-select-label"
+                      id="subcat-select"
+                      multiple
+                      value={selectedSubcats}
+                      onChange={(e) => turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "filterSelectedSubcats"], value: e.target.value as string[] })}
+                      renderValue={(selected) => {
+                        const items = selected as string[];
+                        return (
+                          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', maxWidth: 320 }}>
+                            {items.map((it) => {
+                              // color by index within availableSubcats for determinism
+                              const idx = availableSubcats.indexOf(it);
+                              const bg = getColorForTop(idx >= 0 ? idx : 0);
+                              return (
+                                <Chip
+                                  key={`sel-${it}`}
+                                  size="small"
+                                  label={it}
+                                  sx={{
+                                    height: 26,
+                                    fontSize: '0.72rem',
+                                    backgroundColor: `${bg} !important`,
+                                    color: `${getContrastColor(bg)} !important`,
+                                  }}
+                                />
+                              );
+                            })}
+                          </Box>
+                        );
+                      }}
+                      label="Subcategorías"
+                      disabled={availableSubcats.length === 0}
+                    >
+                      {availableSubcats.map((opt) => (
+                        <MenuItem key={opt} value={opt}>
+                          <Checkbox checked={selectedSubcats.indexOf(opt) > -1} />
+                          <ListItemText primary={opt} />
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+
                 <FormControl required size="small" fullWidth className="reservation-select">
                   <InputLabel id="doctor-select-label">Doctor</InputLabel>
                   <Select
@@ -177,10 +329,53 @@ const ReservationTurns: React.FC = () => {
                       <em>Seleccione un doctor</em>
                     </MenuItem>
                     {filteredDoctors.map((doctor: any) => (
-                      <MenuItem key={doctor.id} value={doctor.id}>
+                      <MenuItem key={doctor.id} value={doctor.id} sx={{ '&:hover': { transform: 'none !important' }, transition: 'none' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                           <Box sx={{ mr: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {doctor.name} {doctor.surname}
+                            {ratedCountsSnapshot[doctor.id] && ratedCountsSnapshot[doctor.id].length > 0 && (
+                              <Stack direction="row" spacing={0.5} sx={{ mt: 0.5, flexWrap: 'wrap' }}>
+                                    {(() => {
+                                      // split any concatenated subcategory strings into distinct chips
+                                      const SEP_RE = /(?:\s*[-–—]\s*|[,;|\/\\])/;
+                                      const raw = ratedCountsSnapshot[doctor.id] || [];
+                                      const chips: { text: string | null; count: number }[] = [];
+                                      raw.forEach((s: any) => {
+                                        if (s.subcategory) {
+                                          const parts = String(s.subcategory).split(SEP_RE).map((p: string) => p.trim()).filter((p: string) => p.length > 0);
+                                          if (parts.length) {
+                                            parts.forEach((p: string) => chips.push({ text: p, count: s.count }));
+                                          } else {
+                                            chips.push({ text: s.subcategory, count: s.count });
+                                          }
+                                        } else {
+                                          chips.push({ text: null, count: s.count });
+                                        }
+                                      });
+
+                                      return chips.map((c, idx) => {
+                                        const bg = getColorForTop(idx);
+                                        return (
+                                          <Chip
+                                            key={`${doctor.id}-subcat-${idx}`}
+                                            size="small"
+                                            label={c.text ? `${c.text} (${c.count})` : `(${c.count})`}
+                                            variant="filled"
+                                            sx={{
+                                              fontSize: '0.72rem',
+                                              height: 26,
+                                              backgroundColor: `${bg} !important`,
+                                              color: `${getContrastColor(bg)} !important`,
+                                              borderColor: `${bg} !important`,
+                                              '& .MuiChip-label': { px: 1 },
+                                            }}
+                                            title={c.text ?? 'No subcategory'}
+                                          />
+                                        );
+                                      });
+                                    })()}
+                              </Stack>
+                            )}
                           </Box>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             {doctor.score != null ? (

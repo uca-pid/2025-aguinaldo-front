@@ -194,7 +194,7 @@ describe('TurnService', () => {
         medicalLicense: 'LIC123456',
         specialty: 'Cardiology',
         slotDurationMin: 30,
-        score: 4.8
+        score: 4.2
       },
       {
         id: 'doctor-2',
@@ -204,7 +204,7 @@ describe('TurnService', () => {
         medicalLicense: 'LIC789012',
         specialty: 'Dermatology',
         slotDurationMin: 20,
-        score: 4.2
+        score: 3.8
       }
     ];
 
