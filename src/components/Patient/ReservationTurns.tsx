@@ -1,6 +1,6 @@
 import { 
   Box, Button, FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, 
-  TextField, Typography, CircularProgress, Container, Avatar
+  TextField, Typography, CircularProgress, Container, Avatar, Rating
 } from "@mui/material";
 import React from "react";
 import { useMachines } from "#/providers/MachineProvider";
@@ -28,6 +28,8 @@ const ReservationTurns: React.FC = () => {
   const filteredDoctors = isProfessionSelected
     ? turnContext.doctors.filter((doctor: any) => doctor.specialty.toLowerCase() === formValues.professionSelected.toLowerCase())
     : [];
+
+  const selectedDoctor = turnContext.doctors.find((d: any) => d.id === formValues.doctorId) ?? null;
 
   const handleReasonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -176,7 +178,21 @@ const ReservationTurns: React.FC = () => {
                     </MenuItem>
                     {filteredDoctors.map((doctor: any) => (
                       <MenuItem key={doctor.id} value={doctor.id}>
-                        {doctor.name} {doctor.surname} - {doctor.medicalLicense}
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                          <Box sx={{ mr: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {doctor.name} {doctor.surname}
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            {doctor.score != null ? (
+                              <>
+                                <Rating value={doctor.score} precision={0.1} readOnly size="small" />
+                                <Typography variant="body2">{doctor.score.toFixed(1)}</Typography>
+                              </>
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">Sin calificación</Typography>
+                            )}
+                          </Box>
+                        </Box>
                       </MenuItem>
                     ))}
                   </Select>
@@ -253,7 +269,13 @@ const ReservationTurns: React.FC = () => {
                     </LocalizationProvider>
                   </Box>
                   <Typography variant="body2" color="text.secondary" textAlign="center" mt={2}>
-                    👨‍⚕️ Dr. {filteredDoctors.find((d: any) => d.id === formValues.doctorId)?.name} {filteredDoctors.find((d: any) => d.id === formValues.doctorId)?.surname}
+                    👨‍⚕️ Dr. {selectedDoctor?.name} {selectedDoctor?.surname}
+                    {selectedDoctor?.score != null && (
+                      <Box component="span" sx={{ ml: 1, display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                        <Rating value={selectedDoctor.score} precision={0.1} readOnly size="small" />
+                        <Box component="span" sx={{ fontWeight: 600 }}>{selectedDoctor.score.toFixed(1)}</Box>
+                      </Box>
+                    )}
                   </Typography>
                 </Box>
 
