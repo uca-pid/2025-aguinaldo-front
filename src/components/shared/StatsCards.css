@@ -1,0 +1,80 @@
+/* StatsCards.css - Shared component styles */
+
+/* Statistics Cards Container */
+.stats-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0rem;
+  margin-bottom: 2rem;
+  justify-items: center;
+}
+
+/* Statistics Card */
+.stats-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 240px;
+  min-height: 70px;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Card Content */
+.stats-card-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Card Icon */
+.stats-card-icon {
+  font-size: 28px !important;
+  color: #22577a;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+/* Card Info Container */
+.stats-card-info {
+  flex: 1;
+  text-align: left;
+}
+
+/* Card Number */
+.stats-card-number {
+  color: #22577a !important;
+  font-weight: 700 !important;
+  font-size: 1.5rem !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+}
+
+/* Card Label */
+.stats-card-label {
+  color: #64748b !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.65rem !important;
+  margin-top: 2px !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .stats-cards-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .stats-card {
+    max-width: none;
+  }
+}

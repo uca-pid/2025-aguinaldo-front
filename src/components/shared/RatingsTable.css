@@ -1,0 +1,201 @@
+/* Ratings Section */
+.ratings-section {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  text-align: left;
+  margin: 3rem;
+}
+
+.ratings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ratings-title {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+  display: flex;
+  align-items: center;
+}
+
+.ratings-subtitle {
+  color: #64748b !important;
+  font-weight: 500 !important;
+  margin-top: 0.5rem !important;
+}
+
+.ratings-count {
+  background: #22577a;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* No Ratings State */
+.no-ratings {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 2px dashed #cbd5e1;
+}
+
+.no-ratings-title {
+  color: #475569 !important;
+  font-weight: 600 !important;
+  margin-bottom: 1rem !important;
+}
+
+.no-ratings-subtitle {
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+
+/* Table Styles */
+.ratings-table-container {
+  border-radius: 12px;
+  overflow: visible;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.ratings-table {
+  background: #ffffff;
+}
+
+.table-header {
+  background: #22577a;
+}
+
+.table-header-cell {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.875rem !important;
+  padding: 1rem !important;
+  border-bottom: none !important;
+}
+
+.table-row {
+  transition: all 0.2s ease;
+  background: #ffffff;
+}
+
+.table-row:nth-of-type(even) {
+  background: #f8fafc;
+}
+
+.table-row:hover {
+  background: #f1f5f9 !important;
+  transform: scale(1.005);
+}
+
+.table-cell {
+  padding: 1rem !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  vertical-align: middle !important;
+}
+
+/* Names */
+.patient-name,
+.doctor-name {
+  font-weight: 600 !important;
+  color: #1e293b !important;
+}
+
+/* Score Container */
+.score-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rating-score {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.rating-score-1 { background: #ef4444; }
+.rating-score-2 { background: #f97316; }
+.rating-score-3 { background: #eab308; }
+.rating-score-4 { background: #22c55e; }
+.rating-score-5 { background: #10b981; }
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  font-size: 14px !important;
+  color: #e2e8f0;
+  transition: color 0.2s ease;
+}
+
+.star.filled {
+  color: #fbbf24;
+}
+
+/* Subcategories */
+.subcategories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  max-width: 200px;
+}
+
+.subcategory-chip {
+  background: #22577a !important;
+  color: white !important;
+  font-weight: 500 !important;
+  font-size: 0.75rem !important;
+  height: 24px !important;
+}
+
+.no-subcategories {
+  color: #94a3b8 !important;
+  font-style: italic;
+}
+
+/* Date */
+.date {
+  color: #64748b !important;
+  font-weight: 500 !important;
+  font-family: monospace;
+  font-size: 0.875rem !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ratings-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .table-cell {
+    padding: 0.75rem 0.5rem !important;
+    font-size: 0.875rem;
+  }
+}
