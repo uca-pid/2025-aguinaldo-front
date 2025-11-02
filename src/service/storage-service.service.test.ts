@@ -71,7 +71,7 @@ describe('StorageService', () => {
       });
 
       await expect(StorageService.uploadTurnFile('test-token', 'turn-1', mockFile))
-        .rejects.toThrow('Upload failed due to invalid file');
+        .rejects.toThrow('Operación falló! Status: 400');
     });
 
     it('should throw error with default message when response has no error details', async () => {
@@ -84,7 +84,7 @@ describe('StorageService', () => {
       });
 
       await expect(StorageService.uploadTurnFile('test-token', 'turn-1', mockFile))
-        .rejects.toThrow('Upload failed! Status: 500');
+        .rejects.toThrow('Operación falló! Status: 500');
     });
 
     it('should throw error when fetch fails', async () => {
@@ -106,7 +106,7 @@ describe('StorageService', () => {
       });
 
       await expect(StorageService.uploadTurnFile('test-token', 'turn-1', mockFile))
-        .rejects.toThrow('Upload failed! Status: 400');
+        .rejects.toThrow('Operación falló! Status: 400');
     });
   });
 
@@ -140,7 +140,7 @@ describe('StorageService', () => {
       });
 
       await expect(StorageService.deleteTurnFile('test-token', 'turn-1'))
-        .rejects.toThrow('File not found');
+        .rejects.toThrow('Operación falló! Status: 404');
     });
 
     it('should throw error with default message when response has no error details', async () => {
@@ -151,84 +151,13 @@ describe('StorageService', () => {
       });
 
       await expect(StorageService.deleteTurnFile('test-token', 'turn-1'))
-        .rejects.toThrow('Delete failed! Status: 500');
+        .rejects.toThrow('Operación falló! Status: 500');
     });
 
     it('should throw error when fetch fails', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       await expect(StorageService.deleteTurnFile('test-token', 'turn-1'))
-        .rejects.toThrow('Network error');
-    });
-  });
-
-  describe('getTurnFileInfo', () => {
-    const mockFileInfo = {
-      url: 'https://example.com/file.pdf',
-      fileName: 'test-file.pdf',
-      uploadedAt: '2024-01-15T10:00:00Z'
-    };
-
-    it('should successfully get turn file info', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockFileInfo)
-      });
-
-      const result = await StorageService.getTurnFileInfo('test-token', 'turn-1');
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8080/api/storage/turn-file/turn-1',
-        expect.objectContaining({
-          method: 'GET',
-          headers: {
-            'Authorization': 'Bearer test-token'
-          }
-        })
-      );
-
-      expect(result).toEqual(mockFileInfo);
-    });
-
-    it('should return null when file not found (404)', async () => {
-      mockFetch.mockResolvedValueOnce({
-        status: 404,
-        ok: false
-      });
-
-      const result = await StorageService.getTurnFileInfo('test-token', 'turn-1');
-
-      expect(result).toBeNull();
-    });
-
-    it('should throw error when get file info fails with error details', async () => {
-      const errorResponse = { error: 'Access denied' };
-
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 403,
-        json: () => Promise.resolve(errorResponse)
-      });
-
-      await expect(StorageService.getTurnFileInfo('test-token', 'turn-1'))
-        .rejects.toThrow('Access denied');
-    });
-
-    it('should throw error with default message when response has no error details', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        json: () => Promise.resolve({})
-      });
-
-      await expect(StorageService.getTurnFileInfo('test-token', 'turn-1'))
-        .rejects.toThrow('Get file info failed! Status: 500');
-    });
-
-    it('should throw error when fetch fails', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
-
-      await expect(StorageService.getTurnFileInfo('test-token', 'turn-1'))
         .rejects.toThrow('Network error');
     });
   });
@@ -263,7 +192,7 @@ describe('StorageService', () => {
       });
 
       await expect(StorageService.deleteFile('test-token', 'bucket-1', 'file.pdf'))
-        .rejects.toThrow('File not found');
+        .rejects.toThrow('Operación falló! Status: 404');
     });
   });
 
@@ -303,7 +232,7 @@ describe('StorageService', () => {
       });
 
       await expect(StorageService.getPublicUrl('test-token', 'bucket-1', 'file.pdf'))
-        .rejects.toThrow('Access denied');
+        .rejects.toThrow('Operación falló! Status: 403');
     });
   });
 
@@ -340,19 +269,19 @@ describe('StorageService', () => {
     it('should throw error for unsupported file type', () => {
       const invalidFile = new File(['test'], 'document.pdf', { type: 'text/plain' });
 
-      expect(() => StorageService.validateFile(invalidFile)).toThrow('Solo se permiten archivos PDF, JPG y PNG');
+      expect(() => StorageService.validateFile(invalidFile)).toThrow('Tipo de archivo no válido. Solo se permiten archivos PDF, JPG y PNG');
     });
 
     it('should throw error for file without extension', () => {
       const invalidFile = new File(['test'], 'document', { type: 'application/pdf' });
 
-      expect(() => StorageService.validateFile(invalidFile)).toThrow('Extensión de archivo no válida');
+      expect(() => StorageService.validateFile(invalidFile)).toThrow('Extensión de archivo no válida. Solo se permiten: PDF, JPG, PNG');
     });
 
     it('should throw error for unsupported extension', () => {
       const invalidFile = new File(['test'], 'document.txt', { type: 'text/plain' });
 
-      expect(() => StorageService.validateFile(invalidFile)).toThrow('Extensión de archivo no válida');
+      expect(() => StorageService.validateFile(invalidFile)).toThrow('Extensión de archivo no válida. Solo se permiten: PDF, JPG, PNG');
     });
 
     it('should not throw error for uppercase extension with valid mime type', () => {

@@ -197,38 +197,28 @@ export const medicalHistoryMachine = createMachine({
                 ? `Historia médica agregada exitosamente para ${turnInfo.patientName} - ${formatDate(turnInfo.scheduledAt || '')}`
                 : 'Historia médica agregada exitosamente';
               
-              console.log('History added successfully, sending notification:', message);
-              
-              // Notify UI of success
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: 'OPEN_SNACKBAR',
                 message,
                 severity: 'success'
               });
               
-              // Refresh all relevant data
               try {
-                // Refresh doctor turns data
-                console.log('Refreshing doctor turns data');
                 orchestrator.sendToMachine('turn', {
                   type: 'RETRY_DOCTOR_TURNS'
                 });
                 
-                // Refresh doctor data with patients
-                console.log('Refreshing doctor data');
                 orchestrator.sendToMachine('data', {
                   type: 'RETRY_DOCTOR_PATIENTS'
                 });
                 
-                // If we have a current patient, refresh their medical history
                 if (context.currentPatientId) {
-                  console.log('Refreshing patient medical history data');
                   orchestrator.sendToMachine('doctor', {
                     type: 'RETRY_DOCTOR_PATIENTS'
                   });
                 }
               } catch (error) {
-                console.error('Error while refreshing data after adding medical history:', error);
+                // Silent error handling for data refresh
               }
             }
           ],
@@ -257,7 +247,6 @@ export const medicalHistoryMachine = createMachine({
                   : String(error);
               
               if (errorMessage) {
-                console.error('Error details:', errorMessage);
                 if (errorMessage.includes('404')) {
                   message += ': Turno no encontrado';
                 } else if (errorMessage.includes('401') || errorMessage.includes('403')) {
@@ -267,7 +256,6 @@ export const medicalHistoryMachine = createMachine({
                 }
               }
               
-              console.error('Failed to add history, sending error notification:', message);
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: 'OPEN_SNACKBAR',
                 message,
@@ -381,15 +369,11 @@ export const medicalHistoryMachine = createMachine({
         // This avoids the 403 error when doctors try to access patient turns
         const medicalHistories = await MedicalHistoryService.getPatientMedicalHistory(input.accessToken, input.patientId);
         
-        console.log(`Loaded ${medicalHistories.length} medical history entries for patient ${input.patientId}`);
-        
-        // We're not loading patient turns here anymore to avoid 403 error
         return {
           medicalHistories,
-          patientTurns: [] // Return empty array instead of trying to load turns
+          patientTurns: []
         };
       } catch (error) {
-        console.error('Error loading patient medical history:', error);
         return {
           medicalHistories: [],
           patientTurns: []
@@ -398,22 +382,14 @@ export const medicalHistoryMachine = createMachine({
     }),
     addMedicalHistoryEntryForTurn: fromPromise(async ({ input }: { input: { turnId: string; content: string; accessToken: string; doctorId: string } }) => {
       try {
-        console.log('Adding medical history entry for turn:', {
-          turnId: input.turnId,
-          content: input.content?.substring(0, 20) + '...',
-          doctorId: input.doctorId,
-        });
-        
         const request: CreateMedicalHistoryRequest = {
           turnId: input.turnId,
           content: input.content,
         };
         
         const result = await MedicalHistoryService.addMedicalHistory(input.accessToken, input.doctorId, request);
-        console.log('Medical history entry added successfully:', result);
         return result;
       } catch (error) {
-        console.error('Failed to add medical history entry for turn:', error);
         throw error;
       }
     }),

@@ -375,4 +375,137 @@ export class TurnService {
       throw error;
     }
   }
+
+  static async getTurnsNeedingRating(accessToken: string): Promise<TurnResponse[]> {
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_TURNS_NEEDING_RATING);
+    
+    try {
+      const response = await fetch(url, {
+        ...getAuthenticatedFetchOptions(accessToken),
+        method: 'GET',
+      });
+
+      if (response.status === 401) {
+        await handleAuthError(response, () => this.getTurnsNeedingRating(accessToken));
+      }
+
+      if (!response.ok) {
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        console.error('[TurnService] getTurnsNeedingRating - Error:', errorData);
+        throw new Error(
+          errorData?.message || 
+          errorData?.error ||
+          `Failed to fetch turns needing rating! Status: ${response.status}`
+        );
+      }
+
+      const result: TurnResponse[] = await response.json();
+      
+      return result;
+    } catch (error) {
+      console.error('[TurnService] getTurnsNeedingRating - Exception:', error);
+      throw error;
+    }
+  }
+
+  static async createRating(
+    turnId: string,
+    ratingData: { score: number; subcategories: string[] },
+    accessToken: string
+  ): Promise<any> {
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.CREATE_RATING.replace('{turnId}', turnId));
+    
+    try {
+      const response = await fetch(url, {
+        ...getAuthenticatedFetchOptions(accessToken),
+        method: 'POST',
+        body: JSON.stringify(ratingData),
+      });
+
+      if (response.status === 401) {
+        await handleAuthError(response, () => this.createRating(turnId, ratingData, accessToken));
+      }
+
+      if (!response.ok) {
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        console.error('[TurnService] createRating - Error:', errorData);
+        throw new Error(
+          errorData?.message || 
+          errorData?.error ||
+          `Failed to create rating! Status: ${response.status}`
+        );
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('[TurnService] createRating - Exception:', error);
+      throw error;
+    }
+  }
+
+  static async getRatingSubcategories(role?: string, accessToken?: string): Promise<string[]> {
+    const url = role 
+      ? `${buildApiUrl(API_CONFIG.ENDPOINTS.GET_RATING_SUBCATEGORIES)}?role=${role}`
+      : buildApiUrl(API_CONFIG.ENDPOINTS.GET_RATING_SUBCATEGORIES);
+    
+    try {
+      const options = accessToken 
+        ? getAuthenticatedFetchOptions(accessToken)
+        : { headers: { 'Content-Type': 'application/json' } };
+
+      const response = await fetch(url, {
+        ...options,
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        console.error('[TurnService] getRatingSubcategories - Error:', errorData);
+        throw new Error(
+          errorData?.message || 
+          errorData?.error ||
+          `Failed to fetch rating subcategories! Status: ${response.status}`
+        );
+      }
+
+      const result: string[] = await response.json();
+      return result;
+    } catch (error) {
+      console.error('[TurnService] getRatingSubcategories - Exception:', error);
+      throw error;
+    }
+  }
+
+  static async getRatedSubcategoryCounts(ratedId: string, accessToken?: string, raterRole?: string): Promise<{ subcategory: string | null; count: number }[]> {
+    let url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_RATED_SUBCATEGORY_COUNTS.replace('{ratedId}', ratedId));
+    if (raterRole) {
+      url = `${url}?raterRole=${encodeURIComponent(raterRole)}`;
+    }
+
+    try {
+      const options = accessToken ? getAuthenticatedFetchOptions(accessToken) : { headers: { 'Content-Type': 'application/json' } };
+
+      const response = await fetch(url, {
+        ...options,
+        method: 'GET',
+      });
+
+      if (response.status === 401) {
+        await handleAuthError(response, () => this.getRatedSubcategoryCounts(ratedId, accessToken, raterRole));
+      }
+
+      if (!response.ok) {
+        const errorData: any = await response.json().catch(() => ({}));
+        console.error('[TurnService] getRatedSubcategoryCounts - Error:', errorData);
+        throw new Error(errorData?.message || errorData?.error || `Failed to fetch subcategory counts! Status: ${response.status}`);
+      }
+
+      const result: { subcategory: string | null; count: number }[] = await response.json();
+      return result;
+    } catch (error) {
+      console.error('[TurnService] getRatedSubcategoryCounts - Exception:', error);
+      throw error;
+    }
+  }
 }

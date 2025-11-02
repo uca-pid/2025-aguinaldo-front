@@ -10,6 +10,7 @@ import { profileMachine, PROFILE_MACHINE_ID, PROFILE_MACHINE_EVENT_TYPES, type P
 import { notificationMachine, NOTIFICATION_MACHINE_ID, NOTIFICATION_MACHINE_EVENT_TYPES, type NotificationMachineEvent } from '../machines/notificationMachine';
 import { medicalHistoryMachine, MEDICAL_HISTORY_MACHINE_ID, MEDICAL_HISTORY_MACHINE_EVENT_TYPES, type MedicalHistoryMachineEvent } from '#/machines/medicalHistoryMachine';
 import { filesMachine, FILES_MACHINE_ID, FILES_MACHINE_EVENT_TYPES, type FilesMachineEvent } from '../machines/filesMachine';
+import { ratingMachine, RATING_MACHINE_ID } from '../machines/ratingMachine';
 
 interface MachineInstances {
     uiState: any;
@@ -28,6 +29,8 @@ interface MachineInstances {
     medicalHistorySend: (event: MedicalHistoryMachineEvent) => void;
     filesState: any;
     filesSend: (event: FilesMachineEvent) => void;
+    ratingState: any;
+    ratingSend: (event: any) => void;
 }
 
 interface MachineProviderProps {
@@ -90,6 +93,12 @@ orchestrator.registerMachine({
   eventTypes: DOCTOR_MACHINE_EVENT_TYPES
 });
 
+orchestrator.registerMachine({
+  id: RATING_MACHINE_ID,
+  machine: ratingMachine,
+  eventTypes: []
+});
+
 export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) => {
   const { state: uiState, send: uiSend } = useStateMachine(UI_MACHINE_ID);
   const { state: turnState, send: turnSend } = useStateMachine(TURN_MACHINE_ID);
@@ -99,6 +108,7 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
   const { state: notificationState, send: notificationSend } = useStateMachine(NOTIFICATION_MACHINE_ID);
   const { state: medicalHistoryState, send: medicalHistorySend } = useStateMachine(MEDICAL_HISTORY_MACHINE_ID);
   const { state: filesState, send: filesSend } = useStateMachine(FILES_MACHINE_ID);
+  const { state: ratingState, send: ratingSend } = useStateMachine(RATING_MACHINE_ID);
 
   const machines: MachineInstances = {
       uiState: uiState,
@@ -117,6 +127,8 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       medicalHistorySend: medicalHistorySend,
       filesState: filesState,
       filesSend: filesSend,
+      ratingState: ratingState,
+      ratingSend: ratingSend,
   };
 
   return (

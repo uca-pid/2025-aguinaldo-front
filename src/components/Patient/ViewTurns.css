@@ -175,6 +175,11 @@
   color: #dc2626 !important;
 }
 
+.viewturns-status-chip.status-no_show {
+  background: #fef3c7 !important;
+  color: #d97706 !important;
+}
+
 /* Cancel Button - matching PendingScreen reject button style */
 .viewturns-cancel-btn {
   background-color: #ef4444 !important;
@@ -237,6 +242,14 @@
   background-color: var(--tea-green) !important;
   color: var(--indigo-dye) !important;
   border-color: var(--tea-green) !important;
+}
+
+/* Upload Section Container */
+.viewturns-upload-section {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  gap: 4px !important;
 }
 
 /* View File Button */
@@ -436,6 +449,11 @@
     width: 100% !important;
     padding: 10px 16px !important;
     font-size: 0.9rem !important;
+  }
+
+  .viewturns-upload-section {
+    width: 100% !important;
+    align-items: stretch !important;
   }
 
   .viewturns-turn-datetime {

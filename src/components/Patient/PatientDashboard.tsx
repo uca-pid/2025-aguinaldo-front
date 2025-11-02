@@ -31,7 +31,6 @@ const PatientDashboard: React.FC = () => {
   const isLoading = dataContext.loading?.doctors || 
                    dataContext.loading?.myTurns || 
                    dataContext.loading?.myModifyRequests ||
-                   dataContext.loading?.turnFiles ||
                    turnContext.isLoadingMyTurns;
   
   const upcomingTurns = (turnContext.myTurns || [])

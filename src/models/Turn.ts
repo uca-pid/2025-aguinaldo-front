@@ -6,6 +6,7 @@ export interface Doctor {
   medicalLicense: string;
   specialty: string;
   slotDurationMin: number;
+  score: number;
 }
 
 export interface TurnAvailable {
@@ -38,8 +39,14 @@ export interface TurnResponse {
   doctorSpecialty: string;
   patientId: string;
   patientName: string;
+  patientScore?: number | null;
   scheduledAt: string;
   status: string;
+  needsPatientRating?: boolean;
+  needsDoctorRating?: boolean;
+  fileUrl?: string | null;
+  fileName?: string | null;
+  uploadedAt?: string | null;
 }
 
 export interface ApiErrorResponse {

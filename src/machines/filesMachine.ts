@@ -3,7 +3,6 @@ import { StorageService } from '../service/storage-service.service';
 import { orchestrator } from "#/core/Orchestrator";
 import { DATA_MACHINE_ID } from "./dataMachine";
 import { UI_MACHINE_ID } from "./uiMachine";
-import dayjs from "#/utils/dayjs.config";
 
 export const FILES_MACHINE_ID = "files";
 export const FILES_MACHINE_EVENT_TYPES = [
@@ -115,18 +114,9 @@ export const filesMachine = createMachine({
         onDone: {
           target: "idle",
           actions: [
-            ({ event, context }) => {
-              const updateEvent = { 
-                type: "UPDATE_TURN_FILE",
-                turnId: context.uploadingFileTurnId!,
-                fileInfo: {
-                  url: event.output.url,
-                  fileName: event.output.fileName,
-                  uploadedAt: dayjs().toISOString()
-                }
-              };
-              
-              orchestrator.sendToMachine(DATA_MACHINE_ID, updateEvent);
+            () => {
+              // Reload turns to get updated file information
+              orchestrator.sendToMachine(DATA_MACHINE_ID, { type: "LOAD_MY_TURNS" });
               
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",
@@ -180,13 +170,9 @@ export const filesMachine = createMachine({
         onDone: {
           target: "idle",
           actions: [
-            ({ context }) => {
-              const removeEvent = { 
-                type: "REMOVE_TURN_FILE",
-                turnId: context.deletingFileTurnId!
-              };
-              
-              orchestrator.sendToMachine(DATA_MACHINE_ID, removeEvent);
+            () => {
+              // Reload turns to get updated file information
+              orchestrator.sendToMachine(DATA_MACHINE_ID, { type: "LOAD_MY_TURNS" });
               
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",

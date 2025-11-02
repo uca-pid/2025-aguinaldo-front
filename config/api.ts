@@ -16,6 +16,10 @@ export const API_CONFIG = {
     GET_DOCTOR_TURNS: '/api/turns/doctor',
     GET_PATIENT_TURNS: '/api/turns/patient',
     CANCEL_TURN: '/api/turns/{turnId}/cancel',
+    GET_TURNS_NEEDING_RATING: '/api/turns/needing-rating',
+    CREATE_RATING: '/api/ratings/turns/{turnId}/rate',
+    GET_RATING_SUBCATEGORIES: '/api/ratings/rating-subcategories',
+  GET_RATED_SUBCATEGORY_COUNTS: '/api/ratings/rated/{ratedId}/subcategories-counts',
     
     MODIFY_TURN_REQUEST: '/api/turns/modify-requests',
     GET_MY_MODIFY_REQUESTS: '/api/turns/modify-requests/my-requests',
@@ -32,6 +36,7 @@ export const API_CONFIG = {
     APPROVE_DOCTOR: '/api/admin/approve-doctor/{doctorId}',
     REJECT_DOCTOR: '/api/admin/reject-doctor/{doctorId}',
     GET_ADMIN_STATS: '/api/admin/stats',
+    GET_ADMIN_RATINGS: '/api/admin/ratings',
 
     APPROVE_MODIFY_REQUEST: '/api/turns/modify-requests/{requestId}/approve',
     REJECT_MODIFY_REQUEST: '/api/turns/modify-requests/{requestId}/reject',

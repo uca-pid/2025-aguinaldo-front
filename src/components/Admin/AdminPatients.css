@@ -1,0 +1,242 @@
+/* AdminPatients.css */
+
+/* Content Section */
+.patients-content {
+  padding: 0;
+  margin: 0;
+}
+
+.admin-patients-container {
+  padding: 0;
+  margin: 0;
+}
+
+.admin-patients-paper {
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Stats Cards Grid */
+.patients-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.patients-stats-card {
+  background: linear-gradient(135deg, #22577a 0%, #38a3a5 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(34, 87, 122, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.patients-stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(34, 87, 122, 0.4);
+}
+
+.patients-stats-number {
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 0.5rem !important;
+  color: white !important;
+}
+
+.patients-stats-label {
+  font-size: 0.875rem !important;
+  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Ratings Section */
+.patients-ratings-section {
+  margin-top: 2rem;
+}
+
+.patients-ratings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.patients-ratings-title {
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+}
+
+.patients-ratings-subtitle {
+  font-size: 0.875rem !important;
+  color: #64748b !important;
+  margin-top: 0.25rem !important;
+}
+
+.patients-ratings-chip {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  font-weight: 500 !important;
+}
+
+/* Ratings Table */
+.patients-ratings-table {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.patients-ratings-table .MuiTableHead-root {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.patients-ratings-table .MuiTableHead-root .MuiTableCell-root {
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #d1d5db;
+}
+
+.patients-ratings-table .MuiTableBody-root .MuiTableRow-root:hover {
+  background-color: #f8fafc;
+}
+
+.patients-ratings-table .MuiTableCell-root {
+  padding: 1rem 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Rating Score Styling */
+.rating-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.rating-score-5 {
+  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  color: white;
+}
+
+.rating-score-4 {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  color: white;
+}
+
+.rating-score-3 {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  color: white;
+}
+
+.rating-score-2 {
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  color: white;
+}
+
+.rating-score-1 {
+  background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+  color: white;
+}
+
+/* Subcategories Styling */
+.rating-subcategories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.subcategory-chip {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  font-size: 0.75rem !important;
+  height: 24px !important;
+  border-radius: 12px !important;
+}
+
+/* Empty State */
+.patients-empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #64748b;
+}
+
+.patients-empty-icon {
+  font-size: 4rem !important;
+  opacity: 0.5;
+  margin-bottom: 1rem;
+}
+
+/* Loading State */
+.patients-loading-state {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.patients-loading-text {
+  color: #64748b !important;
+  margin-top: 1rem !important;
+}
+
+/* Date Formatting */
+.rating-date {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+/* User Info */
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #374151;
+}
+
+.user-role {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .patients-stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+  
+  .patients-stats-card {
+    padding: 1rem;
+  }
+  
+  .patients-stats-number {
+    font-size: 2rem !important;
+  }
+  
+  .admin-patients-paper {
+    padding: 1rem;
+  }
+  
+  .patients-ratings-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}

@@ -45,7 +45,6 @@ const DoctorDashboard: React.FC = () => {
                    dataContext.loading?.doctorPatients || 
                    dataContext.loading?.doctorAvailability || 
                    dataContext.loading?.doctorModifyRequests ||
-                   dataContext.loading?.turnFiles ||
                    doctorContext.isLoadingAvailability;
   
   const upcomingTurns = (turnContext?.myTurns || [])

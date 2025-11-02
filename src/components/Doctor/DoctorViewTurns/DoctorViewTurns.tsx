@@ -1,6 +1,6 @@
 import React from "react";
 import { 
-  Box, Button, Typography, CircularProgress, Chip, FormControl, InputLabel, Select, MenuItem, Avatar
+  Box, Button, Typography, CircularProgress, Chip, FormControl, InputLabel, Select, MenuItem, Avatar, Rating
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
@@ -45,6 +45,8 @@ const ViewTurns: React.FC = () => {
         return 'Programado';
       case 'CANCELED':
         return 'Cancelado';
+      case 'NO_SHOW':
+        return 'No Asistió';
       case 'COMPLETED':
         return 'Completado';
       case 'AVAILABLE':
@@ -62,7 +64,55 @@ const ViewTurns: React.FC = () => {
     return turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt);
   };
 
+  const isPastScheduledTurn = (turn: any) => {
+    return turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt);
+  };
 
+  const isCompletedTurn = (turn: any) => {
+    return turn.status === 'COMPLETED';
+  };
+
+  const turnNeedsRating = (turn: any) => {
+    return turn.needsDoctorRating === true;
+  };
+
+  const handleCompleteTurn = (turnId: string) => {
+    if (!user.accessToken) return;
+    const turnData = filteredTurns.find((turn: any) => turn.id === turnId);
+    uiSend({ 
+      type: "OPEN_COMPLETE_TURN_DIALOG", 
+      turnId,
+      turnData,
+      title: "Marcar Turno como Completado",
+      message: "¿Confirmas que este turno fue atendido exitosamente?",
+      confirmButtonText: "Marcar Completado",
+      confirmButtonColor: "success"
+    });
+  };
+
+  const handleNoShowTurn = (turnId: string) => {
+    if (!user.accessToken) return;
+    const turnData = filteredTurns.find((turn: any) => turn.id === turnId);
+    uiSend({ 
+      type: "OPEN_NO_SHOW_TURN_DIALOG", 
+      turnId,
+      turnData,
+      title: "Marcar Turno como No Asistió",
+      message: "¿Confirmas que el paciente no asistió a este turno?",
+      confirmButtonText: "No Asistió",
+      confirmButtonColor: "error"
+    });
+  };
+
+  const handleRatePatient = (turnId: string) => {
+    const turnToRate = filteredTurns.find((turn: any) => turn.id === turnId);
+    if (turnToRate) {
+      uiSend({ 
+        type: "OPEN_RATING_MODAL", 
+        turn: turnToRate 
+      });
+    }
+  };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -109,6 +159,7 @@ const ViewTurns: React.FC = () => {
                       <MenuItem value="">Todos los estados</MenuItem>
                       <MenuItem value="SCHEDULED">Programados</MenuItem>
                       <MenuItem value="CANCELED">Cancelados</MenuItem>
+                      <MenuItem value="NO_SHOW">No Asistió</MenuItem>
                       <MenuItem value="COMPLETED">Completados</MenuItem>
                     </Select>
                   </FormControl>
@@ -148,12 +199,11 @@ const ViewTurns: React.FC = () => {
                           {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
                           {turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt) ? (
                             <Chip 
-                              label="Vencido" 
+                              label="Programado" 
                               size="small" 
+                              className="viewturns-status-chip status-scheduled"
                               sx={{ 
                                 ml: 1, 
-                                backgroundColor: '#fbbf24', 
-                                color: '#92400e',
                                 fontSize: '0.75rem'
                               }} 
                             />
@@ -166,9 +216,28 @@ const ViewTurns: React.FC = () => {
                             />
                           )}
                         </Typography>
-                        <Typography variant="body1" className="viewturns-turn-patient">
-                          Paciente: {turn.patientName || "Paciente"}
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="body1" className="viewturns-turn-patient">
+                            Paciente: {turn.patientName || "Paciente"}
+                          </Typography>
+                          {turn.patientScore != null && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <Rating 
+                                value={turn.patientScore} 
+                                readOnly 
+                                size="small" 
+                                precision={0.1}
+                                sx={{ display: 'flex' }}
+                              />
+                              <Typography 
+                                variant="body2" 
+                                sx={{ color: 'text.secondary', lineHeight: 1 }}
+                              >
+                                ({turn.patientScore.toFixed(1)})
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
                         {turn.reason && (
                           <Typography variant="body2" className="viewturns-turn-reason">
                             Motivo: {turn.reason}
@@ -181,7 +250,7 @@ const ViewTurns: React.FC = () => {
                             <Button 
                               variant="contained" 
                               size="small"
-                              className="viewturns-cancel-btn"
+                              className="doctor-viewturns-cancel-btn"
                               onClick={() => handleCancelTurn(turn.id)}
                               disabled={isCancellingTurn && cancellingTurnId === turn.id}
                             >
@@ -193,6 +262,52 @@ const ViewTurns: React.FC = () => {
                               ) : (
                                 'Cancelar turno'
                               )}
+                            </Button>
+                          )}
+                          {isPastScheduledTurn(turn) && (
+                            <>
+                              <Button 
+                                variant="contained" 
+                                size="small"
+                                className="doctor-viewturns-complete-btn"
+                                onClick={() => handleCompleteTurn(turn.id)}
+                                disabled={isCancellingTurn && cancellingTurnId === turn.id}
+                              >
+                                {isCancellingTurn && cancellingTurnId === turn.id ? (
+                                  <>
+                                    <CircularProgress size={16} sx={{ mr: 1 }} />
+                                    Procesando...
+                                  </>
+                                ) : (
+                                  'Completado'
+                                )}
+                              </Button>
+                              <Button 
+                                variant="contained" 
+                                size="small"
+                                className="doctor-viewturns-noshow-btn"
+                                onClick={() => handleNoShowTurn(turn.id)}
+                                disabled={isCancellingTurn && cancellingTurnId === turn.id}
+                              >
+                                {isCancellingTurn && cancellingTurnId === turn.id ? (
+                                  <>
+                                    <CircularProgress size={16} sx={{ mr: 1 }} />
+                                    Procesando...
+                                  </>
+                                ) : (
+                                  'No Asistió'
+                                )}
+                              </Button>
+                            </>
+                          )}
+                          {isCompletedTurn(turn) && turnNeedsRating(turn) && (
+                            <Button 
+                              variant="contained" 
+                              size="small"
+                              className="doctor-viewturns-rate-btn"
+                              onClick={() => handleRatePatient(turn.id)}
+                            >
+                              Calificar Paciente
                             </Button>
                           )}
                         </Box>
