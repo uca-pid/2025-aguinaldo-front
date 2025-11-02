@@ -110,3 +110,22 @@ export const loadAdminRatings = async ({ accessToken, isAdmin }: LoadAdminRating
   if (!isAdmin) return { allRatings: [], patientRatings: [], doctorRatings: [], stats: null };
   return await AdminService.getAdminRatings(accessToken);
 };
+
+export interface LoadRatedSubcategoryCountsParams {
+  doctorIds: string[];
+  accessToken?: string;
+}
+
+export const loadRatedSubcategoryCounts = async ({ doctorIds, accessToken }: LoadRatedSubcategoryCountsParams): Promise<Record<string, { subcategory: string | null; count: number }[]>> => {
+  const map: Record<string, { subcategory: string | null; count: number }[]> = {};
+  const promises = doctorIds.map(async (id) => {
+    try {
+      const counts = await TurnService.getRatedSubcategoryCounts(id, accessToken);
+      map[id] = counts;
+    } catch (e) {
+      map[id] = [];
+    }
+  });
+  await Promise.all(promises);
+  return map;
+};
