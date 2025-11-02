@@ -1,7 +1,7 @@
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  Button, Typography, FormControl, InputLabel, Select, MenuItem,
-  Rating, Box, Paper, Chip, OutlinedInput
+  Button, Typography,
+  Rating, Box, Paper, Chip
 } from '@mui/material';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -183,37 +183,74 @@ const RatingModal = () => {
             Aspectos a Destacar (opcional)
           </Typography>
           
-          <FormControl fullWidth className="rating-modal-select">
-            <InputLabel>Selecciona aspectos a destacar (máximo 3)</InputLabel>
-            <Select
-              multiple
-              value={subcategories}
-              onChange={(e) => {
-                const value = e.target.value as string[];
-                if (value.length <= 3) {
-                  ratingSend({ type: 'SET_SUBCATEGORIES', subcategories: value });
-                }
-              }}
-              input={<OutlinedInput label="Selecciona aspectos a destacar (máximo 3)" />}
-              renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {(selected as string[]).map((value) => (
-                    <Chip key={value} label={value} size="small" />
-                  ))}
-                </Box>
-              )}
-            >
-              {ratingSubcategories.map((category: string) => (
-                <MenuItem 
-                  key={category} 
-                  value={category}
-                  disabled={subcategories.length >= 3 && !subcategories.includes(category)}
-                >
-                  {category}
-                </MenuItem>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            Selecciona hasta 3 aspectos
+          </Typography>
+
+          {subcategories.length > 0 && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+              {subcategories.map((value: string) => (
+                <Chip 
+                  key={value} 
+                  label={value} 
+                  size="small"
+                  onDelete={() => {
+                    ratingSend({ 
+                      type: 'SET_SUBCATEGORIES', 
+                      subcategories: subcategories.filter((s: string) => s !== value) 
+                    });
+                  }}
+                  color="primary"
+                />
               ))}
-            </Select>
-          </FormControl>
+            </Box>
+          )}
+          
+          <Box 
+            sx={{ 
+              maxHeight: '200px', 
+              overflowY: 'auto',
+              border: '1px solid #e0e0e0',
+              borderRadius: '4px',
+              p: 1
+            }}
+          >
+            {ratingSubcategories.map((category: string) => (
+              <Box
+                key={category}
+                onClick={() => {
+                  if (subcategories.includes(category)) {
+                    ratingSend({ 
+                      type: 'SET_SUBCATEGORIES', 
+                      subcategories: subcategories.filter((s: string) => s !== category) 
+                    });
+                  } else if (subcategories.length < 3) {
+                    ratingSend({ 
+                      type: 'SET_SUBCATEGORIES', 
+                      subcategories: [...subcategories, category] 
+                    });
+                  }
+                }}
+                sx={{
+                  p: 1.5,
+                  mb: 0.5,
+                  borderRadius: '4px',
+                  cursor: subcategories.length >= 3 && !subcategories.includes(category) ? 'not-allowed' : 'pointer',
+                  backgroundColor: subcategories.includes(category) ? 'primary.light' : 'transparent',
+                  opacity: subcategories.length >= 3 && !subcategories.includes(category) ? 0.5 : 1,
+                  '&:hover': {
+                    backgroundColor: subcategories.includes(category) ? 'primary.light' : 'action.hover',
+                  },
+                  transition: 'all 0.2s',
+                  color: subcategories.includes(category) ? 'primary.contrastText' : 'text.primary',
+                }}
+              >
+                <Typography variant="body2">
+                  {subcategories.includes(category) ? '✓ ' : ''}{category}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
         </Box>
       </DialogContent>
       
