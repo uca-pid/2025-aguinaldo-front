@@ -180,7 +180,7 @@ const ReservationTurns: React.FC = () => {
                       <MenuItem key={doctor.id} value={doctor.id}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                           <Box sx={{ mr: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {doctor.name} {doctor.surname} - {doctor.medicalLicense}
+                            {doctor.name} {doctor.surname}
                           </Box>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             {doctor.score != null ? (
