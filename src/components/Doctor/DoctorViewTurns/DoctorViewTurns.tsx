@@ -1,6 +1,6 @@
 import React from "react";
 import { 
-  Box, Button, Typography, CircularProgress, Chip, FormControl, InputLabel, Select, MenuItem, Avatar
+  Box, Button, Typography, CircularProgress, Chip, FormControl, InputLabel, Select, MenuItem, Avatar, Rating
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
@@ -68,6 +68,14 @@ const ViewTurns: React.FC = () => {
     return turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt);
   };
 
+  const isCompletedTurn = (turn: any) => {
+    return turn.status === 'COMPLETED';
+  };
+
+  const turnNeedsRating = (turn: any) => {
+    return turn.needsDoctorRating === true;
+  };
+
   const handleCompleteTurn = (turnId: string) => {
     if (!user.accessToken) return;
     const turnData = filteredTurns.find((turn: any) => turn.id === turnId);
@@ -94,6 +102,16 @@ const ViewTurns: React.FC = () => {
       confirmButtonText: "No Asistió",
       confirmButtonColor: "error"
     });
+  };
+
+  const handleRatePatient = (turnId: string) => {
+    const turnToRate = filteredTurns.find((turn: any) => turn.id === turnId);
+    if (turnToRate) {
+      uiSend({ 
+        type: "OPEN_RATING_MODAL", 
+        turn: turnToRate 
+      });
+    }
   };
 
   return (
@@ -198,9 +216,28 @@ const ViewTurns: React.FC = () => {
                             />
                           )}
                         </Typography>
-                        <Typography variant="body1" className="viewturns-turn-patient">
-                          Paciente: {turn.patientName || "Paciente"}
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="body1" className="viewturns-turn-patient">
+                            Paciente: {turn.patientName || "Paciente"}
+                          </Typography>
+                          {turn.patientScore != null && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <Rating 
+                                value={turn.patientScore} 
+                                readOnly 
+                                size="small" 
+                                precision={0.1}
+                                sx={{ display: 'flex' }}
+                              />
+                              <Typography 
+                                variant="body2" 
+                                sx={{ color: 'text.secondary', lineHeight: 1 }}
+                              >
+                                ({turn.patientScore.toFixed(1)})
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
                         {turn.reason && (
                           <Typography variant="body2" className="viewturns-turn-reason">
                             Motivo: {turn.reason}
@@ -262,6 +299,16 @@ const ViewTurns: React.FC = () => {
                                 )}
                               </Button>
                             </>
+                          )}
+                          {isCompletedTurn(turn) && turnNeedsRating(turn) && (
+                            <Button 
+                              variant="contained" 
+                              size="small"
+                              className="doctor-viewturns-rate-btn"
+                              onClick={() => handleRatePatient(turn.id)}
+                            >
+                              Calificar Paciente
+                            </Button>
                           )}
                         </Box>
                       </Box>

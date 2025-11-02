@@ -1,5 +1,5 @@
 import React from "react"
-import {Avatar,Box,Button,Chip,Divider,Typography,Alert,CircularProgress,Paper,TextField} from "@mui/material"
+import {Avatar,Box,Button,Chip,Divider,Typography,Alert,CircularProgress,Paper,TextField,Rating} from "@mui/material"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { useMachines } from "#/providers/MachineProvider"
@@ -23,6 +23,7 @@ const PatientDetails: React.FC = () => {
   const authContext = authState?.context;
   const medicalHistoryContext = medicalHistoryState.context;
 
+  
   const isSelectingPatient = doctorState.matches({ patientManagement: 'selectingPatient' });
   const error = dataContext.errors.doctorPatients;
 
@@ -360,6 +361,14 @@ const PatientDetails: React.FC = () => {
                     color={getStatusColor(patient.status) as any}
                     size="small"
                   />
+                  {patient && ((patient as any).score != null ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Rating value={(patient as any).score} precision={0.1} readOnly size="small" />
+                      <Typography variant="body2" color="text.secondary">{(patient as any).score.toFixed(1)}</Typography>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">Sin calificación</Typography>
+                  ))}
                 </Box>
               </Box>
             </Box>
