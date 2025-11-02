@@ -60,6 +60,19 @@ const ViewTurns: React.FC = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && dataContext.accessToken) {
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        uiSend({
+          type: "OPEN_SNACKBAR",
+          message: "El archivo es demasiado grande. El tamaño máximo permitido es 5MB.",
+          severity: "error"
+        });
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        return;
+      }
+
       const turnId = (event.target as any).turnId;
 
       filesSend({
@@ -121,6 +134,14 @@ const ViewTurns: React.FC = () => {
 
   const canUploadFile = (turn: any) => {
     return turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt);
+  };
+
+  const canShowFileSection = (turn: any) => {
+    return turn.status === 'SCHEDULED' || turn.status === 'COMPLETED';
+  };
+
+  const canDeleteFile = (turn: any) => {
+    return turn.status !== 'COMPLETED';
   };
 
   const truncateFileName = (fileName: string | undefined) => {
@@ -308,7 +329,7 @@ const ViewTurns: React.FC = () => {
                         )}
                       </Box>
                       
-                      {canUploadFile(turn) && (
+                      {canShowFileSection(turn) && (
                         <Box className="viewturns-file-actions">
                           {(() => {
                             const fileStatus = getFileStatus(turn.id);
@@ -342,18 +363,23 @@ const ViewTurns: React.FC = () => {
                             }
                             
                             if (fileStatus === "no-file") {
-                              return (
-                                <Button
-                                  variant="outlined"
-                                  size="small"
-                                  startIcon={<CloudUploadIcon />}
-                                  onClick={() => handleFileUpload(turn.id)}
-                                  disabled={isUploadingFile}
-                                  className="viewturns-upload-btn"
-                                >
-                                  Subir archivo
-                                </Button>
-                              );
+                              return canUploadFile(turn) ? (
+                                <Box className="viewturns-upload-section">
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
+                                    startIcon={<CloudUploadIcon />}
+                                    onClick={() => handleFileUpload(turn.id)}
+                                    disabled={isUploadingFile}
+                                    className="viewturns-upload-btn"
+                                  >
+                                    Subir archivo
+                                  </Button>
+                                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>
+                                    Tamaño máximo 5MB
+                                  </Typography>
+                                </Box>
+                              ) : null;
                             }
                             
                             if (fileStatus === "deleting") {
@@ -397,17 +423,19 @@ const ViewTurns: React.FC = () => {
                                   >
                                     {truncateFileName(fileInfo?.fileName)}
                                   </Button>
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    color="error"
-                                    startIcon={<DeleteIcon />}
-                                    onClick={() => handleDeleteFile(turn.id)}
-                                    disabled={isDeletingFile}
-                                    className="viewturns-delete-file-btn"
-                                  >
-                                    Eliminar archivo
-                                  </Button>
+                                  {canDeleteFile(turn) && (
+                                    <Button
+                                      variant="outlined"
+                                      size="small"
+                                      color="error"
+                                      startIcon={<DeleteIcon />}
+                                      onClick={() => handleDeleteFile(turn.id)}
+                                      disabled={isDeletingFile}
+                                      className="viewturns-delete-file-btn"
+                                    >
+                                      Eliminar archivo
+                                    </Button>
+                                  )}
                                 </>
                               );
                             }
