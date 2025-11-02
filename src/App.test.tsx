@@ -4,6 +4,7 @@ import { vi, describe, it, expect, beforeEach, Mock } from 'vitest'
 import App from './App'
 import { useAuthMachine } from './providers/AuthProvider'
 import { useMachines } from './providers/MachineProvider'
+import { useDataMachine } from './providers/DataProvider'
 
 
 // Mock react-router-dom
@@ -22,6 +23,10 @@ vi.mock('./providers/AuthProvider', () => ({
 
 vi.mock('./providers/MachineProvider', () => ({
   useMachines: vi.fn()
+}))
+
+vi.mock('./providers/DataProvider', () => ({
+  useDataMachine: vi.fn()
 }))
 
 // Mock all the components to avoid complex dependencies
@@ -93,6 +98,10 @@ vi.mock('./components/shared/ConfirmationModal/ConfirmationModal', () => ({
   default: () => <div data-testid="confirmation-modal">Confirmation Modal</div>
 }))
 
+vi.mock('./components/shared/RatingModal/RatingModal', () => ({
+  default: () => <div data-testid="rating-modal">Rating Modal</div>
+}))
+
 describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -108,6 +117,15 @@ describe('App', () => {
 
     ;(useMachines as Mock).mockReturnValue({
       uiSend: vi.fn()
+    })
+
+    ;(useDataMachine as Mock).mockReturnValue({
+      dataState: {
+        context: {
+          ratingSubcategories: [],
+          accessToken: null
+        }
+      }
     })
   })
 

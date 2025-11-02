@@ -692,7 +692,6 @@ export const dataMachine = createMachine({
               ({ context }) => {
                 if (!context.ratingModalChecked && context.userRole === "PATIENT") {
                   setTimeout(() => {
-                    const currentSnapshot = orchestrator.getSnapshot("data");
                     orchestrator.sendToMachine("data", { type: "LOAD_TURNS_NEEDING_RATING" });
                   }, 100);
                 }

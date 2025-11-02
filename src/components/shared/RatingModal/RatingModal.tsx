@@ -5,7 +5,6 @@ import {
   Rating, Box, Paper, Chip, OutlinedInput
 } from '@mui/material';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
-import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useDataMachine } from '#/providers/DataProvider';
 import { useMachines } from '#/providers/MachineProvider';
