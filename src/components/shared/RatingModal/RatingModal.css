@@ -1,0 +1,255 @@
+/* RatingModal.css - Component-specific styles */
+
+/* Import shared styles for color palette */
+@import "../SharedStyles.css";
+
+/* Modal Container */
+.rating-modal .MuiDialog-paper {
+  border-radius: 20px !important;
+  box-shadow: 0 10px 30px rgba(13, 34, 48, 0.1) !important;
+  overflow: visible !important;
+  max-width: 500px !important;
+  background: white !important;
+}
+
+/* Header */
+.rating-modal-header {
+  background: var(--verdigris) !important;
+  color: white !important;
+  text-align: center !important;
+  padding: 24px !important;
+  border-radius: 20px 20px 0 0 !important;
+}
+
+.rating-modal-header-content {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 16px !important;
+  margin-bottom: 12px !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.rating-modal-title {
+  font-weight: 700 !important;
+  font-size: 1.6rem !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.rating-modal-subtitle {
+  opacity: 0.95 !important;
+  font-weight: 500 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Content */
+.rating-modal-content {
+  padding: 32px 24px !important;
+  background: white !important;
+}
+
+/* Consultation Info */
+.rating-modal-info-card {
+  padding: 24px !important;
+  margin-bottom: 32px !important;
+  border-radius: 16px !important;
+  background: var(--white) !important;
+  border: 2px solid var(--lapis-lazuli-light) !important;
+  box-shadow: 0 8px 24px rgba(56, 163, 165, 0.1) !important;
+  transition: all 0.3s ease !important;
+}
+
+.rating-modal-info-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 36px rgba(56, 163, 165, 0.15) !important;
+}
+
+.rating-modal-doctor-info {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin-bottom: 16px !important;
+}
+
+.rating-modal-doctor-details {
+  flex: 1 !important;
+}
+
+.rating-modal-doctor-name {
+  font-weight: 700 !important;
+  color: var(--lapis-lazuli) !important;
+  margin-bottom: 6px !important;
+  font-size: 1.1rem !important;
+}
+
+.rating-modal-doctor-specialty {
+  color: var(--verdigris) !important;
+  font-weight: 600 !important;
+  margin-bottom: 12px !important;
+}
+
+.rating-modal-appointment-details {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: var(--indigo-dye) !important;
+}
+
+/* Rating Section */
+.rating-modal-rating-section {
+  margin-bottom: 28px !important;
+}
+
+.rating-modal-section-title {
+  font-weight: 600 !important;
+  color: var(--gunmetal) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-bottom: 16px !important;
+  font-size: 1.1rem !important;
+}
+
+.rating-modal-rating-container {
+  padding: 24px !important;
+  background: white !important;
+  border-radius: 20px !important;
+  border: 2px solid var(--lapis-lazuli-light) !important;
+  text-align: center !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.rating-modal-stars {
+  font-size: 2.5rem !important;
+  margin-bottom: 12px !important;
+}
+
+.rating-modal-rating-description {
+  color: var(--indigo-dye) !important;
+  font-weight: 500 !important;
+}
+
+/* Subcategory Selection */
+.rating-modal-subcategory {
+  margin-bottom: 28px !important;
+}
+
+.rating-modal-select .MuiOutlinedInput-root {
+  background: white !important;
+  border-radius: 20px !important;
+  border: 2px solid var(--lapis-lazuli-light) !important;
+}
+
+.rating-modal-select .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--lapis-lazuli) !important;
+}
+
+.rating-modal-select .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--lapis-lazuli) !important;
+  border-width: 2px !important;
+}
+
+.rating-modal-select .MuiChip-root {
+  background: var(--lapis-lazuli) !important;
+  color: white !important;
+  border-radius: 16px !important;
+  font-weight: 500 !important;
+}
+
+.rating-modal-select .MuiChip-deleteIcon {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.rating-modal-select .MuiChip-deleteIcon:hover {
+  color: white !important;
+}
+
+/* Actions */
+.rating-modal-actions {
+  padding: 24px !important;
+  background: white !important;
+  border-top: 2px solid var(--lapis-lazuli-light) !important;
+  border-radius: 0 0 20px 20px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.rating-modal-submit-btn {
+  min-width: 200px !important;
+  padding: 16px 32px !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  border-radius: 20px !important;
+  background: var(--verdigris) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  text-transform: none !important;
+}
+
+.rating-modal-submit-btn:hover {
+  background: var(--lapis-lazuli) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+.rating-modal-submit-btn:disabled {
+  background: var(--lapis-lazuli-light) !important;
+  color: var(--indigo-dye) !important;
+  box-shadow: none !important;
+  opacity: 0.6 !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .rating-modal .MuiDialog-paper {
+    margin: 16px !important;
+    max-width: calc(100vw - 32px) !important;
+  }
+
+  .rating-modal-header {
+    padding: 20px 16px !important;
+  }
+
+  .rating-modal-content {
+    padding: 20px 16px !important;
+  }
+
+  .rating-modal-actions {
+    padding: 16px !important;
+  }
+
+  .rating-modal-stars {
+    font-size: 1.75rem !important;
+  }
+
+  .rating-modal-submit-btn {
+    width: 100% !important;
+    padding: 14px 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .rating-modal-header-content {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .rating-modal-title {
+    font-size: 1.25rem !important;
+  }
+
+  .rating-modal-doctor-info {
+    flex-direction: column !important;
+    text-align: center !important;
+  }
+
+  .rating-modal-appointment-details {
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+  }
+
+  .rating-modal-stars {
+    font-size: 1.5rem !important;
+  }
+}

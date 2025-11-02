@@ -2,7 +2,7 @@ import { createMachine, assign } from "xstate";
 import { orchestrator } from "#/core/Orchestrator";
 
 export const UI_MACHINE_ID = "ui";
-export const UI_MACHINE_EVENT_TYPES = ["TOGGLE", "NAVIGATE", "OPEN_SNACKBAR", "CLOSE_SNACKBAR", "OPEN_CONFIRMATION_DIALOG", "OPEN_CANCEL_TURN_DIALOG", "OPEN_COMPLETE_TURN_DIALOG", "OPEN_NO_SHOW_TURN_DIALOG", "CLOSE_CONFIRMATION_DIALOG", "OPEN_NOTIFICATION_MODAL", "CLOSE_NOTIFICATION_MODAL"];
+export const UI_MACHINE_EVENT_TYPES = ["TOGGLE", "NAVIGATE", "OPEN_SNACKBAR", "CLOSE_SNACKBAR", "OPEN_CONFIRMATION_DIALOG", "OPEN_CANCEL_TURN_DIALOG", "OPEN_COMPLETE_TURN_DIALOG", "OPEN_NO_SHOW_TURN_DIALOG", "CLOSE_CONFIRMATION_DIALOG", "OPEN_NOTIFICATION_MODAL", "CLOSE_NOTIFICATION_MODAL", "OPEN_RATING_MODAL", "CLOSE_RATING_MODAL"];
 
 export interface UiMachineContext {
   toggleStates: Record<string, boolean>;
@@ -27,6 +27,10 @@ export interface UiMachineContext {
   notificationModal: {
     open: boolean;
   };
+  ratingModal: {
+    open: boolean;
+    turn: any | null;
+  };
 }
 
 export type UiMachineEvent =
@@ -41,7 +45,9 @@ export type UiMachineEvent =
   | { type: "OPEN_NO_SHOW_TURN_DIALOG"; turnId: string; turnData?: any; title?: string; message?: string; confirmButtonText?: string; confirmButtonColor?: 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' }
   | { type: "CLOSE_CONFIRMATION_DIALOG" }
   | { type: "OPEN_NOTIFICATION_MODAL" }
-  | { type: "CLOSE_NOTIFICATION_MODAL" };
+  | { type: "CLOSE_NOTIFICATION_MODAL" }
+  | { type: "OPEN_RATING_MODAL"; turn: any }
+  | { type: "CLOSE_RATING_MODAL" };
 
 export const uiMachine = createMachine({
   id: "ui",
@@ -60,6 +66,7 @@ export const uiMachine = createMachine({
     },
     confirmDialog: { open: false, action: null, requestId: null, turnId: null, turnData: null, title: undefined, message: undefined, confirmButtonText: undefined, confirmButtonColor: undefined },
     notificationModal: { open: false },
+    ratingModal: { open: false, turn: null },
   },
   types: { 
     context: {} as UiMachineContext,
@@ -254,6 +261,33 @@ export const uiMachine = createMachine({
           actions: assign({
             notificationModal: () => ({
               open: false,
+            }),
+          }),
+        },
+        OPEN_RATING_MODAL: {
+          actions: [
+            assign({
+              ratingModal: ({ event }) => ({
+                open: true,
+                turn: event.turn,
+              }),
+            }),
+            () => {
+              const dataSnapshot = orchestrator.getSnapshot("data");
+              if (dataSnapshot?.context?.ratingSubcategories?.length === 0) {
+                orchestrator.sendToMachine("data", { 
+                  type: "LOAD_RATING_SUBCATEGORIES", 
+                  role: "PATIENT" 
+                });
+              }
+            }
+          ],
+        },
+        CLOSE_RATING_MODAL: {
+          actions: assign({
+            ratingModal: () => ({
+              open: false,
+              turn: null,
             }),
           }),
         },
