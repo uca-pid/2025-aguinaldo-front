@@ -1,13 +1,4 @@
-import { 
-  Box, 
-  Card, 
-  CardContent, 
-  Typography, 
-  Container,
-  Avatar,
-  Button,
-  Alert
-} from "@mui/material";
+import { Box, Typography, Container, Avatar, Button, Alert } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import PendingActionsIcon from "@mui/icons-material/PendingActions";
@@ -29,11 +20,11 @@ export default function AdminDashboard() {
 
   const stats = adminContext.adminStats;
   
-  // Admin dashboard needs to wait for ALL admin-specific data to be loaded
   const loading = adminContext.loading || 
                   dataContext.loading?.doctors || 
                   dataContext.loading?.pendingDoctors || 
                   dataContext.loading?.adminStats ||
+                  dataContext.loading?.adminRatings ||
                   dataContext.loading?.specialties;
   const error = adminContext.error;
 
@@ -43,6 +34,10 @@ export default function AdminDashboard() {
         type: 'FETCH_ADMIN_STATS', 
         accessToken: user.accessToken 
       });
+      const { dataSend } = useDataMachine();
+      if (dataSend) {
+        dataSend({ type: 'RELOAD_ADMIN_RATINGS' });
+      }
     }
   };
 
@@ -104,80 +99,15 @@ export default function AdminDashboard() {
           </Box>
         )}
 
-        {/* Stats Section - Only show when not loading */}
-        {!loading && stats && (
-          <Box className="admin-stats-container">
-            <Box className="admin-stats-item">
-              <Card className="admin-stats-card">
-                <CardContent className="admin-stats-content">
-                  <Box className="admin-stats-layout">
-                    <div className="admin-stats-icon-wrapper">
-                      <PersonIcon className="admin-stats-icon" />
-                    </div>
-                    <Box className="admin-stats-text">
-                      <Typography variant="h4" className="admin-stats-number">
-                        {stats.patients}
-                      </Typography>
-                      <Typography variant="body1" className="admin-stats-label">
-                        Pacientes Registrados
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
-            
-            <Box className="admin-stats-item">
-              <Card className="admin-stats-card">
-                <CardContent className="admin-stats-content">
-                  <Box className="admin-stats-layout">
-                    <div className="admin-stats-icon-wrapper">
-                      <LocalHospitalIcon className="admin-stats-icon" />
-                    </div>
-                    <Box className="admin-stats-text">
-                      <Typography variant="h4" className="admin-stats-number">
-                        {stats.doctors}
-                      </Typography>
-                      <Typography variant="body1" className="admin-stats-label">
-                        Doctores Activos
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
-            
-            <Box className="admin-stats-item">
-              <Card className="admin-stats-card">
-                <CardContent className="admin-stats-content">
-                  <Box className="admin-stats-layout">
-                    <div className="admin-stats-icon-wrapper">
-                      <PendingActionsIcon className="admin-stats-icon" />
-                    </div>
-                    <Box className="admin-stats-text">
-                      <Typography variant="h4" className="admin-stats-number">
-                        {stats.pending}
-                      </Typography>
-                      <Typography variant="body1" className="admin-stats-label">
-                        Solicitudes Pendientes
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
-          </Box>
-        )}
-
-        {/* Action Cards - Only show when not loading */}
+        {/* Dashboard Cards with Integrated Stats - Only show when not loading */}
         {!loading && (
           <Box className="dashboard-actions-container">
             <DashboardCard
               type="admin"
               variant="primary"
               icon={<PersonIcon className="admin-action-icon" />}
-              title="Pacientes"
-              description="Ver mas estadísticas de los pacientes"
+              title={`Pacientes (${stats?.patients || 0})`}
+              description={`Ver más estadísticas y detalles`}
               buttonText="Ver Pacientes"
               onClick={() => uiSend({type:'NAVIGATE', to:'/admin/patients'})}
             />
@@ -186,8 +116,8 @@ export default function AdminDashboard() {
               type="admin"
               variant="secondary"
               icon={<LocalHospitalIcon className="admin-action-icon" />}
-              title="Doctores"
-              description="Ver mas estadísticas de los doctores"
+              title={`Doctores Activos (${stats?.doctors || 0})`}
+              description={`Ver más estadísticas y gestionar`}
               buttonText="Ver Doctores"
               onClick={() => uiSend({type:'NAVIGATE', to:'/admin/doctors'})}
             />
@@ -196,8 +126,8 @@ export default function AdminDashboard() {
               type="admin"
               variant="accent"
               icon={<PendingActionsIcon className="admin-action-icon" />}
-              title="Solicitudes Pendientes"
-              description="Revisar y aprobar solicitudes de registro de doctores"
+              title={`Solicitudes Pendientes (${stats?.pending || 0})`}
+              description={`Revisar y procesar`}
               buttonText="Ver Solicitudes"
               onClick={() => {
                 adminUserSend({ type: 'FETCH_PENDING_DOCTORS', accessToken: user?.accessToken });

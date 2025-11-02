@@ -274,10 +274,13 @@ export const uiMachine = createMachine({
             }),
             () => {
               const dataSnapshot = orchestrator.getSnapshot("data");
+              const authSnapshot = orchestrator.getSnapshot("auth");
+              const userRole = authSnapshot?.context?.authResponse?.role;
+              
               if (dataSnapshot?.context?.ratingSubcategories?.length === 0) {
                 orchestrator.sendToMachine("data", { 
                   type: "LOAD_RATING_SUBCATEGORIES", 
-                  role: "PATIENT" 
+                  role: userRole || "PATIENT"
                 });
               }
             }

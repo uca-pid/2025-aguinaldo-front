@@ -36,6 +36,7 @@ export const API_CONFIG = {
     APPROVE_DOCTOR: '/api/admin/approve-doctor/{doctorId}',
     REJECT_DOCTOR: '/api/admin/reject-doctor/{doctorId}',
     GET_ADMIN_STATS: '/api/admin/stats',
+    GET_ADMIN_RATINGS: '/api/admin/ratings',
 
     APPROVE_MODIFY_REQUEST: '/api/turns/modify-requests/{requestId}/approve',
     REJECT_MODIFY_REQUEST: '/api/turns/modify-requests/{requestId}/reject',

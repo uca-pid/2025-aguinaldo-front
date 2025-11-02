@@ -1,5 +1,5 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests, loadMyModifyRequests, loadSpecialties, loadTurnFiles, loadRatingSubcategories } from "../utils/MachineUtils/dataMachineUtils";
+import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests, loadMyModifyRequests, loadSpecialties, loadTurnFiles, loadRatingSubcategories, loadAdminRatings } from "../utils/MachineUtils/dataMachineUtils";
 import { loadDoctorPatients, loadDoctorAvailability } from "../utils/MachineUtils/doctorMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, AdminStats } from "../models/Admin";
@@ -16,6 +16,7 @@ export const DATA_MACHINE_EVENT_TYPES = [
   "RELOAD_SPECIALTIES",
   "RELOAD_PENDING_DOCTORS", 
   "RELOAD_ADMIN_STATS",
+  "RELOAD_ADMIN_RATINGS",
   "RELOAD_ALL",
   "LOAD_AVAILABLE_TURNS",
   "LOAD_MY_TURNS",
@@ -47,11 +48,12 @@ export interface DataMachineContext {
   doctorModifyRequests: TurnModifyRequest[];
   myModifyRequests: TurnModifyRequest[];
   turnFiles: Record<string, any>;
-  turnFilesLoaded: boolean; // Add flag to track if turn files have been loaded
+  turnFilesLoaded: boolean;
   turnsNeedingRating: any[];
   ratingSubcategories: string[];
   ratedSubcategoryCounts: Record<string, { subcategory: string | null; count: number }[]>;
   ratingModalChecked: boolean;
+  adminRatings: any;
   
   loading: {
     doctors: boolean;
@@ -67,6 +69,7 @@ export interface DataMachineContext {
     turnFiles: boolean;
     turnsNeedingRating: boolean;
     ratingSubcategories: boolean;
+    adminRatings: boolean;
     ratedSubcategoryCounts: boolean;
   };
   
@@ -84,6 +87,7 @@ export interface DataMachineContext {
     turnFiles: string | null;
     turnsNeedingRating: string | null;
     ratingSubcategories: string | null;
+    adminRatings: string | null;
     ratedSubcategoryCounts: string | null;
   };
 }
@@ -110,6 +114,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
   ratingSubcategories: [],
   ratedSubcategoryCounts: {},
   ratingModalChecked: false,
+  adminRatings: null,
   
   loading: {
     doctors: false,
@@ -125,6 +130,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
     turnFiles: false,
     turnsNeedingRating: false,
     ratingSubcategories: false,
+    adminRatings: false,
     ratedSubcategoryCounts: false,
   },
   
@@ -142,6 +148,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
     turnFiles: null,
     turnsNeedingRating: null,
     ratingSubcategories: null,
+    adminRatings: null,
     ratedSubcategoryCounts: null,
   },
 };
@@ -153,6 +160,7 @@ export type DataMachineEvent =
   | { type: "RELOAD_SPECIALTIES" }
   | { type: "RELOAD_PENDING_DOCTORS" }
   | { type: "RELOAD_ADMIN_STATS" }
+  | { type: "RELOAD_ADMIN_RATINGS" }
   | { type: "RELOAD_ALL" }
   | { type: "LOAD_AVAILABLE_TURNS"; doctorId: string; date: string }
   | { type: "LOAD_MY_TURNS"; status?: string }
@@ -188,7 +196,6 @@ export const dataMachine = createMachine({
               doctorId: ({ event }) => event.userRole === "DOCTOR" ? event.userId : null,
             }),
             () => {
-              // Load notifications once when user authenticates
               orchestrator.sendToMachine("notification", {
                 type: "LOAD_NOTIFICATIONS"
               });
@@ -227,6 +234,10 @@ export const dataMachine = createMachine({
         },
         RELOAD_ADMIN_STATS: {
           target: "fetchingAdminStats",
+          guard: ({ context }) => !!context.accessToken,
+        },
+        RELOAD_ADMIN_RATINGS: {
+          target: "fetchingAdminRatings",
           guard: ({ context }) => !!context.accessToken,
         },
         LOAD_AVAILABLE_TURNS: {
@@ -306,6 +317,7 @@ export const dataMachine = createMachine({
             turnFiles: {},
             turnFilesLoaded: false, // Reset the flag
             ratingModalChecked: false,
+            adminRatings: null,
           }),
         },
         RELOAD_DOCTORS: {
@@ -320,6 +332,9 @@ export const dataMachine = createMachine({
         RELOAD_ADMIN_STATS: {
           target: "fetchingAdminStats",
         },
+        RELOAD_ADMIN_RATINGS: {
+          target: "fetchingAdminRatings",
+        },
         RELOAD_ALL: [
           {
             guard: ({ context }) => context.userRole === "ADMIN",
@@ -329,6 +344,7 @@ export const dataMachine = createMachine({
                 self.send({ type: "RELOAD_DOCTORS" });
                 self.send({ type: "RELOAD_PENDING_DOCTORS" });
                 self.send({ type: "RELOAD_ADMIN_STATS" });
+                self.send({ type: "RELOAD_ADMIN_RATINGS" });
                 self.send({ type: "RELOAD_SPECIALTIES" });
               }, 0);
             },
@@ -577,7 +593,7 @@ export const dataMachine = createMachine({
         }),
         input: ({ context }) => ({ accessToken: context.accessToken! }),
         onDone: {
-          target: "ready",
+          target: "fetchingAdminRatings",
           actions: assign({
             adminStats: ({ event }) => event.output,
             loading: ({ context }) => ({ ...context.loading, adminStats: false }),
@@ -994,7 +1010,7 @@ export const dataMachine = createMachine({
             turnFiles: ({ context, event }) => {
               return { ...context.turnFiles, ...event.output };
             },
-            turnFilesLoaded: true, // Set flag to true when files are loaded
+            turnFilesLoaded: true, 
             loading: ({ context }) => ({ ...context.loading, turnFiles: false }),
           }),
         },
@@ -1005,7 +1021,7 @@ export const dataMachine = createMachine({
               loading: ({ context }) => {
                 return { ...context.loading, turnFiles: false };
               },
-              turnFilesLoaded: true, // Set flag to true even on error to prevent infinite loop
+              turnFilesLoaded: true, 
               errors: ({ context, event }) => {
                 return {
                   ...context.errors,
@@ -1018,6 +1034,52 @@ export const dataMachine = createMachine({
                 orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
               }
               const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar archivos de turnos";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
+            }
+          ],
+        },
+      },
+    },
+
+    fetchingAdminRatings: {
+      entry: assign({
+        loading: ({ context }) => ({ ...context.loading, adminRatings: true }),
+        errors: ({ context }) => ({ ...context.errors, adminRatings: null }),
+      }),
+      invoke: {
+        src: fromPromise(async ({ input }: { input: { accessToken: string } }) => {
+          return await loadAdminRatings({ accessToken: input.accessToken, isAdmin: true });
+        }),
+        input: ({ context }) => ({ accessToken: context.accessToken! }),
+        onDone: {
+          target: "ready",
+          actions: assign({
+            adminRatings: ({ event }) => event.output,
+            loading: ({ context }) => ({ ...context.loading, adminRatings: false }),
+          }),
+        },
+        onError: {
+          target: "ready",
+          actions: [
+            assign({
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                adminRatings: event.error instanceof Error ? event.error.message : "Error al cargar ratings de administrador"
+              }),
+              loading: ({ context }) => ({
+                ...context.loading,
+                adminRatings: false
+              })
+            }),
+            ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+              }
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar ratings de administrador";
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",
                 message: errorMessage,

@@ -55,6 +55,11 @@ export interface LoadRatingSubcategoriesParams {
   accessToken?: string;
 }
 
+export interface LoadAdminRatingsParams {
+  accessToken: string;
+  isAdmin: boolean;
+}
+
 export const loadDoctors = async ({ accessToken }: LoadDoctorsParams): Promise<Doctor[]> => {
   return await TurnService.getDoctors(accessToken);
 };
@@ -105,14 +110,14 @@ export const loadTurnFiles = async ({ accessToken, turnIds }: LoadTurnFilesParam
       if (fileInfo) {
         turnFiles[turnId] = fileInfo;
       } else {
-        turnFiles[turnId] = null; // Explicitly mark as no file
+        turnFiles[turnId] = null; 
       }
     } catch (error) {
       // Only log actual errors, not 404s for turns without files
       if (error instanceof Error && !error.message.includes('404')) {
         console.error(`❌ Failed to load file info for turn ${turnId}:`, error);
       }
-      turnFiles[turnId] = null; // Mark as no file on error
+      turnFiles[turnId] = null; 
     }
   });
   
@@ -127,6 +132,11 @@ export const loadTurnsNeedingRating = async ({ accessToken }: LoadTurnsNeedingRa
 
 export const loadRatingSubcategories = async ({ role, accessToken }: LoadRatingSubcategoriesParams): Promise<string[]> => {
   return await TurnService.getRatingSubcategories(role, accessToken);
+};
+
+export const loadAdminRatings = async ({ accessToken, isAdmin }: LoadAdminRatingsParams): Promise<any> => {
+  if (!isAdmin) return { allRatings: [], patientRatings: [], doctorRatings: [], stats: null };
+  return await AdminService.getAdminRatings(accessToken);
 };
 
 export interface LoadRatedSubcategoryCountsParams {

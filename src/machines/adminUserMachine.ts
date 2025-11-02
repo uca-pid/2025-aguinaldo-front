@@ -14,7 +14,9 @@ export const ADMIN_USER_MACHINE_EVENT_TYPES = [
   'SELECT_DOCTOR',
   'CLEAR_SELECTION',
   'CLEAR_ERROR',
-  'RETRY_LAST_OPERATION'
+  'RETRY_LAST_OPERATION',
+  'SELECT_FILTER_DOCTOR',
+  'SELECT_FILTER_PATIENT'
 ];
 
 export interface AdminUserMachineContext {
@@ -27,6 +29,7 @@ export interface AdminUserMachineContext {
     pending: number;
     specialties: string[];
   };
+  adminRatings: any;
   lastOperation: {
     type: 'approve' | 'reject' | null;
     doctorId?: string;
@@ -34,6 +37,8 @@ export interface AdminUserMachineContext {
     message?: string;
   } | null;
   selectedDoctor?: PendingDoctor | null;
+  selectedFilterDoctorId: string;
+  selectedFilterPatientId: string;
 }
 
 export const AdminUserMachineDefaultContext: AdminUserMachineContext = {
@@ -46,8 +51,11 @@ export const AdminUserMachineDefaultContext: AdminUserMachineContext = {
     pending: 0,
     specialties:[]
   },
+  adminRatings: null,
   lastOperation: null,
   selectedDoctor: null,
+  selectedFilterDoctorId: 'all',
+  selectedFilterPatientId: 'all',
 };
 
 export type AdminUserMachineEvent =
@@ -58,7 +66,9 @@ export type AdminUserMachineEvent =
   | { type: "SELECT_DOCTOR"; doctor: PendingDoctor }
   | { type: "CLEAR_SELECTION" }
   | { type: "CLEAR_ERROR" }
-  | { type: "RETRY_LAST_OPERATION"; accessToken: string };
+  | { type: "RETRY_LAST_OPERATION"; accessToken: string }
+  | { type: "SELECT_FILTER_DOCTOR"; doctorId: string }
+  | { type: "SELECT_FILTER_PATIENT"; patientId: string };
 
 export const adminUserMachine = createMachine({
   id: "adminUser",
@@ -84,6 +94,7 @@ export const adminUserMachine = createMachine({
                   pending: dataContext.adminStats?.pending || 0,
                   specialties: dataContext.specialties || []
                 },
+                adminRatings: dataContext.adminRatings || null,
                 loading: false
               };
             } catch (error) {
@@ -119,6 +130,16 @@ export const adminUserMachine = createMachine({
         },
         RETRY_LAST_OPERATION: {
           target: "retryingOperation"
+        },
+        SELECT_FILTER_DOCTOR: {
+          actions: assign(({ event }) => ({
+            selectedFilterDoctorId: event.doctorId
+          }))
+        },
+        SELECT_FILTER_PATIENT: {
+          actions: assign(({ event }) => ({
+            selectedFilterPatientId: event.patientId
+          }))
         }
       }
     },
