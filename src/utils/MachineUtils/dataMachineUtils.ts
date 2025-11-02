@@ -41,10 +41,7 @@ export interface LoadSpecialtiesParams {
   accessToken: string;
 }
 
-export interface LoadTurnFilesParams {
-  accessToken: string;
-  turnIds: string[];
-}
+
 
 export interface LoadTurnsNeedingRatingParams {
   accessToken: string;
@@ -99,31 +96,6 @@ export const loadMyModifyRequests = async ({ accessToken }: LoadMyModifyRequests
   return await TurnService.getMyModifyRequests(accessToken);
 };
 
-export const loadTurnFiles = async ({ accessToken, turnIds }: LoadTurnFilesParams): Promise<Record<string, any>> => {
-  const { StorageService } = await import("../../service/storage-service.service");
-  
-  const turnFiles: Record<string, any> = {};
-  
-  const filePromises = turnIds.map(async (turnId) => {
-    try {
-      const fileInfo = await StorageService.getTurnFileInfo(accessToken, turnId);
-      if (fileInfo) {
-        turnFiles[turnId] = fileInfo;
-      } else {
-        turnFiles[turnId] = null; 
-      }
-    } catch (error) {
-      // Only log actual errors, not 404s for turns without files
-      if (error instanceof Error && !error.message.includes('404')) {
-        console.error(`❌ Failed to load file info for turn ${turnId}:`, error);
-      }
-      turnFiles[turnId] = null; 
-    }
-  });
-  
-  await Promise.all(filePromises);
-  return turnFiles;
-};
 
 export const loadTurnsNeedingRating = async ({ accessToken }: LoadTurnsNeedingRatingParams): Promise<any[]> => {
   const result = await TurnService.getTurnsNeedingRating(accessToken);

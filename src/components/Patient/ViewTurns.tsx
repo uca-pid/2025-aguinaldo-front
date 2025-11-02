@@ -8,26 +8,34 @@ import dayjs from "#/utils/dayjs.config";
 import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import EditIcon from "@mui/icons-material/Edit";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
 import "./ViewTurns.css";
 import { orchestrator } from "#/core/Orchestrator";
 import { filterTurns } from "#/utils/filterTurns";
 import ConfirmationModal from "#/components/shared/ConfirmationModal/ConfirmationModal";
+import { useTurnFileLogic } from "#/hooks/useTurnFileLogic";
+import FileActions from "#/utils/FileActions/FileActions";
 
 const ViewTurns: React.FC = () => {
-  const { turnState, turnSend, uiSend, filesState, filesSend } = useMachines();
+  const { turnState, turnSend, uiSend } = useMachines();
   const { dataState } = useDataMachine();
+
+  // Hook personalizado para lógica de archivos
+  const {
+    fileInputRef,
+    handleFileUpload,
+    handleFileChange,
+    handleDeleteFile,
+    getTurnFileInfo,
+    getFileStatus,
+    truncateFileName,
+    isUploadingFile,
+    isDeletingFile
+  } = useTurnFileLogic();
 
   const turnContext = turnState.context;
   const dataContext = dataState.context;
-  const filesContext = filesState.context;
   const showTurnsContext = turnContext.showTurns;
   const { cancellingTurnId, isCancellingTurn } = turnContext;
-  const { isUploadingFile, uploadingFileTurnId, isDeletingFile, deletingFileTurnId } = filesContext;
-
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const allTurns = dataContext.myTurns || [];
   const filteredTurns = filterTurns(allTurns, showTurnsContext.statusFilter);
@@ -48,42 +56,6 @@ const ViewTurns: React.FC = () => {
 
   const handleModifyTurn = (turnId: string) => {
     orchestrator.send({ type: "NAVIGATE", to: '/patient/modify-turn?turnId=' + turnId });
-  };
-
-  const handleFileUpload = (turnId: string) => {
-    if (fileInputRef.current) {
-      (fileInputRef.current as any).turnId = turnId;
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && dataContext.accessToken) {
-      const turnId = (event.target as any).turnId;
-
-      filesSend({
-        type: "UPLOAD_TURN_FILE",
-        turnId,
-        file
-      });
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
-
-  const handleDeleteFile = (turnId: string) => {
-    uiSend({
-      type: "OPEN_CONFIRMATION_DIALOG",
-      action: "delete_file",
-      turnId,
-      title: "Eliminar Archivo",
-      message: "¿Estás seguro de que quieres eliminar este archivo? Esta acción no se puede deshacer.",
-      confirmButtonText: "Eliminar Archivo",
-      confirmButtonColor: "error"
-    });
   };
 
   const getStatusLabel = (status: string) => {
@@ -123,40 +95,13 @@ const ViewTurns: React.FC = () => {
     return turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt);
   };
 
-  const truncateFileName = (fileName: string | undefined) => {
-    if (!fileName) return 'Ver archivo';
-    const maxLength = 25;
-    return fileName.length > maxLength ? `${fileName.substring(0, maxLength)}...` : fileName;
+  const canShowFileSection = (turn: any) => {
+    // Mostrar sección de archivos para turnos programados y completados
+    return turn.status === 'SCHEDULED' || turn.status === 'COMPLETED';
   };
 
-  const getTurnFileInfo = (turnId: string) => {
-    const fileInfo = dataContext.turnFiles?.[turnId] || null;
-    return fileInfo;
-  };
-
-  const getFileStatus = (turnId: string) => {
-    if (isUploadingFile && uploadingFileTurnId === turnId) {
-      return "uploading";
-    }
-    
-    if (isDeletingFile && deletingFileTurnId === turnId) {
-      return "deleting";
-    }
-    
-    if (dataContext.loading.turnFiles) {
-      return "loading";
-    }
-    
-    if (!dataContext.turnFiles) {
-      return "no-data";
-    }
-    
-    const fileInfo = dataContext.turnFiles[turnId];
-    if (fileInfo) {
-      return "has-file";
-    } else {
-      return "no-file";
-    }
+  const canDeleteFile = (turn: any) => {
+    return turn.status !== 'COMPLETED';
   };
 
   return (
@@ -308,112 +253,20 @@ const ViewTurns: React.FC = () => {
                         )}
                       </Box>
                       
-                      {canUploadFile(turn) && (
+                      {canShowFileSection(turn) && (
                         <Box className="viewturns-file-actions">
-                          {(() => {
-                            const fileStatus = getFileStatus(turn.id);
-                            
-                            if (fileStatus === "loading" || fileStatus === "no-data") {
-                              return (
-                                <Button
-                                  variant="text"
-                                  size="small"
-                                  disabled
-                                  className="viewturns-load-file-info-btn"
-                                >
-                                  <CircularProgress size={16} sx={{ mr: 1 }} />
-                                  {fileStatus === "loading" ? "Verificando archivos..." : "Cargando información de archivos..."}
-                                </Button>
-                              );
-                            }
-                            
-                            if (fileStatus === "uploading") {
-                              return (
-                                <Button
-                                  variant="outlined"
-                                  size="small"
-                                  disabled
-                                  className="viewturns-upload-btn"
-                                >
-                                  <CircularProgress size={16} sx={{ mr: 1 }} />
-                                  Subiendo...
-                                </Button>
-                              );
-                            }
-                            
-                            if (fileStatus === "no-file") {
-                              return (
-                                <Button
-                                  variant="outlined"
-                                  size="small"
-                                  startIcon={<CloudUploadIcon />}
-                                  onClick={() => handleFileUpload(turn.id)}
-                                  disabled={isUploadingFile}
-                                  className="viewturns-upload-btn"
-                                >
-                                  Subir archivo
-                                </Button>
-                              );
-                            }
-                            
-                            if (fileStatus === "deleting") {
-                              const fileInfo = getTurnFileInfo(turn.id);
-                              return (
-                                <>
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    startIcon={<AttachFileIcon />}
-                                    onClick={() => window.open(fileInfo?.url, '_blank')}
-                                    className="viewturns-view-file-btn"
-                                    disabled
-                                  >
-                                    {truncateFileName(fileInfo?.fileName)}
-                                  </Button>
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    color="error"
-                                    disabled
-                                    className="viewturns-delete-file-btn"
-                                  >
-                                    <CircularProgress size={16} sx={{ mr: 1 }} />
-                                    Eliminando...
-                                  </Button>
-                                </>
-                              );
-                            }
-                            
-                            if (fileStatus === "has-file") {
-                              const fileInfo = getTurnFileInfo(turn.id);
-                              return (
-                                <>
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    startIcon={<AttachFileIcon />}
-                                    onClick={() => window.open(fileInfo?.url, '_blank')}
-                                    className="viewturns-view-file-btn"
-                                  >
-                                    {truncateFileName(fileInfo?.fileName)}
-                                  </Button>
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    color="error"
-                                    startIcon={<DeleteIcon />}
-                                    onClick={() => handleDeleteFile(turn.id)}
-                                    disabled={isDeletingFile}
-                                    className="viewturns-delete-file-btn"
-                                  >
-                                    Eliminar archivo
-                                  </Button>
-                                </>
-                              );
-                            }
-                            
-                            return null;
-                          })()}
+                          <FileActions
+                            turnId={turn.id}
+                            fileStatus={getFileStatus(turn.id)}
+                            canUploadFile={canUploadFile(turn)}
+                            canDeleteFile={canDeleteFile(turn)}
+                            fileInfo={getTurnFileInfo(turn.id)}
+                            isUploadingFile={isUploadingFile}
+                            isDeletingFile={isDeletingFile}
+                            onFileUpload={handleFileUpload}
+                            onFileDelete={handleDeleteFile}
+                            truncateFileName={truncateFileName}
+                          />
                         </Box>
                       )}
                     </Box>

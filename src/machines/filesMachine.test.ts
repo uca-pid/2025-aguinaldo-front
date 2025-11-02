@@ -150,13 +150,7 @@ describe('filesMachine', () => {
       await vi.runAllTimersAsync();
 
       expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith('data', {
-        type: 'UPDATE_TURN_FILE',
-        turnId: 'turn-1',
-        fileInfo: {
-          url: 'https://example.com/file.pdf',
-          fileName: 'test-file.pdf',
-          uploadedAt: expect.any(String)
-        }
+        type: 'LOAD_MY_TURNS'
       });
 
       expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith('ui', {
@@ -238,8 +232,7 @@ describe('filesMachine', () => {
       await vi.runAllTimersAsync();
 
       expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith('data', {
-        type: 'REMOVE_TURN_FILE',
-        turnId: 'turn-1'
+        type: 'LOAD_MY_TURNS'
       });
 
       expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith('ui', {

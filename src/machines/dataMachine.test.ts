@@ -11,7 +11,6 @@ vi.mock('../utils/MachineUtils/dataMachineUtils', () => ({
   loadDoctorModifyRequests: vi.fn(),
   loadMyModifyRequests: vi.fn(),
   loadSpecialties: vi.fn(),
-  loadTurnFiles: vi.fn(),
 }));
 
 vi.mock('../utils/MachineUtils/doctorMachineUtils', () => ({
@@ -45,7 +44,6 @@ describe('dataMachine', () => {
   let mockLoadDoctorModifyRequests: any;
   let mockLoadMyModifyRequests: any;
   let mockLoadSpecialties: any;
-  let mockLoadTurnFiles: any;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -62,7 +60,6 @@ describe('dataMachine', () => {
     mockLoadDoctorModifyRequests = vi.mocked(dataMachineUtils.loadDoctorModifyRequests);
     mockLoadMyModifyRequests = vi.mocked(dataMachineUtils.loadMyModifyRequests);
     mockLoadSpecialties = vi.mocked(dataMachineUtils.loadSpecialties);
-    mockLoadTurnFiles = vi.mocked(dataMachineUtils.loadTurnFiles);
 
     // Reset all mocks
     vi.clearAllMocks();
@@ -92,10 +89,6 @@ describe('dataMachine', () => {
       { id: '1', status: 'PENDING' }
     ]);
     mockLoadSpecialties.mockResolvedValue(['Cardiology', 'Neurology']);
-    mockLoadTurnFiles.mockResolvedValue({
-      'turn-1': { fileName: 'report.pdf', fileUrl: 'https://example.com/report.pdf' },
-      'turn-2': null
-    });
   });
 
   afterEach(() => {
