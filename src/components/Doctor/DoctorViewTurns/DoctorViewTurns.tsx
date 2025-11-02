@@ -4,6 +4,7 @@ import {
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
+import { useDataMachine } from "#/providers/DataProvider";
 import dayjs from "#/utils/dayjs.config";
 import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -16,6 +17,7 @@ const ViewTurns: React.FC = () => {
   
   const { turnState, turnSend, uiSend } = useMachines();
   const { authState } = useAuthMachine();
+  const { dataState } = useDataMachine();
   const authContext = authState?.context;
   const user = authContext?.authResponse as SignInResponse;
   
@@ -24,6 +26,7 @@ const ViewTurns: React.FC = () => {
   const { cancellingTurnId, isCancellingTurn } = turnContext;
 
   const filteredTurns = filterTurns(turnContext.myTurns, showTurnsContext.statusFilter);
+  const turnsNeedingRating = dataState.context.turnsNeedingRating || [];
 
   const handleCancelTurn = (turnId: string) => {
     if (!user.accessToken) return;
@@ -68,6 +71,14 @@ const ViewTurns: React.FC = () => {
     return turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt);
   };
 
+  const isCompletedTurn = (turn: any) => {
+    return turn.status === 'COMPLETED';
+  };
+
+  const turnNeedsRating = (turnId: string) => {
+    return turnsNeedingRating.some((turn: any) => turn.id === turnId);
+  };
+
   const handleCompleteTurn = (turnId: string) => {
     if (!user.accessToken) return;
     const turnData = filteredTurns.find((turn: any) => turn.id === turnId);
@@ -94,6 +105,16 @@ const ViewTurns: React.FC = () => {
       confirmButtonText: "No Asistió",
       confirmButtonColor: "error"
     });
+  };
+
+  const handleRatePatient = (turnId: string) => {
+    const turnToRate = filteredTurns.find((turn: any) => turn.id === turnId);
+    if (turnToRate) {
+      uiSend({ 
+        type: "OPEN_RATING_MODAL", 
+        turn: turnToRate 
+      });
+    }
   };
 
   return (
@@ -262,6 +283,16 @@ const ViewTurns: React.FC = () => {
                                 )}
                               </Button>
                             </>
+                          )}
+                          {isCompletedTurn(turn) && turnNeedsRating(turn.id) && (
+                            <Button 
+                              variant="contained" 
+                              size="small"
+                              className="doctor-viewturns-rate-btn"
+                              onClick={() => handleRatePatient(turn.id)}
+                            >
+                              Calificar Paciente
+                            </Button>
                           )}
                         </Box>
                       </Box>

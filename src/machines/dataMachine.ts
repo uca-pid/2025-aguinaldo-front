@@ -364,7 +364,7 @@ export const dataMachine = createMachine({
         LOAD_TURNS_NEEDING_RATING: {
           target: "fetchingTurnsNeedingRating",
           guard: ({ context }) => {
-            return !!context.accessToken && context.userRole === "PATIENT";
+            return !!context.accessToken && (context.userRole === "PATIENT" || context.userRole === "DOCTOR");
           },
         },
         LOAD_RATING_SUBCATEGORIES: {
@@ -851,10 +851,19 @@ export const dataMachine = createMachine({
         }),
         onDone: {
           target: "ready",
-          actions: assign({
-            doctorModifyRequests: ({ event }) => event.output,
-            loading: ({ context }) => ({ ...context.loading, doctorModifyRequests: false }),
-          }),
+          actions: [
+            assign({
+              doctorModifyRequests: ({ event }) => event.output,
+              loading: ({ context }) => ({ ...context.loading, doctorModifyRequests: false }),
+            }),
+            ({ context }) => {
+              if (!context.ratingModalChecked && context.userRole === "DOCTOR") {
+                setTimeout(() => {
+                  orchestrator.sendToMachine("data", { type: "LOAD_TURNS_NEEDING_RATING" });
+                }, 100);
+              }
+            }
+          ],
         },
         onError: {
           target: "idle",
@@ -1038,9 +1047,10 @@ export const dataMachine = createMachine({
               loading: ({ context }) => ({ ...context.loading, turnsNeedingRating: false }),
               ratingModalChecked: true,
             }),
-            ({ event }) => {
+            ({ event, context }) => {
               const turnsNeedingRating = event.output || [];
-              if (turnsNeedingRating.length > 0) {
+              // Only auto-open modal for patients, not doctors
+              if (turnsNeedingRating.length > 0 && context.userRole === "PATIENT") {
                 setTimeout(() => {
                   const uiSnapshot = orchestrator.getSnapshot(UI_MACHINE_ID);
                   if (!uiSnapshot?.context?.ratingModal?.open) {
