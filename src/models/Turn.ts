@@ -39,6 +39,7 @@ export interface TurnResponse {
   doctorSpecialty: string;
   patientId: string;
   patientName: string;
+  patientScore?: number | null;
   scheduledAt: string;
   status: string;
   needsPatientRating?: boolean;
