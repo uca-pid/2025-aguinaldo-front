@@ -353,13 +353,6 @@ export const dataMachine = createMachine({
           target: "fetchingMyModifyRequests",
           guard: ({ context }) => !!context.accessToken,
         },
-        LOAD_TURN_FILES: {
-          target: "fetchingTurnFiles",
-          guard: ({ context }) => {
-            const canLoad = !!context.accessToken && (context.userRole === "PATIENT" || context.userRole === "DOCTOR");
-            return canLoad;
-          },
-        },
         LOAD_RATED_SUBCATEGORY_COUNTS: {
           target: "fetchingRatedSubcategoryCounts",
           guard: ({ context }) => !!context.accessToken,
