@@ -1,17 +1,18 @@
 import { 
-  Avatar,
-  Box, 
-  Button, 
-  List, 
-  ListItem,
-  ListItemButton,
-  ListItemAvatar,
-  ListItemText,
-  Typography,
-  TextField,
-  InputAdornment,
-  CircularProgress,
-  Alert
+    Avatar,
+    Box, 
+    Button, 
+    List, 
+    ListItem,
+    ListItemButton,
+    ListItemAvatar,
+    ListItemText,
+    Typography,
+    TextField,
+    InputAdornment,
+    CircularProgress,
+    Alert,
+    Rating
 } from "@mui/material"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
@@ -64,9 +65,9 @@ const ViewPatients: React.FC = () => {
                                 <Typography variant="h4" component="h1" className="shared-header-title">
                                     Mis Pacientes
                                 </Typography>
-                                <Typography variant="h6" className="shared-header-subtitle">
-                                    Gestiona y consulta la información de tus pacientes
-                                </Typography>
+                                                                <Typography variant="h6" className="shared-header-subtitle">
+                                                                        Gestiona y consulta la información de tus pacientes
+                                                                </Typography>                                                                                 
                             </Box>
                         </Box>
                         <Box className="shared-header-spacer"></Box>
@@ -142,6 +143,16 @@ const ViewPatients: React.FC = () => {
                                                         }
                                                         secondary="Ver detalles del paciente"
                                                     />
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mr: 1 }}>
+                                                        {((patient as any).score) != null ? (
+                                                            <>
+                                                                <Rating value={(patient as any).score} precision={0.1} readOnly size="small" />
+                                                                <Typography variant="body2" color="text.secondary">{(patient as any).score.toFixed(1)}</Typography>
+                                                            </>
+                                                        ) : (
+                                                            <Typography variant="body2" color="text.secondary">Sin calificación</Typography>
+                                                        )}
+                                                    </Box>
                                                     <ChevronRight color="action" />
                                                 </ListItemButton>
                                             </ListItem>
