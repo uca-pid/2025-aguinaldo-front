@@ -24,6 +24,17 @@ export default function ConfirmationModal() {
                 type: "CANCEL_TURN", 
                 turnId: dialogData.turnId 
             });
+        } else if (action === 'complete_turn' && dialogData.turnId) {
+            turnSend({ 
+                type: "COMPLETE_TURN", 
+                turnId: dialogData.turnId 
+            });
+        } else if (action === 'no_show_turn' && dialogData.turnId) {
+            // For no-show, we use the no-show endpoint
+            turnSend({ 
+                type: "NO_SHOW_TURN", 
+                turnId: dialogData.turnId 
+            });
         } else if (action === 'approve' && dialogData.requestId) {
             approveModifyRequest(dialogData.requestId, user.accessToken!);
         } else if (action === 'reject' && dialogData.requestId) {
