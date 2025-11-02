@@ -46,6 +46,15 @@ export interface LoadTurnFilesParams {
   turnIds: string[];
 }
 
+export interface LoadTurnsNeedingRatingParams {
+  accessToken: string;
+}
+
+export interface LoadRatingSubcategoriesParams {
+  role?: string;
+  accessToken?: string;
+}
+
 export const loadDoctors = async ({ accessToken }: LoadDoctorsParams): Promise<Doctor[]> => {
   return await TurnService.getDoctors(accessToken);
 };
@@ -109,4 +118,13 @@ export const loadTurnFiles = async ({ accessToken, turnIds }: LoadTurnFilesParam
   
   await Promise.all(filePromises);
   return turnFiles;
+};
+
+export const loadTurnsNeedingRating = async ({ accessToken }: LoadTurnsNeedingRatingParams): Promise<any[]> => {
+  const result = await TurnService.getTurnsNeedingRating(accessToken);
+  return result;
+};
+
+export const loadRatingSubcategories = async ({ role, accessToken }: LoadRatingSubcategoriesParams): Promise<string[]> => {
+  return await TurnService.getRatingSubcategories(role, accessToken);
 };

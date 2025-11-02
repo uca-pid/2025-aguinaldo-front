@@ -1,5 +1,5 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests, loadMyModifyRequests, loadSpecialties, loadTurnFiles } from "../utils/MachineUtils/dataMachineUtils";
+import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests, loadMyModifyRequests, loadSpecialties, loadTurnFiles, loadTurnsNeedingRating, loadRatingSubcategories } from "../utils/MachineUtils/dataMachineUtils";
 import { loadDoctorPatients, loadDoctorAvailability } from "../utils/MachineUtils/doctorMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, AdminStats } from "../models/Admin";
@@ -25,7 +25,9 @@ export const DATA_MACHINE_EVENT_TYPES = [
   "LOAD_MY_MODIFY_REQUESTS",
   "LOAD_TURN_FILES",
   "UPDATE_TURN_FILE",
-  "REMOVE_TURN_FILE"
+  "REMOVE_TURN_FILE",
+  "LOAD_TURNS_NEEDING_RATING",
+  "LOAD_RATING_SUBCATEGORIES"
 ];
 
 export interface DataMachineContext {
@@ -46,6 +48,9 @@ export interface DataMachineContext {
   myModifyRequests: TurnModifyRequest[];
   turnFiles: Record<string, any>;
   turnFilesLoaded: boolean; // Add flag to track if turn files have been loaded
+  turnsNeedingRating: any[];
+  ratingSubcategories: string[];
+  ratingModalChecked: boolean;
   
   loading: {
     doctors: boolean;
@@ -59,6 +64,8 @@ export interface DataMachineContext {
     doctorModifyRequests: boolean;
     myModifyRequests: boolean;
     turnFiles: boolean;
+    turnsNeedingRating: boolean;
+    ratingSubcategories: boolean;
   };
   
   errors: {
@@ -73,6 +80,8 @@ export interface DataMachineContext {
     doctorModifyRequests: string | null;
     myModifyRequests: string | null;
     turnFiles: string | null;
+    turnsNeedingRating: string | null;
+    ratingSubcategories: string | null;
   };
 }
 
@@ -94,6 +103,9 @@ export const DataMachineDefaultContext: DataMachineContext = {
   myModifyRequests: [],
   turnFiles: {},
   turnFilesLoaded: false,
+  turnsNeedingRating: [],
+  ratingSubcategories: [],
+  ratingModalChecked: false,
   
   loading: {
     doctors: false,
@@ -107,6 +119,8 @@ export const DataMachineDefaultContext: DataMachineContext = {
     doctorModifyRequests: false,
     myModifyRequests: false,
     turnFiles: false,
+    turnsNeedingRating: false,
+    ratingSubcategories: false,
   },
   
   errors: {
@@ -121,6 +135,8 @@ export const DataMachineDefaultContext: DataMachineContext = {
     doctorModifyRequests: null,
     myModifyRequests: null,
     turnFiles: null,
+    turnsNeedingRating: null,
+    ratingSubcategories: null,
   },
 };
 
@@ -140,7 +156,9 @@ export type DataMachineEvent =
   | { type: "LOAD_MY_MODIFY_REQUESTS" }
   | { type: "LOAD_TURN_FILES" }
   | { type: "UPDATE_TURN_FILE"; turnId: string; fileInfo: any }
-  | { type: "REMOVE_TURN_FILE"; turnId: string };
+  | { type: "REMOVE_TURN_FILE"; turnId: string }
+  | { type: "LOAD_TURNS_NEEDING_RATING" }
+  | { type: "LOAD_RATING_SUBCATEGORIES"; role?: string };
 
 export const dataMachine = createMachine({
   id: "data",
@@ -280,6 +298,7 @@ export const dataMachine = createMachine({
             myModifyRequests: [],
             turnFiles: {},
             turnFilesLoaded: false, // Reset the flag
+            ratingModalChecked: false,
           }),
         },
         RELOAD_DOCTORS: {
@@ -341,6 +360,15 @@ export const dataMachine = createMachine({
             const canLoad = !!context.accessToken && (context.userRole === "PATIENT" || context.userRole === "DOCTOR");
             return canLoad;
           },
+        },
+        LOAD_TURNS_NEEDING_RATING: {
+          target: "fetchingTurnsNeedingRating",
+          guard: ({ context }) => {
+            return !!context.accessToken && context.userRole === "PATIENT";
+          },
+        },
+        LOAD_RATING_SUBCATEGORIES: {
+          target: "fetchingRatingSubcategories",
         },
         UPDATE_TURN_FILE: {
           actions: assign({
@@ -655,11 +683,21 @@ export const dataMachine = createMachine({
           {
             target: "fetchingMyModifyRequests",
             guard: ({ context }) => context.userRole === "PATIENT",
-            actions: assign({
-              myTurns: ({ event }) => event.output,
-              turnFilesLoaded: false, // Reset flag when new turns are loaded
-              loading: ({ context }) => ({ ...context.loading, myTurns: false }),
-            }),
+            actions: [
+              assign({
+                myTurns: ({ event }) => event.output,
+                turnFilesLoaded: false, // Reset flag when new turns are loaded
+                loading: ({ context }) => ({ ...context.loading, myTurns: false }),
+              }),
+              ({ context }) => {
+                if (!context.ratingModalChecked && context.userRole === "PATIENT") {
+                  setTimeout(() => {
+                    const currentSnapshot = orchestrator.getSnapshot("data");
+                    orchestrator.sendToMachine("data", { type: "LOAD_TURNS_NEEDING_RATING" });
+                  }, 100);
+                }
+              }
+            ],
           },
           {
             target: "ready",
@@ -899,6 +937,14 @@ export const dataMachine = createMachine({
           ],
         },
       },
+      on: {
+        LOAD_TURNS_NEEDING_RATING: {
+          target: "fetchingTurnsNeedingRating",
+          guard: ({ context }) => {
+            return !!context.accessToken && context.userRole === "PATIENT";
+          },
+        },
+      },
     },
     fetchingTurnFiles: {
       entry: assign({
@@ -941,7 +987,6 @@ export const dataMachine = createMachine({
               },
               turnFilesLoaded: true, // Set flag to true even on error to prevent infinite loop
               errors: ({ context, event }) => {
-                console.error('❌ fetchingTurnFiles: Error occurred:', event.error);
                 return {
                   ...context.errors,
                   turnFiles: event.error instanceof Error ? event.error.message : "Error al cargar archivos de turnos"
@@ -959,6 +1004,107 @@ export const dataMachine = createMachine({
                 severity: "error"
               });
             }
+          ],
+        },
+      },
+      on: {
+        LOAD_TURNS_NEEDING_RATING: {
+          target: "fetchingTurnsNeedingRating",
+          guard: ({ context }) => {
+            return !!context.accessToken && context.userRole === "PATIENT";
+          },
+        },
+      },
+    },
+
+    fetchingTurnsNeedingRating: {
+      entry: assign({
+        loading: ({ context }) => ({ ...context.loading, turnsNeedingRating: true }),
+        errors: ({ context }) => ({ ...context.errors, turnsNeedingRating: null }),
+      }),
+      invoke: {
+        src: fromPromise(async ({ input }) => {
+          return await loadTurnsNeedingRating(input);
+        }),
+        input: ({ context }) => ({
+          accessToken: context.accessToken!,
+        }),
+        onDone: {
+          target: "ready",
+          actions: [
+            assign({
+              turnsNeedingRating: ({ event }) => {
+                return event.output;
+              },
+              loading: ({ context }) => ({ ...context.loading, turnsNeedingRating: false }),
+              ratingModalChecked: true,
+            }),
+            ({ event }) => {
+              const turnsNeedingRating = event.output || [];
+              if (turnsNeedingRating.length > 0) {
+                setTimeout(() => {
+                  const uiSnapshot = orchestrator.getSnapshot(UI_MACHINE_ID);
+                  if (!uiSnapshot?.context?.ratingModal?.open) {
+                    orchestrator.sendToMachine(UI_MACHINE_ID, {
+                      type: "OPEN_RATING_MODAL",
+                      turn: turnsNeedingRating[0]
+                    });
+                  }
+                }, 0);
+              }
+            }
+          ],
+        },
+        onError: {
+          target: "ready",
+          actions: [
+            assign({
+              loading: ({ context }) => ({ ...context.loading, turnsNeedingRating: false }),
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                turnsNeedingRating: event.error instanceof Error ? event.error.message : "Error al cargar turnos que necesitan rating"
+              }),
+            }),
+            ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+              }
+            }
+          ],
+        },
+      },
+    },
+
+    fetchingRatingSubcategories: {
+      entry: assign({
+        loading: ({ context }) => ({ ...context.loading, ratingSubcategories: true }),
+        errors: ({ context }) => ({ ...context.errors, ratingSubcategories: null }),
+      }),
+      invoke: {
+        src: fromPromise(async ({ input }) => {
+          return await loadRatingSubcategories(input);
+        }),
+        input: ({ context, event }) => ({
+          role: (event as any).role,
+          accessToken: context.accessToken,
+        }),
+        onDone: {
+          target: "ready",
+          actions: assign({
+            ratingSubcategories: ({ event }) => event.output,
+            loading: ({ context }) => ({ ...context.loading, ratingSubcategories: false }),
+          }),
+        },
+        onError: {
+          target: "ready",
+          actions: [
+            assign({
+              loading: ({ context }) => ({ ...context.loading, ratingSubcategories: false }),
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                ratingSubcategories: event.error instanceof Error ? event.error.message : "Error al cargar subcategorías de rating"
+              }),
+            }),
           ],
         },
       },

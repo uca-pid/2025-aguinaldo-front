@@ -24,6 +24,7 @@ import NotificationModal from './components/Notifications/NotificationModal'
 import { useEffect } from 'react'
 import { useMachines } from './providers/MachineProvider'
 import ConfirmationModal from './components/shared/ConfirmationModal/ConfirmationModal'
+import RatingModal from './components/shared/RatingModal/RatingModal';
 
 function AppContent() {
   const { authState } = useAuthMachine();
@@ -107,6 +108,7 @@ function AppContent() {
         </Routes>
         <SnackbarAlert />
         <ConfirmationModal />
+        <RatingModal />
         <NotificationModal 
           open={isNotificationModalOpen} 
           onClose={handleCloseNotificationModal} 
