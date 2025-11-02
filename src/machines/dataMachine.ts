@@ -50,6 +50,7 @@ export interface DataMachineContext {
   turnFilesLoaded: boolean; // Add flag to track if turn files have been loaded
   turnsNeedingRating: any[];
   ratingSubcategories: string[];
+  ratedSubcategoryCounts: Record<string, { subcategory: string | null; count: number }[]>;
   ratingModalChecked: boolean;
   
   loading: {
@@ -66,6 +67,7 @@ export interface DataMachineContext {
     turnFiles: boolean;
     turnsNeedingRating: boolean;
     ratingSubcategories: boolean;
+    ratedSubcategoryCounts: boolean;
   };
   
   errors: {
@@ -82,6 +84,7 @@ export interface DataMachineContext {
     turnFiles: string | null;
     turnsNeedingRating: string | null;
     ratingSubcategories: string | null;
+    ratedSubcategoryCounts: string | null;
   };
 }
 
@@ -105,6 +108,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
   turnFilesLoaded: false,
   turnsNeedingRating: [],
   ratingSubcategories: [],
+  ratedSubcategoryCounts: {},
   ratingModalChecked: false,
   
   loading: {
@@ -121,6 +125,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
     turnFiles: false,
     turnsNeedingRating: false,
     ratingSubcategories: false,
+    ratedSubcategoryCounts: false,
   },
   
   errors: {
@@ -137,6 +142,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
     turnFiles: null,
     turnsNeedingRating: null,
     ratingSubcategories: null,
+    ratedSubcategoryCounts: null,
   },
 };
 
@@ -158,7 +164,8 @@ export type DataMachineEvent =
   | { type: "UPDATE_TURN_FILE"; turnId: string; fileInfo: any }
   | { type: "REMOVE_TURN_FILE"; turnId: string }
   | { type: "UPDATE_TURNS_NEEDING_RATING"; turns: any[] }
-  | { type: "LOAD_RATING_SUBCATEGORIES"; role?: string };
+  | { type: "LOAD_RATING_SUBCATEGORIES"; role?: string }
+  | { type: "LOAD_RATED_SUBCATEGORY_COUNTS"; doctorIds: string[] };
 
 export const dataMachine = createMachine({
   id: "data",
@@ -360,6 +367,10 @@ export const dataMachine = createMachine({
             const canLoad = !!context.accessToken && (context.userRole === "PATIENT" || context.userRole === "DOCTOR");
             return canLoad;
           },
+        },
+        LOAD_RATED_SUBCATEGORY_COUNTS: {
+          target: "fetchingRatedSubcategoryCounts",
+          guard: ({ context }) => !!context.accessToken,
         },
         LOAD_RATING_SUBCATEGORIES: {
           target: "fetchingRatingSubcategories",
@@ -1048,6 +1059,52 @@ export const dataMachine = createMachine({
                 ratingSubcategories: event.error instanceof Error ? event.error.message : "Error al cargar subcategorías de rating"
               }),
             }),
+          ],
+        },
+      },
+    },
+    fetchingRatedSubcategoryCounts: {
+      entry: assign({
+        loading: ({ context }) => ({ ...context.loading, ratedSubcategoryCounts: true }),
+        errors: ({ context }) => ({ ...context.errors, ratedSubcategoryCounts: null }),
+      }),
+      invoke: {
+        src: fromPromise(async ({ input }: { input: { doctorIds: string[]; accessToken?: string } }) => {
+          const { loadRatedSubcategoryCounts } = await import('../utils/MachineUtils/dataMachineUtils');
+          return await loadRatedSubcategoryCounts({ doctorIds: input.doctorIds, accessToken: input.accessToken });
+        }),
+        input: ({ context, event }) => ({
+          doctorIds: (event as any).doctorIds || [],
+          accessToken: context.accessToken,
+        }),
+        onDone: {
+          target: 'ready',
+          actions: assign({
+            ratedSubcategoryCounts: ({ context, event }) => ({ ...context.ratedSubcategoryCounts, ...event.output }),
+            loading: ({ context }) => ({ ...context.loading, ratedSubcategoryCounts: false }),
+          }),
+        },
+        onError: {
+          target: 'ready',
+          actions: [
+            assign({
+              loading: ({ context }) => ({ ...context.loading, ratedSubcategoryCounts: false }),
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                ratedSubcategoryCounts: event.error instanceof Error ? event.error.message : 'Error al cargar conteos de subcategorías'
+              }),
+            }),
+            ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: 'LOGOUT' });
+              }
+              const message = event.error instanceof Error ? event.error.message : 'Error al cargar conteos de subcategorías';
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: 'OPEN_SNACKBAR',
+                message,
+                severity: 'error'
+              });
+            }
           ],
         },
       },

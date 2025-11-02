@@ -476,4 +476,36 @@ export class TurnService {
       throw error;
     }
   }
+
+  static async getRatedSubcategoryCounts(ratedId: string, accessToken?: string, raterRole?: string): Promise<{ subcategory: string | null; count: number }[]> {
+    let url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_RATED_SUBCATEGORY_COUNTS.replace('{ratedId}', ratedId));
+    if (raterRole) {
+      url = `${url}?raterRole=${encodeURIComponent(raterRole)}`;
+    }
+
+    try {
+      const options = accessToken ? getAuthenticatedFetchOptions(accessToken) : { headers: { 'Content-Type': 'application/json' } };
+
+      const response = await fetch(url, {
+        ...options,
+        method: 'GET',
+      });
+
+      if (response.status === 401) {
+        await handleAuthError(response, () => this.getRatedSubcategoryCounts(ratedId, accessToken, raterRole));
+      }
+
+      if (!response.ok) {
+        const errorData: any = await response.json().catch(() => ({}));
+        console.error('[TurnService] getRatedSubcategoryCounts - Error:', errorData);
+        throw new Error(errorData?.message || errorData?.error || `Failed to fetch subcategory counts! Status: ${response.status}`);
+      }
+
+      const result: { subcategory: string | null; count: number }[] = await response.json();
+      return result;
+    } catch (error) {
+      console.error('[TurnService] getRatedSubcategoryCounts - Exception:', error);
+      throw error;
+    }
+  }
 }

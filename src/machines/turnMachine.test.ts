@@ -59,6 +59,7 @@ describe('turnMachine', () => {
     medicalLicense: 'ML12345',
     specialty: 'cardiology',
     slotDurationMin: 30,
+    score: 4.5,
   };
 
   const mockTurn: TurnResponse = {
