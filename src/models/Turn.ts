@@ -6,6 +6,7 @@ export interface Doctor {
   medicalLicense: string;
   specialty: string;
   slotDurationMin: number;
+  score: number;
 }
 
 export interface TurnAvailable {
