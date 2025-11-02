@@ -1,103 +1,15 @@
-
-/* Content Section */
-.doctors-content {
-  padding: 0;
-  margin: 0;
-}
-
-/* Main container for AdminDoctors */
-.doctors-admin-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 4rem;
-}
-
-.doctors-admin-paper {
-  padding: 3rem;
-  width: 100%;
-  max-width: 1200px;
-  text-align: center;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 1rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.doctors-admin-content {
-  width: 100%;
-}
-
-/* Statistics Cards */
-.doctors-stats-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-  justify-items: center;
-}
-
-.doctors-stats-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-  border-radius: 12px;
-  padding: 1rem 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-  transition: all 0.3s ease;
-  width: 100%;
-  max-width: 220px;
-  min-height: 70px;
-}
-
-.doctors-stats-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.doctors-stats-content {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.doctors-stats-icon {
-  font-size: 28px !important;
-  color: #22577a;
-  opacity: 0.8;
-  flex-shrink: 0;
-}
-
-.doctors-stats-info {
-  flex: 1;
-  text-align: left;
-}
-
-.doctors-stats-number {
-  color: #22577a !important;
-  font-weight: 700 !important;
-  font-size: 1.5rem !important;
-  line-height: 1.2 !important;
-  margin: 0 !important;
-}
-
-.doctors-stats-label {
-  color: #64748b !important;
-  font-weight: 600 !important;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 0.65rem !important;
-  margin-top: 2px !important;
-}
-
 /* Ratings Section */
-.doctors-ratings-section {
+.ratings-section {
   background: #ffffff;
   border-radius: 16px;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border: 1px solid #e2e8f0;
   text-align: left;
+  margin: 3rem;
 }
 
-.doctors-ratings-header {
+.ratings-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -106,31 +18,32 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
-.doctors-ratings-title {
+.ratings-title {
   color: #1e293b !important;
   font-weight: 700 !important;
   display: flex;
   align-items: center;
 }
 
-.doctors-ratings-subtitle {
+.ratings-subtitle {
   color: #64748b !important;
   font-weight: 500 !important;
   margin-top: 0.5rem !important;
 }
 
-.doctors-ratings-count {
-  color: #22577a !important;
-  font-weight: 600 !important;
+.ratings-count {
   background: #22577a;
-  color: white;
+  color: white !important;
+  font-weight: 600 !important;
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-size: 0.875rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* No Ratings State */
-.doctors-no-ratings {
+.no-ratings {
   text-align: center;
   padding: 3rem 2rem;
   background: #f8fafc;
@@ -138,34 +51,34 @@
   border: 2px dashed #cbd5e1;
 }
 
-.doctors-no-ratings-title {
+.no-ratings-title {
   color: #475569 !important;
   font-weight: 600 !important;
   margin-bottom: 1rem !important;
 }
 
-.doctors-no-ratings-subtitle {
+.no-ratings-subtitle {
   color: #64748b !important;
   font-weight: 500 !important;
 }
 
 /* Table Styles */
-.doctors-ratings-table-container {
+.ratings-table-container {
   border-radius: 12px;
   overflow: visible;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   border: 1px solid #e2e8f0;
 }
 
-.doctors-ratings-table {
+.ratings-table {
   background: #ffffff;
 }
 
-.doctors-table-header {
+.table-header {
   background: #22577a;
 }
 
-.doctors-table-header-cell {
+.table-header-cell {
   color: #ffffff !important;
   font-weight: 700 !important;
   text-transform: uppercase;
@@ -175,35 +88,35 @@
   border-bottom: none !important;
 }
 
-.doctors-table-row {
+.table-row {
   transition: all 0.2s ease;
   background: #ffffff;
 }
 
-.doctors-table-row:nth-of-type(even) {
+.table-row:nth-of-type(even) {
   background: #f8fafc;
 }
 
-.doctors-table-row:hover {
+.table-row:hover {
   background: #f1f5f9 !important;
   transform: scale(1.005);
 }
 
-.doctors-table-cell {
+.table-cell {
   padding: 1rem !important;
   border-bottom: 1px solid #e2e8f0 !important;
   vertical-align: middle !important;
 }
 
 /* Names */
-.doctors-patient-name,
-.doctors-doctor-name {
+.patient-name,
+.doctor-name {
   font-weight: 600 !important;
   color: #1e293b !important;
 }
 
 /* Score Container */
-.doctors-score-container {
+.score-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -229,30 +142,30 @@
 .rating-score-4 { background: #22c55e; }
 .rating-score-5 { background: #10b981; }
 
-.doctors-stars {
+.stars {
   display: flex;
   gap: 2px;
 }
 
-.doctors-star {
+.star {
   font-size: 14px !important;
   color: #e2e8f0;
   transition: color 0.2s ease;
 }
 
-.doctors-star.filled {
+.star.filled {
   color: #fbbf24;
 }
 
 /* Subcategories */
-.doctors-subcategories {
+.subcategories {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   max-width: 200px;
 }
 
-.doctors-subcategory-chip {
+.subcategory-chip {
   background: #22577a !important;
   color: white !important;
   font-weight: 500 !important;
@@ -260,55 +173,28 @@
   height: 24px !important;
 }
 
-.doctors-no-subcategories {
+.no-subcategories {
   color: #94a3b8 !important;
   font-style: italic;
 }
 
 /* Date */
-.doctors-date {
+.date {
   color: #64748b !important;
   font-weight: 500 !important;
   font-family: monospace;
   font-size: 0.875rem !important;
 }
 
-/* Turn Chip */
-.doctors-turn-chip {
-  background: #22577a !important;
-  color: white !important;
-  font-weight: 600 !important;
-  font-size: 0.75rem !important;
-}
-
-.doctors-no-turn {
-  color: #94a3b8 !important;
-  font-style: italic;
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
-  .doctors-admin-container {
-    margin-top: 2rem;
-  }
-  
-  .doctors-admin-paper {
-    padding: 2rem;
-    margin: 1rem;
-  }
-  
-  .doctors-stats-container {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  .doctors-ratings-header {
+  .ratings-header {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
   }
   
-  .doctors-table-cell {
+  .table-cell {
     padding: 0.75rem 0.5rem !important;
     font-size: 0.875rem;
   }

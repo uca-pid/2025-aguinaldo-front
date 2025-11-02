@@ -193,7 +193,8 @@ describe('TurnService', () => {
         email: 'john.doe@example.com',
         medicalLicense: 'LIC123456',
         specialty: 'Cardiology',
-        slotDurationMin: 30
+        slotDurationMin: 30,
+        score: 4.8
       },
       {
         id: 'doctor-2',
@@ -202,7 +203,8 @@ describe('TurnService', () => {
         email: 'jane.smith@example.com',
         medicalLicense: 'LIC789012',
         specialty: 'Dermatology',
-        slotDurationMin: 20
+        slotDurationMin: 20,
+        score: 4.2
       }
     ];
 
