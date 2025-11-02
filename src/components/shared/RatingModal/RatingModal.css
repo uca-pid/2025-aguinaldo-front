@@ -126,18 +126,6 @@
   margin-bottom: 12px !important;
 }
 
-.rating-modal-stars .MuiRating-iconFilled {
-  color: var(--lapis-lazuli) !important;
-}
-
-.rating-modal-stars .MuiRating-iconHover {
-  color: var(--lapis-lazuli) !important;
-}
-
-.rating-modal-stars .MuiRating-iconEmpty {
-  color: var(--lapis-lazuli-light) !important;
-}
-
 .rating-modal-rating-description {
   color: var(--indigo-dye) !important;
   font-weight: 500 !important;
