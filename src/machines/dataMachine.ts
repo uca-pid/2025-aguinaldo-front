@@ -1,5 +1,5 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests, loadMyModifyRequests, loadSpecialties, loadTurnFiles, loadRatingSubcategories, loadAdminRatings } from "../utils/MachineUtils/dataMachineUtils";
+import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests, loadMyModifyRequests, loadSpecialties, loadRatingSubcategories, loadAdminRatings } from "../utils/MachineUtils/dataMachineUtils";
 import { loadDoctorPatients, loadDoctorAvailability } from "../utils/MachineUtils/doctorMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, AdminStats } from "../models/Admin";
@@ -24,9 +24,6 @@ export const DATA_MACHINE_EVENT_TYPES = [
   "LOAD_DOCTOR_AVAILABILITY",
   "LOAD_DOCTOR_MODIFY_REQUESTS",
   "LOAD_MY_MODIFY_REQUESTS",
-  "LOAD_TURN_FILES",
-  "UPDATE_TURN_FILE",
-  "REMOVE_TURN_FILE",
   "UPDATE_TURNS_NEEDING_RATING",
   "LOAD_RATING_SUBCATEGORIES"
 ];
@@ -47,8 +44,6 @@ export interface DataMachineContext {
   doctorAvailability: any[];
   doctorModifyRequests: TurnModifyRequest[];
   myModifyRequests: TurnModifyRequest[];
-  turnFiles: Record<string, any>;
-  turnFilesLoaded: boolean;
   turnsNeedingRating: any[];
   ratingSubcategories: string[];
   ratingModalChecked: boolean;
@@ -65,7 +60,6 @@ export interface DataMachineContext {
     doctorAvailability: boolean;
     doctorModifyRequests: boolean;
     myModifyRequests: boolean;
-    turnFiles: boolean;
     turnsNeedingRating: boolean;
     ratingSubcategories: boolean;
     adminRatings: boolean;
@@ -82,7 +76,6 @@ export interface DataMachineContext {
     doctorAvailability: string | null;
     doctorModifyRequests: string | null;
     myModifyRequests: string | null;
-    turnFiles: string | null;
     turnsNeedingRating: string | null;
     ratingSubcategories: string | null;
     adminRatings: string | null;
@@ -105,8 +98,6 @@ export const DataMachineDefaultContext: DataMachineContext = {
   doctorAvailability: [],
   doctorModifyRequests: [],
   myModifyRequests: [],
-  turnFiles: {},
-  turnFilesLoaded: false,
   turnsNeedingRating: [],
   ratingSubcategories: [],
   ratingModalChecked: false,
@@ -123,7 +114,6 @@ export const DataMachineDefaultContext: DataMachineContext = {
     doctorAvailability: false,
     doctorModifyRequests: false,
     myModifyRequests: false,
-    turnFiles: false,
     turnsNeedingRating: false,
     ratingSubcategories: false,
     adminRatings: false,
@@ -140,7 +130,6 @@ export const DataMachineDefaultContext: DataMachineContext = {
     doctorAvailability: null,
     doctorModifyRequests: null,
     myModifyRequests: null,
-    turnFiles: null,
     turnsNeedingRating: null,
     ratingSubcategories: null,
     adminRatings: null,
@@ -162,9 +151,6 @@ export type DataMachineEvent =
   | { type: "LOAD_DOCTOR_AVAILABILITY"; doctorId?: string }
   | { type: "LOAD_DOCTOR_MODIFY_REQUESTS"; doctorId?: string }
   | { type: "LOAD_MY_MODIFY_REQUESTS" }
-  | { type: "LOAD_TURN_FILES" }
-  | { type: "UPDATE_TURN_FILE"; turnId: string; fileInfo: any }
-  | { type: "REMOVE_TURN_FILE"; turnId: string }
   | { type: "UPDATE_TURNS_NEEDING_RATING"; turns: any[] }
   | { type: "LOAD_RATING_SUBCATEGORIES"; role?: string };
 
@@ -209,8 +195,6 @@ export const dataMachine = createMachine({
             doctorPatients: [],
             doctorAvailability: [],
             doctorModifyRequests: [],
-            turnFiles: {},
-            turnFilesLoaded: false, // Reset the flag
           }),
         },
         RELOAD_DOCTORS: {
@@ -268,12 +252,6 @@ export const dataMachine = createMachine({
             doctorAvailability: context.doctorAvailability
           });
           
-          if ((context.userRole === "PATIENT" || context.userRole === "DOCTOR") && 
-              context.myTurns?.length > 0 && 
-              !context.turnFilesLoaded) {
-            orchestrator.sendToMachine("data", { type: "LOAD_TURN_FILES" });
-          }
-          
         }, 0);
       },
       exit: () => {
@@ -307,8 +285,6 @@ export const dataMachine = createMachine({
             doctorAvailability: [],
             doctorModifyRequests: [],
             myModifyRequests: [],
-            turnFiles: {},
-            turnFilesLoaded: false, // Reset the flag
             ratingModalChecked: false,
             adminRatings: null,
           }),
@@ -370,13 +346,6 @@ export const dataMachine = createMachine({
           target: "fetchingMyModifyRequests",
           guard: ({ context }) => !!context.accessToken,
         },
-        LOAD_TURN_FILES: {
-          target: "fetchingTurnFiles",
-          guard: ({ context }) => {
-            const canLoad = !!context.accessToken && (context.userRole === "PATIENT" || context.userRole === "DOCTOR");
-            return canLoad;
-          },
-        },
         LOAD_RATING_SUBCATEGORIES: {
           target: "fetchingRatingSubcategories",
         },
@@ -384,26 +353,6 @@ export const dataMachine = createMachine({
           actions: assign({
             turnsNeedingRating: ({ event }) => (event as any).turns,
             ratingModalChecked: true,
-          })
-        },
-        UPDATE_TURN_FILE: {
-          actions: assign({
-            turnFiles: ({ context, event }) => {
-              const newTurnFiles = {
-                ...context.turnFiles,
-                [(event as any).turnId]: (event as any).fileInfo
-              };
-              return newTurnFiles;
-            }
-          })
-        },
-        REMOVE_TURN_FILE: {
-          actions: assign({
-            turnFiles: ({ context, event }) => {
-              const newTurnFiles = { ...context.turnFiles };
-              delete newTurnFiles[(event as any).turnId];
-              return newTurnFiles;
-            }
           })
         },
       },
@@ -692,7 +641,6 @@ export const dataMachine = createMachine({
             guard: ({ context }) => context.userRole === "DOCTOR",
             actions: assign({
               myTurns: ({ event }) => event.output,
-              turnFilesLoaded: false, // Reset flag when new turns are loaded
               loading: ({ context }) => ({ ...context.loading, myTurns: false }),
             }),
           },
@@ -702,7 +650,6 @@ export const dataMachine = createMachine({
             actions: [
               assign({
                 myTurns: ({ event }) => event.output,
-                turnFilesLoaded: false, // Reset flag when new turns are loaded
                 loading: ({ context }) => ({ ...context.loading, myTurns: false }),
               }),
               ({ context, event }) => {
@@ -736,7 +683,6 @@ export const dataMachine = createMachine({
             target: "ready",
             actions: assign({
               myTurns: ({ event }) => event.output,
-              turnFilesLoaded: false, // Reset flag when new turns are loaded
               loading: ({ context }) => ({ ...context.loading, myTurns: false }),
             }),
           },
@@ -961,68 +907,6 @@ export const dataMachine = createMachine({
                 orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
               }
               const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar mis solicitudes de modificación";
-              orchestrator.sendToMachine(UI_MACHINE_ID, {
-                type: "OPEN_SNACKBAR",
-                message: errorMessage,
-                severity: "error"
-              });
-            }
-          ],
-        },
-      },
-    },
-    fetchingTurnFiles: {
-      entry: assign({
-        loading: ({ context }) => {
-          return { ...context.loading, turnFiles: true };
-        },
-        errors: ({ context }) => ({ ...context.errors, turnFiles: null }),
-      }),
-      invoke: {
-        src: fromPromise(async ({ input }: { input: { accessToken: string; turnIds: string[] } }) => {
-          return await loadTurnFiles({ accessToken: input.accessToken, turnIds: input.turnIds });
-        }),
-        input: ({ context }) => {
-          const validTurns = context.myTurns?.filter((turn: any) => 
-            turn.status !== 'CANCELED' && turn.status !== 'CANCELLED'
-          ) || [];
-          
-          const input = {
-            accessToken: context.accessToken!,
-            turnIds: validTurns.map((turn: any) => turn.id)
-          };
-          return input;
-        },
-        onDone: {
-          target: "ready",
-          actions: assign({
-            turnFiles: ({ context, event }) => {
-              return { ...context.turnFiles, ...event.output };
-            },
-            turnFilesLoaded: true, 
-            loading: ({ context }) => ({ ...context.loading, turnFiles: false }),
-          }),
-        },
-        onError: {
-          target: "ready",
-          actions: [
-            assign({
-              loading: ({ context }) => {
-                return { ...context.loading, turnFiles: false };
-              },
-              turnFilesLoaded: true, 
-              errors: ({ context, event }) => {
-                return {
-                  ...context.errors,
-                  turnFiles: event.error instanceof Error ? event.error.message : "Error al cargar archivos de turnos"
-                };
-              }
-            }),
-            ({ event }) => {
-              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
-                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
-              }
-              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar archivos de turnos";
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",
                 message: errorMessage,

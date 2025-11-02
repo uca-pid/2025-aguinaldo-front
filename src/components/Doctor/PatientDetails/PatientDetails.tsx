@@ -35,9 +35,7 @@ const PatientDetails: React.FC = () => {
 
   const medicalHistories: MedicalHistory[] = medicalHistoryContext.medicalHistories || [];
   
-  //const isSelectingPatient = doctorState.matches({ patientManagement: 'selectingPatient' });
   
-  // Check if we're on the patient-detail route without a patient ID
   const isPatientDetailRoute = window.location.pathname === '/patient-detail';
   const hasPatientIdParam = window.location.search.includes('patientId=');
 
@@ -88,25 +86,25 @@ const PatientDetails: React.FC = () => {
   };
 
   const getFileStatus = (turnId: string) => {
-    if (dataContext.loading.turnFiles) {
-      return "loading";
+    const turn = dataContext.myTurns?.find((t: any) => t.id === turnId);
+    if (turn) {
+      return turn.fileUrl ? "has-file" : "no-file";
     }
     
-    if (!dataContext.turnFiles) {
-      return "no-data";
-    }
-    
-    const fileInfo = dataContext.turnFiles[turnId];
-    if (fileInfo) {
-      return "has-file";
-    } else {
-      return "no-file";
-    }
+    return "no-data";
   };
 
   const getTurnFileInfo = (turnId: string) => {
-    const fileInfo = dataContext.turnFiles?.[turnId] || null;
-    return fileInfo;
+    const turn = dataContext.myTurns?.find((t: any) => t.id === turnId);
+    if (turn && turn.fileUrl) {
+      return {
+        url: turn.fileUrl,
+        fileName: turn.fileName,
+        uploadedAt: turn.uploadedAt
+      };
+    }
+    
+    return null;
   };
 
   const truncateFileName = (fileName: string | undefined) => {
@@ -256,12 +254,6 @@ const PatientDetails: React.FC = () => {
     );
   }
 
-  // Only show "not found" if:
-  // 1. We're in idle state (not actively selecting)
-  // 2. There's a selectedPatientId (we tried to find someone)
-  // 3. But no patient was found (selectedPatient is null)
-  // 4. AND we had attempts to find the patient (patientSelectionAttempts > 0)
-  // OR if we're on the patient-detail route without a patientId parameter
   const shouldShowNotFound = !patient && (
     (doctorState.matches({ patientManagement: 'idle' }) && doctorContext.selectedPatientId && doctorContext.patientSelectionAttempts > 0) ||
     (isPatientDetailRoute && !hasPatientIdParam && !doctorContext.selectedPatientId)
@@ -325,7 +317,6 @@ const PatientDetails: React.FC = () => {
     );
   }
   
-  // If patient is null for any other reason, don't show anything (navigation in progress)
   if (!patient) {
     return null;
   }

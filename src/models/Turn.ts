@@ -44,6 +44,9 @@ export interface TurnResponse {
   status: string;
   needsPatientRating?: boolean;
   needsDoctorRating?: boolean;
+  fileUrl?: string | null;
+  fileName?: string | null;
+  uploadedAt?: string | null;
 }
 
 export interface ApiErrorResponse {
