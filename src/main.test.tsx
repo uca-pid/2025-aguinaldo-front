@@ -11,6 +11,18 @@ vi.mock('./components/AuthScreen/AuthScreen', () => ({
   default: () => <div data-testid="auth-screen">Auth Screen</div>,
 }));
 
+vi.mock('./components/shared/LoadingScreens/LoginLoadingScreen', () => ({
+  default: () => <div data-testid="login-loading-screen">Login Loading</div>,
+}));
+
+vi.mock('./components/shared/LoadingScreens/LogoutLoadingScreen', () => ({
+  default: () => <div data-testid="logout-loading-screen">Logout Loading</div>,
+}));
+
+vi.mock('./components/shared/LoadingScreens/AuthCheckingScreen', () => ({
+  default: () => <div data-testid="auth-checking-screen">Auth Checking</div>,
+}));
+
 vi.mock('./providers/MachineProvider', () => ({
   MachineProvider: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="machine-provider">{children}</div>
@@ -33,24 +45,20 @@ vi.mock('./providers/DataProvider', () => ({
 // Import after mocking
 import { useAuthMachine } from './providers/AuthProvider';
 
-// Create AppRouter component inline since it's not exported
+// Create AppRouter component inline to match actual implementation
 const AppRouter = () => {
   const { authState } = useAuthMachine();
 
+  if (authState?.value === 'checkingAuth') {
+    return <div data-testid="auth-checking-screen">Auth Checking</div>;
+  }
+
   if (authState?.context?.loading) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-          background: 'linear-gradient(135deg, #0d2230 0%, #22577a 25%, #38a3a5 50%, #57cc99 75%, #c7f9cc 100%)'
-        }}
-      >
-        <div role="progressbar" style={{ width: 60, height: 60 }}>Loading...</div>
-      </div>
-    );
+    return <div data-testid="login-loading-screen">Login Loading</div>;
+  }
+
+  if (authState?.context?.loggingOut) {
+    return <div data-testid="logout-loading-screen">Logout Loading</div>;
   }
 
   return authState?.context?.isAuthenticated ? <div data-testid="app">App Component</div> : <div data-testid="auth-screen">Auth Screen</div>;
@@ -64,9 +72,34 @@ describe('main.tsx', () => {
   });
 
   describe('AppRouter', () => {
-    it('should show loading spinner when auth state is loading', () => {
+    it('should show auth checking screen when checking auth', () => {
       mockUseAuthMachine.mockReturnValue({
         authState: {
+          value: 'checkingAuth',
+          context: {
+            loading: false,
+            isAuthenticated: false,
+          },
+        },
+      });
+
+      render(
+        <BrowserRouter>
+          <AppRouter />
+        </BrowserRouter>
+      );
+
+      expect(screen.getByTestId('auth-checking-screen')).toBeInTheDocument();
+      expect(screen.queryByTestId('login-loading-screen')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('logout-loading-screen')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('app')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('auth-screen')).not.toBeInTheDocument();
+    });
+
+    it('should show login loading screen when loading is true', () => {
+      mockUseAuthMachine.mockReturnValue({
+        authState: {
+          value: 'signedOut',
           context: {
             loading: true,
             isAuthenticated: false,
@@ -80,7 +113,34 @@ describe('main.tsx', () => {
         </BrowserRouter>
       );
 
-      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+      expect(screen.getByTestId('login-loading-screen')).toBeInTheDocument();
+      expect(screen.queryByTestId('auth-checking-screen')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('logout-loading-screen')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('app')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('auth-screen')).not.toBeInTheDocument();
+    });
+
+    it('should show logout loading screen when loggingOut is true', () => {
+      mockUseAuthMachine.mockReturnValue({
+        authState: {
+          value: 'signedIn',
+          context: {
+            loading: false,
+            loggingOut: true,
+            isAuthenticated: true,
+          },
+        },
+      });
+
+      render(
+        <BrowserRouter>
+          <AppRouter />
+        </BrowserRouter>
+      );
+
+      expect(screen.getByTestId('logout-loading-screen')).toBeInTheDocument();
+      expect(screen.queryByTestId('auth-checking-screen')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('login-loading-screen')).not.toBeInTheDocument();
       expect(screen.queryByTestId('app')).not.toBeInTheDocument();
       expect(screen.queryByTestId('auth-screen')).not.toBeInTheDocument();
     });
@@ -88,8 +148,10 @@ describe('main.tsx', () => {
     it('should render App component when user is authenticated', () => {
       mockUseAuthMachine.mockReturnValue({
         authState: {
+          value: 'signedIn',
           context: {
             loading: false,
+            loggingOut: false,
             isAuthenticated: true,
           },
         },
@@ -102,15 +164,19 @@ describe('main.tsx', () => {
       );
 
       expect(screen.getByTestId('app')).toBeInTheDocument();
-      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('auth-checking-screen')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('login-loading-screen')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('logout-loading-screen')).not.toBeInTheDocument();
       expect(screen.queryByTestId('auth-screen')).not.toBeInTheDocument();
     });
 
     it('should render AuthScreen when user is not authenticated', () => {
       mockUseAuthMachine.mockReturnValue({
         authState: {
+          value: 'signedOut',
           context: {
             loading: false,
+            loggingOut: false,
             isAuthenticated: false,
           },
         },
@@ -124,7 +190,9 @@ describe('main.tsx', () => {
 
       expect(screen.getByTestId('auth-screen')).toBeInTheDocument();
       expect(screen.queryByTestId('app')).not.toBeInTheDocument();
-      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('auth-checking-screen')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('login-loading-screen')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('logout-loading-screen')).not.toBeInTheDocument();
     });
 
     it('should handle undefined auth state gracefully', () => {
@@ -203,75 +271,6 @@ describe('main.tsx', () => {
       );
 
       expect(screen.getByTestId('app')).toBeInTheDocument();
-    });
-  });
-
-  describe('Loading state styling', () => {
-    it('should apply correct styling to loading container', () => {
-      mockUseAuthMachine.mockReturnValue({
-        authState: {
-          context: {
-            loading: true,
-          },
-        },
-      });
-
-      render(
-        <BrowserRouter>
-          <AppRouter />
-        </BrowserRouter>
-      );
-
-      const loadingContainer = screen.getByRole('progressbar').parentElement;
-      expect(loadingContainer).toHaveStyle({
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-      });
-    });
-
-    it('should apply gradient background to loading container', () => {
-      mockUseAuthMachine.mockReturnValue({
-        authState: {
-          context: {
-            loading: true,
-          },
-        },
-      });
-
-      render(
-        <BrowserRouter>
-          <AppRouter />
-        </BrowserRouter>
-      );
-
-      const loadingContainer = screen.getByRole('progressbar').parentElement;
-      expect(loadingContainer).toHaveStyle({
-        background: 'linear-gradient(135deg, #0d2230 0%, #22577a 25%, #38a3a5 50%, #57cc99 75%, #c7f9cc 100%)',
-      });
-    });
-
-    it('should style the loading spinner correctly', () => {
-      mockUseAuthMachine.mockReturnValue({
-        authState: {
-          context: {
-            loading: true,
-          },
-        },
-      });
-
-      render(
-        <BrowserRouter>
-          <AppRouter />
-        </BrowserRouter>
-      );
-
-      const spinner = screen.getByRole('progressbar');
-      expect(spinner).toHaveStyle({
-        width: '60px',
-        height: '60px',
-      });
     });
   });
 });

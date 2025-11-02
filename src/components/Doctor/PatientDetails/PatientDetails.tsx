@@ -119,6 +119,8 @@ const PatientDetails: React.FC = () => {
       case 'SCHEDULED':
         return 'Programado';
       case 'CANCELED':
+        return 'Cancelado';
+      case 'NO_SHOW':
         return 'No Asistió';
       case 'COMPLETED':
         return 'Completado';

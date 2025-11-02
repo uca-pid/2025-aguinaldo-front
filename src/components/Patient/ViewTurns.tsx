@@ -91,6 +91,8 @@ const ViewTurns: React.FC = () => {
       case 'SCHEDULED':
         return 'Programado';
       case 'CANCELED':
+        return 'Cancelado';
+      case 'NO_SHOW':
         return 'No Asistió';
       case 'AVAILABLE':
         return 'Disponible';
@@ -201,7 +203,8 @@ const ViewTurns: React.FC = () => {
                 >
                   <MenuItem value="">Todos los estados</MenuItem>
                   <MenuItem value="SCHEDULED">Programados</MenuItem>
-                  <MenuItem value="CANCELED">No Asistió</MenuItem>
+                  <MenuItem value="CANCELED">Cancelados</MenuItem>
+                  <MenuItem value="NO_SHOW">No Asistió</MenuItem>
                   <MenuItem value="COMPLETED">Completados</MenuItem>
                 </Select>
               </FormControl>

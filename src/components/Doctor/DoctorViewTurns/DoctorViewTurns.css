@@ -190,6 +190,11 @@
   color: #dc2626 !important;
 }
 
+.doctor-viewturns-status-chip.status-no_show {
+  background: #fef3c7 !important;
+  color: #d97706 !important;
+}
+
 .doctor-viewturns-status-chip.status-absent {
   background: #fef3c7 !important;
   color: #d97706 !important;
