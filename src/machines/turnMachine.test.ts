@@ -58,6 +58,7 @@ describe('turnMachine', () => {
     email: 'doctor@example.com',
     medicalLicense: 'ML12345',
     specialty: 'cardiology',
+    score: 4.5,
     slotDurationMin: 30,
   };
 
