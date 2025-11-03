@@ -376,37 +376,7 @@ export class TurnService {
     }
   }
 
-  static async getTurnsNeedingRating(accessToken: string): Promise<TurnResponse[]> {
-    const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_TURNS_NEEDING_RATING);
-    
-    try {
-      const response = await fetch(url, {
-        ...getAuthenticatedFetchOptions(accessToken),
-        method: 'GET',
-      });
 
-      if (response.status === 401) {
-        await handleAuthError(response, () => this.getTurnsNeedingRating(accessToken));
-      }
-
-      if (!response.ok) {
-        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
-        console.error('[TurnService] getTurnsNeedingRating - Error:', errorData);
-        throw new Error(
-          errorData?.message || 
-          errorData?.error ||
-          `Failed to fetch turns needing rating! Status: ${response.status}`
-        );
-      }
-
-      const result: TurnResponse[] = await response.json();
-      
-      return result;
-    } catch (error) {
-      console.error('[TurnService] getTurnsNeedingRating - Exception:', error);
-      throw error;
-    }
-  }
 
   static async createRating(
     turnId: string,
