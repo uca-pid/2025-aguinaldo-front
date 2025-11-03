@@ -116,136 +116,146 @@ const ViewTurns: React.FC = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-
-      <Box className="viewturns-container">          
-          <Box className="shared-header">
-            <Box className="shared-header-layout">
-              
-              <Box className="shared-header-content">
-                <Avatar className="shared-header-icon">
-                  <ListAltIcon sx={{ fontSize: 28 }} />
-                </Avatar>
-                <Box>
-                  <Typography variant="h4" component="h1" className="shared-header-title">
-                    Mis Turnos
-                  </Typography>
-                  <Typography variant="h6" className="shared-header-subtitle">
-                    Consulta y gestiona tus citas médicas
-                  </Typography>
-                </Box>
+      <Box className="shared-container">
+        {/* Header Section */}
+        <Box className="shared-header">
+          <Box className="shared-header-layout">
+            <Box className="shared-header-content">
+              <Avatar className="shared-header-icon">
+                <ListAltIcon sx={{ fontSize: 28 }} />
+              </Avatar>
+              <Box>
+                <Typography variant="h4" component="h1" className="shared-header-title">
+                  Mis Turnos
+                </Typography>
+                <Typography variant="h6" className="shared-header-subtitle">
+                  Consulta y gestiona tus citas médicas
+                </Typography>
               </Box>
-              <Box className="shared-header-spacer"></Box>
+            </Box>
+            <Box className="shared-header-spacer"></Box>
+          </Box>
+        </Box>
+
+        <Box className="doctor-viewturns-content">
+          {/* Filters Section */}
+          <Box className="doctor-viewturns-filters-section">
+            <Box className="doctor-viewturns-filters-header">
+              <Typography variant="h6" className="doctor-viewturns-section-title">
+                🔍 Filtros
+              </Typography>
+              <Box className="doctor-viewturns-filters-controls">
+                <FormControl size="small" className="doctor-viewturns-filter-select">
+                  <InputLabel>Estado del turno</InputLabel>
+                  <Select
+                    value={showTurnsContext.statusFilter}
+                    label="Estado del turno"
+                    onChange={(e) => turnSend({
+                      type: "UPDATE_FORM",
+                      path: ["showTurns", "statusFilter"],
+                      value: e.target.value
+                    })}
+                  >
+                    <MenuItem value="">Todos los estados</MenuItem>
+                    <MenuItem value="SCHEDULED">Programados</MenuItem>
+                    <MenuItem value="CANCELED">Cancelados</MenuItem>
+                    <MenuItem value="NO_SHOW">No Asistió</MenuItem>
+                    <MenuItem value="COMPLETED">Completados</MenuItem>
+                  </Select>
+                </FormControl>
+
+                {showTurnsContext.statusFilter && (
+                  <Button
+                    variant="outlined"
+                    onClick={() => turnSend({
+                      type: "UPDATE_FORM",
+                      path: ["showTurns", "statusFilter"],
+                      value: ""
+                    })}
+                    className="doctor-viewturns-clear-filter-btn"
+                  >
+                    Limpiar filtro
+                  </Button>
+                )}
+              </Box>
             </Box>
           </Box>
 
-          <Box className="viewturns-content">
-            <Box className="viewturns-filters-section">
-              <Box className="viewturns-filters-header">
-                <Typography variant="h6" className="viewturns-section-title">
-                  🔍 Filtros
-                </Typography>
-                <Box className="viewturns-filters-controls">
-                  <FormControl size="small" className="viewturns-filter-select">
-                    <InputLabel>Estado del turno</InputLabel>
-                    <Select
-                      value={showTurnsContext.statusFilter}
-                      label="Estado del turno"
-                      onChange={(e) => turnSend({
-                        type: "UPDATE_FORM",
-                        path: ["showTurns", "statusFilter"],
-                        value: e.target.value
-                      })}
-                    >
-                      <MenuItem value="">Todos los estados</MenuItem>
-                      <MenuItem value="SCHEDULED">Programados</MenuItem>
-                      <MenuItem value="CANCELED">Cancelados</MenuItem>
-                      <MenuItem value="NO_SHOW">No Asistió</MenuItem>
-                      <MenuItem value="COMPLETED">Completados</MenuItem>
-                    </Select>
-                  </FormControl>
-
-                  {showTurnsContext.statusFilter && (
-                    <Button
-                      variant="outlined"
-                      onClick={() => turnSend({
-                        type: "UPDATE_FORM",
-                        path: ["showTurns", "statusFilter"],
-                        value: ""
-                      })}
-                      className="viewturns-clear-filter-btn"
-                    >
-                      Limpiar filtro
-                    </Button>
-                  )}
-                </Box>
-              </Box>
-            </Box>
-
-            <Box className="viewturns-list-section">
-              <Box className="viewturns-list-content">
+          {/* Turns List Section */}
+          <Box className="doctor-viewturns-list-section">
+            <Box className="doctor-viewturns-list-content">
               {turnContext.isLoadingMyTurns ? (
-                <Box className="viewturns-loading-container">
+                <Box className="doctor-viewturns-loading-container">
                   <CircularProgress size={24} />
-                  <Typography className="viewturns-loading-text">
+                  <Typography className="doctor-viewturns-loading-text">
                     Cargando turnos...
                   </Typography>
                 </Box>
               ) : filteredTurns.length > 0 ? (
                 filteredTurns.map((turn: any, index: number) => (
-                  <Box key={turn.id || index} className="viewturns-turn-item">
-                    <Box className="viewturns-turn-content">
-                      <Box className="viewturns-turn-info">
-                        <Typography variant="h6" className="viewturns-turn-datetime">
-                          {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
+                  <Box key={turn.id || index} className="doctor-viewturns-turn-item">
+                    <Box className="doctor-viewturns-turn-content">
+                      <Box className="doctor-viewturns-turn-info">
+                        {/* Header: Fecha y Estado */}
+                        <Box className="doctor-viewturns-date-header">
+                          
                           {turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt) ? (
                             <Chip 
                               label="Programado" 
-                              size="small" 
-                              className="viewturns-status-chip status-scheduled"
-                              sx={{ 
-                                ml: 1, 
-                                fontSize: '0.75rem'
-                              }} 
+                              size="small"
+                              className="doctor-viewturns-status-chip status-scheduled doctor-viewturns-chip-small"
                             />
                           ) : (
                             <Chip
                               label={getStatusLabel(turn.status)}
-                              className={`viewturns-status-chip status-${turn.status.toLowerCase()}`}
+                              className={`doctor-viewturns-status-chip status-${turn.status.toLowerCase()}`}
                               size="small"
-                              sx={{ ml: 1 }}
                             />
                           )}
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="body1" className="viewturns-turn-patient">
-                            Paciente: {turn.patientName || "Paciente"}
+                          <Typography variant="body1" className="doctor-viewturns-turn-datetime doctor-viewturns-date-text">
+                            {dayjs(turn.scheduledAt).format("dddd, DD [de] MMMM [de] YYYY").replace(/^\w/, (c) => c.toUpperCase())}
                           </Typography>
-                          {turn.patientScore != null && (
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <Rating 
-                                value={turn.patientScore} 
-                                readOnly 
-                                size="small" 
-                                precision={0.1}
-                                sx={{ display: 'flex' }}
-                              />
-                              <Typography 
-                                variant="body2" 
-                                sx={{ color: 'text.secondary', lineHeight: 1 }}
-                              >
-                                ({turn.patientScore.toFixed(1)})
-                              </Typography>
-                            </Box>
-                          )}
                         </Box>
-                        {turn.reason && (
-                          <Typography variant="body2" className="viewturns-turn-reason">
-                            Motivo: {turn.reason}
+
+                        {/* Detalles del turno */}
+                        <Box className="doctor-viewturns-turn-details">
+                          <Typography variant="h5" className="doctor-viewturns-time-text">
+                            {dayjs(turn.scheduledAt).format("HH:mm")} hs
                           </Typography>
-                        )}
+                          <Box>
+                            <Box className="doctor-viewturns-patient-info">
+                              <Typography variant="h6" className="doctor-viewturns-patient-text">
+                                Paciente: {turn.patientName || "Paciente"}
+                              </Typography>
+                              {turn.patientScore != null && (
+                                <Box className="doctor-viewturns-rating-container">
+                                  <Rating 
+                                    value={turn.patientScore} 
+                                    readOnly 
+                                    size="small" 
+                                    precision={0.1}
+                                    className="doctor-viewturns-rating"
+                                  />
+                                  <Typography 
+                                    variant="body2" 
+                                    className="doctor-viewturns-rating-text"
+                                  >
+                                    ({turn.patientScore.toFixed(1)})
+                                  </Typography>
+                                </Box>
+                              )}
+                            </Box>
+                            {turn.reason && (
+                              <Typography variant="body1" className="doctor-viewturns-reason-text">
+                                Motivo: {turn.reason}
+                              </Typography>
+                            )}
+                          </Box>
+                        </Box>
+                        
                       </Box>
-                      <Box className="viewturns-turn-actions">
-                         <Box className="viewturns-main-actions">
+                      <Box className="doctor-viewturns-turn-actions">
+                         <Box className="doctor-viewturns-main-actions">
                           {canCancelTurn(turn) && (
                             <Button 
                               variant="contained" 
@@ -256,7 +266,7 @@ const ViewTurns: React.FC = () => {
                             >
                               {isCancellingTurn && cancellingTurnId === turn.id ? (
                                 <>
-                                  <CircularProgress size={16} sx={{ mr: 1 }} />
+                                  <CircularProgress size={16} className="doctor-viewturns-loading-spinner" />
                                   Cancelando...
                                 </>
                               ) : (
@@ -275,7 +285,7 @@ const ViewTurns: React.FC = () => {
                               >
                                 {isCancellingTurn && cancellingTurnId === turn.id ? (
                                   <>
-                                    <CircularProgress size={16} sx={{ mr: 1 }} />
+                                    <CircularProgress size={16} className="doctor-viewturns-loading-spinner" />
                                     Procesando...
                                   </>
                                 ) : (
@@ -291,7 +301,7 @@ const ViewTurns: React.FC = () => {
                               >
                                 {isCancellingTurn && cancellingTurnId === turn.id ? (
                                   <>
-                                    <CircularProgress size={16} sx={{ mr: 1 }} />
+                                    <CircularProgress size={16} className="doctor-viewturns-loading-spinner" />
                                     Procesando...
                                   </>
                                 ) : (
@@ -316,7 +326,7 @@ const ViewTurns: React.FC = () => {
                   </Box>
                 ))
               ) : (
-                <Box className="viewturns-empty-state">
+                <Box className="doctor-viewturns-empty-state">
                   <Typography>
                     {showTurnsContext.dateSelected || showTurnsContext.statusFilter
                       ? 'No hay turnos que coincidan con los filtros seleccionados'

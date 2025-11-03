@@ -25,7 +25,7 @@ export function filterTurns (myTurns: any, statusFilter: any) {
       if (statusComparison !== 0) {
         return statusComparison;
       }
-      return dayjs(b.scheduledAt).valueOf() - dayjs(a.scheduledAt).valueOf();
+      return dayjs(a.scheduledAt).valueOf() - dayjs(b.scheduledAt).valueOf();
     })
 }
 
