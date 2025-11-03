@@ -3,6 +3,7 @@ import { Box, Button, Typography, CircularProgress } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
+import './FileActions.css';
 
 interface FileActionsProps {
   turnId: string;
@@ -37,7 +38,7 @@ const FileActions: React.FC<FileActionsProps> = ({
         disabled
         className="viewturns-load-file-info-btn"
       >
-        <CircularProgress size={16} sx={{ mr: 1 }} />
+        <CircularProgress size={16} className="viewturns-loading-spinner" />
         {fileStatus === "loading" ? "Verificando archivos..." : "Cargando información de archivos..."}
       </Button>
     );
@@ -51,7 +52,7 @@ const FileActions: React.FC<FileActionsProps> = ({
         disabled
         className="viewturns-upload-btn"
       >
-        <CircularProgress size={16} sx={{ mr: 1 }} />
+        <CircularProgress size={16} className="viewturns-loading-spinner" />
         Subiendo...
       </Button>
     );
@@ -60,6 +61,9 @@ const FileActions: React.FC<FileActionsProps> = ({
   if (fileStatus === "no-file") {
     return canUploadFile ? (
       <Box className="viewturns-upload-section">
+        <Typography variant="caption" color="text.secondary" className="viewturns-file-size-hint">
+          Tamaño máximo 5MB
+        </Typography>
         <Button
           variant="outlined"
           size="small"
@@ -70,9 +74,7 @@ const FileActions: React.FC<FileActionsProps> = ({
         >
           Subir archivo
         </Button>
-        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem', mt: 0.5 }}>
-          Tamaño máximo 5MB
-        </Typography>
+        
       </Box>
     ) : null;
   }
@@ -97,7 +99,7 @@ const FileActions: React.FC<FileActionsProps> = ({
           disabled
           className="viewturns-delete-file-btn"
         >
-          <CircularProgress size={16} sx={{ mr: 1 }} />
+          <CircularProgress size={16} className="viewturns-loading-spinner" />
           Eliminando...
         </Button>
       </>

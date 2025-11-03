@@ -40,12 +40,11 @@ const DoctorDashboard: React.FC = () => {
   const pendingModifyRequests: TurnModifyRequest[] = dataContext.doctorModifyRequests?.filter((r: TurnModifyRequest) => r.status === "PENDING") || [];
 
 
-  const isLoading = dataContext.loading?.doctors || 
-                   dataContext.loading?.myTurns || 
-                   dataContext.loading?.doctorPatients || 
-                   dataContext.loading?.doctorAvailability || 
-                   dataContext.loading?.doctorModifyRequests ||
-                   doctorContext.isLoadingAvailability;
+  const isLoading = dataContext.loading?.myTurns || 
+                    dataContext.loading?.doctorPatients || 
+                    dataContext.loading?.doctorAvailability || 
+                    dataContext.loading?.doctorModifyRequests ||
+                    doctorContext.isLoadingAvailability;
   
   const upcomingTurns = (turnContext?.myTurns || [])
     .filter((turn: any) => {
@@ -100,6 +99,15 @@ const DoctorDashboard: React.FC = () => {
           </Box>
 
           <Box className="dashboard-actions-container">
+            <DashboardUpcomingCard
+              type="doctor"
+              title="Mis Turnos"
+              turns={upcomingTurns}
+              isLoading={turnContext?.isLoadingMyTurns}
+              error={turnContext?.myTurnsError}
+              emptyMessage="No tenés turnos próximos"
+              onViewAll={() => uiSend({ type: "NAVIGATE", to: "/doctor/view-turns" })}
+            />
 
             <DashboardCard
               type="doctor"
@@ -147,16 +155,6 @@ const DoctorDashboard: React.FC = () => {
                 onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/turns-modifications" })}
               />
             )}
-
-            <DashboardUpcomingCard
-              type="doctor"
-              title="Mis Turnos"
-              turns={upcomingTurns}
-              isLoading={turnContext?.isLoadingMyTurns}
-              error={turnContext?.myTurnsError}
-              emptyMessage="No tenés turnos próximos"
-              onViewAll={() => uiSend({ type: "NAVIGATE", to: "/doctor/view-turns" })}
-            />
 
             <DashboardCard
               type="doctor"

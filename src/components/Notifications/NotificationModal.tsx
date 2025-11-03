@@ -26,6 +26,7 @@ import {
   Schedule
 } from '@mui/icons-material';
 import { useMachines } from '#/providers/MachineProvider';
+import { useDataMachine } from '#/providers/DataProvider';
 import { NotificationResponse } from '#/service/notification-service.service';
 import { formatDateTime } from '#/utils/dateTimeUtils';
 
@@ -35,11 +36,13 @@ interface NotificationModalProps {
 }
 
 const NotificationModal: React.FC<NotificationModalProps> = ({ open, onClose }) => {
-  const { notificationState, notificationSend } = useMachines();
+  const { notificationState, notificationSend, uiSend, doctorSend } = useMachines();
+  const { dataState } = useDataMachine();
   
   const notifications: NotificationResponse[] = notificationState?.context?.notifications || [];
   const isDeletingNotification = notificationState?.context?.isDeletingNotification || false;
   const isDeletingAllNotifications = notificationState?.context?.isDeletingAllNotifications || false;
+  const userRole = dataState?.context?.userRole;
 
   const handleDeleteNotification = (notificationId: string) => {
     if (!isDeletingNotification && !isDeletingAllNotifications) {
@@ -49,8 +52,44 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ open, onClose }) 
 
   const handleMarkAllAsRead = () => {
     if (!isDeletingNotification && !isDeletingAllNotifications) {
-      // Delete all notifications in one batch operation
       notificationSend({ type: "DELETE_ALL_NOTIFICATIONS" });
+    }
+  };
+
+  const handleNotificationClick = (notification: NotificationResponse) => {
+    const { type, relatedEntityId } = notification;
+    
+    switch (type) {
+      case 'TURN_CANCELLED':
+        if (userRole === 'PATIENT') {
+          uiSend({ type: "NAVIGATE", to: "/patient/view-turns" });
+        } else if (userRole === 'DOCTOR') {
+          uiSend({ type: "NAVIGATE", to: "/doctor/view-turns" });
+        }
+        break;
+        
+      case 'MODIFY_REQUEST_APPROVED':
+      case 'MODIFY_REQUEST_REJECTED':
+        uiSend({ type: "NAVIGATE", to: "/patient/view-turns" });
+        break;
+        
+      case 'PATIENT_FILE_UPLOADED':
+      case 'TURN_RESERVED':
+        navigateToPatientDetails(relatedEntityId);
+        break;
+    }
+    
+    onClose();
+  };
+
+  const navigateToPatientDetails = (turnId: string) => {
+    const turns = dataState?.context?.myTurns || [];
+    const turn = turns.find((t: any) => t.id === turnId);
+    
+    if (turn && turn.patientId) {
+      doctorSend({ type: "SELECT_PATIENT", patientId: turn.patientId });
+    } else {
+      uiSend({ type: "NAVIGATE", to: "/doctor/view-patients" });
     }
   };
 
@@ -234,6 +273,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ open, onClose }) 
                   }}
                 >
                   <ListItem
+                    onClick={() => handleNotificationClick(notification)}
                     sx={{
                       display: 'flex',
                       alignItems: 'flex-start',
@@ -241,6 +281,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ open, onClose }) 
                       px: 3,
                       backgroundColor: 'white',
                       position: 'relative',
+                      cursor: 'pointer',
                       '&::before': {
                         content: '""',
                         position: 'absolute',
@@ -317,7 +358,10 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ open, onClose }) 
                       </Box>
                       
                       <IconButton
-                        onClick={() => handleDeleteNotification(notification.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteNotification(notification.id);
+                        }}
                         size="small"
                         disabled={isDeletingNotification || isDeletingAllNotifications}
                         sx={{ 
