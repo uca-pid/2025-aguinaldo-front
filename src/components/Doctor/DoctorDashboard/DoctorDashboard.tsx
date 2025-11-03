@@ -40,12 +40,11 @@ const DoctorDashboard: React.FC = () => {
   const pendingModifyRequests: TurnModifyRequest[] = dataContext.doctorModifyRequests?.filter((r: TurnModifyRequest) => r.status === "PENDING") || [];
 
 
-  const isLoading = dataContext.loading?.doctors || 
-                   dataContext.loading?.myTurns || 
-                   dataContext.loading?.doctorPatients || 
-                   dataContext.loading?.doctorAvailability || 
-                   dataContext.loading?.doctorModifyRequests ||
-                   doctorContext.isLoadingAvailability;
+  const isLoading = dataContext.loading?.myTurns || 
+                    dataContext.loading?.doctorPatients || 
+                    dataContext.loading?.doctorAvailability || 
+                    dataContext.loading?.doctorModifyRequests ||
+                    doctorContext.isLoadingAvailability;
   
   const upcomingTurns = (turnContext?.myTurns || [])
     .filter((turn: any) => {
@@ -100,14 +99,14 @@ const DoctorDashboard: React.FC = () => {
           </Box>
 
           <Box className="dashboard-actions-container">
-            <DashboardCard
+            <DashboardUpcomingCard
               type="doctor"
-              variant="primary"
-              icon={<BarChartIcon className="doctor-action-icon" />}
-              title="Métricas"
-              description="Ver estadísticas detalladas de tu actividad médica"
-              buttonText="Ver Métricas"
-              onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/metrics" })}
+              title="Mis Turnos"
+              turns={upcomingTurns}
+              isLoading={turnContext?.isLoadingMyTurns}
+              error={turnContext?.myTurnsError}
+              emptyMessage="No tenés turnos próximos"
+              onViewAll={() => uiSend({ type: "NAVIGATE", to: "/doctor/view-turns" })}
             />
 
             <DashboardCard
@@ -157,16 +156,6 @@ const DoctorDashboard: React.FC = () => {
               />
             )}
 
-            <DashboardUpcomingCard
-              type="doctor"
-              title="Mis Turnos"
-              turns={upcomingTurns}
-              isLoading={turnContext?.isLoadingMyTurns}
-              error={turnContext?.myTurnsError}
-              emptyMessage="No tenés turnos próximos"
-              onViewAll={() => uiSend({ type: "NAVIGATE", to: "/doctor/view-turns" })}
-            />
-
             <DashboardCard
               type="doctor"
               variant={isLoading ? "accent" : (hasConfiguredDays ? "accent" : "warning")}
@@ -176,6 +165,16 @@ const DoctorDashboard: React.FC = () => {
               buttonText={hasConfiguredDays ? "Configurar" : "Configurar Ahora"}
               onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/enable-hours" })}
               warning={!hasConfiguredDays && !isLoading}
+            />
+
+            <DashboardCard
+              type="doctor"
+              variant="primary"
+              icon={<BarChartIcon className="doctor-action-icon" />}
+              title="Métricas"
+              description="Ver estadísticas detalladas de tu actividad médica"
+              buttonText="Ver Métricas"
+              onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/metrics" })}
             />
           </Box>
         </Container>

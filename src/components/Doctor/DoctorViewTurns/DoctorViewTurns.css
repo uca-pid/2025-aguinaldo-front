@@ -1,30 +1,9 @@
-
 /* DoctorViewTurns.css - Component-specific styles */
 
+/* Import shared styles */
 @import "../../shared/SharedStyles.css";
 
-/* Color palette variables - matching PatientShared */
-:root {
-  --gunmetal: #0d2230;
-  --indigo-dye: #1f4f6f;
-  --lapis-lazuli: #22577a;
-  --cerulean: #286a85;
-  --cerulean-2: #2d7d90;
-  --verdigris: #38a3a5;
-  --emerald: #57cc99;
-  --light-green: #80ed99;
-  --tea-green: #c7f9cc;
-  --tea-green-2: #ccfad1;
-  --white: #ffffff;
-  --black: #000000;
-}
-
-.doctor-viewturns-container {
-  height: auto !important;
-  background-color: var(--white) !important;
-  padding: 0 !important;
-}
-
+/* Content Container */
 .doctor-viewturns-content {
   max-width: 1200px !important;
   margin: 0 auto !important;
@@ -34,33 +13,102 @@
   gap: 32px !important;
 }
 
+/* Specific inline style classes */
+.doctor-viewturns-date-header {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 28px !important;
+  margin-bottom: 8px !important;
+}
+
+.doctor-viewturns-date-text {
+  font-weight: 600 !important;
+  color: #1f4f6f !important;
+  line-height: 1.5 !important;
+  margin-top: 2px !important; /* Ajuste para alinear con el texto del paciente */
+}
+
+.doctor-viewturns-chip-small {
+  font-size: 0.75rem !important;
+}
+
+.doctor-viewturns-turn-details {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 24px !important;
+  margin-bottom: 12px !important;
+}
+
+.doctor-viewturns-time-text {
+  font-weight: 500 !important;
+  color: #1145b6ff !important;
+  line-height: 1.5 !important;
+}
+
+.doctor-viewturns-patient-text {
+  font-weight: 600 !important;
+  color: #0d2230 !important;
+  line-height: 1.5 !important;
+}
+
+.doctor-viewturns-patient-info {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-bottom: 4px !important;
+}
+
+.doctor-viewturns-rating-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.doctor-viewturns-rating {
+  display: flex !important;
+}
+
+.doctor-viewturns-rating-text {
+  color: #64748b !important;
+  line-height: 1 !important;
+}
+
+.doctor-viewturns-reason-text {
+  color: #615e5eff !important;
+}
+
+.doctor-viewturns-loading-spinner {
+  margin-right: 8px !important;
+}
+
+/* Filters Section - matching PendingScreen card style */
 .doctor-viewturns-filters-section {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px solid #e0e7ff;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+  background: white !important;
+  border: 1px solid var(--tea-green) !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  box-shadow: 0 2px 8px rgba(13, 34, 48, 0.08) !important;
 }
 
 .doctor-viewturns-filters-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 20px !important;
 }
 
 .doctor-viewturns-section-title {
-  color: #1e3a8a !important;
   font-weight: 600 !important;
+  color: var(--gunmetal) !important;
   margin: 0 !important;
-  flex-shrink: 0;
+  flex-shrink: 0 !important;
 }
 
 .doctor-viewturns-filters-controls {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  flex-wrap: wrap !important;
 }
 
 .doctor-viewturns-filter-select {
@@ -72,101 +120,78 @@
   background: white !important;
 }
 
-.doctor-viewturns-filter-select .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-  border-color: #3b82f6 !important;
-}
-
-.doctor-viewturns-filter-select .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border-color: #3b82f6 !important;
-  border-width: 2px !important;
-}
-
 .doctor-viewturns-clear-filter-btn {
-  border-color: #64748b !important;
-  color: #64748b !important;
-}
-
-.doctor-viewturns-clear-filter-btn:hover {
-  border-color: #374151 !important;
-  color: #374151 !important;
-  background: #f8fafc !important;
-}
-
-.doctor-viewturns-list-section {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e0e7ff;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
-  overflow: hidden;
-}
-
-.doctor-viewturns-list-content {
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-.doctor-viewturns-loading-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 40px 20px;
-  color: #64748b;
-}
-
-.doctor-viewturns-loading-text {
-  color: #64748b !important;
-}
-
-.doctor-viewturns-turn-item {
-  background: white !important;
-  border: none !important;
-  border-bottom: 1px solid #f1f5f9 !important;
-  padding: 20px !important;
+  color: var(--indigo-dye) !important;
+  border-color: var(--tea-green) !important;
+  border-radius: 8px !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
   transition: all 0.2s ease !important;
 }
 
-.doctor-viewturns-turn-item:hover {
-  background: #f8fafc !important;
+.doctor-viewturns-clear-filter-btn:hover {
+  background: var(--tea-green-2) !important;
+  border-color: var(--cerulean-2) !important;
 }
 
-.doctor-viewturns-turn-item:last-child {
-  border-bottom: none !important;
+/* List Section */
+.doctor-viewturns-list-section {
+  background: white !important;
+  border: 1px solid var(--tea-green) !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  box-shadow: 0 2px 8px rgba(13, 34, 48, 0.08) !important;
+}
+
+.doctor-viewturns-list-content {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+/* Turn Items - styled as cards like PendingScreen doctor cards */
+.doctor-viewturns-turn-item {
+  background: white !important;
+  border: 1px solid var(--tea-green) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(13, 34, 48, 0.08) !important;
+  transition: all 0.2s ease !important;
+  padding: 23px !important;
+}
+
+.doctor-viewturns-turn-item:hover {
+  box-shadow: 0 4px 16px rgba(13, 34, 48, 0.12) !important;
+  border-color: var(--cerulean-2) !important;
 }
 
 .doctor-viewturns-turn-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
 }
 
 .doctor-viewturns-turn-info {
-  flex: 1;
+  flex: 1 !important;
 }
 
 .doctor-viewturns-turn-datetime {
   font-weight: 600 !important;
-  color: #1e3a8a !important;
-  margin-bottom: 4px !important;
-}
-
-.doctor-viewturns-turn-patient {
-  color: #374151 !important;
-  font-weight: 500 !important;
-  margin-bottom: 4px !important;
-}
-
-.doctor-viewturns-turn-reason {
-  color: #64748b !important;
-  font-style: italic !important;
+  color: var(--gunmetal) !important;
+  margin-bottom: 8px !important;
 }
 
 .doctor-viewturns-turn-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+}
+
+/* Container para botones principales (modificar/cancelar) */
+.doctor-viewturns-main-actions {
+  display: flex !important;
+  gap: 16px !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
 }
 
 .doctor-viewturns-status-chip {
@@ -541,7 +566,166 @@
     font-size: 0.8rem !important;
   }
 
-  .doctor-viewturns-calendar-container {
-    padding: 8px !important;
+/* Patient Info */
+.doctor-viewturns-patient-info {
+  margin-bottom: 12px !important;
+}
+
+.doctor-viewturns-patient-name {
+  color: var(--gunmetal) !important;
+  font-weight: 500 !important;
+  margin-bottom: 4px !important;
+}
+
+.doctor-viewturns-turn-reason {
+  color: var(--slate-gray) !important;
+  font-style: italic !important;
+}
+
+/* Buttons - consistent with ViewTurns */
+.doctor-viewturns-action-button {
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid transparent !important;
+}
+
+.doctor-viewturns-modify-button {
+  background: var(--tea-green) !important;
+  color: var(--gunmetal) !important;
+  border: 1px solid var(--tea-green) !important;
+}
+
+.doctor-viewturns-modify-button:hover {
+  background: var(--cerulean-3) !important;
+  border-color: var(--cerulean-2) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 123, 191, 0.3) !important;
+}
+
+.doctor-viewturns-cancel-button {
+  background: #ef4444 !important;
+  color: white !important;
+  border: 1px solid #ef4444 !important;
+}
+
+.doctor-viewturns-cancel-button:hover {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+}
+
+.doctor-viewturns-details-button {
+  background: transparent !important;
+  color: var(--cerulean-2) !important;
+  border: 1px solid var(--cerulean-2) !important;
+  margin-top: 8px !important;
+}
+
+.doctor-viewturns-details-button:hover {
+  background: var(--cerulean-2) !important;
+  color: white !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 123, 191, 0.3) !important;
+}
+
+/* Rating Container Update */
+.doctor-viewturns-rating-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-top: 8px !important;
+  padding: 8px 12px !important;
+  background: var(--light-gray) !important;
+  border-radius: 6px !important;
+  border: 1px solid var(--tea-green) !important;
+}
+
+.doctor-viewturns-rating-label {
+  color: var(--gunmetal) !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+}
+
+/* Loading State Update */
+.doctor-viewturns-loading-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  padding: 40px 20px !important;
+  color: var(--slate-gray) !important;
+}
+
+.doctor-viewturns-loading-text {
+  color: var(--slate-gray) !important;
+}
+
+/* Empty State Update */
+.doctor-viewturns-empty-state {
+  text-align: center !important;
+  padding: 40px 20px !important;
+  color: var(--slate-gray) !important;
+}
+
+.doctor-viewturns-empty-icon {
+  color: var(--cerulean-2) !important;
+  margin-bottom: 16px !important;
+}
+
+.doctor-viewturns-empty-text {
+  color: var(--slate-gray) !important;
+  font-size: 16px !important;
+  margin-bottom: 8px !important;
+}
+
+.doctor-viewturns-empty-subtitle {
+  color: var(--slate-gray) !important;
+  font-size: 14px !important;
+  opacity: 0.8 !important;
+}
+
+/* Responsive Design Updates */
+@media (max-width: 768px) {
+  .shared-container {
+    padding: 12px !important;
+    margin: 0 8px !important;
   }
+
+  .shared-header h1 {
+    font-size: 24px !important;
+  }
+
+  .shared-filters {
+    flex-direction: column !important;
+  }
+
+  .doctor-viewturns-list-section {
+    padding: 16px !important;
+  }
+
+  .doctor-viewturns-turn-content {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .doctor-viewturns-turn-actions {
+    align-items: stretch !important;
+  }
+
+  .doctor-viewturns-main-actions {
+    justify-content: stretch !important;
+  }
+
+  .doctor-viewturns-action-button {
+    flex: 1 !important;
+  }
+
+  .doctor-viewturns-details-button {
+    margin-top: 12px !important;
+  }
+}
 }

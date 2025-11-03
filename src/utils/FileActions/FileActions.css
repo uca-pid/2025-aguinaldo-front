@@ -1,0 +1,114 @@
+/* FileActions.css - File upload/download component styles */
+
+/* File Upload Button */
+.viewturns-upload-btn {
+  background-color: transparent !important;
+  color: var(--lapis-lazuli) !important;
+  border: 1px solid var(--lapis-lazuli) !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.viewturns-upload-btn:hover:not(:disabled) {
+  background-color: var(--lapis-lazuli) !important;
+  color: white !important;
+}
+
+.viewturns-upload-btn:disabled {
+  background-color: var(--tea-green) !important;
+  color: var(--indigo-dye) !important;
+  border-color: var(--tea-green) !important;
+}
+
+/* Upload Section Container */
+.viewturns-upload-section {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+/* File size hint */
+.viewturns-file-size-hint {
+  font-size: 0.75rem !important;
+}
+
+/* Loading spinner in buttons */
+.viewturns-loading-spinner {
+  margin-right: 8px !important;
+}
+
+/* View File Button */
+.viewturns-view-file-btn {
+  background-color: transparent !important;
+  color: var(--indigo-dye) !important;
+  border: 1px solid var(--indigo-dye) !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.viewturns-view-file-btn:hover:not(:disabled) {
+  background-color: var(--indigo-dye) !important;
+  color: white !important;
+}
+
+/* Delete File Button */
+.viewturns-delete-file-btn {
+  background-color: transparent !important;
+  color: #ef4444 !important;
+  border: 1px solid #ef4444 !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.viewturns-delete-file-btn:hover:not(:disabled) {
+  background-color: #ef4444 !important;
+  color: white !important;
+}
+
+.viewturns-delete-file-btn:disabled {
+  background-color: var(--tea-green) !important;
+  color: var(--indigo-dye) !important;
+  border-color: var(--tea-green) !important;
+}
+
+/* Loading File Info Button */
+.viewturns-load-file-info-btn {
+  background-color: transparent !important;
+  color: var(--indigo-dye) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+}
+
+/* CSS Variables - fallback values if not defined globally */
+:root {
+  --lapis-lazuli: #2563eb;
+  --indigo-dye: #1e40af;
+  --tea-green: #e0f2fe;
+}
+
+/* Responsive Design for FileActions */
+@media (max-width: 600px) {
+  .viewturns-upload-btn,
+  .viewturns-view-file-btn,
+  .viewturns-delete-file-btn {
+    width: 100% !important;
+    padding: 10px 16px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .viewturns-upload-section {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+}

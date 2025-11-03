@@ -186,57 +186,74 @@ const ViewTurns: React.FC = () => {
                 <Box key={turn.id || index} className="viewturns-turn-item">
                   <Box className="viewturns-turn-content">
                     <Box className="viewturns-turn-info">
-                      <Typography variant="h6" className="viewturns-turn-datetime" style={{display: 'flex', alignItems: 'center', gap: 8}}>
-                        {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
+                      {/* Header: Fecha y Estado */}
+                      <Box className="viewturns-date-header">
+                        
                         {turn.status === 'SCHEDULED' && isTurnPast(turn.scheduledAt) ? (
                           <Chip 
                             label="Programado" 
                             size="small"
-                            className="viewturns-status-chip status-scheduled"
-                            sx={{ ml: 1, fontSize: '0.75rem' }} 
+                            className="viewturns-status-chip status-scheduled viewturns-chip-small"
                           />
                         ) : !hasPendingModifyRequest(turn.id) ? (
                           <Chip
                             label={getStatusLabel(turn.status)}
                             className={`viewturns-status-chip status-${turn.status.toLowerCase()}`}
                             size="small"
-                            sx={{ ml: 1 }}
                           />
                         ) : null}
                         {hasPendingModifyRequest(turn.id) && (
                           <Chip
-                            label="Cambio pendiente de aceptación"
+                            label="Cambio pendiente"
                             size="small"
                             color="info"
-                            sx={{ ml: 1, fontSize: '0.75rem' }}
+                            className="viewturns-chip-small"
                           />
                         )}
-                      </Typography>
-                      <Typography variant="body1" className="viewturns-turn-doctor">
-                        Dr. {turn.doctorName}
-                      </Typography>
-                      <Typography variant="body2" className="viewturns-turn-specialty">
-                        {turn.doctorSpecialty}
-                      </Typography>
+
+                        <Typography variant="body1" className="viewturns-turn-datetime viewturns-date-text">
+                          {dayjs(turn.scheduledAt).format("dddd, DD [de] MMMM [de] YYYY").replace(/^\w/, (c) => c.toUpperCase())}
+                        </Typography>
+
+                      </Box>
+
+                      {/* Detalles del turno */}
+                      <Box className="viewturns-turn-details">
+                        <Typography variant="h5" className="viewturns-time-text">
+                          {dayjs(turn.scheduledAt).format("HH:mm")} hs
+                        </Typography>
+                        <Box>
+                          <Typography variant="h6" className="viewturns-doctor-text">
+                            Dr. {turn.doctorName}
+                          </Typography>
+                          <Typography variant="body1" className="viewturns-specialty-text">
+                            {turn.doctorSpecialty}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      
                     </Box>
+                    
+                    {/* Sección de Acciones - Separada en dos grupos */}
                     <Box className="viewturns-turn-actions">
-                      <Box className="viewturns-main-actions">
-                        
+                      {/* Acciones Principales */}
+                      <Box className={`viewturns-main-actions ${canShowFileSection(turn) ? 'viewturns-main-actions-conditional' : 'viewturns-main-actions-no-margin'}`}>
                         {canCancelTurn(turn) && (
                           <Button 
-                            variant="contained" 
+                            variant="outlined" 
                             size="small"
+                            color="error"
                             className="viewturns-cancel-btn"
                             onClick={() => handleCancelTurn(turn.id)}
                             disabled={isCancellingTurn && cancellingTurnId === turn.id}
                           >
                             {isCancellingTurn && cancellingTurnId === turn.id ? (
                               <>
-                                <CircularProgress size={16} sx={{ mr: 1 }} />
+                                <CircularProgress size={16} className="viewturns-loading-spinner" />
                                 Cancelando...
                               </>
                             ) : (
-                              'Cancelar turno'
+                              'Cancelar'
                             )}
                           </Button>
                         )}
@@ -248,11 +265,12 @@ const ViewTurns: React.FC = () => {
                             onClick={() => handleModifyTurn(turn.id)}
                             className="viewturns-modify-btn"
                           >
-                            Cambiar fecha/horario
+                            Reprogramar
                           </Button>
                         )}
                       </Box>
                       
+                      {/* Sección de Archivos - Separada visualmente */}
                       {canShowFileSection(turn) && (
                         <Box className="viewturns-file-actions">
                           <FileActions

@@ -3,7 +3,7 @@ import { orchestrator } from '#/core/Orchestrator';
 
 export interface NotificationResponse {
   id: string;
-  type: 'TURN_CANCELLED' | 'MODIFY_REQUEST_APPROVED' | 'MODIFY_REQUEST_REJECTED';
+  type: 'TURN_CANCELLED' | 'MODIFY_REQUEST_APPROVED' | 'MODIFY_REQUEST_REJECTED' | 'PATIENT_FILE_UPLOADED' | 'TURN_RESERVED';
   relatedEntityId: string;
   message: string;
   isRead: boolean;
