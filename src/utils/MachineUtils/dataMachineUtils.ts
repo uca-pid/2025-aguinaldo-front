@@ -43,9 +43,7 @@ export interface LoadSpecialtiesParams {
 
 
 
-export interface LoadTurnsNeedingRatingParams {
-  accessToken: string;
-}
+
 
 export interface LoadRatingSubcategoriesParams {
   role?: string;
@@ -97,10 +95,7 @@ export const loadMyModifyRequests = async ({ accessToken }: LoadMyModifyRequests
 };
 
 
-export const loadTurnsNeedingRating = async ({ accessToken }: LoadTurnsNeedingRatingParams): Promise<any[]> => {
-  const result = await TurnService.getTurnsNeedingRating(accessToken);
-  return result;
-};
+
 
 export const loadRatingSubcategories = async ({ role, accessToken }: LoadRatingSubcategoriesParams): Promise<string[]> => {
   return await TurnService.getRatingSubcategories(role, accessToken);

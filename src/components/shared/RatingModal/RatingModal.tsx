@@ -13,53 +13,56 @@ import { TurnService } from '#/service/turn-service.service';
 import { orchestrator } from '#/core/Orchestrator';
 import { UI_MACHINE_ID } from '#/machines/uiMachine';
 import dayjs from '#/utils/dayjs.config';
+import React, { useMemo, useCallback } from 'react';
 import './RatingModal.css';
 
-const RatingModal = () => {
+const RatingModal = React.memo(() => {
   const { uiState, ratingState, ratingSend } = useMachines();
   const { dataState } = useDataMachine();
   const { authState } = useAuthMachine();
-  const user = authState?.context?.authResponse as SignInResponse;
-
-  const modalData = uiState.context.ratingModal;
+  
+  const user = useMemo(() => authState?.context?.authResponse as SignInResponse, [authState?.context?.authResponse]);
+  const modalData = useMemo(() => uiState.context.ratingModal, [uiState.context.ratingModal]);
   const open = modalData.open;
   const turn = modalData.turn;
   
-  const ratingSubcategories = dataState.context.ratingSubcategories || [];
+  const ratingSubcategories = useMemo(() => dataState.context.ratingSubcategories || [], [dataState.context.ratingSubcategories]);
   const accessToken = dataState.context.accessToken;
-  const turnsNeedingRating = dataState.context.turnsNeedingRating || [];
-  
+  const turnsNeedingRating = useMemo(() => dataState.context.turnsNeedingRating || [], [dataState.context.turnsNeedingRating]);
+    
   const rating = ratingState?.context?.rating || 0;
   const subcategories = ratingState?.context?.subcategories || [];
   const loading = ratingState?.context?.loading || false;
   
-  const currentTurnIndex = turnsNeedingRating.findIndex((t: any) => t.id === turn?.id);
-  const currentPosition = currentTurnIndex >= 0 ? currentTurnIndex + 1 : 1;
-  const totalTurns = turnsNeedingRating.length;
-  const showProgress = totalTurns > 1;
+  const { currentPosition, totalTurns, showProgress } = useMemo(() => {
+    const currentTurnIndex = turnsNeedingRating.findIndex((t: any) => t.id === turn?.id);
+    const currentPosition = currentTurnIndex >= 0 ? currentTurnIndex + 1 : 1;
+    const totalTurns = turnsNeedingRating.length;
+    const showProgress = totalTurns > 1;
+        
+    return { currentPosition, totalTurns, showProgress };
+  }, [turnsNeedingRating, turn?.id]);
   
   const isDoctor = user?.role === 'DOCTOR';
   const displayName = isDoctor ? turn?.patientName : `Dr. ${turn?.doctorName}`;
   const displayInfo = isDoctor ? 'Paciente' : (turn?.doctorSpecialty || 'Medicina General');
   
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (isDoctor) {
       ratingSend({ type: 'RESET_RATING' });
       orchestrator.sendToMachine(UI_MACHINE_ID, { type: "CLOSE_RATING_MODAL" });
     }
-  };
+  }, [isDoctor, ratingSend]);
 
-  const handleSuccessfulSubmit = () => {
+  const handleSuccessfulSubmit = useCallback(() => {
     ratingSend({ type: 'RESET_RATING' });
     
-    // Doctors: just reload turns and close modal
     if (isDoctor) {
       orchestrator.sendToMachine("data", { type: "LOAD_MY_TURNS" });
       orchestrator.sendToMachine(UI_MACHINE_ID, { type: "CLOSE_RATING_MODAL" });
       return;
     }
     
-    // Patients: check for next turn to rate
     const currentTurnIndex = turnsNeedingRating.findIndex((t: any) => t.id === turn?.id);
     const nextTurnIndex = currentTurnIndex + 1;
     
@@ -72,9 +75,9 @@ const RatingModal = () => {
     } else {
       orchestrator.sendToMachine(UI_MACHINE_ID, { type: "CLOSE_RATING_MODAL" });
     }
-  };
+  }, [isDoctor, ratingSend, turnsNeedingRating, turn?.id]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!rating || !turn?.id || !accessToken) {
       return;
     }
@@ -103,9 +106,9 @@ const RatingModal = () => {
       });
       ratingSend({ type: 'SUBMIT_ERROR' });
     }
-  };
+  }, [rating, turn?.id, accessToken, subcategories, ratingSend, handleSuccessfulSubmit]);
 
-  const isValidSubmission = rating > 0;
+  const isValidSubmission = useMemo(() => rating > 0, [rating]);
 
   return (
     <Dialog 
@@ -266,6 +269,6 @@ const RatingModal = () => {
       </DialogActions>
     </Dialog>
   );
-};
+});
 
 export default RatingModal;
