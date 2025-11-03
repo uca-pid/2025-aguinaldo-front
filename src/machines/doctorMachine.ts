@@ -1,10 +1,11 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { saveDoctorAvailability, updateMedicalHistory } from "../utils/MachineUtils/doctorMachineUtils";
+import { saveDoctorAvailability, updateMedicalHistory, loadDoctorMetrics } from "../utils/MachineUtils/doctorMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import { DATA_MACHINE_ID } from "./dataMachine";
 import { UI_MACHINE_ID } from "./uiMachine";
 import { MEDICAL_HISTORY_MACHINE_ID } from "./medicalHistoryMachine";
 import type { Patient } from "../models/Doctor";
+import type { DoctorMetrics } from "../service/doctor-service.service";
 
 export const DOCTOR_MACHINE_ID = "doctor";
 export const DOCTOR_MACHINE_EVENT_TYPES = [
@@ -22,7 +23,9 @@ export const DOCTOR_MACHINE_EVENT_TYPES = [
   "UPDATE_HISTORY",
   "SAVE_HISTORY",
   "PATIENTS_LOADED",
-  "DATA_LOADED"
+  "DATA_LOADED",
+  "LOAD_METRICS",
+  "RELOAD_METRICS"
 ];
 
 interface Range {
@@ -54,6 +57,10 @@ export interface DoctorMachineContext {
   isSavingAvailability: boolean;
   isLoadingAvailability: boolean;
   availabilityError: string | null;
+  
+  metrics: DoctorMetrics | null;
+  isLoadingMetrics: boolean;
+  metricsError: string | null;
 }
 
 export type DoctorMachineEvent =
@@ -71,7 +78,9 @@ export type DoctorMachineEvent =
   | { type: "UPDATE_HISTORY"; value: string }
   | { type: "SAVE_HISTORY"; turnId?: string }
   | { type: "PATIENTS_LOADED" }
-  | { type: "DATA_LOADED" };
+  | { type: "DATA_LOADED" }
+  | { type: "LOAD_METRICS" }
+  | { type: "RELOAD_METRICS" };
 
 const doctorMachine = createMachine({
   id: "doctor",
@@ -102,6 +111,9 @@ const doctorMachine = createMachine({
     isSavingAvailability: false,
     isLoadingAvailability: false,
     availabilityError: null,
+    metrics: null,
+    isLoadingMetrics: false,
+    metricsError: null,
   } as DoctorMachineContext,
 
   states: {
@@ -429,6 +441,71 @@ const doctorMachine = createMachine({
                   });
                 }
               ]
+            },
+          },
+        },
+      },
+    },
+
+    metrics: {
+      initial: "idle",
+      states: {
+        idle: {
+          on: {
+            LOAD_METRICS: "loading",
+            RELOAD_METRICS: "loading",
+          },
+        },
+        loading: {
+          entry: assign({
+            isLoadingMetrics: true,
+            metricsError: null,
+          }),
+          invoke: {
+            src: fromPromise(async ({ input }: { input: { accessToken: string; doctorId: string } }) => {
+              return await loadDoctorMetrics(input);
+            }),
+            input: ({ context }) => ({
+              accessToken: context.accessToken!,
+              doctorId: context.doctorId!,
+            }),
+            onDone: {
+              target: "idle",
+              actions: assign({
+                metrics: ({ event }) => event.output,
+                isLoadingMetrics: false,
+                metricsError: null,
+              }),
+            },
+            onError: {
+              target: "idle",
+              actions: [
+                assign({
+                  isLoadingMetrics: false,
+                  metricsError: ({ event }) => {
+                    const error = event.error as Error;
+                    if (error?.message?.includes('Failed to fetch') || error?.message?.includes('fetch')) {
+                      return "No se pudo conectar con el servidor. Verifica tu conexión.";
+                    }
+                    if (error?.message?.includes('404')) {
+                      return "Métricas no disponibles.";
+                    }
+                    if (error?.message?.includes('401') || error?.message?.includes('403')) {
+                      return "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
+                    }
+                    return error?.message || "Error al cargar las métricas. Inténtalo de nuevo.";
+                  },
+                }),
+                ({ event }) => {
+                  const error = event.error as Error;
+                  const errorMessage = error?.message || "Error al cargar las métricas. Inténtalo de nuevo.";
+                  orchestrator.sendToMachine(UI_MACHINE_ID, { 
+                    type: "OPEN_SNACKBAR", 
+                    message: errorMessage, 
+                    severity: "error" 
+                  });
+                }
+              ],
             },
           },
         },

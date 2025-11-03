@@ -1,4 +1,4 @@
-import { DoctorService, type DoctorAvailabilityRequest } from "../../service/doctor-service.service";
+import { DoctorService, type DoctorAvailabilityRequest, type DoctorMetrics } from "../../service/doctor-service.service";
 import { MedicalHistoryService } from "../../service/medical-history-service.service";
 import type { Patient } from "../../models/Doctor";
 import type { MedicalHistory, CreateMedicalHistoryRequest } from "../../models/MedicalHistory";
@@ -57,6 +57,11 @@ export interface SaveAvailabilityParams {
   accessToken: string;
   doctorId: string;
   availability: DayAvailability[];
+}
+
+export interface LoadDoctorMetricsParams {
+  accessToken: string;
+  doctorId: string;
 }
 
 interface Range {
@@ -216,4 +221,9 @@ export const saveDoctorAvailability = async ({ accessToken, doctorId, availabili
 
   await  DoctorService.saveAvailability(accessToken, doctorId, availabilityRequest);
 
-  return "Availability saved successfully";}
+  return "Availability saved successfully";
+}
+
+export const loadDoctorMetrics = async ({ accessToken, doctorId }: LoadDoctorMetricsParams): Promise<DoctorMetrics> => {
+  return await DoctorService.getDoctorMetrics(accessToken, doctorId);
+}
