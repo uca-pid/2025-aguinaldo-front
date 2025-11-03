@@ -28,6 +28,24 @@ export interface AvailableSlot {
   dayOfWeek: string;
 }
 
+export interface SubcategoryCount {
+  subcategory: string;
+  count: number;
+}
+
+export interface DoctorMetrics {
+  doctorId: string;
+  name: string;
+  surname: string;
+  specialty: string;
+  score: number | null;
+  ratingSubcategories: SubcategoryCount[];
+  totalPatients: number;
+  upcomingTurns: number;
+  completedTurnsThisMonth: number;
+  cancelledTurns: number;
+}
+
 export class DoctorService {
   
   static async getDoctorPatients(accessToken: string, doctorId: string): Promise<Patient[]> {
@@ -133,5 +151,31 @@ export class DoctorService {
 
   // Note: Medical history operations have been moved to MedicalHistoryService
   // Use MedicalHistoryService.addMedicalHistory(), updateMedicalHistory(), etc.
+
+  static async getDoctorMetrics(accessToken: string, doctorId: string): Promise<DoctorMetrics> {
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTOR_METRICS.replace('{doctorId}', doctorId));
+    
+    try {
+      const response = await fetch(url, {
+        ...getAuthenticatedFetchOptions(accessToken),
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData?.message || 
+          errorData?.error ||
+          `Failed to fetch doctor metrics! Status: ${response.status}`
+        );
+      }
+
+      const result: DoctorMetrics = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Failed to fetch doctor metrics:', error);
+      throw error;
+    }
+  }
 
 }

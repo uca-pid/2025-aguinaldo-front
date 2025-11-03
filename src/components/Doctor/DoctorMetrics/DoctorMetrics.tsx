@@ -2,210 +2,208 @@ import React from 'react';
 import {
   Box, 
   Typography, 
-  Container,
   Avatar,
   Card,
-  CardContent
+  CardContent,
+  CircularProgress
 } from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ScheduleIcon from "@mui/icons-material/Schedule";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import StarIcon from "@mui/icons-material/Star";
 import BarChartIcon from "@mui/icons-material/BarChart";
-import LoadingThreeDotsJumping from "../../shared/PageLoadingScreen/LoadingThreeDots";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { SubcategoryCount } from "#/service/doctor-service.service";
 import "./DoctorMetrics.css";
-import { useDataMachine } from "#/providers/DataProvider";
-import { turnsOfTheMonth, upComingTurns } from "#/utils/filterTurns";
 
 
 const DoctorMetrics: React.FC = () => {
-  const { dataState } = useDataMachine();
-  const dataContext = dataState.context;
-  const {turnState } = useMachines();
-
-  const turnContext = turnState?.context;
+  const { doctorState, doctorSend } = useMachines();
+  const doctorContext = doctorState?.context;
   const authContext = useAuthMachine().authState?.context;
   const user = authContext.authResponse as SignInResponse;
 
-  
-  const isLoading = dataContext.loading?.myTurns || 
-                   turnContext?.isLoadingMyTurns;
-  
-  const pastTurnsThisMonth = turnsOfTheMonth(turnContext?.myTurns || []);
-  const totalUpcomingTurns = upComingTurns(turnContext?.myTurns || []);
-  const averageTurnDuration = 45; 
-  
+  // Load metrics when component mounts
+  React.useEffect(() => {
+    if (doctorContext?.accessToken && doctorContext?.doctorId && !doctorContext?.metrics && !doctorContext?.isLoadingMetrics) {
+      doctorSend({ type: "LOAD_METRICS" });
+    }
+  }, [doctorContext?.accessToken, doctorContext?.doctorId, doctorContext?.metrics, doctorContext?.isLoadingMetrics, doctorSend]);
 
-  const allTurns = turnContext?.myTurns || [];
-  const cancelledTurns = allTurns.filter((turn: any) => turn.status === 'CANCELED');
-  const totalPatients = dataContext.doctorPatients?.length || 0;
+  const isLoading = doctorContext?.isLoadingMetrics;
+  const metrics = doctorContext?.metrics;
+  const metricsError = doctorContext?.metricsError;
+
+  // Display average score with proper formatting
+  const displayScore = metrics?.score ? metrics.score.toFixed(2) : 'N/A';
+
+  // Parse and aggregate subcategories
+  const parsedSubcategories = React.useMemo(() => {
+    if (!metrics?.ratingSubcategories || metrics.ratingSubcategories.length === 0) {
+      return [];
+    }
+
+    // Create a map to count each subcategory
+    const subcategoryMap = new Map<string, number>();
+
+    metrics.ratingSubcategories.forEach((item: SubcategoryCount) => {
+      // Split the comma-separated string
+      const categories = item.subcategory.split(',').map(cat => cat.trim());
+      
+      categories.forEach(category => {
+        if (category) {
+          const currentCount = subcategoryMap.get(category) || 0;
+          subcategoryMap.set(category, currentCount + item.count);
+        }
+      });
+    });
+
+    // Convert map to array and sort by count
+    return Array.from(subcategoryMap.entries())
+      .map(([subcategory, count]) => ({ subcategory, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [metrics?.ratingSubcategories]);
     
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Box className="dashboard-container">
-
-        {isLoading && (
-          <Box className="loading-overlay">
-            <LoadingThreeDotsJumping />
-          </Box>
-        )}
-        
-        <Container maxWidth="lg">
-          <Box className="back-button-container">
-          </Box>
-          
-          <Box className="dashboard-header-section">
-            <Box className="dashboard-header-content">
-              <Avatar className="dashboard-header-avatar doctor-header-avatar">
-                <BarChartIcon className="dashboard-header-icon" />
+      <Box className="shared-container">
+        {/* Header Section */}
+        <Box className="shared-header">
+          <Box className="shared-header-layout">
+            <Box className="shared-header-content">
+              <Avatar className="shared-header-icon doctor-header-avatar">
+                <BarChartIcon sx={{ fontSize: 28 }} />
               </Avatar>
               <Box>
-                <Typography variant="h4" component="h1" className="dashboard-header-title">
+                <Typography variant="h4" component="h1" className="shared-header-title">
                   Métricas del Dr. {user.name || 'Doctor'}
                 </Typography>
-                <Typography variant="h6" className="dashboard-header-subtitle doctor-header-subtitle">
+                <Typography variant="h6" className="shared-header-subtitle doctor-header-subtitle">
                   Estadísticas detalladas de tu actividad médica
                 </Typography>
               </Box>
             </Box>
+            <Box className="shared-header-spacer">
+              {isLoading && <CircularProgress />}
+            </Box>
           </Box>
+        </Box>
 
-          {!isLoading && (
+        {metricsError && (
+          <Box sx={{ mb: 2, p: 2, bgcolor: 'error.light', borderRadius: 1 }}>
+            <Typography color="error.contrastText">{metricsError}</Typography>
+          </Box>
+        )}
+
+        <Box className="metrics-content">
+          {!isLoading && metrics && (
             <>
-             
-              <Box className="admin-stats-container">
-                <Box className="admin-stats-item">
-                  <Card className="admin-stats-card">
-                    <CardContent className="admin-stats-content">
-                      <Box className="admin-stats-layout">
-                        <div className="admin-stats-icon-wrapper">
-                          <CheckCircleIcon className="admin-stats-icon" />
-                        </div>
-                        <Box className="admin-stats-text">
-                          <Typography variant="h4" className="admin-stats-number">
-                            {pastTurnsThisMonth}
-                          </Typography>
-                          <Typography variant="body1" className="admin-stats-label">
-                            Turnos Completados Este Mes
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Box>
-                
-                <Box className="admin-stats-item">
-                  <Card className="admin-stats-card">
-                    <CardContent className="admin-stats-content">
-                      <Box className="admin-stats-layout">
-                        <div className="admin-stats-icon-wrapper">
-                          <ScheduleIcon className="admin-stats-icon" />
-                        </div>
-                        <Box className="admin-stats-text">
-                          <Typography variant="h4" className="admin-stats-number">
-                            {totalUpcomingTurns}
-                          </Typography>
-                          <Typography variant="body1" className="admin-stats-label">
-                            Turnos Próximos
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Box>
-                
-                <Box className="admin-stats-item">
-                  <Card className="admin-stats-card">
-                    <CardContent className="admin-stats-content">
-                      <Box className="admin-stats-layout">
-                        <div className="admin-stats-icon-wrapper">
-                          <AccessTimeIcon className="admin-stats-icon" />
-                        </div>
-                        <Box className="admin-stats-text">
-                          <Typography variant="h4" className="admin-stats-number">
-                            {averageTurnDuration}
-                          </Typography>
-                          <Typography variant="body1" className="admin-stats-label">
-                            Minutos Promedio por Consulta
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Box>
-              </Box>
-
-       
-              <Box className="admin-stats-container additional-metrics-container">
-                <Box className="admin-stats-item">
-                  <Card className="admin-stats-card">
-                    <CardContent className="admin-stats-content">
-                      <Box className="admin-stats-layout">
-                        <div className="admin-stats-icon-wrapper">
-                          <PersonIcon className="admin-stats-icon" />
-                        </div>
-                        <Box className="admin-stats-text">
-                          <Typography variant="h4" className="admin-stats-number">
-                            {totalPatients}
-                          </Typography>
-                          <Typography variant="body1" className="admin-stats-label">
-                            Total de Pacientes
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Box>
-                
-                
-                
-                <Box className="admin-stats-item">
-                  <Card className="admin-stats-card">
-                    <CardContent className="admin-stats-content">
-                      <Box className="admin-stats-layout">
-                        <div className="admin-stats-icon-wrapper">
-                          <ScheduleIcon className="admin-stats-icon" />
-                        </div>
-                        <Box className="admin-stats-text">
-                          <Typography variant="h4" className="admin-stats-number">
-                            {cancelledTurns.length}
-                          </Typography>
-                          <Typography variant="body1" className="admin-stats-label">
-                            Turnos Cancelados
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Box>
-              </Box>
-
+              {/* Summary Section - Now First */}
               <Box className="summary-section">
-                <Card className="admin-stats-card">
-                  <CardContent>
-                    <Typography variant="h6" className="summary-title">
-                      Resumen de Actividad
+                <Box className="metrics-section-header">
+                  <Typography variant="h5" className="metrics-section-title">
+                    Resumen de Actividad
+                  </Typography>
+                  <Typography variant="body2" className="metrics-section-subtitle">
+                    Vista consolidada de tu desempeño profesional
+                  </Typography>
+                </Box>
+                <Box className="summary-grid">
+                  <Box className="summary-card">
+                    <Typography className="summary-card-title">Especialidad</Typography>
+                    <Typography className="summary-card-value">
+                      {metrics.specialty || 'No especificada'}
                     </Typography>
-                    <Typography variant="body1" className="summary-item">
-                      • Tienes {totalUpcomingTurns} turnos programados próximamente
+                  </Box>
+                  <Box className="summary-card">
+                    <Typography className="summary-card-title">Calificación Promedio</Typography>
+                    <Typography className="summary-card-value">
+                      {displayScore} / 5.0
                     </Typography>
-                    <Typography variant="body1" className="summary-item">
-                      • Atiendes a {totalPatients} pacientes únicos
+                  </Box>
+                  <Box className="summary-card">
+                    <Typography className="summary-card-title">Pacientes Únicos</Typography>
+                    <Typography className="summary-card-value">
+                      {metrics.totalPatients} {metrics.totalPatients === 1 ? 'paciente' : 'pacientes'}
                     </Typography>
-                    <Typography variant="body1" className="summary-item">
-                      • Tu duración promedio de consulta es de {averageTurnDuration} minutos
+                  </Box>
+                  <Box className="summary-card">
+                    <Typography className="summary-card-title">Turnos Próximos</Typography>
+                    <Typography className="summary-card-value">
+                      {metrics.upcomingTurns} programados
                     </Typography>
-                  </CardContent>
-                </Card>
+                  </Box>
+                  <Box className="summary-card">
+                    <Typography className="summary-card-title">Turnos Completados</Typography>
+                    <Typography className="summary-card-value">
+                      {metrics.completedTurnsThisMonth} este mes
+                    </Typography>
+                  </Box>
+                  <Box className="summary-card">
+                    <Typography className="summary-card-title">Turnos Cancelados</Typography>
+                    <Typography className="summary-card-value">
+                      {metrics.cancelledTurns} {metrics.cancelledTurns === 1 ? 'cancelado' : 'cancelados'}
+                    </Typography>
+                  </Box>
+                  <Box className="summary-card">
+                    <Typography className="summary-card-title">Tasa de Finalización</Typography>
+                    <Typography className="summary-card-value">
+                      {metrics.completedTurnsThisMonth > 0 || metrics.cancelledTurns > 0
+                        ? ((metrics.completedTurnsThisMonth / (metrics.completedTurnsThisMonth + metrics.cancelledTurns)) * 100).toFixed(1)
+                        : '100'}%
+                    </Typography>
+                  </Box>
+                </Box>
               </Box>
+
+              {/* Rating Subcategories Section */}
+              {parsedSubcategories.length > 0 ? (
+                <Box className="rating-categories-section">
+                  <Box className="metrics-section-header">
+                    <Typography variant="h5" className="metrics-section-title">
+                      Feedback de Pacientes
+                    </Typography>
+                    <Typography variant="body2" className="metrics-section-subtitle">
+                      Categorías más valoradas en tus consultas ({parsedSubcategories.reduce((sum, cat) => sum + cat.count, 0)} menciones totales)
+                    </Typography>
+                  </Box>
+                  <Box className="rating-categories-grid">
+                    {parsedSubcategories.map((subcategory, index: number) => (
+                      <Card key={`${subcategory.subcategory}-${index}`} className={`rating-category-card ${index < 3 ? 'rating-card-top' : ''}`}>
+                        <CardContent className="rating-category-content">
+                          {index < 3 && <StarIcon className="rating-category-star" />}
+                          <Typography className="rating-category-name" component="div">
+                            {subcategory.subcategory}
+                          </Typography>
+                          <Typography className="rating-category-count" component="div">
+                            {subcategory.count} {subcategory.count === 1 ? 'mención' : 'menciones'}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </Box>
+                </Box>
+              ) : (
+                <Box className="rating-categories-section">
+                  <Box className="metrics-section-header">
+                    <Typography variant="h5" className="metrics-section-title">
+                      Feedback de Pacientes
+                    </Typography>
+                    <Typography variant="body2" className="metrics-section-subtitle">
+                      Aún no hay feedback de pacientes
+                    </Typography>
+                  </Box>
+                  <Box className="no-feedback-message">
+                    <Typography className="no-feedback-text">
+                      Cuando los pacientes califiquen tus consultas, verás aquí las categorías más valoradas.
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
             </>
           )}
-        </Container>
+        </Box>
       </Box>
     </LocalizationProvider>
   );
