@@ -100,15 +100,6 @@ const DoctorDashboard: React.FC = () => {
           </Box>
 
           <Box className="dashboard-actions-container">
-            <DashboardCard
-              type="doctor"
-              variant="primary"
-              icon={<BarChartIcon className="doctor-action-icon" />}
-              title="Métricas"
-              description="Ver estadísticas detalladas de tu actividad médica"
-              buttonText="Ver Métricas"
-              onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/metrics" })}
-            />
 
             <DashboardCard
               type="doctor"
@@ -176,6 +167,16 @@ const DoctorDashboard: React.FC = () => {
               buttonText={hasConfiguredDays ? "Configurar" : "Configurar Ahora"}
               onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/enable-hours" })}
               warning={!hasConfiguredDays && !isLoading}
+            />
+
+            <DashboardCard
+              type="doctor"
+              variant="primary"
+              icon={<BarChartIcon className="doctor-action-icon" />}
+              title="Métricas"
+              description="Ver estadísticas detalladas de tu actividad médica"
+              buttonText="Ver Métricas"
+              onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/metrics" })}
             />
           </Box>
         </Container>

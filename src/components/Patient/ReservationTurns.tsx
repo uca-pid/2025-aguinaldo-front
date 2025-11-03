@@ -336,30 +336,17 @@ const ReservationTurns: React.FC = () => {
                             {ratedCountsSnapshot[doctor.id] && ratedCountsSnapshot[doctor.id].length > 0 && (
                               <Stack direction="row" spacing={0.5} sx={{ mt: 0.5, flexWrap: 'wrap' }}>
                                     {(() => {
-                                      // split any concatenated subcategory strings into distinct chips
-                                      const SEP_RE = /(?:\s*[-–—]\s*|[,;|\/\\])/;
+                                      
+                                     
                                       const raw = ratedCountsSnapshot[doctor.id] || [];
-                                      const chips: { text: string | null; count: number }[] = [];
-                                      raw.forEach((s: any) => {
-                                        if (s.subcategory) {
-                                          const parts = String(s.subcategory).split(SEP_RE).map((p: string) => p.trim()).filter((p: string) => p.length > 0);
-                                          if (parts.length) {
-                                            parts.forEach((p: string) => chips.push({ text: p, count: s.count }));
-                                          } else {
-                                            chips.push({ text: s.subcategory, count: s.count });
-                                          }
-                                        } else {
-                                          chips.push({ text: null, count: s.count });
-                                        }
-                                      });
-
-                                      return chips.map((c, idx) => {
+                                      return raw.map((s: any, idx: number) => {
                                         const bg = getColorForTop(idx);
+                                        const label = s.subcategory ? `${s.subcategory} (${s.count})` : `(${s.count})`;
                                         return (
                                           <Chip
                                             key={`${doctor.id}-subcat-${idx}`}
                                             size="small"
-                                            label={c.text ? `${c.text} (${c.count})` : `(${c.count})`}
+                                            label={label}
                                             variant="filled"
                                             sx={{
                                               fontSize: '0.72rem',
@@ -369,7 +356,7 @@ const ReservationTurns: React.FC = () => {
                                               borderColor: `${bg} !important`,
                                               '& .MuiChip-label': { px: 1 },
                                             }}
-                                            title={c.text ?? 'No subcategory'}
+                                            title={s.subcategory ?? 'No subcategory'}
                                           />
                                         );
                                       });
