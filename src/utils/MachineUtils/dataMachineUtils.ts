@@ -116,7 +116,33 @@ export const loadRatedSubcategoryCounts = async ({ doctorIds, accessToken }: Loa
   const promises = doctorIds.map(async (id) => {
     try {
       const counts = await TurnService.getRatedSubcategoryCounts(id, accessToken);
-      map[id] = counts;
+      const SEP_RE = /(?:\s*[-–—]\s*|[,;|\/\\])/;
+      const agg: Record<string, number> = {};
+      counts.forEach((it: any) => {
+        const raw = it.subcategory;
+        if (!raw) {
+          const key = '__none__';
+          agg[key] = (agg[key] || 0) + (it.count || 0);
+          return;
+        }
+        const parts = String(raw).split(SEP_RE).map((p: string) => p.trim()).filter((p: string) => p.length > 0);
+        if (parts.length) {
+          parts.forEach(p => {
+            const key = p;
+            agg[key] = (agg[key] || 0) + (it.count || 0);
+          });
+        } else {
+          const key = String(raw).trim();
+          agg[key] = (agg[key] || 0) + (it.count || 0);
+        }
+      });
+
+      
+      const arr = Object.entries(agg).map(([k, v]) => ({ subcategory: k === '__none__' ? null : k, count: v }));
+      arr.sort((a, b) => b.count - a.count);
+
+      
+      map[id] = arr.slice(0, 3);
     } catch (e) {
       map[id] = [];
     }
