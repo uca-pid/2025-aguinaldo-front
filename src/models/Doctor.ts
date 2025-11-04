@@ -1,6 +1,11 @@
 import type { MedicalHistory } from './MedicalHistory';
 import dayjs from '#/utils/dayjs.config';
 
+export interface SubcategoryCount {
+  subcategory: string;
+  count: number;
+}
+
 export interface Patient {
   id: string;
   name: string;
@@ -14,6 +19,7 @@ export interface Patient {
   score?: number | null;
   medicalHistory?: string; // For backward compatibility - latest medical history content
   medicalHistories?: MedicalHistory[]; // New field for multiple medical history entries
+  ratingSubcategories?: SubcategoryCount[];
 }
 
 export interface ApiErrorResponse {
