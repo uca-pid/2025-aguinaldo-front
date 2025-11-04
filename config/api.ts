@@ -16,7 +16,6 @@ export const API_CONFIG = {
     GET_DOCTOR_TURNS: '/api/turns/doctor',
     GET_PATIENT_TURNS: '/api/turns/patient',
     CANCEL_TURN: '/api/turns/{turnId}/cancel',
-    GET_TURNS_NEEDING_RATING: '/api/turns/needing-rating',
     CREATE_RATING: '/api/ratings/turns/{turnId}/rate',
     GET_RATING_SUBCATEGORIES: '/api/ratings/rating-subcategories',
   GET_RATED_SUBCATEGORY_COUNTS: '/api/ratings/rated/{ratedId}/subcategories-counts',
@@ -29,6 +28,7 @@ export const API_CONFIG = {
     GET_DOCTORS: '/api/doctors',
     GET_SPECIALTIES: '/api/doctors/specialties',
     GET_DOCTOR_PATIENTS: '/api/doctors/{doctorId}/patients',
+    GET_DOCTOR_METRICS: '/api/doctors/{doctorId}/metrics',
     SAVE_DOCTOR_AVAILABILITY: '/api/doctors/{doctorId}/availability',
     GET_DOCTOR_AVAILABLE_SLOTS: '/api/doctors/{doctorId}/available-slots',
 

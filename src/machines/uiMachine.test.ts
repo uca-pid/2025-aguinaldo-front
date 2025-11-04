@@ -6,6 +6,7 @@ vi.mock('#/core/Orchestrator', () => ({
   orchestrator: {
     send: vi.fn(),
     sendToMachine: vi.fn(),
+    getSnapshot: vi.fn(),
     registerMachine: vi.fn(),
   }
 }));
@@ -90,6 +91,79 @@ describe('uiMachine', () => {
       });
 
       expect(actor.getSnapshot().context.currentPath).toBe('/');
+    });
+
+    it('should handle patient detail navigation on initial path', () => {
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      actor.send({
+        type: 'ADD_NAVIGATE_HOOK',
+        navigate: mockNavigate,
+        initialPath: '/patient-detail?patientId=patient123',
+      });
+
+      expect(mockOrchestrator.send).toHaveBeenCalledWith({
+        type: 'SELECT_PATIENT',
+        patientId: 'patient123'
+      });
+    });
+
+    it('should send CLEAR_PATIENT_SELECTION when navigating to patient detail without patientId', () => {
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      actor.send({
+        type: 'ADD_NAVIGATE_HOOK',
+        navigate: mockNavigate,
+        initialPath: '/home',
+      });
+
+      actor.send({ type: 'NAVIGATE', to: '/patient-detail?patientId=' });
+
+      expect(mockOrchestrator.send).toHaveBeenCalledWith({
+        type: 'CLEAR_PATIENT_SELECTION'
+      });
+    });
+
+    it('should handle turn cancellation from patient view turns', () => {
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      actor.send({
+        type: 'ADD_NAVIGATE_HOOK',
+        navigate: mockNavigate,
+        initialPath: '/patient/view-turns?turnId=turn456',
+      });
+
+      expect(mockOrchestrator.send).toHaveBeenCalledWith({
+        type: 'OPEN_CANCEL_TURN_DIALOG',
+        turnId: 'turn456',
+        title: 'Cancelar Turno',
+        message: '¿Estás seguro de que quieres cancelar este turno? Esta acción no se puede deshacer.',
+        confirmButtonText: 'Cancelar Turno',
+        confirmButtonColor: 'error'
+      });
+    });
+
+    it('should handle turn cancellation from doctor view turns', () => {
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      actor.send({
+        type: 'ADD_NAVIGATE_HOOK',
+        navigate: mockNavigate,
+        initialPath: '/doctor/view-turns?turnId=turn789',
+      });
+
+      expect(mockOrchestrator.send).toHaveBeenCalledWith({
+        type: 'OPEN_CANCEL_TURN_DIALOG',
+        turnId: 'turn789',
+        title: 'Cancelar Turno',
+        message: '¿Estás seguro de que quieres cancelar este turno? Esta acción no se puede deshacer.',
+        confirmButtonText: 'Cancelar Turno',
+        confirmButtonColor: 'error'
+      });
     });
   });
 
@@ -214,6 +288,42 @@ describe('uiMachine', () => {
       expect(mockNavigate).toHaveBeenNthCalledWith(2, '/page2');
       expect(mockNavigate).toHaveBeenNthCalledWith(3, '/page3');
       expect(actor.getSnapshot().context.currentPath).toBe('/page3');
+    });
+
+    it('should handle navigation to patient detail during NAVIGATE event', () => {
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      actor.send({
+        type: 'ADD_NAVIGATE_HOOK',
+        navigate: mockNavigate,
+        initialPath: '/home',
+      });
+
+      actor.send({ type: 'NAVIGATE', to: '/patient-detail?patientId=patient999' });
+
+      expect(mockNavigate).toHaveBeenCalledWith('/patient-detail?patientId=patient999');
+      expect(mockOrchestrator.send).toHaveBeenCalledWith({
+        type: 'SELECT_PATIENT',
+        patientId: 'patient999'
+      });
+    });
+
+    it('should send CLEAR_PATIENT_SELECTION when navigating to patient detail without patientId', () => {
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      actor.send({
+        type: 'ADD_NAVIGATE_HOOK',
+        navigate: mockNavigate,
+        initialPath: '/home',
+      });
+
+      actor.send({ type: 'NAVIGATE', to: '/patient-detail?patientId=' });
+
+      expect(mockOrchestrator.send).toHaveBeenCalledWith({
+        type: 'CLEAR_PATIENT_SELECTION'
+      });
     });
   });
 
@@ -639,6 +749,266 @@ describe('uiMachine', () => {
       // Empty string is falsy in the condition, so navigation should NOT happen
       expect(mockNavigate).not.toHaveBeenCalled();
       expect(actor.getSnapshot().context.currentPath).toBe(initialPath);
+    });
+  });
+
+  describe('OPEN_CANCEL_TURN_DIALOG Event', () => {
+    it('should open cancel turn dialog with default parameters', () => {
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      actor.send({
+        type: 'OPEN_CANCEL_TURN_DIALOG',
+        turnId: 'turn-123',
+      });
+
+      const confirmDialog = actor.getSnapshot().context.confirmDialog;
+      expect(confirmDialog.open).toBe(true);
+      expect(confirmDialog.action).toBe('cancel_turn');
+      expect(confirmDialog.turnId).toBe('turn-123');
+      expect(confirmDialog.turnData).toBeUndefined();
+      expect(confirmDialog.title).toBe('Confirmar Acción');
+      expect(confirmDialog.message).toBe('¿Estás seguro de que quieres cancelar este turno? Esta acción no se puede deshacer.');
+      expect(confirmDialog.confirmButtonText).toBe('Cancelar Turno');
+      expect(confirmDialog.confirmButtonColor).toBe('error');
+    });
+
+    it('should open cancel turn dialog with custom parameters', () => {
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      const turnData = { patientName: 'John Doe', scheduledAt: '2024-01-01' };
+      actor.send({
+        type: 'OPEN_CANCEL_TURN_DIALOG',
+        turnId: 'turn-456',
+        turnData,
+        title: 'Custom Title',
+        message: 'Custom message',
+        confirmButtonText: 'Custom Button',
+        confirmButtonColor: 'warning',
+      });
+
+      const confirmDialog = actor.getSnapshot().context.confirmDialog;
+      expect(confirmDialog.open).toBe(true);
+      expect(confirmDialog.action).toBe('cancel_turn');
+      expect(confirmDialog.turnId).toBe('turn-456');
+      expect(confirmDialog.turnData).toEqual(turnData);
+      expect(confirmDialog.title).toBe('Custom Title');
+      expect(confirmDialog.message).toBe('Custom message');
+      expect(confirmDialog.confirmButtonText).toBe('Custom Button');
+      expect(confirmDialog.confirmButtonColor).toBe('warning');
+    });
+  });
+
+  describe('OPEN_COMPLETE_TURN_DIALOG Event', () => {
+    it('should open complete turn dialog with default parameters', () => {
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      actor.send({
+        type: 'OPEN_COMPLETE_TURN_DIALOG',
+        turnId: 'turn-789',
+      });
+
+      const confirmDialog = actor.getSnapshot().context.confirmDialog;
+      expect(confirmDialog.open).toBe(true);
+      expect(confirmDialog.action).toBe('complete_turn');
+      expect(confirmDialog.turnId).toBe('turn-789');
+      expect(confirmDialog.turnData).toBeUndefined();
+      expect(confirmDialog.title).toBe('Marcar Turno como Completado');
+      expect(confirmDialog.message).toBe('¿Confirmas que este turno fue atendido exitosamente?');
+      expect(confirmDialog.confirmButtonText).toBe('Marcar Completado');
+      expect(confirmDialog.confirmButtonColor).toBe('success');
+    });
+
+    it('should open complete turn dialog with custom parameters', () => {
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      const turnData = { patientName: 'Jane Smith', scheduledAt: '2024-01-02' };
+      actor.send({
+        type: 'OPEN_COMPLETE_TURN_DIALOG',
+        turnId: 'turn-101',
+        turnData,
+        title: 'Custom Complete Title',
+        message: 'Custom complete message',
+        confirmButtonText: 'Custom Complete Button',
+        confirmButtonColor: 'primary',
+      });
+
+      const confirmDialog = actor.getSnapshot().context.confirmDialog;
+      expect(confirmDialog.open).toBe(true);
+      expect(confirmDialog.action).toBe('complete_turn');
+      expect(confirmDialog.turnId).toBe('turn-101');
+      expect(confirmDialog.turnData).toEqual(turnData);
+      expect(confirmDialog.title).toBe('Custom Complete Title');
+      expect(confirmDialog.message).toBe('Custom complete message');
+      expect(confirmDialog.confirmButtonText).toBe('Custom Complete Button');
+      expect(confirmDialog.confirmButtonColor).toBe('primary');
+    });
+  });
+
+  describe('OPEN_NO_SHOW_TURN_DIALOG Event', () => {
+    it('should open no show turn dialog with default parameters', () => {
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      actor.send({
+        type: 'OPEN_NO_SHOW_TURN_DIALOG',
+        turnId: 'turn-111',
+      });
+
+      const confirmDialog = actor.getSnapshot().context.confirmDialog;
+      expect(confirmDialog.open).toBe(true);
+      expect(confirmDialog.action).toBe('no_show_turn');
+      expect(confirmDialog.turnId).toBe('turn-111');
+      expect(confirmDialog.turnData).toBeUndefined();
+      expect(confirmDialog.title).toBe('Marcar Turno como No Asistió');
+      expect(confirmDialog.message).toBe('¿Confirmas que el paciente no asistió a este turno?');
+      expect(confirmDialog.confirmButtonText).toBe('No Asistió');
+      expect(confirmDialog.confirmButtonColor).toBe('warning');
+    });
+
+    it('should open no show turn dialog with custom parameters', () => {
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      const turnData = { patientName: 'Bob Wilson', scheduledAt: '2024-01-03' };
+      actor.send({
+        type: 'OPEN_NO_SHOW_TURN_DIALOG',
+        turnId: 'turn-222',
+        turnData,
+        title: 'Custom No Show Title',
+        message: 'Custom no show message',
+        confirmButtonText: 'Custom No Show Button',
+        confirmButtonColor: 'secondary',
+      });
+
+      const confirmDialog = actor.getSnapshot().context.confirmDialog;
+      expect(confirmDialog.open).toBe(true);
+      expect(confirmDialog.action).toBe('no_show_turn');
+      expect(confirmDialog.turnId).toBe('turn-222');
+      expect(confirmDialog.turnData).toEqual(turnData);
+      expect(confirmDialog.title).toBe('Custom No Show Title');
+      expect(confirmDialog.message).toBe('Custom no show message');
+      expect(confirmDialog.confirmButtonText).toBe('Custom No Show Button');
+      expect(confirmDialog.confirmButtonColor).toBe('secondary');
+    });
+  });
+
+  describe('OPEN_NOTIFICATION_MODAL Event', () => {
+    it('should open notification modal', () => {
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      actor.send({ type: 'OPEN_NOTIFICATION_MODAL' });
+
+      expect(actor.getSnapshot().context.notificationModal.open).toBe(true);
+    });
+  });
+
+  describe('CLOSE_NOTIFICATION_MODAL Event', () => {
+    it('should close notification modal', () => {
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      actor.send({ type: 'OPEN_NOTIFICATION_MODAL' });
+      expect(actor.getSnapshot().context.notificationModal.open).toBe(true);
+
+      actor.send({ type: 'CLOSE_NOTIFICATION_MODAL' });
+      expect(actor.getSnapshot().context.notificationModal.open).toBe(false);
+    });
+  });
+
+  describe('OPEN_RATING_MODAL Event', () => {
+    it('should open rating modal and load subcategories', () => {
+      // Mock data snapshot first (length === 0 triggers load)
+      mockOrchestrator.getSnapshot.mockReturnValueOnce({
+        context: {
+          ratingSubcategories: []
+        }
+      });
+      // Then mock auth snapshot
+      mockOrchestrator.getSnapshot.mockReturnValueOnce({
+        context: {
+          authResponse: undefined
+        }
+      });
+
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      const turn = { id: 'turn-123', patientName: 'John Doe' };
+      actor.send({
+        type: 'OPEN_RATING_MODAL',
+        turn,
+      });
+
+      const ratingModal = actor.getSnapshot().context.ratingModal;
+      expect(ratingModal.open).toBe(true);
+      expect(ratingModal.turn).toEqual(turn);
+
+      expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith('data', {
+        type: 'LOAD_RATING_SUBCATEGORIES',
+        role: 'PATIENT'
+      });
+    });
+
+    it('should load subcategories with user role', () => {
+      // Mock data snapshot first (length === 0 triggers load)
+      mockOrchestrator.getSnapshot.mockReturnValueOnce({
+        context: {
+          ratingSubcategories: []
+        }
+      });
+      // Then mock auth snapshot
+      mockOrchestrator.getSnapshot.mockReturnValueOnce({
+        context: {
+          authResponse: { role: 'DOCTOR' }
+        }
+      });
+
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      const turn = { id: 'turn-456', patientName: 'Jane Smith' };
+      actor.send({
+        type: 'OPEN_RATING_MODAL',
+        turn,
+      });
+
+      expect(mockOrchestrator.sendToMachine).toHaveBeenCalledWith('data', {
+        type: 'LOAD_RATING_SUBCATEGORIES',
+        role: 'DOCTOR'
+      });
+    });
+  });
+
+  describe('CLOSE_RATING_MODAL Event', () => {
+    it('should close rating modal and reset turn', () => {
+      mockOrchestrator.getSnapshot.mockReturnValue({
+        context: {
+          ratingSubcategories: []
+        }
+      });
+
+      actor = createActor(uiMachine, { input: { navigate: vi.fn() } });
+      actor.start();
+
+      const turn = { id: 'turn-123', patientName: 'John Doe' };
+      actor.send({
+        type: 'OPEN_RATING_MODAL',
+        turn,
+      });
+
+      expect(actor.getSnapshot().context.ratingModal.open).toBe(true);
+      expect(actor.getSnapshot().context.ratingModal.turn).toEqual(turn);
+
+      actor.send({ type: 'CLOSE_RATING_MODAL' });
+
+      const ratingModal = actor.getSnapshot().context.ratingModal;
+      expect(ratingModal.open).toBe(false);
+      expect(ratingModal.turn).toBe(null);
     });
   });
 });

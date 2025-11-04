@@ -70,7 +70,8 @@ describe('doctorMachine', () => {
       const state = actor.getSnapshot().value;
       expect(state).toEqual({
         patientManagement: 'idle',
-        availability: 'idle'
+        availability: 'idle',
+        metrics: 'idle'
       });
     });
 
@@ -205,7 +206,8 @@ describe('doctorMachine', () => {
       expect(actor.getSnapshot().context.selectedPatient).toEqual(patient);
       expect(actor.getSnapshot().value).toEqual({
         patientManagement: 'idle',
-        availability: 'idle'
+        availability: 'idle',
+        metrics: 'idle'
       });
     });
 
@@ -355,7 +357,8 @@ describe('doctorMachine', () => {
 
       expect(actor.getSnapshot().value).toEqual({
         patientManagement: 'savingHistory',
-        availability: 'idle'
+        availability: 'idle',
+        metrics: 'idle'
       });
       expect(actor.getSnapshot().context.isSavingHistory).toBe(true);
     });
@@ -426,7 +429,8 @@ describe('doctorMachine', () => {
 
       expect(actor.getSnapshot().value).toEqual({
         patientManagement: 'idle',
-        availability: 'saving'
+        availability: 'saving',
+        metrics: 'idle'
       });
       expect(actor.getSnapshot().context.isSavingAvailability).toBe(true);
       expect(actor.getSnapshot().context.availabilityError).toBe(null);
@@ -571,7 +575,8 @@ describe('doctorMachine', () => {
       expect(actor.getSnapshot().context.availability[1].enabled).toBe(true);
       expect(actor.getSnapshot().value).toEqual({
         patientManagement: 'idle',
-        availability: 'idle'
+        availability: 'idle',
+        metrics: 'idle'
       });
     });
   });

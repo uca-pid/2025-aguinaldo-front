@@ -10,7 +10,9 @@ vi.mock('../../config/api', () => ({
       ADD_MEDICAL_HISTORY: '/api/doctors/{doctorId}/medical-history',
       UPDATE_MEDICAL_HISTORY_ENTRY: '/api/doctors/{doctorId}/medical-history/{historyId}',
       DELETE_MEDICAL_HISTORY: '/api/doctors/{doctorId}/medical-history/{historyId}',
-      GET_PATIENT_MEDICAL_HISTORY: '/api/doctors/medical-history/patient/{patientId}'
+      GET_DOCTOR_MEDICAL_HISTORY: '/api/doctors/{doctorId}/medical-history',
+      GET_PATIENT_MEDICAL_HISTORY: '/api/medical-history/patient/{patientId}',
+      GET_PATIENT_HISTORY_BY_DOCTOR: '/api/doctors/{doctorId}/patients/{patientId}/medical-history'
     },
     DEFAULT_HEADERS: {
       'Content-Type': 'application/json'
@@ -305,7 +307,7 @@ describe('MedicalHistoryService', () => {
       const result = await MedicalHistoryService.getPatientMedicalHistory(accessToken, patientId);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8080/api/doctors/medical-history/patient/patient-1',
+        'http://localhost:8080/api/medical-history/patient/patient-1',
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
@@ -368,6 +370,218 @@ describe('MedicalHistoryService', () => {
       mockFetch.mockRejectedValueOnce(networkError);
 
       await expect(MedicalHistoryService.getPatientMedicalHistory(accessToken, patientId))
+        .rejects.toThrow('Network connection failed');
+    });
+  });
+
+  describe('getDoctorMedicalHistoryEntries', () => {
+    const mockDoctorHistories: MedicalHistory[] = [
+      {
+        id: 'history-1',
+        content: 'Patient A has allergies to penicillin',
+        patientId: 'patient-1',
+        patientName: 'John',
+        patientSurname: 'Doe',
+        doctorId: 'doctor-1',
+        doctorName: 'Dr. Jane',
+        doctorSurname: 'Smith',
+        createdAt: '2023-10-08T10:00:00Z',
+        updatedAt: '2023-10-08T10:00:00Z',
+        turnId: 'turn-1'
+      },
+      {
+        id: 'history-2',
+        content: 'Patient B underwent surgery',
+        patientId: 'patient-2',
+        patientName: 'Jane',
+        patientSurname: 'Smith',
+        doctorId: 'doctor-1',
+        doctorName: 'Dr. Jane',
+        doctorSurname: 'Smith',
+        createdAt: '2023-10-07T09:00:00Z',
+        updatedAt: '2023-10-07T09:00:00Z',
+        turnId: 'turn-2'
+      }
+    ];
+
+    it('should successfully get doctor medical history entries', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockDoctorHistories)
+      });
+
+      const result = await MedicalHistoryService.getDoctorMedicalHistoryEntries(accessToken, doctorId);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8080/api/doctors/doctor-1/medical-history',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          })
+        })
+      );
+      expect(result).toEqual(mockDoctorHistories);
+    });
+
+    it('should return empty array when doctor has no medical history entries', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve([])
+      });
+
+      const result = await MedicalHistoryService.getDoctorMedicalHistoryEntries(accessToken, doctorId);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should throw error when get doctor medical history fails with error message', async () => {
+      const errorResponse = { message: 'Doctor not found' };
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve(errorResponse)
+      });
+
+      await expect(MedicalHistoryService.getDoctorMedicalHistoryEntries(accessToken, doctorId))
+        .rejects.toThrow('Doctor not found');
+    });
+
+    it('should throw error when get doctor medical history fails with error field', async () => {
+      const errorResponse = { error: 'Unauthorized access' };
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        json: () => Promise.resolve(errorResponse)
+      });
+
+      await expect(MedicalHistoryService.getDoctorMedicalHistoryEntries(accessToken, doctorId))
+        .rejects.toThrow('Unauthorized access');
+    });
+
+    it('should throw error with default message when get doctor medical history fails without error details', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: () => Promise.reject(new Error('Invalid JSON'))
+      });
+
+      await expect(MedicalHistoryService.getDoctorMedicalHistoryEntries(accessToken, doctorId))
+        .rejects.toThrow('Failed to get doctor medical history! Status: 500');
+    });
+
+    it('should handle network errors when getting doctor medical history', async () => {
+      const networkError = new Error('Network connection failed');
+      mockFetch.mockRejectedValueOnce(networkError);
+
+      await expect(MedicalHistoryService.getDoctorMedicalHistoryEntries(accessToken, doctorId))
+        .rejects.toThrow('Network connection failed');
+    });
+  });
+
+  describe('getPatientMedicalHistoryByDoctor', () => {
+    const mockPatientDoctorHistories: MedicalHistory[] = [
+      {
+        id: 'history-1',
+        content: 'Patient has allergies to penicillin',
+        patientId: 'patient-1',
+        patientName: 'John',
+        patientSurname: 'Doe',
+        doctorId: 'doctor-1',
+        doctorName: 'Dr. Jane',
+        doctorSurname: 'Smith',
+        createdAt: '2023-10-08T10:00:00Z',
+        updatedAt: '2023-10-08T10:00:00Z',
+        turnId: 'turn-1'
+      },
+      {
+        id: 'history-3',
+        content: 'Follow-up appointment for allergy treatment',
+        patientId: 'patient-1',
+        patientName: 'John',
+        patientSurname: 'Doe',
+        doctorId: 'doctor-1',
+        doctorName: 'Dr. Jane',
+        doctorSurname: 'Smith',
+        createdAt: '2023-10-09T11:00:00Z',
+        updatedAt: '2023-10-09T11:00:00Z',
+        turnId: 'turn-3'
+      }
+    ];
+
+    it('should successfully get patient medical history by doctor', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockPatientDoctorHistories)
+      });
+
+      const result = await MedicalHistoryService.getPatientMedicalHistoryByDoctor(accessToken, doctorId, patientId);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8080/api/doctors/doctor-1/patients/patient-1/medical-history',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          })
+        })
+      );
+      expect(result).toEqual(mockPatientDoctorHistories);
+    });
+
+    it('should return empty array when patient has no medical history with specific doctor', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve([])
+      });
+
+      const result = await MedicalHistoryService.getPatientMedicalHistoryByDoctor(accessToken, doctorId, patientId);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should throw error when get patient medical history by doctor fails with error message', async () => {
+      const errorResponse = { message: 'Patient not found' };
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve(errorResponse)
+      });
+
+      await expect(MedicalHistoryService.getPatientMedicalHistoryByDoctor(accessToken, doctorId, patientId))
+        .rejects.toThrow('Patient not found');
+    });
+
+    it('should throw error when get patient medical history by doctor fails with error field', async () => {
+      const errorResponse = { error: 'Unauthorized access' };
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        json: () => Promise.resolve(errorResponse)
+      });
+
+      await expect(MedicalHistoryService.getPatientMedicalHistoryByDoctor(accessToken, doctorId, patientId))
+        .rejects.toThrow('Unauthorized access');
+    });
+
+    it('should throw error with default message when get patient medical history by doctor fails without error details', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: () => Promise.reject(new Error('Invalid JSON'))
+      });
+
+      await expect(MedicalHistoryService.getPatientMedicalHistoryByDoctor(accessToken, doctorId, patientId))
+        .rejects.toThrow('Failed to get patient medical history by doctor! Status: 500');
+    });
+
+    it('should handle network errors when getting patient medical history by doctor', async () => {
+      const networkError = new Error('Network connection failed');
+      mockFetch.mockRejectedValueOnce(networkError);
+
+      await expect(MedicalHistoryService.getPatientMedicalHistoryByDoctor(accessToken, doctorId, patientId))
         .rejects.toThrow('Network connection failed');
     });
   });

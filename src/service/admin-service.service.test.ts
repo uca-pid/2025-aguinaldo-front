@@ -12,7 +12,9 @@ vi.mock('../../../config/api', () => ({
       GET_PENDING_DOCTORS: '/api/admin/pending-doctors',
       APPROVE_DOCTOR: '/api/admin/approve-doctor',
       REJECT_DOCTOR: '/api/admin/reject-doctor',
-      GET_ADMIN_STATS: '/api/admin/stats'
+      GET_ADMIN_STATS: '/api/admin/stats',
+      GET_ADMIN_RATINGS: '/api/admin/ratings',
+      GET_SPECIALTIES: '/api/admin/specialties'
     }
   },
   buildApiUrl: vi.fn((endpoint: string) => `http://localhost:8080${endpoint}`),
@@ -286,6 +288,105 @@ describe('AdminService', () => {
         doctors: 0,
         pending: 0
       })
+    })
+  })
+
+  describe('getAdminRatings', () => {
+    it('should successfully fetch admin ratings', async () => {
+      const mockRatings = [
+        { doctorId: '1', rating: 4.5, comments: 'Good doctor' },
+        { doctorId: '2', rating: 3.8, comments: 'Decent service' }
+      ]
+
+      const mockResponse = {
+        ok: true,
+        json: vi.fn().mockResolvedValue(mockRatings)
+      }
+
+      mockFetch.mockResolvedValue(mockResponse)
+
+      const result = await AdminService.getAdminRatings(mockAccessToken)
+
+      expect(result).toEqual(mockRatings)
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8080/api/admin/ratings',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'Authorization': `Bearer ${mockAccessToken}`
+          })
+        })
+      )
+    })
+
+    it('should throw error when ratings fetch fails', async () => {
+      const mockErrorResponse = {
+        ok: false,
+        status: 403,
+        json: vi.fn().mockResolvedValue({ message: 'Access denied' })
+      }
+
+      mockFetch.mockResolvedValue(mockErrorResponse)
+
+      await expect(AdminService.getAdminRatings(mockAccessToken))
+        .rejects
+        .toThrow('Access denied')
+    })
+
+    it('should throw error when network fails during ratings fetch', async () => {
+      mockFetch.mockRejectedValue(new Error('Network timeout'))
+
+      await expect(AdminService.getAdminRatings(mockAccessToken))
+        .rejects
+        .toThrow('Network timeout')
+    })
+  })
+
+  describe('getSpecialties', () => {
+    it('should successfully fetch specialties', async () => {
+      const mockSpecialties = ['Cardiology', 'Dermatology', 'Pediatrics']
+
+      const mockResponse = {
+        ok: true,
+        json: vi.fn().mockResolvedValue(mockSpecialties)
+      }
+
+      mockFetch.mockResolvedValue(mockResponse)
+
+      const result = await AdminService.getSpecialties(mockAccessToken)
+
+      expect(result).toEqual(mockSpecialties)
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8080/api/doctors/specialties',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'Authorization': `Bearer ${mockAccessToken}`
+          })
+        })
+      )
+    })
+
+    it('should throw error when specialties fetch fails', async () => {
+      const mockErrorResponse = {
+        ok: false,
+        status: 500,
+        json: vi.fn().mockResolvedValue({ error: 'Database error' })
+      }
+
+      mockFetch.mockResolvedValue(mockErrorResponse)
+
+      await expect(AdminService.getSpecialties(mockAccessToken))
+        .rejects
+        .toThrow('Database error')
+    })
+
+    it('should throw error when network fails during specialties fetch', async () => {
+      mockFetch.mockRejectedValue(new Error('Connection lost'))
+
+      await expect(AdminService.getSpecialties(mockAccessToken))
+        .rejects
+        .toThrow('Connection lost')
     })
   })
 })

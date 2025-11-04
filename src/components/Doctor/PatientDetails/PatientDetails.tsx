@@ -5,7 +5,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { useMachines } from "#/providers/MachineProvider"
 import { ArrowBack, PersonOutlined, BadgeOutlined, EmailOutlined,PhoneOutlined,CakeOutlined,WcOutlined,
   FiberManualRecordOutlined, AttachFile, History, Save} from '@mui/icons-material'
-import { calculateAge } from "#/models/Doctor"
+import { calculateAge, type SubcategoryCount } from "#/models/Doctor"
 import './PatientDetails.css'
 import { useDataMachine } from "#/providers/DataProvider"
 import { useAuthMachine } from "#/providers/AuthProvider"
@@ -440,6 +440,28 @@ const PatientDetails: React.FC = () => {
                       {getGenderLabel(patient.gender)}
                     </Typography>
                   </Box>
+                  
+                  {patient.ratingSubcategories && patient.ratingSubcategories.length > 0 && (
+                    <Box className="patient-details-info-item" sx={{ gridColumn: '1 / -1' }}>
+                      <Typography variant="body2" color="textSecondary" className="patient-details-label" sx={{ mb: 1 }}>
+                        Aspectos Destacados en Evaluaciones
+                      </Typography>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                        {patient.ratingSubcategories
+                          .sort((a: SubcategoryCount, b: SubcategoryCount) => b.count - a.count)
+                          .slice(0, 5)
+                          .map((subcat: SubcategoryCount, index: number) => (
+                            <Chip
+                              key={index}
+                              label={`${subcat.subcategory} (${subcat.count})`}
+                              size="small"
+                              color="primary"
+                              variant="filled"
+                            />
+                          ))}
+                      </Box>
+                    </Box>
+                  )}
                 </Box>
               ) : (
                 <Paper elevation={0} sx={{ p: 3, textAlign: 'center', backgroundColor: '#f8fafc' }}>
