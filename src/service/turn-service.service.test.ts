@@ -25,7 +25,10 @@ vi.mock('../../config/api', () => ({
       CANCEL_TURN: '/api/turns/{turnId}/cancel',
       APPROVE_MODIFY_REQUEST: '/api/turns/modify-requests/{requestId}/approve',
       REJECT_MODIFY_REQUEST: '/api/turns/modify-requests/{requestId}/reject',
-      GET_DOCTOR_AVAILABLE_SLOTS: '/api/doctors/{doctorId}/available-slots'
+      GET_DOCTOR_AVAILABLE_SLOTS: '/api/doctors/{doctorId}/available-slots',
+      CREATE_RATING: '/api/turns/{turnId}/rating',
+      GET_RATING_SUBCATEGORIES: '/api/ratings/subcategories',
+      GET_RATED_SUBCATEGORY_COUNTS: '/api/ratings/{ratedId}/subcategory-counts'
     },
     DEFAULT_HEADERS: {
       'Content-Type': 'application/json'
@@ -804,6 +807,252 @@ describe('TurnService', () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       await expect(TurnService.rejectModifyRequest(requestId, accessToken))
+        .rejects.toThrow('Network error');
+    });
+  });
+
+  describe('createRating', () => {
+    const turnId = 'turn-1';
+    const accessToken = 'access-token-123';
+    const mockRatingData = {
+      score: 4,
+      subcategories: ['Punctuality', 'Professionalism']
+    };
+
+    const mockRatingResponse = {
+      id: 'rating-1',
+      turnId: 'turn-1',
+      score: 4,
+      subcategories: ['Punctuality', 'Professionalism'],
+      message: 'Rating created successfully'
+    };
+
+    it('should successfully create rating', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockRatingResponse)
+      });
+
+      const result = await TurnService.createRating(turnId, mockRatingData, accessToken);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8080/api/turns/turn-1/rating',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify(mockRatingData)
+        })
+      );
+      expect(result).toEqual(mockRatingResponse);
+    });
+
+    it('should handle 401 auth error and send to orchestrator', async () => {
+      const authErrorResponse = { message: 'Unauthorized' };
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: () => Promise.resolve(authErrorResponse)
+      });
+
+      await expect(TurnService.createRating(turnId, mockRatingData, accessToken))
+        .rejects.toThrow('Unauthorized');
+
+      const { orchestrator } = await import('#/core/Orchestrator');
+      expect(orchestrator.sendToMachine).toHaveBeenCalledWith('auth', {
+        type: 'HANDLE_AUTH_ERROR',
+        error: expect.objectContaining({ status: 401 }),
+        retryAction: expect.any(Function)
+      });
+    });
+
+    it('should throw error when create rating fails with non-401 error', async () => {
+      const errorResponse = { message: 'Turn not found' };
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve(errorResponse)
+      });
+
+      await expect(TurnService.createRating(turnId, mockRatingData, accessToken))
+        .rejects.toThrow('Turn not found');
+    });
+
+    it('should throw error when fetch fails during rating create', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+      await expect(TurnService.createRating(turnId, mockRatingData, accessToken))
+        .rejects.toThrow('Network error');
+    });
+  });
+
+  describe('getRatingSubcategories', () => {
+    const accessToken = 'access-token-123';
+    const mockSubcategories = ['Punctuality', 'Professionalism', 'Cleanliness'];
+
+    it('should successfully fetch rating subcategories with role and access token', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockSubcategories)
+      });
+
+      const result = await TurnService.getRatingSubcategories('patient', accessToken);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8080/api/ratings/subcategories?role=patient',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'Authorization': `Bearer ${accessToken}`
+          })
+        })
+      );
+      expect(result).toEqual(mockSubcategories);
+    });
+
+    it('should successfully fetch rating subcategories without role', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockSubcategories)
+      });
+
+      const result = await TurnService.getRatingSubcategories();
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8080/api/ratings/subcategories',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json'
+          })
+        })
+      );
+      expect(result).toEqual(mockSubcategories);
+    });
+
+    it('should throw error when fetch fails', async () => {
+      const errorResponse = { message: 'Server error' };
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve(errorResponse)
+      });
+
+      await expect(TurnService.getRatingSubcategories('patient', accessToken))
+        .rejects.toThrow('Server error');
+    });
+
+    it('should throw error when fetch fails during request', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+      await expect(TurnService.getRatingSubcategories())
+        .rejects.toThrow('Network error');
+    });
+  });
+
+  describe('getRatedSubcategoryCounts', () => {
+    const ratedId = 'doctor-1';
+    const accessToken = 'access-token-123';
+    const raterRole = 'patient';
+    const mockCounts = [
+      { subcategory: 'Punctuality', count: 15 },
+      { subcategory: 'Professionalism', count: 12 },
+      { subcategory: null, count: 3 }
+    ];
+
+    it('should successfully fetch subcategory counts with all parameters', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockCounts)
+      });
+
+      const result = await TurnService.getRatedSubcategoryCounts(ratedId, accessToken, raterRole);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8080/api/ratings/doctor-1/subcategory-counts?raterRole=patient',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'Authorization': `Bearer ${accessToken}`
+          })
+        })
+      );
+      expect(result).toEqual(mockCounts);
+    });
+
+    it('should successfully fetch subcategory counts without raterRole', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockCounts)
+      });
+
+      const result = await TurnService.getRatedSubcategoryCounts(ratedId, accessToken);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8080/api/ratings/doctor-1/subcategory-counts',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'Authorization': `Bearer ${accessToken}`
+          })
+        })
+      );
+      expect(result).toEqual(mockCounts);
+    });
+
+    it('should successfully fetch subcategory counts without access token', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockCounts)
+      });
+
+      const result = await TurnService.getRatedSubcategoryCounts(ratedId, undefined, raterRole);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8080/api/ratings/doctor-1/subcategory-counts?raterRole=patient',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json'
+          })
+        })
+      );
+      expect(result).toEqual(mockCounts);
+    });
+
+    it('should handle 401 auth error and send to orchestrator', async () => {
+      const authErrorResponse = { message: 'Unauthorized' };
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: () => Promise.resolve(authErrorResponse)
+      });
+
+      await expect(TurnService.getRatedSubcategoryCounts(ratedId, accessToken, raterRole))
+        .rejects.toThrow('Unauthorized');
+
+      const { orchestrator } = await import('#/core/Orchestrator');
+      expect(orchestrator.sendToMachine).toHaveBeenCalledWith('auth', {
+        type: 'HANDLE_AUTH_ERROR',
+        error: expect.objectContaining({ status: 401 }),
+        retryAction: expect.any(Function)
+      });
+    });
+
+    it('should throw error when fetch fails with non-401 error', async () => {
+      const errorResponse = { message: 'Rated entity not found' };
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve(errorResponse)
+      });
+
+      await expect(TurnService.getRatedSubcategoryCounts(ratedId, accessToken))
+        .rejects.toThrow('Rated entity not found');
+    });
+
+    it('should throw error when fetch fails during request', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+      await expect(TurnService.getRatedSubcategoryCounts(ratedId))
         .rejects.toThrow('Network error');
     });
   });

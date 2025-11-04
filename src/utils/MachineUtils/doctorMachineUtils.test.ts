@@ -3,7 +3,12 @@ import {
   loadDoctorPatients,
   loadDoctorAvailability,
   updateMedicalHistory,
-  saveDoctorAvailability
+  saveDoctorAvailability,
+  updateMedicalHistoryEntry,
+  deleteMedicalHistory,
+  loadPatientMedicalHistory,
+  loadTurnMedicalHistory,
+  loadDoctorMetrics
 } from './doctorMachineUtils'
 import { DoctorService } from '../../service/doctor-service.service'
 import { MedicalHistoryService } from '../../service/medical-history-service.service'
@@ -13,7 +18,8 @@ vi.mock('../../service/doctor-service.service', () => ({
   DoctorService: {
     getDoctorPatients: vi.fn(),
     getAvailability: vi.fn(),
-    saveAvailability: vi.fn()
+    saveAvailability: vi.fn(),
+    getDoctorMetrics: vi.fn()
   }
 }))
 
@@ -243,6 +249,214 @@ describe('doctorMachineUtils', () => {
           }
         ]
       })
+    })
+  })
+
+  describe('updateMedicalHistoryEntry', () => {
+    it('should call MedicalHistoryService.updateMedicalHistory with correct parameters', async () => {
+      const params = {
+        accessToken: 'token123',
+        doctorId: 'doctor456',
+        historyId: 'history789',
+        content: 'Updated medical history content'
+      }
+
+      const mockUpdatedHistory = {
+        id: 'history789',
+        content: 'Updated medical history content',
+        patientId: 'patient123',
+        patientName: 'John',
+        patientSurname: 'Doe',
+        doctorId: 'doctor456',
+        doctorName: 'Dr. Jane',
+        doctorSurname: 'Smith',
+        createdAt: '2023-10-08T10:00:00Z',
+        updatedAt: '2023-10-08T11:00:00Z'
+      }
+
+      ;(MedicalHistoryService.updateMedicalHistory as Mock).mockResolvedValue(mockUpdatedHistory)
+
+      const result = await updateMedicalHistoryEntry(params)
+
+      expect(MedicalHistoryService.updateMedicalHistory).toHaveBeenCalledWith(
+        'token123',
+        'doctor456',
+        'history789',
+        { content: 'Updated medical history content' }
+      )
+      expect(result).toEqual(mockUpdatedHistory)
+    })
+  })
+
+  describe('deleteMedicalHistory', () => {
+    it('should call MedicalHistoryService.deleteMedicalHistory with correct parameters', async () => {
+      const params = {
+        accessToken: 'token123',
+        doctorId: 'doctor456',
+        historyId: 'history789'
+      }
+
+      ;(MedicalHistoryService.deleteMedicalHistory as Mock).mockResolvedValue(undefined)
+
+      const result = await deleteMedicalHistory(params)
+
+      expect(MedicalHistoryService.deleteMedicalHistory).toHaveBeenCalledWith(
+        'token123',
+        'doctor456',
+        'history789'
+      )
+      expect(result).toBeUndefined()
+    })
+  })
+
+  describe('loadPatientMedicalHistory', () => {
+    it('should call MedicalHistoryService.getPatientMedicalHistory with correct parameters', async () => {
+      const params = {
+        accessToken: 'token123',
+        patientId: 'patient456'
+      }
+
+      const mockHistories = [
+        {
+          id: 'history-1',
+          content: 'Patient has allergies',
+          patientId: 'patient456',
+          patientName: 'John',
+          patientSurname: 'Doe',
+          doctorId: 'doctor123',
+          doctorName: 'Dr. Jane',
+          doctorSurname: 'Smith',
+          createdAt: '2023-10-08T10:00:00Z',
+          updatedAt: '2023-10-08T10:00:00Z',
+          turnId: 'turn-1'
+        }
+      ]
+
+      ;(MedicalHistoryService.getPatientMedicalHistory as Mock).mockResolvedValue(mockHistories)
+
+      const result = await loadPatientMedicalHistory(params)
+
+      expect(MedicalHistoryService.getPatientMedicalHistory).toHaveBeenCalledWith(
+        'token123',
+        'patient456'
+      )
+      expect(result).toEqual(mockHistories)
+    })
+  })
+
+  describe('loadTurnMedicalHistory', () => {
+    it('should load patient medical history and filter by turnId', async () => {
+      const params = {
+        accessToken: 'token123',
+        turnId: 'turn-456',
+        patientId: 'patient789'
+      }
+
+      const mockAllHistories = [
+        {
+          id: 'history-1',
+          content: 'History for turn 1',
+          patientId: 'patient789',
+          patientName: 'John',
+          patientSurname: 'Doe',
+          doctorId: 'doctor123',
+          doctorName: 'Dr. Jane',
+          doctorSurname: 'Smith',
+          createdAt: '2023-10-08T10:00:00Z',
+          updatedAt: '2023-10-08T10:00:00Z',
+          turnId: 'turn-123'
+        },
+        {
+          id: 'history-2',
+          content: 'History for turn 456',
+          patientId: 'patient789',
+          patientName: 'John',
+          patientSurname: 'Doe',
+          doctorId: 'doctor123',
+          doctorName: 'Dr. Jane',
+          doctorSurname: 'Smith',
+          createdAt: '2023-10-09T10:00:00Z',
+          updatedAt: '2023-10-09T10:00:00Z',
+          turnId: 'turn-456'
+        },
+        {
+          id: 'history-3',
+          content: 'History for turn 3',
+          patientId: 'patient789',
+          patientName: 'John',
+          patientSurname: 'Doe',
+          doctorId: 'doctor123',
+          doctorName: 'Dr. Jane',
+          doctorSurname: 'Smith',
+          createdAt: '2023-10-10T10:00:00Z',
+          updatedAt: '2023-10-10T10:00:00Z',
+          turnId: 'turn-789'
+        }
+      ]
+
+      ;(MedicalHistoryService.getPatientMedicalHistory as Mock).mockResolvedValue(mockAllHistories)
+
+      const result = await loadTurnMedicalHistory(params)
+
+      expect(MedicalHistoryService.getPatientMedicalHistory).toHaveBeenCalledWith(
+        'token123',
+        'patient789'
+      )
+      expect(result).toEqual([mockAllHistories[1]]) // Only the history with turnId 'turn-456'
+    })
+
+    it('should return empty array when no medical history matches the turnId', async () => {
+      const params = {
+        accessToken: 'token123',
+        turnId: 'turn-nonexistent',
+        patientId: 'patient789'
+      }
+
+      const mockAllHistories = [
+        {
+          id: 'history-1',
+          content: 'History for turn 1',
+          patientId: 'patient789',
+          patientName: 'John',
+          patientSurname: 'Doe',
+          doctorId: 'doctor123',
+          doctorName: 'Dr. Jane',
+          doctorSurname: 'Smith',
+          createdAt: '2023-10-08T10:00:00Z',
+          updatedAt: '2023-10-08T10:00:00Z',
+          turnId: 'turn-123'
+        }
+      ]
+
+      ;(MedicalHistoryService.getPatientMedicalHistory as Mock).mockResolvedValue(mockAllHistories)
+
+      const result = await loadTurnMedicalHistory(params)
+
+      expect(result).toEqual([])
+    })
+  })
+
+  describe('loadDoctorMetrics', () => {
+    it('should call DoctorService.getDoctorMetrics with correct parameters', async () => {
+      const params = {
+        accessToken: 'token123',
+        doctorId: 'doctor456'
+      }
+
+      const mockMetrics = {
+        totalPatients: 25,
+        totalTurns: 150,
+        completedTurns: 140,
+        cancelledTurns: 10,
+        averageRating: 4.5
+      }
+
+      ;(DoctorService.getDoctorMetrics as Mock).mockResolvedValue(mockMetrics)
+
+      const result = await loadDoctorMetrics(params)
+
+      expect(DoctorService.getDoctorMetrics).toHaveBeenCalledWith('token123', 'doctor456')
+      expect(result).toEqual(mockMetrics)
     })
   })
 })

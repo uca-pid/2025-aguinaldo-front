@@ -2,22 +2,52 @@ import { describe, it, expect, vi } from 'vitest'
 import { validateField, checkFormValidation } from './authFormValidation'
 
 // Mock dayjs
-vi.mock('dayjs', () => ({
-  default: Object.assign(
-    vi.fn((date: string) => ({
-      isValid: () => date === 'valid-date',
-      subtract: vi.fn(() => ({
-        isAfter: vi.fn(() => false),
-        isBefore: vi.fn(() => false)
-      })),
-      isAfter: vi.fn(() => false),
-      isBefore: vi.fn(() => false)
-    })),
-    {
-      extend: vi.fn()
+vi.mock('dayjs', () => {
+  const mockDayjs = vi.fn((date?: string | Date) => {
+    // Check if date is valid
+    const isValidDate = () => {
+      if (!date) return true
+      if (date === 'valid-date') return true
+      if (date === 'invalid-date') return false
+      
+      // Try to parse as Date
+      const parsedDate = new Date(date)
+      return !isNaN(parsedDate.getTime())
     }
-  )
-}))
+    
+    const parsedDate = date ? new Date(date) : new Date()
+    
+    return {
+      isValid: isValidDate,
+      subtract: vi.fn((amount: number, unit: string) => {
+        const resultDate = new Date(parsedDate)
+        if (unit === 'years') {
+          resultDate.setFullYear(resultDate.getFullYear() - amount)
+        }
+        return mockDayjs(resultDate)
+      }),
+      isAfter: vi.fn((other: any) => {
+        if (!isValidDate()) return false
+        const otherDate = other && typeof other.toDate === 'function' ? other.toDate() : new Date(other)
+        return parsedDate > otherDate
+      }),
+      isBefore: vi.fn((other: any) => {
+        if (!isValidDate()) return false
+        const otherDate = other && typeof other.toDate === 'function' ? other.toDate() : new Date(other)
+        return parsedDate < otherDate
+      }),
+      toDate: () => parsedDate,
+      format: vi.fn(() => parsedDate.toISOString())
+    }
+  })
+  
+  return {
+    default: Object.assign(mockDayjs, {
+      extend: vi.fn(),
+      tz: undefined
+    })
+  }
+})
 
 // Mock dayjs plugins
 vi.mock('dayjs/plugin/customParseFormat', () => ({
@@ -114,9 +144,86 @@ describe('authFormValidation', () => {
       expect(validateField('birthdate', 'valid-date', context)).toBe('')
     })
 
-    it('should return empty string for unknown fields', () => {
+    it('should validate name and surname format', () => {
       const context = createMockContext()
-      expect(validateField('unknownField', 'value', context)).toBe('')
+      expect(validateField('name', 'A', context)).toBe('Mínimo 2 caracteres')
+      expect(validateField('name', 'a'.repeat(51), context)).toBe('Máximo 50 caracteres')
+      expect(validateField('name', 'John123', context)).toBe('Solo se permite letras y espacios')
+      expect(validateField('name', 'John Doe', context)).toBe('')
+      expect(validateField('surname', 'D', context)).toBe('Mínimo 2 caracteres')
+      expect(validateField('surname', 'Doe', context)).toBe('')
+    })
+
+    it('should validate specialty format', () => {
+      const context = createMockContext()
+      expect(validateField('specialty', 'A', context)).toBe('Mínimo 2 caracteres')
+      expect(validateField('specialty', 'a'.repeat(51), context)).toBe('Máximo 50 caracteres')
+      expect(validateField('specialty', 'Cardiology123', context)).toBe('Solo se permite letras y espacios')
+      expect(validateField('specialty', 'Cardiology', context)).toBe('')
+    })
+
+    it('should validate gender format', () => {
+      const context = createMockContext()
+      expect(validateField('gender', 'OTHER', context)).toBe('Género debe ser Masculino o Femenino')
+      expect(validateField('gender', 'MALE', context)).toBe('')
+      expect(validateField('gender', 'FEMALE', context)).toBe('')
+    })
+
+    it('should validate slot duration format', () => {
+      const context = createMockContext()
+      expect(validateField('slotDurationMin', 'abc', context)).toBe('Debe ser un número')
+      expect(validateField('slotDurationMin', '4', context)).toBe('Mínimo 5 minutos')
+      expect(validateField('slotDurationMin', '181', context)).toBe('Máximo 180 minutos')
+      expect(validateField('slotDurationMin', '30', context)).toBe('')
+    })
+
+    it('should validate email length', () => {
+      const context = createMockContext()
+      const longEmail = 'a'.repeat(250) + '@example.com'
+      expect(validateField('email', longEmail, context)).toBe('Email demasiado largo (máximo 254 caracteres)')
+      expect(validateField('email', 'test@example.com', context)).toBe('')
+    })
+
+    it('should validate password length', () => {
+      const context = createMockContext()
+      const longPassword = 'A1' + 'a'.repeat(127)
+      expect(validateField('password', longPassword, context)).toBe('Máximo 128 caracteres')
+      expect(validateField('password', 'StrongPass123', context)).toBe('')
+    })
+
+    it('should validate password complexity requirements', () => {
+      const context = createMockContext()
+      expect(validateField('password', 'password', context)).toBe('Mínimo 8 caracteres, mayúscula, minúscula y número')
+      expect(validateField('password', 'PASSWORD', context)).toBe('Mínimo 8 caracteres, mayúscula, minúscula y número')
+      expect(validateField('password', 'Password', context)).toBe('Mínimo 8 caracteres, mayúscula, minúscula y número')
+      expect(validateField('password', 'Pass123', context)).toBe('Mínimo 8 caracteres, mayúscula, minúscula y número')
+      expect(validateField('password', 'Password123', context)).toBe('')
+    })
+
+    it('should validate birthdate age limits', () => {
+      const context = createMockContext()
+      
+      // Test someone too old (over 120 years)
+      const tooOldBirthdate = new Date()
+      tooOldBirthdate.setFullYear(tooOldBirthdate.getFullYear() - 125)
+      const tooOldDateStr = tooOldBirthdate.toISOString()
+      expect(validateField('birthdate', tooOldDateStr, context)).toBe('Fecha de nacimiento inválida')
+    })
+
+    it('should validate gender values strictly', () => {
+      const context = createMockContext()
+      expect(validateField('gender', 'male', context)).toBe('Género debe ser Masculino o Femenino')
+      expect(validateField('gender', 'female', context)).toBe('Género debe ser Masculino o Femenino')
+      expect(validateField('gender', 'MALE', context)).toBe('')
+      expect(validateField('gender', 'FEMALE', context)).toBe('')
+    })
+
+    it('should validate slot duration boundaries', () => {
+      const context = createMockContext()
+      expect(validateField('slotDurationMin', '0', context)).toBe('Mínimo 5 minutos')
+      expect(validateField('slotDurationMin', '200', context)).toBe('Máximo 180 minutos')
+      expect(validateField('slotDurationMin', '5', context)).toBe('')
+      expect(validateField('slotDurationMin', '180', context)).toBe('')
     })
   })
 
@@ -199,13 +306,57 @@ describe('authFormValidation', () => {
       expect(checkFormValidation(context)).toBe(false)
     })
 
-    it('should return false for valid login form', () => {
+    it('should return false when all required fields are filled for doctor registration', () => {
       const context = createMockContext({
         formErrors: {},
-        formValues: { email: 'test@example.com', password: 'password123' },
-        mode: 'login'
+        formValues: {
+          name: 'Dr. John',
+          surname: 'Doe',
+          dni: '12345678',
+          gender: 'MALE',
+          birthdate: '1990-01-01',
+          phone: '123456789',
+          email: 'test@example.com',
+          password: 'TestPass123',
+          password_confirm: 'TestPass123',
+          specialty: 'Cardiology',
+          medicalLicense: '12345',
+          slotDurationMin: '30'
+        },
+        isPatient: false,
+        mode: 'register'
       })
       expect(checkFormValidation(context)).toBe(false)
+    })
+
+    it('should return true when doctor required fields are empty', () => {
+      const context = createMockContext({
+        formErrors: {},
+        formValues: {
+          name: 'Dr. John',
+          surname: 'Doe',
+          dni: '12345678',
+          gender: 'MALE',
+          birthdate: '1990-01-01',
+          phone: '123456789',
+          email: 'test@example.com',
+          password: 'TestPass123',
+          password_confirm: 'TestPass123',
+          specialty: '',
+          medicalLicense: '12345',
+          slotDurationMin: '30'
+        },
+        isPatient: false,
+        mode: 'register'
+      })
+      expect(checkFormValidation(context)).toBe(true)
+    })
+
+    it('should handle birthdate validation with null/undefined/empty values', () => {
+      const context = createMockContext()
+      expect(validateField('birthdate', null, context)).toBe('Campo requerido')
+      expect(validateField('birthdate', undefined, context)).toBe('Campo requerido')
+      expect(validateField('birthdate', '', context)).toBe('Campo requerido')
     })
   })
 })

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { filterAvailableTimeSlots, formatDateTime, formatTime, shouldDisableDate } from './dateTimeUtils'
+import { filterAvailableTimeSlots, formatDateTime, formatTime, formatDate, dayjsArgentina, nowArgentina, shouldDisableDate } from './dateTimeUtils'
 import dayjs from './dayjs.config'
 
 // Mock dayjs with timezone support
@@ -55,6 +55,7 @@ vi.mock('./dayjs.config', () => {
       format: vi.fn().mockImplementation((fmt) => {
         if (fmt === 'YYYY-MM-DD') return date.split(' ')[0]
         if (fmt === 'DD/MM/YYYY HH:mm') return '15/01/2024 10:00'
+        if (fmt === 'DD/MM/YYYY') return '15/01/2024'
         if (fmt === 'HH:mm') return '10:00'
         return date || 'mocked-date'
       }),
@@ -183,6 +184,37 @@ describe('dateTimeUtils', () => {
 
       const result = shouldDisableDate(date, availableDates)
       expect(result).toBe(false)
+    })
+  })
+
+  describe('formatDate', () => {
+    it('should format date from datetime string', () => {
+      const result = formatDate('2024-01-15 10:30')
+      expect(result).toBe('15/01/2024')
+    })
+
+    it('should handle different date formats', () => {
+      const result = formatDate('2024-12-25 23:59')
+      expect(result).toBe('15/01/2024') // mocked
+    })
+  })
+
+  describe('dayjsArgentina', () => {
+    it('should create dayjs instance with Argentina timezone', () => {
+      const result = dayjsArgentina('2024-01-15 10:00')
+      expect(result.tz).toHaveBeenCalledWith('America/Argentina/Buenos_Aires')
+    })
+
+    it('should handle undefined date parameter', () => {
+      const result = dayjsArgentina()
+      expect(result.tz).toHaveBeenCalledWith('America/Argentina/Buenos_Aires')
+    })
+  })
+
+  describe('nowArgentina', () => {
+    it('should return current time in Argentina timezone', () => {
+      const result = nowArgentina()
+      expect(result.tz).toHaveBeenCalledWith('America/Argentina/Buenos_Aires')
     })
   })
 })
