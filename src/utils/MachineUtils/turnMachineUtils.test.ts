@@ -5,7 +5,9 @@ import {
   createModifyTurnRequest,
   loadTurnDetails,
   loadDoctorAvailability,
-  loadAvailableSlots
+  loadAvailableSlots,
+  completeTurn,
+  noShowTurn
 } from './turnMachineUtils'
 import { TurnService } from '../../service/turn-service.service'
 
@@ -276,6 +278,78 @@ describe('turnMachineUtils', () => {
       const result = await loadAvailableSlots(params)
 
       expect(result).toEqual([])
+    })
+  })
+
+  describe('completeTurn', () => {
+    it('should successfully complete turn', async () => {
+      const params = {
+        accessToken: 'token123',
+        turnId: 'turn456'
+      }
+      ;(global.fetch as Mock).mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({})
+      })
+
+      await expect(completeTurn(params)).resolves.not.toThrow()
+
+      expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/api/turns/turn456/complete', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer token123',
+          'Content-Type': 'application/json'
+        }
+      })
+    })
+
+    it('should throw error when complete fails', async () => {
+      const params = {
+        accessToken: 'token123',
+        turnId: 'turn456'
+      }
+      ;(global.fetch as Mock).mockResolvedValue({
+        ok: false,
+        text: vi.fn().mockResolvedValue('Complete failed')
+      })
+
+      await expect(completeTurn(params)).rejects.toThrow('Failed to complete turn: Complete failed')
+    })
+  })
+
+  describe('noShowTurn', () => {
+    it('should successfully mark turn as no-show', async () => {
+      const params = {
+        accessToken: 'token123',
+        turnId: 'turn456'
+      }
+      ;(global.fetch as Mock).mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({})
+      })
+
+      await expect(noShowTurn(params)).resolves.not.toThrow()
+
+      expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/api/turns/turn456/no-show', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer token123',
+          'Content-Type': 'application/json'
+        }
+      })
+    })
+
+    it('should throw error when no-show fails', async () => {
+      const params = {
+        accessToken: 'token123',
+        turnId: 'turn456'
+      }
+      ;(global.fetch as Mock).mockResolvedValue({
+        ok: false,
+        text: vi.fn().mockResolvedValue('No-show failed')
+      })
+
+      await expect(noShowTurn(params)).rejects.toThrow('Failed to mark turn as no-show: No-show failed')
     })
   })
 })

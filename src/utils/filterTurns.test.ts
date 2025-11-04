@@ -1,29 +1,44 @@
 import { describe, it, expect, vi } from 'vitest'
-import { filterTurns } from './filterTurns'
+import { filterTurns, turnsOfTheMonth, upComingTurns, allPastTurnsThisMonth } from './filterTurns'
 
 // Mock dayjs
-vi.mock('dayjs', () => {
+vi.mock('./dayjs.config', () => {
   const mockDayjs = vi.fn()
 
-  // Current time: 2024-01-15 10:00
-  const NOW = '2024-01-15 10:00'
+  // Default current time: 2024-01-15 10:00 (middle of January 2024)
+  let currentTime = '2024-01-15 10:00'
 
   mockDayjs.mockImplementation((date?: any) => {
     if (!date) {
+      // Return current time
       return {
         isBefore: vi.fn().mockReturnValue(false),
-        valueOf: vi.fn().mockReturnValue(new Date(NOW).getTime())
+        isAfter: vi.fn().mockReturnValue(false),
+        valueOf: vi.fn().mockReturnValue(new Date(currentTime).getTime()),
+        month: vi.fn().mockReturnValue(new Date(currentTime).getMonth()),
+        year: vi.fn().mockReturnValue(new Date(currentTime).getFullYear()),
+        date: vi.fn().mockReturnValue(new Date(currentTime).getDate())
       }
     }
 
     return {
-      isBefore: vi.fn((_other) => {
-        // Compare with current time
-        return date < NOW
+      isBefore: vi.fn((other) => {
+        return new Date(date) < new Date(other || currentTime)
       }),
-      valueOf: vi.fn(() => new Date(date).getTime())
+      isAfter: vi.fn((other) => {
+        return new Date(date) > new Date(other || currentTime)
+      }),
+      valueOf: vi.fn(() => new Date(date).getTime()),
+      month: vi.fn(() => new Date(date).getMonth()),
+      year: vi.fn(() => new Date(date).getFullYear()),
+      date: vi.fn(() => new Date(date).getDate())
     }
   })
+
+  // Allow setting current time for tests
+  ;(mockDayjs as any).__setCurrentTime = (time: string) => {
+    currentTime = time
+  }
 
   return { default: mockDayjs, __esModule: true }
 })
@@ -166,5 +181,207 @@ describe('filterTurns', () => {
     // When dates are equal, the sort is stable, so original order should be preserved
     expect(result).toHaveLength(2)
     expect(result.every((t: any) => t.status === 'SCHEDULED')).toBe(true)
+  })
+})
+
+describe('turnsOfTheMonth', () => {
+  const mockTurns = [
+    {
+      id: 1,
+      status: 'COMPLETED',
+      scheduledAt: '2024-01-10 10:00', // Past in January
+      patientName: 'John Doe'
+    },
+    {
+      id: 2,
+      status: 'CANCELED',
+      scheduledAt: '2024-01-12 10:00', // Past in January
+      patientName: 'Jane Smith'
+    },
+    {
+      id: 3,
+      status: 'SCHEDULED',
+      scheduledAt: '2024-01-16 10:00', // Future in January
+      patientName: 'Bob Johnson'
+    },
+    {
+      id: 4,
+      status: 'COMPLETED',
+      scheduledAt: '2024-02-10 10:00', // Different month
+      patientName: 'Alice Brown'
+    }
+  ]
+
+  it('should count completed turns from current month that are past the current day', () => {
+    const result = turnsOfTheMonth(mockTurns)
+    expect(result).toBe(1) // Only turn id 1: COMPLETED, January, past current day (15)
+  })
+
+  it('should not count canceled turns', () => {
+    const result = turnsOfTheMonth(mockTurns)
+    expect(result).toBe(1) // Turn id 2 is CANCELED, so not counted
+  })
+
+  it('should not count turns from future days in current month', () => {
+    const result = turnsOfTheMonth(mockTurns)
+    expect(result).toBe(1) // Turn id 3 is SCHEDULED and future, so not counted
+  })
+
+  it('should not count turns from different months', () => {
+    const result = turnsOfTheMonth(mockTurns)
+    expect(result).toBe(1) // Turn id 4 is February, so not counted
+  })
+
+  it('should return 0 for empty turns array', () => {
+    const result = turnsOfTheMonth([])
+    expect(result).toBe(0)
+  })
+
+  it('should handle turns with different statuses correctly', () => {
+    const mixedTurns = [
+      { id: 1, status: 'COMPLETED', scheduledAt: '2024-01-10 10:00' },
+      { id: 2, status: 'SCHEDULED', scheduledAt: '2024-01-10 10:00' },
+      { id: 3, status: 'CANCELED', scheduledAt: '2024-01-10 10:00' },
+      { id: 4, status: 'COMPLETED', scheduledAt: '2024-01-20 10:00' } // Future day
+    ]
+
+    const result = turnsOfTheMonth(mixedTurns)
+    expect(result).toBe(2) // id 1 (COMPLETED) and id 2 (SCHEDULED): both past, current month, not CANCELED
+  })
+})
+
+describe('upComingTurns', () => {
+  const mockTurns = [
+    {
+      id: 1,
+      status: 'SCHEDULED',
+      scheduledAt: '2024-01-16 10:00', // Future
+      patientName: 'John Doe'
+    },
+    {
+      id: 2,
+      status: 'SCHEDULED',
+      scheduledAt: '2024-01-14 10:00', // Past
+      patientName: 'Jane Smith'
+    },
+    {
+      id: 3,
+      status: 'COMPLETED',
+      scheduledAt: '2024-01-16 10:00', // Future but completed
+      patientName: 'Bob Johnson'
+    },
+    {
+      id: 4,
+      status: 'CANCELED',
+      scheduledAt: '2024-01-16 10:00', // Future but canceled
+      patientName: 'Alice Brown'
+    }
+  ]
+
+  it('should count scheduled turns that are in the future', () => {
+    const result = upComingTurns(mockTurns)
+    expect(result).toBe(1) // Only turn id 1: SCHEDULED and future
+  })
+
+  it('should not count past scheduled turns', () => {
+    const result = upComingTurns(mockTurns)
+    expect(result).toBe(1) // Turn id 2 is past, so not counted
+  })
+
+  it('should not count completed turns even if future', () => {
+    const result = upComingTurns(mockTurns)
+    expect(result).toBe(1) // Turn id 3 is completed, so not counted
+  })
+
+  it('should not count canceled turns even if future', () => {
+    const result = upComingTurns(mockTurns)
+    expect(result).toBe(1) // Turn id 4 is canceled, so not counted
+  })
+
+  it('should return 0 for empty turns array', () => {
+    const result = upComingTurns([])
+    expect(result).toBe(0)
+  })
+
+  it('should handle multiple upcoming turns', () => {
+    const upcomingTurns = [
+      { id: 1, status: 'SCHEDULED', scheduledAt: '2024-01-16 10:00' },
+      { id: 2, status: 'SCHEDULED', scheduledAt: '2024-01-17 10:00' },
+      { id: 3, status: 'SCHEDULED', scheduledAt: '2024-01-18 10:00' }
+    ]
+
+    const result = upComingTurns(upcomingTurns)
+    expect(result).toBe(3)
+  })
+})
+
+describe('allPastTurnsThisMonth', () => {
+  const mockTurns = [
+    {
+      id: 1,
+      status: 'COMPLETED',
+      scheduledAt: '2024-01-10 10:00', // Past in January
+      patientName: 'John Doe'
+    },
+    {
+      id: 2,
+      status: 'CANCELED',
+      scheduledAt: '2024-01-12 10:00', // Past in January
+      patientName: 'Jane Smith'
+    },
+    {
+      id: 3,
+      status: 'SCHEDULED',
+      scheduledAt: '2024-01-16 10:00', // Future in January
+      patientName: 'Bob Johnson'
+    },
+    {
+      id: 4,
+      status: 'COMPLETED',
+      scheduledAt: '2024-02-10 10:00', // Different month
+      patientName: 'Alice Brown'
+    },
+    {
+      id: 5,
+      status: 'COMPLETED',
+      scheduledAt: '2024-01-20 10:00', // Future day in January
+      patientName: 'Charlie Wilson'
+    }
+  ]
+
+  it('should count all non-canceled turns from current month that are past the current day', () => {
+    const result = allPastTurnsThisMonth(mockTurns)
+    expect(result).toBe(1) // Only turn id 1: COMPLETED, January, past current day (15)
+  })
+
+  it('should not count canceled turns', () => {
+    const result = allPastTurnsThisMonth(mockTurns)
+    expect(result).toBe(1) // Turn id 2 is CANCELED, so not counted
+  })
+
+  it('should not count turns from future days in current month', () => {
+    const result = allPastTurnsThisMonth(mockTurns)
+    expect(result).toBe(1) // Turns id 3 and 5 are future, so not counted
+  })
+
+  it('should not count turns from different months', () => {
+    const result = allPastTurnsThisMonth(mockTurns)
+    expect(result).toBe(1) // Turn id 4 is February, so not counted
+  })
+
+  it('should return 0 for empty turns array', () => {
+    const result = allPastTurnsThisMonth([])
+    expect(result).toBe(0)
+  })
+
+  it('should count multiple past turns in current month', () => {
+    const pastTurns = [
+      { id: 1, status: 'COMPLETED', scheduledAt: '2024-01-10 10:00' },
+      { id: 2, status: 'COMPLETED', scheduledAt: '2024-01-12 10:00' },
+      { id: 3, status: 'SCHEDULED', scheduledAt: '2024-01-10 10:00' } // SCHEDULED counts as non-canceled
+    ]
+
+    const result = allPastTurnsThisMonth(pastTurns)
+    expect(result).toBe(3) // All three are past and non-canceled
   })
 })

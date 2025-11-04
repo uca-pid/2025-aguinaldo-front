@@ -5,7 +5,12 @@ import {
   loadAdminStats,
   loadAvailableTurns,
   loadMyTurns,
-  loadDoctorModifyRequests
+  loadDoctorModifyRequests,
+  loadSpecialties,
+  loadMyModifyRequests,
+  loadRatingSubcategories,
+  loadAdminRatings,
+  loadRatedSubcategoryCounts
 } from './dataMachineUtils'
 import { AdminService } from '../../service/admin-service.service'
 import { TurnService } from '../../service/turn-service.service'
@@ -14,7 +19,9 @@ import { TurnService } from '../../service/turn-service.service'
 vi.mock('../../service/admin-service.service', () => ({
   AdminService: {
     getPendingDoctors: vi.fn(),
-    getAdminStats: vi.fn()
+    getAdminStats: vi.fn(),
+    getSpecialties: vi.fn(),
+    getAdminRatings: vi.fn()
   }
 }))
 
@@ -23,7 +30,11 @@ vi.mock('../../service/turn-service.service', () => ({
     getDoctors: vi.fn(),
     getAvailableTurns: vi.fn(),
     getMyTurns: vi.fn(),
-    getDoctorModifyRequests: vi.fn()
+    getDoctorModifyRequests: vi.fn(),
+    getSpecialties: vi.fn(),
+    getMyModifyRequests: vi.fn(),
+    getRatingSubcategories: vi.fn(),
+    getRatedSubcategoryCounts: vi.fn()
   }
 }))
 
@@ -172,6 +183,196 @@ describe('dataMachineUtils', () => {
 
       expect(TurnService.getDoctorModifyRequests).not.toHaveBeenCalled()
       expect(result).toEqual([])
+    })
+  })
+
+  describe('loadSpecialties', () => {
+    it('should call AdminService.getSpecialties with correct parameters', async () => {
+      const params = { accessToken: 'token123' }
+      const mockSpecialties = ['Cardiology', 'Dermatology', 'Neurology']
+      ;(AdminService.getSpecialties as Mock).mockResolvedValue(mockSpecialties)
+
+      const result = await loadSpecialties(params)
+
+      expect(AdminService.getSpecialties).toHaveBeenCalledWith('token123')
+      expect(result).toEqual(mockSpecialties)
+    })
+  })
+
+  describe('loadMyModifyRequests', () => {
+    it('should call TurnService.getMyModifyRequests with correct parameters', async () => {
+      const params = { accessToken: 'token123' }
+      const mockRequests = [
+        { id: 'req1', status: 'PENDING' },
+        { id: 'req2', status: 'APPROVED' }
+      ]
+      ;(TurnService.getMyModifyRequests as Mock).mockResolvedValue(mockRequests)
+
+      const result = await loadMyModifyRequests(params)
+
+      expect(TurnService.getMyModifyRequests).toHaveBeenCalledWith('token123')
+      expect(result).toEqual(mockRequests)
+    })
+  })
+
+  describe('loadRatingSubcategories', () => {
+    it('should call TurnService.getRatingSubcategories with role and accessToken', async () => {
+      const params = { role: 'DOCTOR', accessToken: 'token123' }
+      const mockSubcategories = ['Punctuality', 'Communication', 'Professionalism']
+      ;(TurnService.getRatingSubcategories as Mock).mockResolvedValue(mockSubcategories)
+
+      const result = await loadRatingSubcategories(params)
+
+      expect(TurnService.getRatingSubcategories).toHaveBeenCalledWith('DOCTOR', 'token123')
+      expect(result).toEqual(mockSubcategories)
+    })
+
+    it('should call TurnService.getRatingSubcategories with undefined role', async () => {
+      const params = { accessToken: 'token123' }
+      const mockSubcategories = ['Cleanliness', 'Waiting Time']
+      ;(TurnService.getRatingSubcategories as Mock).mockResolvedValue(mockSubcategories)
+
+      const result = await loadRatingSubcategories(params)
+
+      expect(TurnService.getRatingSubcategories).toHaveBeenCalledWith(undefined, 'token123')
+      expect(result).toEqual(mockSubcategories)
+    })
+
+    it('should call TurnService.getRatingSubcategories without accessToken', async () => {
+      const params = { role: 'PATIENT' }
+      const mockSubcategories = ['Staff Courtesy', 'Facility']
+      ;(TurnService.getRatingSubcategories as Mock).mockResolvedValue(mockSubcategories)
+
+      const result = await loadRatingSubcategories(params)
+
+      expect(TurnService.getRatingSubcategories).toHaveBeenCalledWith('PATIENT', undefined)
+      expect(result).toEqual(mockSubcategories)
+    })
+  })
+
+  describe('loadAdminRatings', () => {
+    it('should return admin ratings when user is admin', async () => {
+      const params = { accessToken: 'token123', isAdmin: true }
+      const mockRatings = {
+        allRatings: [{ id: 1, rating: 5 }],
+        patientRatings: [{ id: 2, rating: 4 }],
+        doctorRatings: [{ id: 3, rating: 3 }],
+        stats: { average: 4.2, total: 10 }
+      }
+      ;(AdminService.getAdminRatings as Mock).mockResolvedValue(mockRatings)
+
+      const result = await loadAdminRatings(params)
+
+      expect(AdminService.getAdminRatings).toHaveBeenCalledWith('token123')
+      expect(result).toEqual(mockRatings)
+    })
+
+    it('should return default ratings when user is not admin', async () => {
+      const params = { accessToken: 'token123', isAdmin: false }
+
+      const result = await loadAdminRatings(params)
+
+      expect(AdminService.getAdminRatings).not.toHaveBeenCalled()
+      expect(result).toEqual({
+        allRatings: [],
+        patientRatings: [],
+        doctorRatings: [],
+        stats: null
+      })
+    })
+  })
+
+  describe('loadRatedSubcategoryCounts', () => {
+    it('should aggregate and sort subcategory counts correctly', async () => {
+      const params = { doctorIds: ['doc1', 'doc2'], accessToken: 'token123' }
+      const mockCounts1 = [
+        { subcategory: 'Punctuality', count: 5 },
+        { subcategory: 'Communication', count: 3 },
+        { subcategory: 'Punctuality - Timeliness', count: 2 }
+      ]
+      const mockCounts2 = [
+        { subcategory: null, count: 1 },
+        { subcategory: 'Professionalism', count: 4 }
+      ]
+
+      ;(TurnService.getRatedSubcategoryCounts as Mock)
+        .mockResolvedValueOnce(mockCounts1)
+        .mockResolvedValueOnce(mockCounts2)
+
+      const result = await loadRatedSubcategoryCounts(params)
+
+      expect(TurnService.getRatedSubcategoryCounts).toHaveBeenCalledWith('doc1', 'token123')
+      expect(TurnService.getRatedSubcategoryCounts).toHaveBeenCalledWith('doc2', 'token123')
+
+      expect(result).toEqual({
+        doc1: [
+          { subcategory: 'Punctuality', count: 7 }, // 5 + 2 aggregated
+          { subcategory: 'Communication', count: 3 },
+          { subcategory: 'Timeliness', count: 2 }
+        ],
+        doc2: [
+          { subcategory: 'Professionalism', count: 4 },
+          { subcategory: null, count: 1 }
+        ]
+      })
+    })
+
+    it('should handle empty doctorIds array', async () => {
+      const params = { doctorIds: [], accessToken: 'token123' }
+
+      const result = await loadRatedSubcategoryCounts(params)
+
+      expect(TurnService.getRatedSubcategoryCounts).not.toHaveBeenCalled()
+      expect(result).toEqual({})
+    })
+
+    it('should handle service errors gracefully', async () => {
+      const params = { doctorIds: ['doc1'], accessToken: 'token123' }
+
+      ;(TurnService.getRatedSubcategoryCounts as Mock).mockRejectedValue(new Error('Service error'))
+
+      const result = await loadRatedSubcategoryCounts(params)
+
+      expect(result).toEqual({
+        doc1: []
+      })
+    })
+
+    it('should sort subcategories by count descending', async () => {
+      const params = { doctorIds: ['doc1'], accessToken: 'token123' }
+      const mockCounts = [
+        { subcategory: 'Low Count', count: 1 },
+        { subcategory: 'High Count', count: 10 },
+        { subcategory: 'Medium Count', count: 5 }
+      ]
+
+      ;(TurnService.getRatedSubcategoryCounts as Mock).mockResolvedValue(mockCounts)
+
+      const result = await loadRatedSubcategoryCounts(params)
+
+      expect(result.doc1).toEqual([
+        { subcategory: 'High Count', count: 10 },
+        { subcategory: 'Medium Count', count: 5 },
+        { subcategory: 'Low Count', count: 1 }
+      ])
+    })
+
+    it('should limit results to top 3 subcategories per doctor', async () => {
+      const params = { doctorIds: ['doc1'], accessToken: 'token123' }
+      const mockCounts = [
+        { subcategory: 'Cat1', count: 10 },
+        { subcategory: 'Cat2', count: 9 },
+        { subcategory: 'Cat3', count: 8 },
+        { subcategory: 'Cat4', count: 7 },
+        { subcategory: 'Cat5', count: 6 }
+      ]
+
+      ;(TurnService.getRatedSubcategoryCounts as Mock).mockResolvedValue(mockCounts)
+
+      const result = await loadRatedSubcategoryCounts(params)
+
+      expect(result.doc1).toHaveLength(3)
+      expect(result.doc1.map(item => item.subcategory)).toEqual(['Cat1', 'Cat2', 'Cat3'])
     })
   })
 })
