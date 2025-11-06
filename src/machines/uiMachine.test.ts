@@ -921,15 +921,9 @@ describe('uiMachine', () => {
   });
 
   describe('OPEN_RATING_MODAL Event', () => {
-    it('should open rating modal and load subcategories', () => {
-      // Mock data snapshot first (length === 0 triggers load)
-      mockOrchestrator.getSnapshot.mockReturnValueOnce({
-        context: {
-          ratingSubcategories: []
-        }
-      });
-      // Then mock auth snapshot
-      mockOrchestrator.getSnapshot.mockReturnValueOnce({
+    it('should open rating modal and always load subcategories', () => {
+      // Mock auth snapshot
+      mockOrchestrator.getSnapshot.mockReturnValue({
         context: {
           authResponse: undefined
         }
@@ -955,14 +949,8 @@ describe('uiMachine', () => {
     });
 
     it('should load subcategories with user role', () => {
-      // Mock data snapshot first (length === 0 triggers load)
-      mockOrchestrator.getSnapshot.mockReturnValueOnce({
-        context: {
-          ratingSubcategories: []
-        }
-      });
-      // Then mock auth snapshot
-      mockOrchestrator.getSnapshot.mockReturnValueOnce({
+      // Mock auth snapshot with DOCTOR role
+      mockOrchestrator.getSnapshot.mockReturnValue({
         context: {
           authResponse: { role: 'DOCTOR' }
         }
