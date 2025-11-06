@@ -202,6 +202,7 @@ export const dataMachine = createMachine({
             doctorPatients: [],
             doctorAvailability: [],
             doctorModifyRequests: [],
+            ratingSubcategories: [],
           }),
         },
         RELOAD_DOCTORS: {
@@ -294,6 +295,8 @@ export const dataMachine = createMachine({
             myModifyRequests: [],
             ratingModalChecked: false,
             adminRatings: null,
+            ratingSubcategories: [],
+            turnsNeedingRating: [],
           }),
         },
         RELOAD_DOCTORS: {
@@ -391,7 +394,7 @@ export const dataMachine = createMachine({
             }),
           },
           {
-            target: "fetchingMyTurns",
+            target: "fetchingRatingSubcategories",
             guard: ({ context }) => context.userRole === "DOCTOR" || context.userRole === "PATIENT",
             actions: assign({
               doctors: ({ event }) => event.output,
@@ -992,19 +995,19 @@ export const dataMachine = createMachine({
         src: fromPromise(async ({ input }) => {
           return await loadRatingSubcategories(input);
         }),
-        input: ({ context, event }) => ({
-          role: (event as any).role,
+        input: ({ context }) => ({
+          role: context.userRole,
           accessToken: context.accessToken,
         }),
         onDone: {
-          target: "ready",
+          target: "fetchingMyTurns",
           actions: assign({
             ratingSubcategories: ({ event }) => event.output,
             loading: ({ context }) => ({ ...context.loading, ratingSubcategories: false }),
           }),
         },
         onError: {
-          target: "ready",
+          target: "fetchingMyTurns",
           actions: [
             assign({
               loading: ({ context }) => ({ ...context.loading, ratingSubcategories: false }),

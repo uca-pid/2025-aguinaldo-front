@@ -10,7 +10,7 @@ import { profileMachine, PROFILE_MACHINE_ID, PROFILE_MACHINE_EVENT_TYPES, type P
 import { notificationMachine, NOTIFICATION_MACHINE_ID, NOTIFICATION_MACHINE_EVENT_TYPES, type NotificationMachineEvent } from '../machines/notificationMachine';
 import { medicalHistoryMachine, MEDICAL_HISTORY_MACHINE_ID, MEDICAL_HISTORY_MACHINE_EVENT_TYPES, type MedicalHistoryMachineEvent } from '#/machines/medicalHistoryMachine';
 import { filesMachine, FILES_MACHINE_ID, FILES_MACHINE_EVENT_TYPES, type FilesMachineEvent } from '../machines/filesMachine';
-import { ratingMachine, RATING_MACHINE_ID } from '../machines/ratingMachine';
+import { ratingMachine, RATING_MACHINE_ID, RATING_MACHINE_EVENT_TYPES } from '../machines/ratingMachine';
 
 interface MachineInstances {
     uiState: any;
@@ -96,7 +96,7 @@ orchestrator.registerMachine({
 orchestrator.registerMachine({
   id: RATING_MACHINE_ID,
   machine: ratingMachine,
-  eventTypes: []
+  eventTypes: RATING_MACHINE_EVENT_TYPES
 });
 
 export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) => {
