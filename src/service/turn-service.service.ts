@@ -416,7 +416,7 @@ export class TurnService {
 
   static async getRatingSubcategories(role?: string, accessToken?: string): Promise<string[]> {
     const url = role 
-      ? `${buildApiUrl(API_CONFIG.ENDPOINTS.GET_RATING_SUBCATEGORIES)}?role=${role}`
+      ? `${buildApiUrl(API_CONFIG.ENDPOINTS.GET_RATING_SUBCATEGORIES)}?role=${encodeURIComponent(role)}`
       : buildApiUrl(API_CONFIG.ENDPOINTS.GET_RATING_SUBCATEGORIES);
     
     try {

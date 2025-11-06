@@ -556,8 +556,15 @@ describe('uiMachine', () => {
 
       const confirmDialog = actor.getSnapshot().context.confirmDialog;
       expect(confirmDialog.open).toBe(false);
-      expect(confirmDialog.action).toBeNull();
-      expect(confirmDialog.requestId).toBeNull();
+      // Data should still be present after close (during animation)
+      expect(confirmDialog.action).toBe('approve');
+      expect(confirmDialog.requestId).toBe('request-123');
+      
+      // After clear event, data should be null
+      actor.send({ type: 'CLEAR_CONFIRMATION_DIALOG' });
+      const clearedDialog = actor.getSnapshot().context.confirmDialog;
+      expect(clearedDialog.action).toBeNull();
+      expect(clearedDialog.requestId).toBeNull();
     });
 
     it('should reset all confirmation dialog properties', () => {
@@ -575,10 +582,29 @@ describe('uiMachine', () => {
       const confirmDialog = actor.getSnapshot().context.confirmDialog;
       expect(confirmDialog).toEqual({
         open: false,
+        action: 'reject',
+        requestId: 'request-789',
+        turnId: null,
+        turnData: null,
+        title: 'Confirmar Acción',
+        message: '',
+        confirmButtonText: 'Confirmar',
+        confirmButtonColor: 'primary',
+      });
+      
+      // After clear event, all data should be reset
+      actor.send({ type: 'CLEAR_CONFIRMATION_DIALOG' });
+      const clearedDialog = actor.getSnapshot().context.confirmDialog;
+      expect(clearedDialog).toEqual({
+        open: false,
         action: null,
         requestId: null,
         turnId: null,
         turnData: null,
+        title: undefined,
+        message: undefined,
+        confirmButtonText: undefined,
+        confirmButtonColor: undefined,
       });
     });
   });
@@ -996,7 +1022,13 @@ describe('uiMachine', () => {
 
       const ratingModal = actor.getSnapshot().context.ratingModal;
       expect(ratingModal.open).toBe(false);
-      expect(ratingModal.turn).toBe(null);
+      // Turn data should still be present after close (during animation)
+      expect(ratingModal.turn).toEqual(turn);
+      
+      // After clear event, turn should be null
+      actor.send({ type: 'CLEAR_RATING_MODAL' });
+      const clearedModal = actor.getSnapshot().context.ratingModal;
+      expect(clearedModal.turn).toBe(null);
     });
   });
 });
