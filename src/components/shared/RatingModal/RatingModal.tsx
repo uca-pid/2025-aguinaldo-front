@@ -13,48 +13,47 @@ import { TurnService } from '#/service/turn-service.service';
 import { orchestrator } from '#/core/Orchestrator';
 import { UI_MACHINE_ID } from '#/machines/uiMachine';
 import dayjs from '#/utils/dayjs.config';
-import React, { useMemo, useCallback } from 'react';
 import './RatingModal.css';
 
-const RatingModal = React.memo(() => {
+const RatingModal = () => {
   const { uiState, ratingState, ratingSend } = useMachines();
   const { dataState } = useDataMachine();
   const { authState } = useAuthMachine();
   
-  const user = useMemo(() => authState?.context?.authResponse as SignInResponse, [authState?.context?.authResponse]);
-  const modalData = useMemo(() => uiState.context.ratingModal, [uiState.context.ratingModal]);
+  // Get values directly from state machines without memoization
+  const user = authState?.context?.authResponse as SignInResponse;
+  const modalData = uiState.context.ratingModal;
   const open = modalData.open;
   const turn = modalData.turn;
   
-  const ratingSubcategories = useMemo(() => dataState.context.ratingSubcategories || [], [dataState.context.ratingSubcategories]);
+  const ratingSubcategories = dataState.context.ratingSubcategories || [];
+  const isLoadingSubcategories = dataState.context.loading?.ratingSubcategories || false;
+  const subcategoriesError = dataState.context.errors?.ratingSubcategories;
   const accessToken = dataState.context.accessToken;
-  const turnsNeedingRating = useMemo(() => dataState.context.turnsNeedingRating || [], [dataState.context.turnsNeedingRating]);
+  const turnsNeedingRating = dataState.context.turnsNeedingRating || [];
     
   const rating = ratingState?.context?.rating || 0;
   const subcategories = ratingState?.context?.subcategories || [];
   const loading = ratingState?.context?.loading || false;
   
-  const { currentPosition, totalTurns, showProgress } = useMemo(() => {
-    const currentTurnIndex = turnsNeedingRating.findIndex((t: any) => t.id === turn?.id);
-    const currentPosition = currentTurnIndex >= 0 ? currentTurnIndex + 1 : 1;
-    const totalTurns = turnsNeedingRating.length;
-    const showProgress = totalTurns > 1;
-        
-    return { currentPosition, totalTurns, showProgress };
-  }, [turnsNeedingRating, turn?.id]);
+  // Calculate position values directly
+  const currentTurnIndex = turnsNeedingRating.findIndex((t: any) => t.id === turn?.id);
+  const currentPosition = currentTurnIndex >= 0 ? currentTurnIndex + 1 : 1;
+  const totalTurns = turnsNeedingRating.length;
+  const showProgress = totalTurns > 1;
   
   const isDoctor = user?.role === 'DOCTOR';
   const displayName = isDoctor ? turn?.patientName : `Dr. ${turn?.doctorName}`;
   const displayInfo = isDoctor ? 'Paciente' : (turn?.doctorSpecialty || 'Medicina General');
   
-  const handleClose = useCallback(() => {
+  const handleClose = () => {
     if (isDoctor) {
       ratingSend({ type: 'RESET_RATING' });
       orchestrator.sendToMachine(UI_MACHINE_ID, { type: "CLOSE_RATING_MODAL" });
     }
-  }, [isDoctor, ratingSend]);
+  };
 
-  const handleSuccessfulSubmit = useCallback(() => {
+  const handleSuccessfulSubmit = () => {
     ratingSend({ type: 'RESET_RATING' });
     
     if (isDoctor) {
@@ -75,9 +74,9 @@ const RatingModal = React.memo(() => {
     } else {
       orchestrator.sendToMachine(UI_MACHINE_ID, { type: "CLOSE_RATING_MODAL" });
     }
-  }, [isDoctor, ratingSend, turnsNeedingRating, turn?.id]);
+  };
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = async () => {
     if (!rating || !turn?.id || !accessToken) {
       return;
     }
@@ -106,9 +105,9 @@ const RatingModal = React.memo(() => {
       });
       ratingSend({ type: 'SUBMIT_ERROR' });
     }
-  }, [rating, turn?.id, accessToken, subcategories, ratingSend, handleSuccessfulSubmit]);
+  };
 
-  const isValidSubmission = useMemo(() => rating > 0, [rating]);
+  const isValidSubmission = rating > 0;
 
   return (
     <Dialog 
@@ -215,44 +214,63 @@ const RatingModal = React.memo(() => {
               overflowY: 'auto',
               border: '1px solid #e0e0e0',
               borderRadius: '4px',
-              p: 1
+              p: 1,
+              minHeight: '100px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: isLoadingSubcategories || subcategoriesError || ratingSubcategories.length === 0 ? 'center' : 'stretch',
+              justifyContent: isLoadingSubcategories || subcategoriesError || ratingSubcategories.length === 0 ? 'center' : 'flex-start',
             }}
           >
-            {ratingSubcategories.map((category: string) => (
-              <Box
-                key={category}
-                onClick={() => {
-                  if (subcategories.includes(category)) {
-                    ratingSend({ 
-                      type: 'SET_SUBCATEGORIES', 
-                      subcategories: subcategories.filter((s: string) => s !== category) 
-                    });
-                  } else if (subcategories.length < 3) {
-                    ratingSend({ 
-                      type: 'SET_SUBCATEGORIES', 
-                      subcategories: [...subcategories, category] 
-                    });
-                  }
-                }}
-                sx={{
-                  p: 1.5,
-                  mb: 0.5,
-                  borderRadius: '4px',
-                  cursor: subcategories.length >= 3 && !subcategories.includes(category) ? 'not-allowed' : 'pointer',
-                  backgroundColor: subcategories.includes(category) ? 'primary.light' : 'transparent',
-                  opacity: subcategories.length >= 3 && !subcategories.includes(category) ? 0.5 : 1,
-                  '&:hover': {
-                    backgroundColor: subcategories.includes(category) ? 'primary.light' : 'action.hover',
-                  },
-                  transition: 'all 0.2s',
-                  color: subcategories.includes(category) ? 'primary.contrastText' : 'text.primary',
-                }}
-              >
-                <Typography variant="body2">
-                  {subcategories.includes(category) ? '✓ ' : ''}{category}
-                </Typography>
-              </Box>
-            ))}
+            {isLoadingSubcategories ? (
+              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+                Cargando categorías...
+              </Typography>
+            ) : subcategoriesError ? (
+              <Typography variant="body2" color="error" sx={{ textAlign: 'center' }}>
+                Error al cargar categorías. Por favor, intenta de nuevo.
+              </Typography>
+            ) : ratingSubcategories.length === 0 ? (
+              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+                No hay categorías disponibles
+              </Typography>
+            ) : (
+              ratingSubcategories.map((category: string) => (
+                <Box
+                  key={category}
+                  onClick={() => {
+                    if (subcategories.includes(category)) {
+                      ratingSend({ 
+                        type: 'SET_SUBCATEGORIES', 
+                        subcategories: subcategories.filter((s: string) => s !== category) 
+                      });
+                    } else if (subcategories.length < 3) {
+                      ratingSend({ 
+                        type: 'SET_SUBCATEGORIES', 
+                        subcategories: [...subcategories, category] 
+                      });
+                    }
+                  }}
+                  sx={{
+                    p: 1.5,
+                    mb: 0.5,
+                    borderRadius: '4px',
+                    cursor: subcategories.length >= 3 && !subcategories.includes(category) ? 'not-allowed' : 'pointer',
+                    backgroundColor: subcategories.includes(category) ? 'primary.light' : 'transparent',
+                    opacity: subcategories.length >= 3 && !subcategories.includes(category) ? 0.5 : 1,
+                    '&:hover': {
+                      backgroundColor: subcategories.includes(category) ? 'primary.light' : 'action.hover',
+                    },
+                    transition: 'all 0.2s',
+                    color: subcategories.includes(category) ? 'primary.contrastText' : 'text.primary',
+                  }}
+                >
+                  <Typography variant="body2">
+                    {subcategories.includes(category) ? '✓ ' : ''}{category}
+                  </Typography>
+                </Box>
+              ))
+            )}
           </Box>
         </Box>
       </DialogContent>
@@ -269,6 +287,6 @@ const RatingModal = React.memo(() => {
       </DialogActions>
     </Dialog>
   );
-});
+};
 
 export default RatingModal;

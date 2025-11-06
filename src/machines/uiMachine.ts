@@ -44,10 +44,12 @@ export type UiMachineEvent =
   | { type: "OPEN_COMPLETE_TURN_DIALOG"; turnId: string; turnData?: any; title?: string; message?: string; confirmButtonText?: string; confirmButtonColor?: 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' }
   | { type: "OPEN_NO_SHOW_TURN_DIALOG"; turnId: string; turnData?: any; title?: string; message?: string; confirmButtonText?: string; confirmButtonColor?: 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' }
   | { type: "CLOSE_CONFIRMATION_DIALOG" }
+  | { type: "CLEAR_CONFIRMATION_DIALOG" }
   | { type: "OPEN_NOTIFICATION_MODAL" }
   | { type: "CLOSE_NOTIFICATION_MODAL" }
   | { type: "OPEN_RATING_MODAL"; turn: any }
-  | { type: "CLOSE_RATING_MODAL" };
+  | { type: "CLOSE_RATING_MODAL" }
+  | { type: "CLEAR_RATING_MODAL" };
 
 export const uiMachine = createMachine({
   id: "ui",
@@ -236,6 +238,21 @@ export const uiMachine = createMachine({
           }),
         },
         CLOSE_CONFIRMATION_DIALOG: {
+          actions: [
+            assign({
+              confirmDialog: ({ context }) => ({
+                ...context.confirmDialog,
+                open: false,
+              }),
+            }),
+            () => {
+              setTimeout(() => {
+                orchestrator.sendToMachine(UI_MACHINE_ID, { type: "CLEAR_CONFIRMATION_DIALOG" });
+              }, 300);
+            }
+          ],
+        },
+        CLEAR_CONFIRMATION_DIALOG: {
           actions: assign({
             confirmDialog: () => ({
               open: false,
@@ -284,6 +301,21 @@ export const uiMachine = createMachine({
           ],
         },
         CLOSE_RATING_MODAL: {
+          actions: [
+            assign({
+              ratingModal: ({ context }) => ({
+                ...context.ratingModal,
+                open: false,
+              }),
+            }),
+            () => {
+              setTimeout(() => {
+                orchestrator.sendToMachine(UI_MACHINE_ID, { type: "CLEAR_RATING_MODAL" });
+              }, 300);
+            }
+          ],
+        },
+        CLEAR_RATING_MODAL: {
           actions: assign({
             ratingModal: () => ({
               open: false,
