@@ -111,5 +111,29 @@ describe('ratingMachine', () => {
       machine.send({ type: 'SET_SUBCATEGORIES', subcategories: ['b', 'c'] });
       expect(machine.getSnapshot().context.subcategories).toEqual(['b', 'c']);
     });
+
+    it('should reset all context on CLEAR_ACCESS_TOKEN in idle state', () => {
+      machine.send({ type: 'SET_RATING', rating: 4 });
+      machine.send({ type: 'SET_SUBCATEGORIES', subcategories: ['friendly', 'professional'] });
+
+      machine.send({ type: 'CLEAR_ACCESS_TOKEN' });
+
+      expect(machine.getSnapshot().context).toEqual(RatingMachineDefaultContext);
+      expect(machine.getSnapshot().value).toBe('idle');
+    });
+
+    it('should reset all context and transition to idle on CLEAR_ACCESS_TOKEN in submitting state', () => {
+      machine.send({ type: 'SET_RATING', rating: 4 });
+      machine.send({ type: 'SET_SUBCATEGORIES', subcategories: ['test'] });
+      machine.send({ type: 'START_SUBMIT' });
+
+      expect(machine.getSnapshot().value).toBe('submitting');
+      expect(machine.getSnapshot().context.loading).toBe(true);
+
+      machine.send({ type: 'CLEAR_ACCESS_TOKEN' });
+
+      expect(machine.getSnapshot().context).toEqual(RatingMachineDefaultContext);
+      expect(machine.getSnapshot().value).toBe('idle');
+    });
   });
 });

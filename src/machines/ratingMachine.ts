@@ -1,6 +1,9 @@
 import { createMachine, assign } from "xstate";
 
 export const RATING_MACHINE_ID = "rating";
+export const RATING_MACHINE_EVENT_TYPES = [
+  "CLEAR_ACCESS_TOKEN"
+];
 
 export interface RatingMachineContext {
   rating: number;
@@ -37,6 +40,13 @@ export const ratingMachine = createMachine({
             subcategories: []
           })
         },
+        CLEAR_ACCESS_TOKEN: {
+          actions: assign({
+            rating: 0,
+            subcategories: [],
+            loading: false
+          })
+        },
         START_SUBMIT: {
           target: "submitting",
           actions: assign({
@@ -58,6 +68,14 @@ export const ratingMachine = createMachine({
         SUBMIT_ERROR: {
           target: "idle",
           actions: assign({
+            loading: false
+          })
+        },
+        CLEAR_ACCESS_TOKEN: {
+          target: "idle",
+          actions: assign({
+            rating: 0,
+            subcategories: [],
             loading: false
           })
         }
