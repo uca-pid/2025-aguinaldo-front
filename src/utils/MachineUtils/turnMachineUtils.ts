@@ -191,15 +191,15 @@ export const loadTurnDetails = async ({ turnId, accessToken }: { turnId: string;
 };
 
 /**
- * Load doctor availability dates
+ * Load doctor availability dates (optimized - uses cached data)
  */
 export const loadDoctorAvailability = async ({ accessToken, doctorId }: LoadDoctorAvailabilityParams): Promise<string[]> => {
-  const availability = await TurnService.getDoctorAvailability(doctorId, accessToken);
-  return availability?.availableDates || [];
+  const dates = await TurnService.getAvailableDates(doctorId, accessToken);
+  return dates || [];
 };
 
 /**
- * Load available time slots for a specific date and doctor
+ * Load available time slots for a specific date and doctor (optimized - uses cached data)
  */
 export const loadAvailableSlots = async ({ accessToken, doctorId, date }: LoadAvailableSlotsParams): Promise<string[]> => {
   const slots = await TurnService.getAvailableTurns(doctorId, date, accessToken);

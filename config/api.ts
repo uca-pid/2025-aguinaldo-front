@@ -31,6 +31,7 @@ export const API_CONFIG = {
     GET_DOCTOR_METRICS: '/api/doctors/{doctorId}/metrics',
     SAVE_DOCTOR_AVAILABILITY: '/api/doctors/{doctorId}/availability',
     GET_DOCTOR_AVAILABLE_SLOTS: '/api/doctors/{doctorId}/available-slots',
+    GET_DOCTOR_AVAILABLE_SLOTS_WITH_OCCUPANCY: '/api/doctors/{doctorId}/available-slots-with-occupancy',
 
     GET_PENDING_DOCTORS: '/api/admin/pending-doctors',
     APPROVE_DOCTOR: '/api/admin/approve-doctor/{doctorId}',

@@ -19,7 +19,7 @@ vi.mock('../../service/turn-service.service', () => ({
   TurnService: {
     createTurn: vi.fn(),
     createModifyRequest: vi.fn(),
-    getDoctorAvailability: vi.fn(),
+    getAvailableDates: vi.fn(),
     getAvailableTurns: vi.fn(),
     getMyTurns: vi.fn(),
     getDoctorModifyRequests: vi.fn()
@@ -222,19 +222,17 @@ describe('turnMachineUtils', () => {
   })
 
   describe('loadDoctorAvailability', () => {
-    it('should return available dates from TurnService', async () => {
+    it('should return available dates from TurnService using optimized endpoint', async () => {
       const params = {
         accessToken: 'token123',
         doctorId: 'doctor456'
       }
-      const mockAvailability = {
-        availableDates: ['2024-01-01', '2024-01-02']
-      }
-      ;(TurnService.getDoctorAvailability as Mock).mockResolvedValue(mockAvailability)
+      const mockDates = ['2024-01-01', '2024-01-02'];
+      (TurnService.getAvailableDates as Mock).mockResolvedValue(mockDates)
 
       const result = await loadDoctorAvailability(params)
 
-      expect(TurnService.getDoctorAvailability).toHaveBeenCalledWith('doctor456', 'token123')
+      expect(TurnService.getAvailableDates).toHaveBeenCalledWith('doctor456', 'token123')
       expect(result).toEqual(['2024-01-01', '2024-01-02'])
     })
 
@@ -243,7 +241,7 @@ describe('turnMachineUtils', () => {
         accessToken: 'token123',
         doctorId: 'doctor456'
       }
-      ;(TurnService.getDoctorAvailability as Mock).mockResolvedValue(null)
+      ;(TurnService.getAvailableDates as Mock).mockResolvedValue(null)
 
       const result = await loadDoctorAvailability(params)
 

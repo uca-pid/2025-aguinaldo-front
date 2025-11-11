@@ -105,22 +105,38 @@ export class TurnService {
     date: string, 
     accessToken: string
   ): Promise<string[]> {
-    const url = buildApiUrl(`${API_CONFIG.ENDPOINTS.GET_AVAILABLE_TURNS}?doctorId=${doctorId}&date=${date}`);
-    
-    try {
-      const response = await fetch(url, {
-        ...getAuthenticatedFetchOptions(accessToken),
-        method: 'GET',
+    // First, try to use cached slot data to avoid duplicate API calls
+    const fromDate = dayjs().tz('America/Argentina/Buenos_Aires').format('YYYY-MM-DD');
+    const toDate = dayjs().tz('America/Argentina/Buenos_Aires').add(60, 'day').format('YYYY-MM-DD');
+    const cacheKey = `${doctorId}_${fromDate}_${toDate}`;
+    const cached = this.availableSlotsCache.get(cacheKey);
+    const now = Date.now();
+
+    // If we have fresh cached data with slot details and occupancy info, use it directly
+    if (cached && (now - cached.timestamp) < this.CACHE_DURATION) {
+      const { slotsByDate } = this.processSlotsData(cached.slots);
+      const slotsForDate = slotsByDate[date] || [];
+      
+      // Convert slots to time strings in OffsetDateTime format
+      const argentinaOffset = '-03:00';
+      const availableTimes = slotsForDate.map(slot => {
+        // Format: YYYY-MM-DDTHH:mm:ss±HH:mm
+        return `${slot.date}T${slot.startTime}${argentinaOffset}`;
       });
-      if (!response.ok) {
-        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData?.message || 
-          errorData?.error ||
-          `Failed to fetch available turns! Status: ${response.status}`
-        );
-      }
-      const availableTimes: string[] = await response.json();
+      
+      return availableTimes;
+    }
+
+    // If no cache, fetch fresh data using the optimized endpoint
+    try {
+      const { slotsByDate } = await this.getAvailableDatesAndSlots(doctorId, accessToken);
+      const slotsForDate = slotsByDate[date] || [];
+      
+      // Convert slots to time strings in OffsetDateTime format
+      const argentinaOffset = '-03:00';
+      const availableTimes = slotsForDate.map(slot => {
+        return `${slot.date}T${slot.startTime}${argentinaOffset}`;
+      });
       
       return availableTimes;
     } catch (error) {
@@ -252,11 +268,29 @@ export class TurnService {
     }
   }
 
-  static async getAvailableDates(doctorId: string, accessToken: string): Promise<string[]> {
+  // Cache for available slots to avoid duplicate API calls
+  private static availableSlotsCache: Map<string, { slots: any[], timestamp: number }> = new Map();
+  private static readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+  /**
+   * Optimized method that fetches available slots with occupancy information in a single API call
+   * This replaces the need for separate getAvailableDates and getAvailableTurns calls
+   */
+  static async getAvailableDatesAndSlots(doctorId: string, accessToken: string): Promise<{ dates: string[], slotsByDate: Record<string, any[]> }> {
     const fromDate = dayjs().tz('America/Argentina/Buenos_Aires').format('YYYY-MM-DD');
     const toDate = dayjs().tz('America/Argentina/Buenos_Aires').add(60, 'day').format('YYYY-MM-DD');
     
-    const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTOR_AVAILABLE_SLOTS.replace('{doctorId}', doctorId) + `?fromDate=${fromDate}&toDate=${toDate}`);
+    // Check cache first
+    const cacheKey = `${doctorId}_${fromDate}_${toDate}`;
+    const cached = this.availableSlotsCache.get(cacheKey);
+    const now = Date.now();
+    
+    if (cached && (now - cached.timestamp) < this.CACHE_DURATION) {
+      return this.processSlotsData(cached.slots);
+    }
+
+    // Use the new optimized endpoint that includes occupancy information
+    const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTOR_AVAILABLE_SLOTS_WITH_OCCUPANCY.replace('{doctorId}', doctorId) + `?fromDate=${fromDate}&toDate=${toDate}`);
     
     try {
       const response = await fetch(url, {
@@ -272,18 +306,41 @@ export class TurnService {
         );
       }
       const slots: any[] = await response.json();
-      // Extract unique dates from slots
-      const dateSet = new Set<string>();
-      slots.forEach(slot => {
-        if (slot.date) {
-          dateSet.add(slot.date);
-        }
-      });
-      const dates: string[] = Array.from(dateSet).sort();
-      return dates;
+      
+      // Cache the slots
+      this.availableSlotsCache.set(cacheKey, { slots, timestamp: now });
+      
+      return this.processSlotsData(slots);
     } catch (error) {
       throw error;
     }
+  }
+
+  /**
+   * Process slots data to extract dates and group slots by date
+   * Only returns dates that have at least one available (non-occupied) slot
+   */
+  private static processSlotsData(slots: any[]): { dates: string[], slotsByDate: Record<string, any[]> } {
+    const slotsByDate: Record<string, any[]> = {};
+    
+    // Group slots by date and filter out occupied ones
+    slots.forEach(slot => {
+      if (slot.date && slot.isOccupied === false) {
+        if (!slotsByDate[slot.date]) {
+          slotsByDate[slot.date] = [];
+        }
+        slotsByDate[slot.date].push(slot);
+      }
+    });
+    
+    // Only include dates that have at least one available slot
+    const dates: string[] = Object.keys(slotsByDate).sort();
+    return { dates, slotsByDate };
+  }
+
+  static async getAvailableDates(doctorId: string, accessToken: string): Promise<string[]> {
+    const result = await this.getAvailableDatesAndSlots(doctorId, accessToken);
+    return result.dates;
   }
 
   static async createModifyRequest(
@@ -308,15 +365,6 @@ export class TurnService {
       }
       const result = await response.json();
       return result;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  static async getDoctorAvailability(doctorId: string, accessToken: string): Promise<any> {
-    try {
-      const availableDates = await  TurnService.getAvailableDates(doctorId, accessToken);
-      return { availableDates };
     } catch (error) {
       throw error;
     }

@@ -17,7 +17,6 @@ vi.mock('../service/turn-service.service', () => ({
     getAvailableDates: vi.fn(),
     getAvailableTurns: vi.fn(),
     createTurn: vi.fn(),
-    getDoctorAvailability: vi.fn(),
     createModifyRequest: vi.fn(),
   }
 }));

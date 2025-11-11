@@ -252,23 +252,56 @@ describe('TurnService', () => {
     const doctorId = 'doctor-1';
     const date = '2024-01-15';
     const accessToken = 'access-token-123';
-    const mockAvailableTimes = ['09:00', '09:30', '10:00', '14:00', '14:30'];
 
-    it('should successfully fetch available turns', async () => {
+    beforeEach(() => {
+      // Clear cache before each test
+      (TurnService as any).availableSlotsCache.clear();
+    });
+
+    it('should successfully fetch available turns using optimized endpoint', async () => {
+      const mockSlots = [
+        { date: '2024-01-15', startTime: '09:00:00', endTime: '09:30:00', dayOfWeek: 'MONDAY', isOccupied: false },
+        { date: '2024-01-15', startTime: '09:30:00', endTime: '10:00:00', dayOfWeek: 'MONDAY', isOccupied: false },
+        { date: '2024-01-15', startTime: '10:00:00', endTime: '10:30:00', dayOfWeek: 'MONDAY', isOccupied: false },
+        { date: '2024-01-15', startTime: '10:30:00', endTime: '11:00:00', dayOfWeek: 'MONDAY', isOccupied: true }
+      ];
+      
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve(mockAvailableTimes)
+        json: () => Promise.resolve(mockSlots)
       });
 
       const result = await TurnService.getAvailableTurns(doctorId, date, accessToken);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8080/api/turns/available?doctorId=doctor-1&date=2024-01-15',
+        expect.stringContaining('/api/doctors/doctor-1/available-slots-with-occupancy'),
         expect.objectContaining({
           method: 'GET'
         })
       );
-      expect(result).toEqual(mockAvailableTimes);
+      expect(result).toHaveLength(3); // Only non-occupied slots
+      expect(result[0]).toContain('2024-01-15T09:00:00-03:00');
+    });
+
+    it('should use cached data on second call', async () => {
+      const mockSlots = [
+        { date: '2024-01-15', startTime: '09:00:00', endTime: '09:30:00', dayOfWeek: 'MONDAY', isOccupied: false },
+        { date: '2024-01-15', startTime: '09:30:00', endTime: '10:00:00', dayOfWeek: 'MONDAY', isOccupied: false }
+      ];
+      
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockSlots)
+      });
+
+      // First call
+      await TurnService.getAvailableTurns(doctorId, date, accessToken);
+      
+      // Second call should use cache
+      const result = await TurnService.getAvailableTurns(doctorId, date, accessToken);
+
+      expect(mockFetch).toHaveBeenCalledTimes(1); // Only called once
+      expect(result).toHaveLength(2);
     });
 
     it('should throw error when fetch fails', async () => {
@@ -561,12 +594,17 @@ describe('TurnService', () => {
     const doctorId = 'doctor-1';
     const accessToken = 'access-token-123';
     const mockSlots = [
-      { date: '2024-01-15', startTime: '09:00', endTime: '09:30', dayOfWeek: 'MONDAY' },
-      { date: '2024-01-15', startTime: '10:00', endTime: '10:30', dayOfWeek: 'MONDAY' },
-      { date: '2024-01-16', startTime: '09:00', endTime: '09:30', dayOfWeek: 'TUESDAY' }
+      { date: '2024-01-15', startTime: '09:00', endTime: '09:30', dayOfWeek: 'MONDAY', isOccupied: false },
+      { date: '2024-01-15', startTime: '10:00', endTime: '10:30', dayOfWeek: 'MONDAY', isOccupied: false },
+      { date: '2024-01-16', startTime: '09:00', endTime: '09:30', dayOfWeek: 'TUESDAY', isOccupied: false }
     ];
 
-    it('should successfully fetch available dates', async () => {
+    beforeEach(() => {
+      // Clear cache before each test
+      (TurnService as any).availableSlotsCache.clear();
+    });
+
+    it('should successfully fetch available dates using optimized endpoint', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(mockSlots)
@@ -574,6 +612,12 @@ describe('TurnService', () => {
 
       const result = await TurnService.getAvailableDates(doctorId, accessToken);
 
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/doctors/doctor-1/available-slots-with-occupancy'),
+        expect.objectContaining({
+          method: 'GET'
+        })
+      );
       expect(result).toEqual(['2024-01-15', '2024-01-16']);
     });
 
@@ -648,33 +692,6 @@ describe('TurnService', () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       await expect(TurnService.createModifyRequest(mockModifyData, accessToken))
-        .rejects.toThrow('Network error');
-    });
-  });
-
-  describe('getDoctorAvailability', () => {
-    const doctorId = 'doctor-1';
-    const accessToken = 'access-token-123';
-
-    it('should successfully get doctor availability', async () => {
-      const mockSlots = [
-        { date: '2024-01-15', startTime: '09:00', endTime: '09:30', dayOfWeek: 'MONDAY' }
-      ];
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockSlots)
-      });
-
-      const result = await TurnService.getDoctorAvailability(doctorId, accessToken);
-
-      expect(result).toEqual({ availableDates: ['2024-01-15'] });
-    });
-
-    it('should throw error when get doctor availability fails', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
-
-      await expect(TurnService.getDoctorAvailability(doctorId, accessToken))
         .rejects.toThrow('Network error');
     });
   });
