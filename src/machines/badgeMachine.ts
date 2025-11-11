@@ -66,7 +66,7 @@ const badgeMachine = createMachine({
     idle: {
       always: [
         {
-          guard: ({ context }) => !!context.accessToken && !!context.userId && isBadgeEligible(context),
+          guard: ({ context }) => !!context.accessToken && !!context.userId && isBadgeEligible(context) && !context.evaluationError,
           target: "loading",
         },
       ],
