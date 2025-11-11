@@ -69,6 +69,13 @@ vi.mock('../machines/ratingMachine', () => ({
   ratingMachine: { id: 'rating-machine' },
 }));
 
+vi.mock('../machines/badgeMachine', () => ({
+  BADGE_MACHINE_ID: 'badge-machine',
+  BADGE_MACHINE_EVENT_TYPES: ['BADGE_EVENT_1', 'BADGE_EVENT_2'],
+  badgeMachine: { id: 'badge-machine' },
+  default: { id: 'badge-machine' },
+}));
+
 // Import the mocked module
 import { useStateMachine } from '../hooks/useStateMachine';
 
@@ -148,6 +155,7 @@ describe('MachineProvider', () => {
     medicalHistoryState: null,
     filesState: null,
     ratingState: null,
+    badgeState: null,
   };
 
   const mockSends = {
@@ -160,6 +168,7 @@ describe('MachineProvider', () => {
     medicalHistorySend: vi.fn(),
     filesSend: vi.fn(),
     ratingSend: vi.fn(),
+    badgeSend: vi.fn(),
   };
 
   beforeEach(() => {
@@ -186,6 +195,8 @@ describe('MachineProvider', () => {
           return { state: mockStates.filesState, send: mockSends.filesSend };
         case 'rating-machine':
           return { state: mockStates.ratingState, send: mockSends.ratingSend };
+        case 'badge-machine':
+          return { state: mockStates.badgeState, send: mockSends.badgeSend };
         default:
           return { state: null, send: vi.fn() };
       }
@@ -299,6 +310,8 @@ describe('MachineProvider', () => {
       filesSend: mockSends.filesSend,
       ratingState: mockStates.ratingState,
       ratingSend: mockSends.ratingSend,
+      badgeState: mockStates.badgeState,
+      badgeSend: mockSends.badgeSend,
     });
   });
 });

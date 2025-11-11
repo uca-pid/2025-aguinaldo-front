@@ -17,7 +17,8 @@ vi.mock('@mui/icons-material', () => ({
   Notifications: vi.fn(),
   Person: vi.fn(),
   ExitToApp: vi.fn(),
-  BarChart: vi.fn()
+  BarChart: vi.fn(),
+  EmojiEvents: vi.fn()
 }))
 
 describe('sideBarMenuUtils', () => {
@@ -33,6 +34,7 @@ describe('sideBarMenuUtils', () => {
       expect(iconMap.Person).toBeDefined()
       expect(iconMap.ExitToApp).toBeDefined()
       expect(iconMap.BarChart).toBeDefined()
+      expect(iconMap.Trophy).toBeDefined()
     })
   })
 
@@ -40,7 +42,7 @@ describe('sideBarMenuUtils', () => {
     it('should return correct menu items for doctor', () => {
       const menuItems = getDoctorMenuItems(mockHandleLogout)
 
-      expect(menuItems).toHaveLength(8)
+      expect(menuItems).toHaveLength(9)
       expect(menuItems[0]).toEqual({
         id: 'dashboard',
         title: 'Inicio',
@@ -78,12 +80,18 @@ describe('sideBarMenuUtils', () => {
         path: '/doctor/metrics'
       })
       expect(menuItems[6]).toEqual({
+        id: 'badges',
+        title: 'Logros',
+        iconComponent: expect.any(Function),
+        path: '/doctor/badges'
+      })
+      expect(menuItems[7]).toEqual({
         id: 'profile',
         title: 'Mi Perfil',
         iconComponent: expect.any(Function),
         path: '/profile'
       })
-      expect(menuItems[7]).toEqual({
+      expect(menuItems[8]).toEqual({
         id: 'logout',
         title: 'Cerrar Sesión',
         iconComponent: expect.any(Function),
@@ -207,7 +215,7 @@ describe('sideBarMenuUtils', () => {
       const doctorMenu = getDoctorMenuItems(mockHandleLogout)
 
       expect(result).toEqual(doctorMenu)
-      expect(result).toHaveLength(8)
+      expect(result).toHaveLength(9)
     })
 
     it('should return patient menu items for PATIENT role', () => {
