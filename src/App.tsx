@@ -18,6 +18,7 @@ import SnackbarAlert from './components/shared/SnackbarAlert/SnackbarAlert'
 import PendingActivation from './components/Doctor/PendingActivation/PendingActivation'
 import TurnsModifications from './components/Doctor/TurnsModifications/TurnsModifications'
 import DoctorMetrics from './components/Doctor/DoctorMetrics/DoctorMetrics'
+import DoctorBadges from './components/Doctor/DoctorBadges/DoctorBadges'
 import FloatingMenu from './components/shared/FloatingMenu/FloatingMenu'
 import NotificationBell from './components/Notifications/NotificationBell'
 import NotificationModal from './components/Notifications/NotificationModal'
@@ -62,6 +63,7 @@ function AppContent() {
           <Route path="/doctor/view-patients" element={<ViewPatients />} />
           <Route path="/doctor/view-turns" element={<DoctorViewTurns />} />
           <Route path="/doctor/metrics" element={<DoctorMetrics />} />
+          <Route path="/doctor/badges" element={<DoctorBadges />} />
           <Route path="/patient-detail" element={<PatientDetails />} />
           <Route path="/doctor/turns-modifications" element={<TurnsModifications />} />
         </>
