@@ -11,6 +11,7 @@ import { notificationMachine, NOTIFICATION_MACHINE_ID, NOTIFICATION_MACHINE_EVEN
 import { medicalHistoryMachine, MEDICAL_HISTORY_MACHINE_ID, MEDICAL_HISTORY_MACHINE_EVENT_TYPES, type MedicalHistoryMachineEvent } from '#/machines/medicalHistoryMachine';
 import { filesMachine, FILES_MACHINE_ID, FILES_MACHINE_EVENT_TYPES, type FilesMachineEvent } from '../machines/filesMachine';
 import { ratingMachine, RATING_MACHINE_ID, RATING_MACHINE_EVENT_TYPES } from '../machines/ratingMachine';
+import badgeMachine, { BADGE_MACHINE_ID, BADGE_MACHINE_EVENT_TYPES, type BadgeMachineEvent } from '../machines/badgeMachine';
 
 interface MachineInstances {
     uiState: any;
@@ -31,6 +32,8 @@ interface MachineInstances {
     filesSend: (event: FilesMachineEvent) => void;
     ratingState: any;
     ratingSend: (event: any) => void;
+    badgeState: any;
+    badgeSend: (event: BadgeMachineEvent) => void;
 }
 
 interface MachineProviderProps {
@@ -99,6 +102,12 @@ orchestrator.registerMachine({
   eventTypes: RATING_MACHINE_EVENT_TYPES
 });
 
+orchestrator.registerMachine({
+  id: BADGE_MACHINE_ID,
+  machine: badgeMachine,
+  eventTypes: BADGE_MACHINE_EVENT_TYPES
+});
+
 export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) => {
   const { state: uiState, send: uiSend } = useStateMachine(UI_MACHINE_ID);
   const { state: turnState, send: turnSend } = useStateMachine(TURN_MACHINE_ID);
@@ -109,6 +118,7 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
   const { state: medicalHistoryState, send: medicalHistorySend } = useStateMachine(MEDICAL_HISTORY_MACHINE_ID);
   const { state: filesState, send: filesSend } = useStateMachine(FILES_MACHINE_ID);
   const { state: ratingState, send: ratingSend } = useStateMachine(RATING_MACHINE_ID);
+  const { state: badgeState, send: badgeSend } = useStateMachine(BADGE_MACHINE_ID);
 
   const machines: MachineInstances = {
       uiState: uiState,
@@ -129,6 +139,8 @@ export const MachineProvider: React.FC<MachineProviderProps> = ({ children }) =>
       filesSend: filesSend,
       ratingState: ratingState,
       ratingSend: ratingSend,
+      badgeState: badgeState,
+      badgeSend: badgeSend,
   };
 
   return (

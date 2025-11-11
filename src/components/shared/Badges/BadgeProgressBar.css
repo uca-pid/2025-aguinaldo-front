@@ -1,0 +1,68 @@
+/* BadgeProgressBar Component Styles */
+
+.badge-progress-tooltip-title {
+  text-align: left;
+  max-width: 280px;
+}
+
+.badge-progress-tooltip-name {
+  font-weight: 700;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.badge-progress-tooltip-description {
+  font-size: 12px;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.badge-progress-tooltip-criteria-box {
+  font-size: 11px;
+  margin-bottom: 8px;
+  padding: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  line-height: 1.5;
+}
+
+.badge-progress-tooltip-criteria-label {
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.badge-progress-tooltip-criteria-text {
+  font-size: 11px;
+}
+
+.badge-progress-tooltip-percentage {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-progress--compact {
+  width: 100%;
+}
+
+.badge-progress-compact-linear-progress {
+  height: 6px;
+  border-radius: 3px;
+  background-color: #e0e0e0;
+}
+
+.badge-progress-compact-linear-progress .MuiLinearProgress-bar {
+  border-radius: 3px;
+}
+
+.badge-progress-compact-linear-progress-high .MuiLinearProgress-bar {
+  background: linear-gradient(90deg, #66bb6a 0%, #388e3c 100%);
+}
+
+.badge-progress-compact-linear-progress-normal .MuiLinearProgress-bar {
+  background: linear-gradient(90deg, #42a5f5 0%, #1976d2 100%);
+}
+
+.badge-progress-bar-fill {
+  width: var(--progress-width);
+  background: var(--progress-background);
+}

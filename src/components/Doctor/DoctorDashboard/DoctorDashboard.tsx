@@ -13,6 +13,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import LoadingThreeDotsJumping from "../../shared/PageLoadingScreen/LoadingThreeDots";
+import BadgeShowcase from "../../shared/Badges/BadgeShowcase";
 import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
@@ -28,10 +29,11 @@ import { useDataMachine } from "#/providers/DataProvider";
 const DoctorDashboard: React.FC = () => {
   const { dataState } = useDataMachine();
   const dataContext = dataState.context;
-  const { uiSend, turnState, doctorState } = useMachines();
+  const { uiSend, turnState, doctorState, badgeState, badgeSend } = useMachines();
 
   const turnContext = turnState?.context;
   const doctorContext = doctorState?.context;
+  const badgeContext = badgeState?.context;
   const authContext = useAuthMachine().authState?.context;
   const user = authContext.authResponse as SignInResponse;
 
@@ -61,22 +63,7 @@ const DoctorDashboard: React.FC = () => {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box className="dashboard-container">
         { isLoading && (
-          <Box 
-            sx={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              bgcolor: 'rgba(255, 255, 255, 0.8)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 9999,
-              backdropFilter: 'blur(4px)'
-            }}
-          >
+          <Box className="dashboard-loading-overlay">
             <LoadingThreeDotsJumping />
           </Box>
         )}
@@ -123,16 +110,7 @@ const DoctorDashboard: React.FC = () => {
               <Badge 
                 badgeContent={pendingModifyRequests.length} 
                 color="error" 
-                sx={{
-                  '& .MuiBadge-badge': {
-                    animation: 'pulse 1.5s infinite',
-                    '@keyframes pulse': {
-                      '0%': { transform: 'scale(1)', opacity: 1 },
-                      '50%': { transform: 'scale(1.2)', opacity: 0.8 },
-                      '100%': { transform: 'scale(1)', opacity: 1 },
-                    },
-                  },
-                }}
+                className="doctor-badge-pulse"
               >
                 <DashboardCard
                   type="doctor"
@@ -177,6 +155,16 @@ const DoctorDashboard: React.FC = () => {
               onClick={() => uiSend({ type: "NAVIGATE", to: "/doctor/metrics" })}
             />
           </Box>
+
+          <BadgeShowcase
+            badges={badgeContext?.badges || []}
+            progress={badgeContext?.progress || []}
+            stats={badgeContext?.stats || null}
+            isLoading={badgeContext?.isLoadingBadges || badgeContext?.isLoadingProgress}
+            isEvaluating={badgeContext?.isEvaluating}
+            onViewAll={() => uiSend({ type: "NAVIGATE", to: "/doctor/badges" })}
+            onEvaluate={() => badgeSend({ type: "EVALUATE_BADGES" })}
+          />
         </Container>
       </Box>
     </LocalizationProvider>
