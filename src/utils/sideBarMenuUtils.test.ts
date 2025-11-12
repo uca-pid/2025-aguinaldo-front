@@ -113,7 +113,7 @@ describe('sideBarMenuUtils', () => {
     it('should return correct menu items for patient', () => {
       const menuItems = getPatientMenuItems(mockHandleLogout)
 
-      expect(menuItems).toHaveLength(5)
+      expect(menuItems).toHaveLength(6)
       expect(menuItems[0]).toEqual({
         id: 'dashboard',
         title: 'Inicio',
@@ -133,12 +133,18 @@ describe('sideBarMenuUtils', () => {
         path: '/patient/view-turns'
       })
       expect(menuItems[3]).toEqual({
+        id: 'badges',
+        title: 'Logros',
+        iconComponent: expect.any(Function),
+        path: '/patient/badges'
+      })
+      expect(menuItems[4]).toEqual({
         id: 'profile',
         title: 'Mi Perfil',
         iconComponent: expect.any(Function),
         path: '/profile'
       })
-      expect(menuItems[4]).toEqual({
+      expect(menuItems[5]).toEqual({
         id: 'logout',
         title: 'Cerrar Sesión',
         iconComponent: expect.any(Function),
@@ -223,7 +229,7 @@ describe('sideBarMenuUtils', () => {
       const patientMenu = getPatientMenuItems(mockHandleLogout)
 
       expect(result).toEqual(patientMenu)
-      expect(result).toHaveLength(5)
+      expect(result).toHaveLength(6)
     })
 
     it('should return admin menu items for ADMIN role', () => {

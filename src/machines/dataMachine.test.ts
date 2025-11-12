@@ -763,7 +763,9 @@ describe('dataMachine', () => {
       await vi.waitFor(() => {
         expect(mockOrchestrator.send).toHaveBeenNthCalledWith(2, {
           type: 'DATA_LOADED',
-          doctorAvailability: expect.any(Array)
+          doctorAvailability: expect.any(Array),
+          userBadgeProgress: expect.any(Array),
+          userBadges: expect.any(Array)
         });
       }, { timeout: 2000 });
     });
@@ -930,6 +932,8 @@ describe('dataMachine', () => {
       expect(mockOrchestrator.send).toHaveBeenCalledWith({
         type: 'DATA_LOADED',
         doctorAvailability: expect.anything(),
+        userBadgeProgress: expect.any(Array),
+        userBadges: expect.any(Array)
       });
     });
 
