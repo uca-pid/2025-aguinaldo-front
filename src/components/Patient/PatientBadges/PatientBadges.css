@@ -1,0 +1,185 @@
+@import "../../shared/Dashboard/Dashboard.css";
+@import "../../shared/SharedStyles.css";
+
+/* Header Styling */
+.patient-header-avatar {
+  background: linear-gradient(135deg, #57cc99 0%, #38a3a5 100%) !important;
+}
+
+.patient-header-icon {
+  font-size: 28px !important;
+}
+
+.patient-header-subtitle {
+  color: #64748b !important;
+}
+
+/* Statistics Summary - Compact Cards */
+.patient-badges-stats-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.patient-stat-card {
+  padding: 16px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+}
+
+.patient-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #57cc99;
+  margin-bottom: 4px;
+}
+
+.patient-stat-label {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.patient-stat-locked-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+/* Chip styling */
+.patient-badges-chip {
+  background-color: #57cc99 !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+/* Content Section */
+.badges-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+
+/* Statistics Summary */
+.badges-stats-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  border-color: #57cc99;
+}
+
+.stat-value {
+  font-size: 2.5rem !important;
+  font-weight: 800 !important;
+  color: #57cc99 !important;
+  line-height: 1.2 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.stat-label {
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Badges Section */
+.badges-section {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+}
+
+.badges-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.badges-section-title {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+  font-size: 1.5rem !important;
+}
+
+/* Badges Grid */
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.locked-badge-container {
+  position: relative;
+}
+
+/* Empty State */
+.badges-empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: #f8fafc;
+  border-radius: 16px;
+  border: 2px dashed #cbd5e1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .badges-stats-summary {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1.5rem;
+  }
+
+  .stat-value {
+    font-size: 2rem !important;
+  }
+
+  .badges-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  .badges-section {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .badges-stats-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .badges-grid {
+    grid-template-columns: 1fr;
+  }
+}

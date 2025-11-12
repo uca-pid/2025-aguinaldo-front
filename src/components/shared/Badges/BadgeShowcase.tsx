@@ -18,6 +18,7 @@ interface BadgeShowcaseProps {
   isEvaluating?: boolean;
   onViewAll?: () => void;
   onEvaluate?: () => void;
+  userRole?: 'DOCTOR' | 'PATIENT';
 }
 
 const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
@@ -25,7 +26,8 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
   isLoading = false,
   isEvaluating = false,
   onViewAll,
-  onEvaluate
+  onEvaluate,
+  userRole = 'DOCTOR'
 }) => {
   if (isLoading) {
     return (
@@ -113,6 +115,7 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
                 badgeType={badge.badgeType}
                 badge={badge}
                 size="small"
+                userRole={userRole}
                 onClick={() => onViewAll?.()}
               />
             ))}
@@ -133,6 +136,7 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
                 badgeType={prog.badgeType}
                 progress={prog}
                 size="small"
+                userRole={userRole}
                 onClick={() => onViewAll?.()}
               />
             ))}

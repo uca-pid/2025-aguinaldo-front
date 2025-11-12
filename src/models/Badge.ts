@@ -18,12 +18,33 @@ export enum BadgeType {
   ALWAYS_AVAILABLE = 'ALWAYS_AVAILABLE',
 }
 
+export enum PatientBadgeType {
+  MEDIBOOK_WELCOME = 'MEDIBOOK_WELCOME',
+  HEALTH_GUARDIAN = 'HEALTH_GUARDIAN',
+  COMMITTED_PATIENT = 'COMMITTED_PATIENT',
+  CONTINUOUS_FOLLOWUP = 'CONTINUOUS_FOLLOWUP',
+  CONSTANT_PATIENT = 'CONSTANT_PATIENT',
+  EXEMPLARY_PUNCTUALITY = 'EXEMPLARY_PUNCTUALITY',
+  SMART_PLANNER = 'SMART_PLANNER',
+  EXCELLENT_COLLABORATOR = 'EXCELLENT_COLLABORATOR',
+  ALWAYS_PREPARED = 'ALWAYS_PREPARED',
+  RESPONSIBLE_EVALUATOR = 'RESPONSIBLE_EVALUATOR',
+  EXCELLENCE_MODEL = 'EXCELLENCE_MODEL',
+}
+
 export enum BadgeCategory {
   QUALITY_OF_CARE = 'QUALITY_OF_CARE',
   DOCUMENTATION = 'DOCUMENTATION',
   PROFESSIONALISM = 'PROFESSIONALISM',
   RELATIONSHIPS = 'RELATIONSHIPS',
   ACHIEVEMENT = 'ACHIEVEMENT',
+}
+
+export enum PatientBadgeCategory {
+  WELCOME = 'WELCOME',
+  PREVENTIVE_CARE = 'PREVENTIVE_CARE',
+  ACTIVE_COMMITMENT = 'ACTIVE_COMMITMENT',
+  CLINICAL_EXCELLENCE = 'CLINICAL_EXCELLENCE',
 }
 
 export enum BadgeRarity {
@@ -81,6 +102,45 @@ export interface BadgeDTO {
 }
 
 export type BadgeProgressResponse = BadgeProgress[];
+
+export interface PatientBadge {
+  id: string;
+  patientId: string;
+  badgeType: PatientBadgeType;
+  earnedAt: string;
+  isActive: boolean;
+  lastEvaluatedAt: string;
+}
+
+export interface PatientBadgeProgress {
+  badgeType: PatientBadgeType;
+  badgeName: string;
+  category: PatientBadgeCategory;
+  earned: boolean;
+  progressPercentage: number;
+  description: string;
+  statusMessage: string;
+}
+
+export interface PatientBadgesResponse {
+  patientId: string;
+  patientName: string;
+  totalActiveBadges: number;
+  welcomeBadges: PatientBadgeDTO[];
+  preventiveCareBadges: PatientBadgeDTO[];
+  activeCommitmentBadges: PatientBadgeDTO[];
+  clinicalExcellenceBadges: PatientBadgeDTO[];
+}
+
+export interface PatientBadgeDTO {
+  badgeType: PatientBadgeType;
+  category: string;
+  isActive: boolean;
+  earnedAt: string;
+  lastEvaluatedAt: string;
+}
+
+export type PatientBadgeProgressResponse = PatientBadgeProgress[];
 
 export interface BadgeStats {
   totalEarned: number;
@@ -221,6 +281,130 @@ export const BADGE_METADATA: Record<BadgeType, BadgeMetadata> = {
   },
 };
 
+export interface PatientBadgeMetadata {
+  type: PatientBadgeType;
+  category: PatientBadgeCategory;
+  rarity: BadgeRarity;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  criteria: string;
+}
+
+export const PATIENT_BADGE_METADATA: Record<PatientBadgeType, PatientBadgeMetadata> = {
+  [PatientBadgeType.MEDIBOOK_WELCOME]: {
+    type: PatientBadgeType.MEDIBOOK_WELCOME,
+    category: PatientBadgeCategory.WELCOME,
+    rarity: BadgeRarity.COMMON,
+    name: 'Bienvenido a MediBook',
+    description: 'Tu primer paso en el camino de la salud digital',
+    icon: '👋',
+    color: '#4CAF50',
+    criteria: 'Completa tu primer turno'
+  },
+  [PatientBadgeType.HEALTH_GUARDIAN]: {
+    type: PatientBadgeType.HEALTH_GUARDIAN,
+    category: PatientBadgeCategory.PREVENTIVE_CARE,
+    rarity: BadgeRarity.COMMON,
+    name: 'Guardián de la Salud',
+    description: 'Demuestras compromiso con tu bienestar',
+    icon: '🛡️',
+    color: '#2196F3',
+    criteria: 'Completa 3+ turnos en los últimos 6 meses'
+  },
+  [PatientBadgeType.COMMITTED_PATIENT]: {
+    type: PatientBadgeType.COMMITTED_PATIENT,
+    category: PatientBadgeCategory.ACTIVE_COMMITMENT,
+    rarity: BadgeRarity.RARE,
+    name: 'Paciente Comprometido',
+    description: 'Muestras dedicación consistente a tu salud',
+    icon: '💪',
+    color: '#FF9800',
+    criteria: 'Completa 5 turnos consecutivos'
+  },
+  [PatientBadgeType.CONTINUOUS_FOLLOWUP]: {
+    type: PatientBadgeType.CONTINUOUS_FOLLOWUP,
+    category: PatientBadgeCategory.ACTIVE_COMMITMENT,
+    rarity: BadgeRarity.RARE,
+    name: 'Seguimiento Continuo',
+    description: 'Mantienes una relación continua con tu médico',
+    icon: '🔄',
+    color: '#9C27B0',
+    criteria: 'Completa 3+ turnos con el mismo doctor'
+  },
+  [PatientBadgeType.CONSTANT_PATIENT]: {
+    type: PatientBadgeType.CONSTANT_PATIENT,
+    category: PatientBadgeCategory.ACTIVE_COMMITMENT,
+    rarity: BadgeRarity.EPIC,
+    name: 'Paciente Constante',
+    description: 'Eres un paciente regular y confiable',
+    icon: '🎯',
+    color: '#3F51B5',
+    criteria: 'Completa 15+ turnos en 12 meses con 75% asistencia'
+  },
+  [PatientBadgeType.EXEMPLARY_PUNCTUALITY]: {
+    type: PatientBadgeType.EXEMPLARY_PUNCTUALITY,
+    category: PatientBadgeCategory.CLINICAL_EXCELLENCE,
+    rarity: BadgeRarity.RARE,
+    name: 'Puntualidad Ejemplar',
+    description: 'Siempre llegas a tiempo a tus citas',
+    icon: '⏰',
+    color: '#8BC34A',
+    criteria: 'Obtén 8+ calificaciones positivas de puntualidad'
+  },
+  [PatientBadgeType.SMART_PLANNER]: {
+    type: PatientBadgeType.SMART_PLANNER,
+    category: PatientBadgeCategory.CLINICAL_EXCELLENCE,
+    rarity: BadgeRarity.RARE,
+    name: 'Planificador Inteligente',
+    description: 'Planeas tus citas médicas con anticipación',
+    icon: '📅',
+    color: '#00BCD4',
+    criteria: 'Reserva 70% de turnos con anticipación'
+  },
+  [PatientBadgeType.EXCELLENT_COLLABORATOR]: {
+    type: PatientBadgeType.EXCELLENT_COLLABORATOR,
+    category: PatientBadgeCategory.CLINICAL_EXCELLENCE,
+    rarity: BadgeRarity.RARE,
+    name: 'Colaborador Excelente',
+    description: 'Colaboras activamente en tu proceso de atención',
+    icon: '🤝',
+    color: '#FFC107',
+    criteria: 'Obtén buenas calificaciones de colaboración'
+  },
+  [PatientBadgeType.ALWAYS_PREPARED]: {
+    type: PatientBadgeType.ALWAYS_PREPARED,
+    category: PatientBadgeCategory.CLINICAL_EXCELLENCE,
+    rarity: BadgeRarity.RARE,
+    name: 'Siempre Preparado',
+    description: 'Vienes preparado a cada consulta',
+    icon: '📋',
+    color: '#607D8B',
+    criteria: 'Sube 70% de documentos requeridos'
+  },
+  [PatientBadgeType.RESPONSIBLE_EVALUATOR]: {
+    type: PatientBadgeType.RESPONSIBLE_EVALUATOR,
+    category: PatientBadgeCategory.CLINICAL_EXCELLENCE,
+    rarity: BadgeRarity.RARE,
+    name: 'Evaluador Responsable',
+    description: 'Proporcionas feedback constructivo y útil',
+    icon: '⭐',
+    color: '#E91E63',
+    criteria: 'Proporciona evaluaciones constructivas'
+  },
+  [PatientBadgeType.EXCELLENCE_MODEL]: {
+    type: PatientBadgeType.EXCELLENCE_MODEL,
+    category: PatientBadgeCategory.CLINICAL_EXCELLENCE,
+    rarity: BadgeRarity.LEGENDARY,
+    name: 'Modelo de Excelencia',
+    description: 'Eres un ejemplo de paciente excepcional',
+    icon: '👑',
+    color: '#FF5722',
+    criteria: 'Completa 25+ turnos con 4+ otros badges y 4.0+ rating'
+  },
+};
+
 export const getBadgeMetadata = (type: BadgeType): BadgeMetadata => {
   return BADGE_METADATA[type];
 };
@@ -258,4 +442,23 @@ export const getRarityDisplayName = (rarity: BadgeRarity): string => {
     [BadgeRarity.LEGENDARY]: 'Legendario',
   };
   return names[rarity];
+};
+
+// Patient Badge Helper Functions
+export const getPatientBadgeMetadata = (type: PatientBadgeType): PatientBadgeMetadata => {
+  return PATIENT_BADGE_METADATA[type];
+};
+
+export const getPatientBadgesByCategory = (category: PatientBadgeCategory): PatientBadgeMetadata[] => {
+  return Object.values(PATIENT_BADGE_METADATA).filter(badge => badge.category === category);
+};
+
+export const getPatientCategoryDisplayName = (category: PatientBadgeCategory): string => {
+  const names: Record<PatientBadgeCategory, string> = {
+    [PatientBadgeCategory.WELCOME]: 'Bienvenida',
+    [PatientBadgeCategory.PREVENTIVE_CARE]: 'Cuidado Preventivo',
+    [PatientBadgeCategory.ACTIVE_COMMITMENT]: 'Compromiso Activo',
+    [PatientBadgeCategory.CLINICAL_EXCELLENCE]: 'Excelencia Clínica',
+  };
+  return names[category];
 };
