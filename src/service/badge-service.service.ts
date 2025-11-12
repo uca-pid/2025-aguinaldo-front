@@ -8,7 +8,6 @@ import type {
   BadgeStats,
   BadgeCategory,
   PatientBadge,
-  PatientBadgeProgress,
   PatientBadgesResponse,
   PatientBadgeProgressResponse,
   PatientBadgeCategory
@@ -94,7 +93,7 @@ export class BadgeService {
   static async getUserBadges(accessToken: string, userId: string, userRole: string): Promise<Badge[]> {
     if (userRole === 'DOCTOR') {
       const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTOR_BADGES.replace('{doctorId}', userId));
-    
+      
       try {
         const response = await fetch(url, {
           ...getAuthenticatedFetchOptions(accessToken),
@@ -118,24 +117,27 @@ export class BadgeService {
           ...(result.qualityOfCareBadges || []),
           ...(result.professionalismBadges || []),
           ...(result.consistencyBadges || [])
-        ];
+        ];     
         
         badgeDTOs.forEach((dto: BadgeDTO, index: number) => {
           if (dto.isActive) {
-            allBadges.push({
+            const badge = {
               id: `${userId}-${dto.badgeType}-${index}`,
               doctorId: userId,
               badgeType: dto.badgeType,
               earnedAt: dto.earnedAt,
               isActive: dto.isActive,
               lastEvaluatedAt: dto.lastEvaluatedAt
-            });
+            };
+            allBadges.push(badge);
+
           }
         });
         
         return allBadges;
+
       } catch (error) {
-        console.error('Failed to fetch doctor badges:', error);
+        console.error('[FRONTEND_BADGE_SERVICE] Error fetching doctor badges:', error);
         throw error;
       }
     } else if (userRole === 'PATIENT') {
@@ -275,6 +277,8 @@ export class BadgeService {
     } else {
       throw new Error('Badge evaluation only supported for doctors and patients');
     }
+
+
     
     try {
       const response = await fetch(url, {
@@ -291,9 +295,9 @@ export class BadgeService {
         );
       }
       
-      console.log('Badge evaluation triggered successfully');
+
     } catch (error) {
-      console.error('Failed to evaluate badges:', error);
+      console.error('[FRONTEND_BADGE_EVALUATION] Error evaluating badges:', error);
       throw error;
     }
   }

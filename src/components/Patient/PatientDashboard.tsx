@@ -22,7 +22,7 @@ import LoadingThreeDotsJumping from "../shared/PageLoadingScreen/LoadingThreeDot
 import { useDataMachine } from "#/providers/DataProvider";
 
 const PatientDashboard: React.FC = () => {
-  const { uiSend, turnState, badgeState, badgeSend } = useMachines();
+  const { uiSend, turnState, badgeState } = useMachines();
   const { authState } = useAuthMachine();
   const { dataState } = useDataMachine();
   const user: SignInResponse = authState?.context?.authResponse || {};
@@ -115,10 +115,8 @@ const PatientDashboard: React.FC = () => {
             progress={badgeContext?.progress || []}
             stats={BadgeService.calculateBadgeStats(badgeContext?.badges || [], badgeContext?.progress || [], 'PATIENT')}
             isLoading={badgeContext?.isLoadingBadges || badgeContext?.isLoadingProgress}
-            isEvaluating={badgeContext?.isEvaluating}
             userRole="PATIENT"
             onViewAll={() => uiSend({ type: "NAVIGATE", to: "/patient/badges" })}
-            onEvaluate={() => badgeSend({ type: "EVALUATE_BADGES" })}
           />
         </Container>
       </Box>

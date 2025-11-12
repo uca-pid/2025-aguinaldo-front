@@ -1,12 +1,14 @@
 import { createMachine, assign, fromPromise } from "xstate";
 import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests, loadMyModifyRequests, loadSpecialties, loadRatingSubcategories, loadAdminRatings } from "../utils/MachineUtils/dataMachineUtils";
 import { loadDoctorPatients, loadDoctorAvailability } from "../utils/MachineUtils/doctorMachineUtils";
+import { loadUserBadges, loadUserBadgeProgress } from "../utils/MachineUtils/badgeMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, AdminStats } from "../models/Admin";
 import type { Doctor } from "../models/Turn";
 import { UI_MACHINE_ID } from "./uiMachine";
 import { AUTH_MACHINE_ID } from "./authMachine";
 import { TurnModifyRequest } from "#/models/TurnModifyRequest";
+import type { Badge, BadgeProgress } from "../models/Badge";
 
 export const DATA_MACHINE_ID = "data";
 export const DATA_MACHINE_EVENT_TYPES = [
@@ -25,7 +27,9 @@ export const DATA_MACHINE_EVENT_TYPES = [
   "LOAD_DOCTOR_MODIFY_REQUESTS",
   "LOAD_MY_MODIFY_REQUESTS",
   "UPDATE_TURNS_NEEDING_RATING",
-  "LOAD_RATING_SUBCATEGORIES"
+  "LOAD_RATING_SUBCATEGORIES",
+  "LOAD_USER_BADGES",
+  "LOAD_USER_BADGE_PROGRESS"
 ];
 
 export interface DataMachineContext {
@@ -49,6 +53,8 @@ export interface DataMachineContext {
   ratedSubcategoryCounts: Record<string, { subcategory: string | null; count: number }[]>;
   ratingModalChecked: boolean;
   adminRatings: any;
+  userBadges: Badge[];
+  userBadgeProgress: BadgeProgress[];
   
   loading: {
     doctors: boolean;
@@ -65,6 +71,8 @@ export interface DataMachineContext {
     ratingSubcategories: boolean;
     adminRatings: boolean;
     ratedSubcategoryCounts: boolean;
+    userBadges: boolean;
+    userBadgeProgress: boolean;
   };
   
   errors: {
@@ -82,6 +90,8 @@ export interface DataMachineContext {
     ratingSubcategories: string | null;
     adminRatings: string | null;
     ratedSubcategoryCounts: string | null;
+    userBadges: string | null;
+    userBadgeProgress: string | null;
   };
 }
 
@@ -106,6 +116,8 @@ export const DataMachineDefaultContext: DataMachineContext = {
   ratedSubcategoryCounts: {},
   ratingModalChecked: false,
   adminRatings: null,
+  userBadges: [],
+  userBadgeProgress: [],
   
   loading: {
     doctors: false,
@@ -122,6 +134,8 @@ export const DataMachineDefaultContext: DataMachineContext = {
     ratingSubcategories: false,
     adminRatings: false,
     ratedSubcategoryCounts: false,
+    userBadges: false,
+    userBadgeProgress: false,
   },
   
   errors: {
@@ -139,6 +153,8 @@ export const DataMachineDefaultContext: DataMachineContext = {
     ratingSubcategories: null,
     adminRatings: null,
     ratedSubcategoryCounts: null,
+    userBadges: null,
+    userBadgeProgress: null,
   },
 };
 
@@ -159,7 +175,9 @@ export type DataMachineEvent =
   | { type: "LOAD_MY_MODIFY_REQUESTS" }
   | { type: "UPDATE_TURNS_NEEDING_RATING"; turns: any[] }
   | { type: "LOAD_RATING_SUBCATEGORIES"; role?: string }
-  | { type: "LOAD_RATED_SUBCATEGORY_COUNTS"; doctorIds: string[] };
+  | { type: "LOAD_RATED_SUBCATEGORY_COUNTS"; doctorIds: string[] }
+  | { type: "LOAD_USER_BADGES" }
+  | { type: "LOAD_USER_BADGE_PROGRESS" };
 
 export const dataMachine = createMachine({
   id: "data",
@@ -257,7 +275,9 @@ export const dataMachine = createMachine({
         setTimeout(() => {
           orchestrator.send({
             type: "DATA_LOADED",
-            doctorAvailability: context.doctorAvailability
+            doctorAvailability: context.doctorAvailability,
+            userBadges: context.userBadges,
+            userBadgeProgress: context.userBadgeProgress
           });
           
         }, 0);
@@ -297,6 +317,8 @@ export const dataMachine = createMachine({
             adminRatings: null,
             ratingSubcategories: [],
             turnsNeedingRating: [],
+            userBadges: [],
+            userBadgeProgress: [],
           }),
         },
         RELOAD_DOCTORS: {
@@ -659,7 +681,7 @@ export const dataMachine = createMachine({
             }),
           },
           {
-            target: "fetchingMyModifyRequests",
+            target: "fetchingUserBadges",
             guard: ({ context }) => context.userRole === "PATIENT",
             actions: [
               assign({
@@ -844,7 +866,7 @@ export const dataMachine = createMachine({
           doctorId: (event as any).doctorId || context.doctorId!
         }),
         onDone: {
-          target: "ready",
+          target: "fetchingUserBadges",
           actions: assign({
             doctorModifyRequests: ({ event }) => event.output,
             loading: ({ context }) => ({ ...context.loading, doctorModifyRequests: false }),
@@ -1060,6 +1082,98 @@ export const dataMachine = createMachine({
                 type: 'OPEN_SNACKBAR',
                 message,
                 severity: 'error'
+              });
+            }
+          ],
+        },
+      },
+    },
+
+    fetchingUserBadges: {
+      entry: assign({
+        loading: ({ context }) => ({ ...context.loading, userBadges: true }),
+        errors: ({ context }) => ({ ...context.errors, userBadges: null }),
+      }),
+      invoke: {
+        src: fromPromise(async ({ input }: { input: { accessToken: string; userId: string; userRole: string } }) => {
+          return await loadUserBadges(input);
+        }),
+        input: ({ context }) => ({ accessToken: context.accessToken!, userId: context.userId!, userRole: context.userRole! }),
+        onDone: {
+          target: "fetchingUserBadgeProgress",
+          actions: assign({
+            userBadges: ({ event }) => event.output,
+            loading: ({ context }) => ({ ...context.loading, userBadges: false }),
+          }),
+        },
+        onError: {
+          target: "ready",
+          actions: [
+            assign({
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                userBadges: event.error instanceof Error ? event.error.message : "Error al cargar badges del usuario"
+              }),
+              loading: ({ context }) => ({
+                ...context.loading,
+                userBadges: false
+              })
+            }),
+            ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+              }
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar badges del usuario";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
+              });
+            }
+          ],
+        },
+      },
+    },
+
+    fetchingUserBadgeProgress: {
+      entry: assign({
+        loading: ({ context }) => ({ ...context.loading, userBadgeProgress: true }),
+        errors: ({ context }) => ({ ...context.errors, userBadgeProgress: null }),
+      }),
+      invoke: {
+        src: fromPromise(async ({ input }: { input: { accessToken: string; userId: string; userRole: string } }) => {
+          return await loadUserBadgeProgress(input);
+        }),
+        input: ({ context }) => ({ accessToken: context.accessToken!, userId: context.userId!, userRole: context.userRole! }),
+        onDone: {
+          target: "ready",
+          actions: assign({
+            userBadgeProgress: ({ event }) => event.output,
+            loading: ({ context }) => ({ ...context.loading, userBadgeProgress: false }),
+          }),
+        },
+        onError: {
+          target: "ready",
+          actions: [
+            assign({
+              errors: ({ context, event }) => ({
+                ...context.errors,
+                userBadgeProgress: event.error instanceof Error ? event.error.message : "Error al cargar progreso de badges del usuario"
+              }),
+              loading: ({ context }) => ({
+                ...context.loading,
+                userBadgeProgress: false
+              })
+            }),
+            ({ event }) => {
+              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
+                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
+              }
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar progreso de badges del usuario";
+              orchestrator.sendToMachine(UI_MACHINE_ID, {
+                type: "OPEN_SNACKBAR",
+                message: errorMessage,
+                severity: "error"
               });
             }
           ],

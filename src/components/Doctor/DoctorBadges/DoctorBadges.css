@@ -3,7 +3,9 @@
 
 /* Header Styling */
 .doctor-header-avatar {
-  background: linear-gradient(135deg, #38a3a5 0%, #22577a 100%) !important;
+  background: #38a3a5 !important;
+  width: 56px !important;
+  height: 56px !important;
 }
 
 .doctor-header-icon {

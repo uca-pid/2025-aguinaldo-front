@@ -12,8 +12,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import BadgeCard from "../../shared/Badges/BadgeCard";
 import {
-  PatientBadgeType,
-  BadgeRarity
+  PatientBadgeType
 } from "#/models/Badge";
 import type { Badge, BadgeProgress } from "#/models/Badge";
 import "./PatientBadges.css";
@@ -30,16 +29,8 @@ const PatientBadges: React.FC = () => {
   const allBadgeTypes = Object.values(PatientBadgeType);
   const earnedBadgeTypes = new Set(badges.map((b: Badge) => b.badgeType));
 
-  const rarityOrder = {
-    [BadgeRarity.COMMON]: 1,
-    [BadgeRarity.RARE]: 2,
-    [BadgeRarity.EPIC]: 3,
-    [BadgeRarity.LEGENDARY]: 4,
-  };
-
   const sorted = [...allBadgeTypes];
   sorted.sort((a, b) => {
-    // For now, sort by enum order since all patient badges are COMMON or RARE
     return a.localeCompare(b);
   });
   const sortedBadges = sorted;
@@ -65,10 +56,10 @@ const PatientBadges: React.FC = () => {
               </Avatar>
               <Box>
                 <Typography variant="h4" component="h1" className="shared-header-title">
-                  Mi Colección de Logros
+                  Colección de Logros
                 </Typography>
                 <Typography variant="h6" className="shared-header-subtitle patient-header-subtitle">
-                  Explora todos tus logros y progreso como paciente
+                  Explora todos tus logros y progreso
                 </Typography>
               </Box>
             </Box>
@@ -120,10 +111,10 @@ const PatientBadges: React.FC = () => {
             <Box className="badges-section">
               <Box className="badges-section-header">
                 <Typography variant="h5" className="badges-section-title">
-                  🏆 Todos los Badges
+                  🏆 Todos los Logros
                 </Typography>
                 <Chip
-                  label={`${sortedBadges.length} badges`}
+                  label={`${sortedBadges.length} logros`}
                   size="small"
                   className="patient-badges-chip"
                 />
