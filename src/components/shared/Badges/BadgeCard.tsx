@@ -1,18 +1,19 @@
 import React from 'react';
 import { Tooltip, Box, Typography } from '@mui/material';
 import LockIcon from '@mui/icons-material/Lock';
-import type { Badge, BadgeType, BadgeProgress } from '#/models/Badge';
-import { getBadgeMetadata, getRarityColor, getRarityDisplayName } from '#/models/Badge';
+import type { Badge, BadgeType, BadgeProgress, PatientBadgeType } from '#/models/Badge';
+import { getBadgeMetadata, getRarityColor, getPatientBadgeMetadata, getRarityDisplayName } from '#/models/Badge';
 import { BadgeService } from '#/service/badge-service.service';
 import './BadgeStyles.css';
 import './BadgeCard.css';
 
 interface BadgeCardProps {
-  badgeType: BadgeType;
+  badgeType: BadgeType | PatientBadgeType;
   badge?: Badge;
   progress?: BadgeProgress;
   onClick?: () => void;
   size?: 'small' | 'medium' | 'large';
+  userRole?: 'DOCTOR' | 'PATIENT';
 }
 
 const BadgeCard: React.FC<BadgeCardProps> = ({
@@ -20,9 +21,12 @@ const BadgeCard: React.FC<BadgeCardProps> = ({
   badge,
   progress,
   onClick,
-  size = 'medium'
+  size = 'medium',
+  userRole = 'DOCTOR'
 }) => {
-  const metadata = getBadgeMetadata(badgeType);
+  const metadata = userRole === 'PATIENT' 
+    ? getPatientBadgeMetadata(badgeType as PatientBadgeType)
+    : getBadgeMetadata(badgeType as BadgeType);
   const isEarned = !!badge;
   const rarityColor = getRarityColor(metadata.rarity);
 

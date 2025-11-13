@@ -1,31 +1,26 @@
 import React from 'react';
-import { Box, CircularProgress, Typography, Button, Tooltip } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import BadgeCard from './BadgeCard';
 import type { Badge, BadgeProgress, BadgeStats } from '#/models/Badge';
 import './BadgeStyles.css';
 import './BadgeShowcase.css';
-
-const SHOW_EVALUATE_BUTTON = import.meta.env.DEV || false;
 
 interface BadgeShowcaseProps {
   badges: Badge[];
   progress: BadgeProgress[];
   stats: BadgeStats | null;
   isLoading?: boolean;
-  isEvaluating?: boolean;
   onViewAll?: () => void;
-  onEvaluate?: () => void;
+  userRole?: 'DOCTOR' | 'PATIENT';
 }
 
 const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
   stats,
   isLoading = false,
-  isEvaluating = false,
   onViewAll,
-  onEvaluate
+  userRole = 'DOCTOR'
 }) => {
   if (isLoading) {
     return (
@@ -52,20 +47,6 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
           Mis Logros
         </Box>
         <Box className="badge-showcase__header-actions">
-          {SHOW_EVALUATE_BUTTON && onEvaluate && (
-            <Tooltip title="Recalcular todos los logros manualmente. Útil para doctores existentes.">
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={isEvaluating ? <CircularProgress size={16} /> : <RefreshIcon />}
-                onClick={onEvaluate}
-                disabled={isEvaluating}
-                className="badge-showcase__evaluate-button"
-              >
-                {isEvaluating ? 'Evaluando...' : 'Evaluar Badges'}
-              </Button>
-            </Tooltip>
-          )}
           {onViewAll && (
             <Box 
               className="badge-showcase__view-all" 
@@ -104,7 +85,7 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
       {recentlyEarned.length > 0 && (
         <Box className="badge-showcase__recent">
           <Box className="badge-showcase__section-title">
-            ✨ Recién Obtenidos
+              Recién Obtenidos
           </Box>
           <Box className="badge-showcase__recent-grid">
             {recentlyEarned.slice(0, 4).map((badge) => (
@@ -113,6 +94,7 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
                 badgeType={badge.badgeType}
                 badge={badge}
                 size="small"
+                userRole={userRole}
                 onClick={() => onViewAll?.()}
               />
             ))}
@@ -124,7 +106,7 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
       {closestToEarn.length > 0 && (
         <Box className="badge-showcase__recent badge-showcase__recent--closest">
           <Box className="badge-showcase__section-title">
-            🎯 Próximos a Conseguir
+              Próximos a Conseguir
           </Box>
           <Box className="badge-showcase__recent-grid">
             {closestToEarn.slice(0, 3).map((prog) => (
@@ -133,6 +115,7 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
                 badgeType={prog.badgeType}
                 progress={prog}
                 size="small"
+                userRole={userRole}
                 onClick={() => onViewAll?.()}
               />
             ))}

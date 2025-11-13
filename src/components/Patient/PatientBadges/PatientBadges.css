@@ -2,29 +2,29 @@
 @import "../../shared/SharedStyles.css";
 
 /* Header Styling */
-.doctor-header-avatar {
+.patient-header-avatar {
   background: #38a3a5 !important;
   width: 56px !important;
   height: 56px !important;
 }
 
-.doctor-header-icon {
+.patient-header-icon {
   font-size: 28px !important;
 }
 
-.doctor-header-subtitle {
+.patient-header-subtitle {
   color: #64748b !important;
 }
 
 /* Statistics Summary - Compact Cards */
-.doctor-badges-stats-summary {
+.patient-badges-stats-summary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
   margin-bottom: 24px;
 }
 
-.doctor-stat-card {
+.patient-stat-card {
   padding: 16px;
   background-color: #f8fafc;
   border-radius: 8px;
@@ -32,20 +32,20 @@
   border: 1px solid #e2e8f0;
 }
 
-.doctor-stat-value {
+.patient-stat-value {
   font-size: 24px;
   font-weight: 700;
-  color: #38a3a5;
+  color: #57cc99;
   margin-bottom: 4px;
 }
 
-.doctor-stat-label {
+.patient-stat-label {
   font-size: 13px;
   color: #64748b;
   font-weight: 500;
 }
 
-.doctor-stat-locked-value {
+.patient-stat-locked-value {
   font-size: 24px;
   font-weight: 700;
   color: #94a3b8;
@@ -53,8 +53,8 @@
 }
 
 /* Chip styling */
-.doctor-badges-chip {
-  background-color: #38a3a5 !important;
+.patient-badges-chip {
+  background-color: #57cc99 !important;
   color: white !important;
   font-weight: 600 !important;
 }
@@ -87,13 +87,13 @@
 .stat-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  border-color: #38a3a5;
+  border-color: #57cc99;
 }
 
 .stat-value {
   font-size: 2.5rem !important;
   font-weight: 800 !important;
-  color: #38a3a5 !important;
+  color: #57cc99 !important;
   line-height: 1.2 !important;
   margin-bottom: 0.5rem !important;
 }
@@ -104,16 +104,6 @@
   color: #64748b !important;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-/* Filters Section */
-.badges-filters {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e2e8f0;
 }
 
 /* Badges Section */
@@ -183,10 +173,6 @@
 
   .badges-section {
     padding: 1.5rem;
-  }
-
-  .badges-filters {
-    padding: 1rem;
   }
 }
 

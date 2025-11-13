@@ -19,6 +19,7 @@ import PendingActivation from './components/Doctor/PendingActivation/PendingActi
 import TurnsModifications from './components/Doctor/TurnsModifications/TurnsModifications'
 import DoctorMetrics from './components/Doctor/DoctorMetrics/DoctorMetrics'
 import DoctorBadges from './components/Doctor/DoctorBadges/DoctorBadges'
+import PatientBadges from './components/Patient/PatientBadges/PatientBadges'
 import FloatingMenu from './components/shared/FloatingMenu/FloatingMenu'
 import NotificationBell from './components/Notifications/NotificationBell'
 import NotificationModal from './components/Notifications/NotificationModal'
@@ -78,6 +79,7 @@ function AppContent() {
       <Route path="/patient/reservation-turns" element={<ReservationTurns />} />
       <Route path="/patient/view-turns" element={<ViewTurns />} />
       <Route path="/patient/modify-turn" element={<ModifyTurn />} />
+      <Route path="/patient/badges" element={<PatientBadges />} />
     </>
   );
 

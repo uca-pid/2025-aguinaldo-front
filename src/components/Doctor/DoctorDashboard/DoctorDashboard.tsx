@@ -29,7 +29,7 @@ import { useDataMachine } from "#/providers/DataProvider";
 const DoctorDashboard: React.FC = () => {
   const { dataState } = useDataMachine();
   const dataContext = dataState.context;
-  const { uiSend, turnState, doctorState, badgeState, badgeSend } = useMachines();
+  const { uiSend, turnState, doctorState, badgeState } = useMachines();
 
   const turnContext = turnState?.context;
   const doctorContext = doctorState?.context;
@@ -161,9 +161,7 @@ const DoctorDashboard: React.FC = () => {
             progress={badgeContext?.progress || []}
             stats={badgeContext?.stats || null}
             isLoading={badgeContext?.isLoadingBadges || badgeContext?.isLoadingProgress}
-            isEvaluating={badgeContext?.isEvaluating}
             onViewAll={() => uiSend({ type: "NAVIGATE", to: "/doctor/badges" })}
-            onEvaluate={() => badgeSend({ type: "EVALUATE_BADGES" })}
           />
         </Container>
       </Box>
