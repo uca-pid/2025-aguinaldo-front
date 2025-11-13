@@ -44,6 +44,8 @@ export interface TurnResponse {
   patientScore?: number | null;
   scheduledAt: string;
   status: string;
+  motive?: string | null;
+  reason?: string | null;
   needsPatientRating?: boolean;
   needsDoctorRating?: boolean;
   fileUrl?: string | null;
