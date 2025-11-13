@@ -6,10 +6,15 @@ import type {
   BadgeProgressResponse,
   ApiErrorResponse,
   BadgeStats,
-  BadgeCategory
+  BadgeCategory,
+  PatientBadge,
+  PatientBadgesResponse,
+  PatientBadgeProgressResponse,
+  PatientBadgeCategory
 } from '../models/Badge';
 import type { BadgeDTO } from '../models/Badge';
 import { BADGE_METADATA, getBadgeMetadata } from '../models/Badge';
+import { PATIENT_BADGE_METADATA, getPatientBadgeMetadata } from '../models/Badge';
 
 export class BadgeService {
   static async getDoctorBadges(accessToken: string, doctorId: string): Promise<Badge[]> {
@@ -88,7 +93,7 @@ export class BadgeService {
   static async getUserBadges(accessToken: string, userId: string, userRole: string): Promise<Badge[]> {
     if (userRole === 'DOCTOR') {
       const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_DOCTOR_BADGES.replace('{doctorId}', userId));
-    
+      
       try {
         const response = await fetch(url, {
           ...getAuthenticatedFetchOptions(accessToken),
@@ -112,13 +117,63 @@ export class BadgeService {
           ...(result.qualityOfCareBadges || []),
           ...(result.professionalismBadges || []),
           ...(result.consistencyBadges || [])
-        ];
+        ];     
         
         badgeDTOs.forEach((dto: BadgeDTO, index: number) => {
           if (dto.isActive) {
-            allBadges.push({
+            const badge = {
               id: `${userId}-${dto.badgeType}-${index}`,
               doctorId: userId,
+              badgeType: dto.badgeType,
+              earnedAt: dto.earnedAt,
+              isActive: dto.isActive,
+              lastEvaluatedAt: dto.lastEvaluatedAt
+            };
+            allBadges.push(badge);
+
+          }
+        });
+        
+        return allBadges;
+
+      } catch (error) {
+        console.error('[FRONTEND_BADGE_SERVICE] Error fetching doctor badges:', error);
+        throw error;
+      }
+    } else if (userRole === 'PATIENT') {
+      const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_PATIENT_BADGES.replace('{patientId}', userId));
+    
+      try {
+        const response = await fetch(url, {
+          ...getAuthenticatedFetchOptions(accessToken),
+          method: 'GET',
+        });
+
+        if (!response.ok) {
+          const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData?.message || 
+            errorData?.error ||
+            `Failed to fetch patient badges! Status: ${response.status}`
+          );
+        }
+
+        const result: PatientBadgesResponse = await response.json();
+        
+        const allBadges: PatientBadge[] = [];
+        
+        const badgeDTOs = [
+          ...(result.welcomeBadges || []),
+          ...(result.preventiveCareBadges || []),
+          ...(result.activeCommitmentBadges || []),
+          ...(result.clinicalExcellenceBadges || [])
+        ];
+        
+        badgeDTOs.forEach((dto: any, index: number) => {
+          if (dto.isActive) {
+            allBadges.push({
+              id: `${userId}-${dto.badgeType}-${index}`,
+              patientId: userId,
               badgeType: dto.badgeType,
               earnedAt: dto.earnedAt,
               isActive: dto.isActive,
@@ -127,13 +182,21 @@ export class BadgeService {
           }
         });
         
-        return allBadges;
+        // Convert PatientBadge[] to Badge[] for compatibility
+        return allBadges.map(pb => ({
+          id: pb.id,
+          doctorId: pb.patientId, // Using doctorId field for patientId for compatibility
+          badgeType: pb.badgeType as any, // Type assertion needed
+          earnedAt: pb.earnedAt,
+          isActive: pb.isActive,
+          lastEvaluatedAt: pb.lastEvaluatedAt
+        }));
       } catch (error) {
-        console.error('Failed to fetch doctor badges:', error);
+        console.error('Failed to fetch patient badges:', error);
         throw error;
       }
     }
-    // For patients, return empty array for now (implement patient badges later)
+    // For other roles, return empty array
     return [];
   }
 
@@ -162,22 +225,13 @@ export class BadgeService {
         console.error('Failed to fetch badge progress:', error);
         throw error;
       }
-    }
-    // For patients, return empty array for now
-    return [];
-  }
-
-  /**
-   * Trigger manual badge evaluation for a user
-   */
-  static async evaluateUserBadges(accessToken: string, userId: string, userRole: string): Promise<void> {
-    if (userRole === 'DOCTOR') {
-      const url = buildApiUrl(`/api/badges/doctor/${userId}/evaluate`);
+    } else if (userRole === 'PATIENT') {
+      const url = buildApiUrl(API_CONFIG.ENDPOINTS.GET_PATIENT_BADGE_PROGRESS.replace('{patientId}', userId));
     
       try {
         const response = await fetch(url, {
           ...getAuthenticatedFetchOptions(accessToken),
-          method: 'POST',
+          method: 'GET',
         });
 
         if (!response.ok) {
@@ -185,24 +239,77 @@ export class BadgeService {
           throw new Error(
             errorData?.message || 
             errorData?.error ||
-            `Failed to evaluate badges! Status: ${response.status}`
+            `Failed to fetch patient badge progress! Status: ${response.status}`
           );
         }
+
+        const result: PatientBadgeProgressResponse = await response.json();
         
-        console.log('Badge evaluation triggered successfully');
+        // Convert PatientBadgeProgress[] to BadgeProgress[] for compatibility
+        return result.map(pp => ({
+          badgeType: pp.badgeType as any, // Type assertion needed
+          badgeName: pp.badgeName,
+          category: pp.category as any, // Type assertion needed
+          earned: pp.earned,
+          progressPercentage: pp.progressPercentage,
+          description: pp.description,
+          statusMessage: pp.statusMessage
+        }));
       } catch (error) {
-        console.error('Failed to evaluate badges:', error);
+        console.error('Failed to fetch patient badge progress:', error);
         throw error;
       }
     }
-    // For patients, do nothing for now
+    // For other roles, return empty array
+    return [];
+  }
+
+  /**
+   * Trigger manual badge evaluation for a user
+   */
+  static async evaluateUserBadges(accessToken: string, userId: string, userRole: string): Promise<void> {
+    let url: string;
+    
+    if (userRole === 'DOCTOR') {
+      url = buildApiUrl(`/api/badges/doctor/${userId}/evaluate`);
+    } else if (userRole === 'PATIENT') {
+      url = buildApiUrl(`/api/badges/patient/${userId}/evaluate`);
+    } else {
+      throw new Error('Badge evaluation only supported for doctors and patients');
+    }
+
+
+    
+    try {
+      const response = await fetch(url, {
+        ...getAuthenticatedFetchOptions(accessToken),
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const errorData: ApiErrorResponse = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData?.message || 
+          errorData?.error ||
+          `Failed to evaluate badges! Status: ${response.status}`
+        );
+      }
+      
+
+    } catch (error) {
+      console.error('[FRONTEND_BADGE_EVALUATION] Error evaluating badges:', error);
+      throw error;
+    }
   }
 
   static calculateBadgeStats(
     badges: Badge[], 
-    progress: BadgeProgress[]
+    progress: BadgeProgress[],
+    userRole: string = 'DOCTOR'
   ): BadgeStats {
-    const totalAvailable = Object.keys(BADGE_METADATA).length;
+    const totalAvailable = userRole === 'PATIENT' 
+      ? Object.keys(PATIENT_BADGE_METADATA).length 
+      : Object.keys(BADGE_METADATA).length;
     const totalEarned = badges.filter(b => b.isActive).length;
     const completionPercentage = totalAvailable > 0 
       ? Math.round((totalEarned / totalAvailable) * 100) 
@@ -244,12 +351,19 @@ export class BadgeService {
     return prog?.earned === true;
   }
 
-  static groupBadgesByCategory(badges: Badge[]): Map<BadgeCategory, Badge[]> {
-    const grouped = new Map<BadgeCategory, Badge[]>();
+  static groupBadgesByCategory(badges: Badge[], userRole: string = 'DOCTOR'): Map<BadgeCategory | PatientBadgeCategory, Badge[]> {
+    const grouped = new Map<BadgeCategory | PatientBadgeCategory, Badge[]>();
     
     badges.forEach(badge => {
-      const metadata = getBadgeMetadata(badge.badgeType);
-      const category = metadata.category;
+      let category: BadgeCategory | PatientBadgeCategory;
+      
+      if (userRole === 'PATIENT') {
+        const metadata = getPatientBadgeMetadata(badge.badgeType as any);
+        category = metadata.category;
+      } else {
+        const metadata = getBadgeMetadata(badge.badgeType as any);
+        category = metadata.category;
+      }
       
       if (!grouped.has(category)) {
         grouped.set(category, []);
@@ -260,12 +374,19 @@ export class BadgeService {
     return grouped;
   }
 
-  static sortBadges(badges: Badge[]): Badge[] {
+  static sortBadges(badges: Badge[], userRole: string = 'DOCTOR'): Badge[] {
     const rarityOrder = { LEGENDARY: 0, EPIC: 1, RARE: 2, COMMON: 3 };
     
     return [...badges].sort((a, b) => {
-      const metadataA = getBadgeMetadata(a.badgeType);
-      const metadataB = getBadgeMetadata(b.badgeType);
+      let metadataA, metadataB;
+      
+      if (userRole === 'PATIENT') {
+        metadataA = getPatientBadgeMetadata(a.badgeType as any);
+        metadataB = getPatientBadgeMetadata(b.badgeType as any);
+      } else {
+        metadataA = getBadgeMetadata(a.badgeType as any);
+        metadataB = getBadgeMetadata(b.badgeType as any);
+      }
       
       const rarityDiff = rarityOrder[metadataA.rarity] - rarityOrder[metadataB.rarity];
       if (rarityDiff !== 0) return rarityDiff;

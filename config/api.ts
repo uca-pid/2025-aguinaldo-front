@@ -35,6 +35,9 @@ export const API_CONFIG = {
     GET_DOCTOR_BADGES: '/api/badges/doctor/{doctorId}',
     GET_DOCTOR_BADGE_PROGRESS: '/api/badges/doctor/{doctorId}/progress',
 
+    GET_PATIENT_BADGES: '/api/badges/patient/{patientId}',
+    GET_PATIENT_BADGE_PROGRESS: '/api/badges/patient/{patientId}/progress',
+
     GET_PENDING_DOCTORS: '/api/admin/pending-doctors',
     APPROVE_DOCTOR: '/api/admin/approve-doctor/{doctorId}',
     REJECT_DOCTOR: '/api/admin/reject-doctor/{doctorId}',

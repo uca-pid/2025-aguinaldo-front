@@ -110,6 +110,12 @@ export const getPatientMenuItems = (handleLogout: () => void): MenuItem[] => [
     path: '/patient/view-turns'
   },
   {
+    id: 'badges',
+    title: 'Logros',
+    iconComponent: TrophyIcon,
+    path: '/patient/badges'
+  },
+  {
     id: 'profile',
     title: 'Mi Perfil',
     iconComponent: PersonIcon,
