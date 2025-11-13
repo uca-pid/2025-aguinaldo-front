@@ -1,6 +1,6 @@
 import { 
   Box, Button, FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, 
-  TextField, Typography, CircularProgress, Container, Avatar, Rating, Chip, Stack, Checkbox, ListItemText
+  TextField, Typography, CircularProgress, Container, Avatar, Rating, Chip, Stack, Checkbox, ListItemText, FormControlLabel
 } from "@mui/material";
 import React from "react";
 import { useMachines } from "#/providers/MachineProvider";
@@ -118,6 +118,10 @@ const ReservationTurns: React.FC = () => {
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "professionSelected"], value: event.target.value });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "doctorId"], value: "" });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "profesionalSelected"], value: "" });
+    // Clear health certificate fields whenever the profession changes
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "needsHealthCertificate"], value: false });
+    // Clear motive when switching specialties
+    turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "reason"], value: "" });
 
     // Immediately request rated-subcategory counts for doctors of the newly selected profession
     const doctorsToFetch = turnContext.doctors.filter((doctor: any) => doctor.specialty.toLowerCase() === String(event.target.value).toLowerCase());
@@ -386,19 +390,55 @@ const ReservationTurns: React.FC = () => {
                   </FormHelperText>
                 </FormControl>
 
-                <TextField
-                  label="Motivo de la consulta"
-                  value={formValues.reason}
-                  onChange={handleReasonChange}
-                  fullWidth
-                  size="small"
-                  className="reservation-input"
-                  multiline
-                  rows={3}
-                  placeholder="Describe brevemente el motivo de tu consulta..."
-                  helperText={`${formValues.reason?.length || 0}/500 caracteres`}
-                  error={(formValues.reason?.length || 0) > 500}
-                />
+                { !formValues.needsHealthCertificate && (
+                  <TextField
+                    label="Motivo de la consulta"
+                    value={formValues.reason}
+                    onChange={handleReasonChange}
+                    fullWidth
+                    size="small"
+                    className="reservation-input"
+                    multiline
+                    rows={3}
+                    placeholder="Describe brevemente el motivo de tu consulta..."
+                    helperText={`${formValues.reason?.length || 0}/500 caracteres`}
+                    error={(formValues.reason?.length || 0) > 500}
+                  />
+                ) }
+                
+                {(() => {
+                  const specialtyFromSelect = formValues.professionSelected || '';
+                  const selectedIsGeneral = (selectedDoctor?.specialty || specialtyFromSelect).toString().toLowerCase() === 'general';
+                  if (selectedIsGeneral) {
+                    return (
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={!!formValues.needsHealthCertificate}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              // set checkbox state
+                              turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "needsHealthCertificate"], value: checked });
+                              // if checked, force the motive to the required value
+                              if (checked) {
+                                turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "reason"], value: "HEALTH CERTIFICATE" });
+                              } else {
+                                // if unchecked, only clear motive if it was the auto-set value
+                                const currentReason = (formValues.reason || "").toString();
+                                if (currentReason.toUpperCase() === "HEALTH CERTIFICATE") {
+                                  turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "reason"], value: "" });
+                                }
+                              }
+                            }}
+                          />
+                        }
+                        label="Necesito apto físico"
+                      />
+                    );
+                  }
+
+                  return null;
+                })()}
                 
               </Box>
 

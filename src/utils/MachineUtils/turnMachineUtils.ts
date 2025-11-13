@@ -17,6 +17,7 @@ export interface CreateTurnParams {
   userId: string;
   doctorId: string;
   scheduledAt: string;
+  reason?: string;
 }
 
 export interface CancelTurnParams {
@@ -59,15 +60,19 @@ export interface LoadAvailableSlotsParams {
 /**
  * Create a new turn
  */
-export const createTurn = async ({ accessToken, userId, doctorId, scheduledAt }: CreateTurnParams): Promise<TurnResponse> => {
-  return await TurnService.createTurn(
-    { 
-      doctorId, 
-      patientId: userId, 
-      scheduledAt 
-    },
-    accessToken
-  );
+export const createTurn = async ({ accessToken, userId, doctorId, scheduledAt, reason }: CreateTurnParams): Promise<TurnResponse> => {
+  const payload: any = {
+    doctorId,
+    patientId: userId,
+    scheduledAt,
+  };
+
+  if (reason && reason.toString().trim() !== '') {
+    // backend expects field named `motive`
+    payload.motive = reason;
+  }
+
+  return await TurnService.createTurn(payload, accessToken);
 };
 
 /**

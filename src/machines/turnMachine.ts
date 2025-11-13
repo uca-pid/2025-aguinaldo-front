@@ -50,7 +50,9 @@ export interface TurnMachineContext {
     dateSelected: Dayjs | null;
     timeSelected: Dayjs | null;
     scheduledAt: string | null;
-    reason: string;
+      reason: string;
+      // whether patient needs a health certificate (for General specialty)
+      needsHealthCertificate: boolean;
   };
 
   showTurns: {
@@ -126,6 +128,8 @@ export const turnMachine = createMachine({
       timeSelected: null,
       scheduledAt: null,
       reason: "",
+      // new fields for health certificate handling
+      needsHealthCertificate: false,
     },
     showTurns: {
       dateSelected: null,
@@ -168,7 +172,8 @@ export const turnMachine = createMachine({
                   dateSelected: null,
                   timeSelected: null,
                   scheduledAt: null,
-                  reason: "",
+                    reason: "",
+                    needsHealthCertificate: false,
                 },
                 availableDates: [],
                 isLoadingAvailableDates: false,
@@ -212,6 +217,7 @@ export const turnMachine = createMachine({
                   timeSelected: null,
                   scheduledAt: null,
                   reason: "",
+                  needsHealthCertificate: false,
                 },
                 availableDates: [],
                 isLoadingAvailableDates: false,
@@ -500,7 +506,8 @@ export const turnMachine = createMachine({
                 accessToken: context.accessToken!,
                 userId: context.userId!,
                 doctorId: context.takeTurn.doctorId,
-                scheduledAt: context.takeTurn.scheduledAt!
+                scheduledAt: context.takeTurn.scheduledAt!,
+                reason: context.takeTurn.reason || undefined,
               };
               
               return inputData;
@@ -522,6 +529,7 @@ export const turnMachine = createMachine({
                     timeSelected: null,
                     scheduledAt: null,
                     reason: "",
+                    needsHealthCertificate: false,
                   },
                   availableDates: [],
                   isLoadingAvailableDates: false,
