@@ -1,214 +1,87 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { BadgeService } from './badge-service.service';
-import type {
-  Badge,
-  BadgeProgress,
-} from '../models/Badge';
+import type { BadgeProgress } from '../models/Badge';
 import { BadgeType, BadgeCategory } from '../models/Badge';
 
+// Mock fetch globally
+global.fetch = vi.fn();
+
 describe('BadgeService', () => {
-  describe('calculateBadgeStats', () => {
-    const mockBadges: Badge[] = [
-      {
-        id: 'badge-1',
-        doctorId: 'doctor-1',
-        badgeType: BadgeType.EXCEPTIONAL_COMMUNICATOR,
-        earnedAt: '2024-01-01T00:00:00Z',
-        isActive: true,
-        lastEvaluatedAt: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: 'badge-2',
-        doctorId: 'doctor-1',
-        badgeType: BadgeType.EMPATHETIC_DOCTOR,
-        earnedAt: '2024-01-02T00:00:00Z',
-        isActive: true,
-        lastEvaluatedAt: '2024-01-02T00:00:00Z'
-      }
-    ];
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-    const mockProgress: BadgeProgress[] = [
-      {
-        badgeType: BadgeType.PUNCTUALITY_PROFESSIONAL,
-        badgeName: 'Profesional Puntual',
-        category: BadgeCategory.QUALITY_OF_CARE,
-        earned: false,
-        progressPercentage: 80,
-        description: '40+ evaluaciones destacadas en puntualidad',
-        statusMessage: 'Progreso: 32/40 evaluaciones'
-      },
-      {
-        badgeType: BadgeType.SUSTAINED_EXCELLENCE,
-        badgeName: 'Excelencia Sostenida',
-        category: BadgeCategory.QUALITY_OF_CARE,
-        earned: false,
-        progressPercentage: 60,
-        description: 'Calificación promedio ≥4.7',
-        statusMessage: 'Progreso: 3.8/4.7 promedio'
-      }
-    ];
+  describe('getCombinedBadgeData', () => {
+    it('should fetch and return combined badge data', async () => {
+      const mockResponse: BadgeProgress[] = [
+        {
+          badgeType: BadgeType.EXCEPTIONAL_COMMUNICATOR,
+          badgeName: 'Comunicador Excepcional',
+          category: BadgeCategory.QUALITY_OF_CARE,
+          rarity: 'RARE',
+          description: '40+ evaluaciones destacadas en comunicación',
+          icon: '💬',
+          color: '#4CAF50',
+          criteria: 'Recibe 25 menciones positivas de comunicación en total',
+          earned: true,
+          progressPercentage: 100,
+          statusMessage: '¡Logro obtenido!',
+          earnedAt: '2024-01-01T00:00:00Z',
+          isActive: true,
+          lastEvaluatedAt: '2024-01-01T00:00:00Z'
+        }
+      ];
 
-    it('should calculate correct stats', () => {
-      const result = BadgeService.calculateBadgeStats(mockBadges, mockProgress);
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockResponse)
+      });
 
-      expect(result.totalEarned).toBe(2);
-      expect(result.totalAvailable).toBe(12);
-      expect(result.completionPercentage).toBe(17);
-      expect(result.recentlyEarned).toHaveLength(2);
-      expect(result.closestToEarn).toHaveLength(2);
-      expect(result.closestToEarn[0].badgeType).toBe(BadgeType.PUNCTUALITY_PROFESSIONAL);
-      expect(result.closestToEarn[1].badgeType).toBe(BadgeType.SUSTAINED_EXCELLENCE);
+      const result = await BadgeService.getCombinedBadgeData('fake-token', 'doctor-1');
+
+      expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/api/badges/doctor-1/progress', expect.objectContaining({
+        method: 'GET',
+        headers: expect.objectContaining({
+          'Authorization': 'Bearer fake-token'
+        })
+      }));
+      expect(result.badges).toHaveLength(1);
+      expect(result.progress).toEqual(mockResponse);
     });
 
-    it('should handle empty badges', () => {
-      const result = BadgeService.calculateBadgeStats([], mockProgress);
+    it('should throw error on fetch failure', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: false,
+        status: 500
+      });
 
-      expect(result.totalEarned).toBe(0);
-      expect(result.completionPercentage).toBe(0);
+      await expect(BadgeService.getCombinedBadgeData('fake-token', 'doctor-1')).rejects.toThrow();
     });
   });
 
-  describe('getBadgeProgressByType', () => {
-    const mockProgress: BadgeProgress[] = [
-      {
-        badgeType: BadgeType.EXCEPTIONAL_COMMUNICATOR,
-        badgeName: 'Comunicador Excepcional',
-        category: BadgeCategory.QUALITY_OF_CARE,
-        earned: false,
-        progressPercentage: 75,
-        description: '40+ evaluaciones destacadas en comunicación',
-        statusMessage: 'Progreso: 30/40 evaluaciones'
-      }
-    ];
+  describe('evaluateUserBadges', () => {
+    it('should trigger badge evaluation successfully', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: true
+      });
 
-    it('should return progress for existing badge type', () => {
-      const result = BadgeService.getBadgeProgressByType(mockProgress, BadgeType.EXCEPTIONAL_COMMUNICATOR);
+      await expect(BadgeService.evaluateUserBadges('fake-token', 'doctor-1')).resolves.toBeUndefined();
 
-      expect(result).toEqual(mockProgress[0]);
+      expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/api/badges/doctor-1/evaluate', expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          'Authorization': 'Bearer fake-token'
+        })
+      }));
     });
 
-    it('should return undefined for non-existing badge type', () => {
-      const result = BadgeService.getBadgeProgressByType(mockProgress, BadgeType.EMPATHETIC_DOCTOR);
+    it('should throw error on evaluation failure', async () => {
+      (global.fetch as any).mockResolvedValueOnce({
+        ok: false,
+        status: 500
+      });
 
-      expect(result).toBeUndefined();
-    });
-  });
-
-  describe('isBadgeEarned', () => {
-    const mockBadges: Badge[] = [
-      {
-        id: 'badge-1',
-        doctorId: 'doctor-1',
-        badgeType: BadgeType.EXCEPTIONAL_COMMUNICATOR,
-        earnedAt: '2024-01-01T00:00:00Z',
-        isActive: true,
-        lastEvaluatedAt: '2024-01-01T00:00:00Z'
-      }
-    ];
-
-    it('should return true for earned active badge', () => {
-      const result = BadgeService.isBadgeEarned(mockBadges, BadgeType.EXCEPTIONAL_COMMUNICATOR);
-
-      expect(result).toBe(true);
-    });
-
-    it('should return false for non-earned badge', () => {
-      const result = BadgeService.isBadgeEarned(mockBadges, BadgeType.EMPATHETIC_DOCTOR);
-
-      expect(result).toBe(false);
-    });
-  });
-
-  describe('isBadgeEarnedFromProgress', () => {
-    const mockProgress: BadgeProgress[] = [
-      {
-        badgeType: BadgeType.EXCEPTIONAL_COMMUNICATOR,
-        badgeName: 'Comunicador Excepcional',
-        category: BadgeCategory.QUALITY_OF_CARE,
-        earned: true,
-        progressPercentage: 100,
-        description: '40+ evaluaciones destacadas en comunicación',
-        statusMessage: '¡Logro obtenido!'
-      }
-    ];
-
-    it('should return true for earned badge from progress', () => {
-      const result = BadgeService.isBadgeEarnedFromProgress(mockProgress, BadgeType.EXCEPTIONAL_COMMUNICATOR);
-
-      expect(result).toBe(true);
-    });
-
-    it('should return false for non-earned badge from progress', () => {
-      const result = BadgeService.isBadgeEarnedFromProgress(mockProgress, BadgeType.EMPATHETIC_DOCTOR);
-
-      expect(result).toBe(false);
-    });
-  });
-
-  describe('groupBadgesByCategory', () => {
-    const mockBadges: Badge[] = [
-      {
-        id: 'badge-1',
-        doctorId: 'doctor-1',
-        badgeType: BadgeType.EXCEPTIONAL_COMMUNICATOR,
-        earnedAt: '2024-01-01T00:00:00Z',
-        isActive: true,
-        lastEvaluatedAt: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: 'badge-2',
-        doctorId: 'doctor-1',
-        badgeType: BadgeType.COMPLETE_DOCUMENTER,
-        earnedAt: '2024-01-02T00:00:00Z',
-        isActive: true,
-        lastEvaluatedAt: '2024-01-02T00:00:00Z'
-      }
-    ];
-
-    it('should group badges by category correctly', () => {
-      const result = BadgeService.groupBadgesByCategory(mockBadges);
-
-      expect(result.get(BadgeCategory.QUALITY_OF_CARE)).toHaveLength(1);
-      expect(result.get(BadgeCategory.DOCUMENTATION)).toHaveLength(1);
-      expect(result.get(BadgeCategory.QUALITY_OF_CARE)?.[0].badgeType).toBe(BadgeType.EXCEPTIONAL_COMMUNICATOR);
-      expect(result.get(BadgeCategory.DOCUMENTATION)?.[0].badgeType).toBe(BadgeType.COMPLETE_DOCUMENTER);
-    });
-  });
-
-  describe('sortBadges', () => {
-    const mockBadges: Badge[] = [
-      {
-        id: 'badge-1',
-        doctorId: 'doctor-1',
-        badgeType: BadgeType.EXCEPTIONAL_COMMUNICATOR,
-        earnedAt: '2024-01-02T00:00:00Z',
-        isActive: true,
-        lastEvaluatedAt: '2024-01-02T00:00:00Z'
-      },
-      {
-        id: 'badge-2',
-        doctorId: 'doctor-1',
-        badgeType: BadgeType.MEDICAL_LEGEND,
-        earnedAt: '2024-01-01T00:00:00Z',
-        isActive: true,
-        lastEvaluatedAt: '2024-01-01T00:00:00Z'
-      },
-      {
-        id: 'badge-3',
-        doctorId: 'doctor-1',
-        badgeType: BadgeType.PUNCTUALITY_PROFESSIONAL,
-        earnedAt: '2024-01-03T00:00:00Z',
-        isActive: true,
-        lastEvaluatedAt: '2024-01-03T00:00:00Z'
-      }
-    ];
-
-    it('should sort badges by rarity then by earned date', () => {
-      const result = BadgeService.sortBadges(mockBadges);
-
-      expect(result[0].badgeType).toBe(BadgeType.MEDICAL_LEGEND);
-      expect(result[1].badgeType).toBe(BadgeType.EXCEPTIONAL_COMMUNICATOR);
-      expect(result[2].badgeType).toBe(BadgeType.PUNCTUALITY_PROFESSIONAL);
+      await expect(BadgeService.evaluateUserBadges('fake-token', 'doctor-1')).rejects.toThrow();
     });
   });
 

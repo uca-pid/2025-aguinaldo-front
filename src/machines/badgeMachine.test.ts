@@ -29,12 +29,11 @@ describe("BadgeMachine", () => {
     const context = actor.getSnapshot().context;
     expect(context.badges).toEqual([]);
     expect(context.progress).toEqual([]);
-    expect(context.stats).toBeNull();
     expect(context.isEvaluating).toBe(false);
     expect(context.evaluationError).toBeNull();
   });
 
-  it("should handle DATA_LOADED event and calculate stats", () => {
+  it("should handle DATA_LOADED event", () => {
     const actor = createActor(badgeMachine);
     actor.start();
 
@@ -54,9 +53,13 @@ describe("BadgeMachine", () => {
         badgeType: BadgeType.EXCEPTIONAL_COMMUNICATOR,
         badgeName: "Test Badge",
         category: BadgeCategory.QUALITY_OF_CARE,
+        rarity: "RARE",
+        description: "Test Description",
+        icon: "🏆",
+        color: "#4CAF50",
+        criteria: "Test criteria",
         earned: false,
         progressPercentage: 50,
-        description: "Test Description",
         statusMessage: "Test Status"
       }
     ];
@@ -66,7 +69,6 @@ describe("BadgeMachine", () => {
     const context = actor.getSnapshot().context;
     expect(context.badges).toEqual(mockBadges);
     expect(context.progress).toEqual(mockProgress);
-    expect(context.stats).not.toBeNull();
   });
 
   it("should reset data on SET_AUTH when userRole changes", () => {
@@ -106,7 +108,6 @@ describe("BadgeMachine", () => {
     context = actor.getSnapshot().context;
     expect(context.badges).toEqual([]);
     expect(context.progress).toEqual([]);
-    expect(context.stats).toBeNull();
   });
 
   it("should handle evaluation flow", () => {
@@ -150,7 +151,6 @@ describe("BadgeMachine", () => {
     const context = actor.getSnapshot().context;
     expect(context.badges).toEqual([]);
     expect(context.progress).toEqual([]);
-    expect(context.stats).toBeNull();
     expect(context.isEvaluating).toBe(false);
     expect(context.evaluationError).toBeNull();
   });

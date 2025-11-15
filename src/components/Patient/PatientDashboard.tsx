@@ -15,7 +15,6 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import DashboardCard from "../shared/DashboardCard/DashboardCard";
 import DashboardUpcomingCard from "../shared/DashboardUpcomingCard/DashboardUpcomingCard";
 import BadgeShowcase from "../shared/Badges/BadgeShowcase";
-import { BadgeService } from "#/service/badge-service.service";
 import dayjs from "#/utils/dayjs.config";
 import "./PatientDashboard.css";
 import LoadingThreeDotsJumping from "../shared/PageLoadingScreen/LoadingThreeDots";
@@ -113,9 +112,7 @@ const PatientDashboard: React.FC = () => {
           <BadgeShowcase
             badges={badgeContext?.badges || []}
             progress={badgeContext?.progress || []}
-            stats={BadgeService.calculateBadgeStats(badgeContext?.badges || [], badgeContext?.progress || [], 'PATIENT')}
             isLoading={badgeContext?.isLoadingBadges || badgeContext?.isLoadingProgress}
-            userRole="PATIENT"
             onViewAll={() => uiSend({ type: "NAVIGATE", to: "/patient/badges" })}
           />
         </Container>

@@ -1,7 +1,7 @@
 import { createMachine, assign, fromPromise } from "xstate";
 import { loadDoctors, loadPendingDoctors, loadAdminStats, loadAvailableTurns, loadMyTurns, loadDoctorModifyRequests, loadMyModifyRequests, loadSpecialties, loadRatingSubcategories, loadAdminRatings } from "../utils/MachineUtils/dataMachineUtils";
 import { loadDoctorPatients, loadDoctorAvailability } from "../utils/MachineUtils/doctorMachineUtils";
-import { loadUserBadges, loadUserBadgeProgress } from "../utils/MachineUtils/badgeMachineUtils";
+import { loadCombinedBadgeData } from "../utils/MachineUtils/badgeMachineUtils";
 import { orchestrator } from "#/core/Orchestrator";
 import type { PendingDoctor, AdminStats } from "../models/Admin";
 import type { Doctor } from "../models/Turn";
@@ -27,9 +27,7 @@ export const DATA_MACHINE_EVENT_TYPES = [
   "LOAD_DOCTOR_MODIFY_REQUESTS",
   "LOAD_MY_MODIFY_REQUESTS",
   "UPDATE_TURNS_NEEDING_RATING",
-  "LOAD_RATING_SUBCATEGORIES",
-  "LOAD_USER_BADGES",
-  "LOAD_USER_BADGE_PROGRESS"
+  "LOAD_RATING_SUBCATEGORIES"
 ];
 
 export interface DataMachineContext {
@@ -175,9 +173,7 @@ export type DataMachineEvent =
   | { type: "LOAD_MY_MODIFY_REQUESTS" }
   | { type: "UPDATE_TURNS_NEEDING_RATING"; turns: any[] }
   | { type: "LOAD_RATING_SUBCATEGORIES"; role?: string }
-  | { type: "LOAD_RATED_SUBCATEGORY_COUNTS"; doctorIds: string[] }
-  | { type: "LOAD_USER_BADGES" }
-  | { type: "LOAD_USER_BADGE_PROGRESS" };
+  | { type: "LOAD_RATED_SUBCATEGORY_COUNTS"; doctorIds: string[] };
 
 export const dataMachine = createMachine({
   id: "data",
@@ -220,7 +216,13 @@ export const dataMachine = createMachine({
             doctorPatients: [],
             doctorAvailability: [],
             doctorModifyRequests: [],
+            myModifyRequests: [],
             ratingSubcategories: [],
+            ratedSubcategoryCounts: {},
+            ratingModalChecked: false,
+            adminRatings: null,
+            userBadges: [],
+            userBadgeProgress: [],
           }),
         },
         RELOAD_DOCTORS: {
@@ -1091,77 +1093,46 @@ export const dataMachine = createMachine({
 
     fetchingUserBadges: {
       entry: assign({
-        loading: ({ context }) => ({ ...context.loading, userBadges: true }),
-        errors: ({ context }) => ({ ...context.errors, userBadges: null }),
+        loading: ({ context }) => ({ ...context.loading, userBadges: true, userBadgeProgress: true }),
+        errors: ({ context }) => ({ ...context.errors, userBadges: null, userBadgeProgress: null }),
       }),
       invoke: {
-        src: fromPromise(async ({ input }: { input: { accessToken: string; userId: string; userRole: string } }) => {
-          return await loadUserBadges(input);
+        src: fromPromise(async ({ input }: { input: { accessToken: string; userId: string } }) => {
+          return await loadCombinedBadgeData(input);
         }),
-        input: ({ context }) => ({ accessToken: context.accessToken!, userId: context.userId!, userRole: context.userRole! }),
+        input: ({ context }) => ({ accessToken: context.accessToken!, userId: context.userId! }),
         onDone: {
-          target: "fetchingUserBadgeProgress",
-          actions: assign({
-            userBadges: ({ event }) => event.output,
-            loading: ({ context }) => ({ ...context.loading, userBadges: false }),
-          }),
-        },
-        onError: {
           target: "ready",
           actions: [
             assign({
-              errors: ({ context, event }) => ({
-                ...context.errors,
-                userBadges: event.error instanceof Error ? event.error.message : "Error al cargar badges del usuario"
-              }),
-              loading: ({ context }) => ({
-                ...context.loading,
-                userBadges: false
-              })
+              userBadges: ({ event }) => event.output.badges,
+              userBadgeProgress: ({ event }) => event.output.progress,
+              loading: ({ context }) => ({ ...context.loading, userBadges: false, userBadgeProgress: false }),
             }),
-            ({ event }) => {
-              if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
-                orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
-              }
-              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar badges del usuario";
-              orchestrator.sendToMachine(UI_MACHINE_ID, {
-                type: "OPEN_SNACKBAR",
-                message: errorMessage,
-                severity: "error"
-              });
+            ({ context }) => {
+              // Send combined data to badge machine
+              setTimeout(() => {
+                orchestrator.sendToMachine("badge", {
+                  type: "DATA_LOADED",
+                  userBadges: context.userBadges,
+                  userBadgeProgress: context.userBadgeProgress
+                });
+              }, 0);
             }
           ],
         },
-      },
-    },
-
-    fetchingUserBadgeProgress: {
-      entry: assign({
-        loading: ({ context }) => ({ ...context.loading, userBadgeProgress: true }),
-        errors: ({ context }) => ({ ...context.errors, userBadgeProgress: null }),
-      }),
-      invoke: {
-        src: fromPromise(async ({ input }: { input: { accessToken: string; userId: string; userRole: string } }) => {
-          return await loadUserBadgeProgress(input);
-        }),
-        input: ({ context }) => ({ accessToken: context.accessToken!, userId: context.userId!, userRole: context.userRole! }),
-        onDone: {
-          target: "ready",
-          actions: assign({
-            userBadgeProgress: ({ event }) => event.output,
-            loading: ({ context }) => ({ ...context.loading, userBadgeProgress: false }),
-          }),
-        },
         onError: {
           target: "ready",
           actions: [
             assign({
               errors: ({ context, event }) => ({
                 ...context.errors,
+                userBadges: event.error instanceof Error ? event.error.message : "Error al cargar badges del usuario",
                 userBadgeProgress: event.error instanceof Error ? event.error.message : "Error al cargar progreso de badges del usuario"
               }),
               loading: ({ context }) => ({
                 ...context.loading,
+                userBadges: false,
                 userBadgeProgress: false
               })
             }),
@@ -1169,7 +1140,7 @@ export const dataMachine = createMachine({
               if (event.error instanceof Error && (event.error.message.includes('401') || event.error.message.toLowerCase().includes('unauthorized'))) {
                 orchestrator.sendToMachine(AUTH_MACHINE_ID, { type: "LOGOUT" });
               }
-              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar progreso de badges del usuario";
+              const errorMessage = event.error instanceof Error ? event.error.message : "Error al cargar datos de badges del usuario";
               orchestrator.sendToMachine(UI_MACHINE_ID, {
                 type: "OPEN_SNACKBAR",
                 message: errorMessage,

@@ -4,8 +4,7 @@ import { orchestrator } from "#/core/Orchestrator";
 import { UI_MACHINE_ID } from "./uiMachine";
 import type { 
   Badge, 
-  BadgeProgress, 
-  BadgeStats
+  BadgeProgress
 } from "../models/Badge";
 
 export const BADGE_MACHINE_ID = "badge";
@@ -22,7 +21,6 @@ export interface BadgeMachineContext {
   userId: string | null;
   badges: Badge[];
   progress: BadgeProgress[];
-  stats: BadgeStats | null;
   isEvaluating: boolean;
   evaluationError: string | null;
 }
@@ -43,7 +41,6 @@ const badgeMachine = createMachine({
     userId: null,
     badges: [],
     progress: [],
-    stats: null,
     isEvaluating: false,
     evaluationError: null,
   } as BadgeMachineContext,
@@ -56,11 +53,6 @@ const badgeMachine = createMachine({
             assign({
               badges: ({ event }) => event.userBadges || [],
               progress: ({ event }) => event.userBadgeProgress || [],
-              stats: ({ event }) => {
-                const badges = event.userBadges || [];
-                const progress = event.userBadgeProgress || [];
-                return BadgeService.calculateBadgeStats(badges, progress);
-              },
             }),
           ],
         },
@@ -79,15 +71,14 @@ const badgeMachine = createMachine({
 
       invoke: {
         src: fromPromise(async ({ input }: { 
-          input: { accessToken: string; userId: string; userRole: string } 
+          input: { accessToken: string; userId: string } 
         }) => {
-          await BadgeService.evaluateUserBadges(input.accessToken, input.userId, input.userRole);
+          await BadgeService.evaluateUserBadges(input.accessToken, input.userId);
         }),
 
         input: ({ context }) => ({
           accessToken: context.accessToken!,
           userId: context.userId!,
-          userRole: context.userRole!,
         }),
 
         onDone: {
@@ -144,7 +135,6 @@ const badgeMachine = createMachine({
               userId: event.userId,
               badges: [],
               progress: [],
-              stats: null,
               evaluationError: null,
               isEvaluating: false,
             };
@@ -161,7 +151,6 @@ const badgeMachine = createMachine({
       actions: assign({
         badges: [],
         progress: [],
-        stats: null,
         evaluationError: null,
         isEvaluating: false,
       }),

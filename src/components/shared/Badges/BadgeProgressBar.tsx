@@ -1,7 +1,6 @@
 import React from 'react';
 import { LinearProgress, Tooltip, Box, Typography } from '@mui/material';
 import type { BadgeProgress } from '#/models/Badge';
-import { getBadgeMetadata } from '#/models/Badge';
 import './BadgeStyles.css';
 import './BadgeProgressBar.css';
 
@@ -16,7 +15,6 @@ const BadgeProgressBar: React.FC<BadgeProgressBarProps> = ({
   showLabel = true,
   variant = 'default'
 }) => {
-  const metadata = getBadgeMetadata(progress.badgeType);
   const rawValue = typeof progress.progressPercentage === 'number' && isFinite(progress.progressPercentage)
     ? progress.progressPercentage
     : 0;
@@ -28,12 +26,12 @@ const BadgeProgressBar: React.FC<BadgeProgressBarProps> = ({
       <Tooltip 
         title={
           <Box className="badge-progress-tooltip-title">
-            <Typography className="badge-progress-tooltip-name">{metadata.name}</Typography>
-            <Typography className="badge-progress-tooltip-description">{metadata.description}</Typography>
+            <Typography className="badge-progress-tooltip-name">{progress.badgeName}</Typography>
+            <Typography className="badge-progress-tooltip-description">{progress.description}</Typography>
             <Box className="badge-progress-tooltip-criteria-box">
               <Typography component="span" className="badge-progress-tooltip-criteria-label">📋 Cómo obtenerlo:</Typography>
               <br />
-              <Typography component="span" className="badge-progress-tooltip-criteria-text">{metadata.criteria}</Typography>
+              <Typography component="span" className="badge-progress-tooltip-criteria-text">{progress.criteria}</Typography>
             </Box>
             <Typography className="badge-progress-tooltip-percentage">
               Progreso: {progressValue.toFixed(0)}%
@@ -60,12 +58,12 @@ const BadgeProgressBar: React.FC<BadgeProgressBarProps> = ({
     <Tooltip 
       title={
         <Box className="badge-progress-tooltip-title">
-          <Typography className="badge-progress-tooltip-name">{metadata.name}</Typography>
-          <Typography className="badge-progress-tooltip-description">{metadata.description}</Typography>
+          <Typography className="badge-progress-tooltip-name">{progress.badgeName}</Typography>
+          <Typography className="badge-progress-tooltip-description">{progress.description}</Typography>
           <Box className="badge-progress-tooltip-criteria-box">
             <Typography component="span" className="badge-progress-tooltip-criteria-label">📋 Cómo obtenerlo:</Typography>
             <br />
-            <Typography component="span" className="badge-progress-tooltip-criteria-text">{metadata.criteria}</Typography>
+            <Typography component="span" className="badge-progress-tooltip-criteria-text">{progress.criteria}</Typography>
           </Box>
           <Typography className="badge-progress-tooltip-percentage">
             Progreso: {progressValue.toFixed(0)}%
@@ -78,7 +76,7 @@ const BadgeProgressBar: React.FC<BadgeProgressBarProps> = ({
         {showLabel && (
           <Box className="badge-progress__header">
             <Typography component="span" className="badge-progress__label">
-              {metadata.icon} {metadata.name}
+              {progress.icon} {progress.badgeName}
             </Typography>
             <Typography component="span" className="badge-progress__percentage">
               {progressValue.toFixed(0)}%
@@ -93,7 +91,7 @@ const BadgeProgressBar: React.FC<BadgeProgressBarProps> = ({
               '--progress-width': `${progressValue}%`,
               '--progress-background': isHighProgress 
                 ? 'linear-gradient(90deg, #66bb6a 0%, #388e3c 100%)'
-                : `linear-gradient(90deg, ${metadata.color}88 0%, ${metadata.color} 100%)`
+                : `linear-gradient(90deg, ${progress.color}88 0%, ${progress.color} 100%)`
             } as React.CSSProperties}
           />
         </Box>

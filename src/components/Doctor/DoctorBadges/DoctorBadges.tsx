@@ -12,7 +12,6 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import BadgeCard from "../../shared/Badges/BadgeCard";
 import { 
-  BADGE_METADATA,
   BadgeType,
   BadgeRarity
 } from "#/models/Badge";
@@ -28,8 +27,7 @@ const DoctorBadges: React.FC = () => {
   const progress = badgeContext?.progress || [];
   const stats = badgeContext?.stats || null;
 
-  const allBadgeTypes = Object.values(BadgeType);
-  const earnedBadgeTypes = new Set(badges.map((b: Badge) => b.badgeType));
+  const earnedBadgeTypes = new Set(badges.map((b: Badge) => b.badgeType.replace(/^DOCTOR_/, '')));
 
   const rarityOrder = {
     [BadgeRarity.COMMON]: 1,
@@ -38,22 +36,24 @@ const DoctorBadges: React.FC = () => {
     [BadgeRarity.LEGENDARY]: 4,
   };
 
-  const sorted = [...allBadgeTypes];
-  sorted.sort((a, b) => {
-    const rarityA = BADGE_METADATA[a].rarity;
-    const rarityB = BADGE_METADATA[b].rarity;
+  // Sort badges by rarity using progress data
+  const sorted = [...progress].sort((a, b) => {
+    const rarityA = a.rarity as BadgeRarity;
+    const rarityB = b.rarity as BadgeRarity;
     return rarityOrder[rarityA] - rarityOrder[rarityB];
   });
-  const sortedBadges = sorted;
+  const sortedBadges = sorted.map(p => p.badgeType.replace(/^DOCTOR_/, '') as BadgeType);
 
   const lockedBadgesCount = sortedBadges.filter(type => !earnedBadgeTypes.has(type)).length;
 
   const getBadgeObject = (badgeType: BadgeType): Badge | undefined => {
-    return badges.find((b: Badge) => b.badgeType === badgeType);
+    const backendBadgeType = `DOCTOR_${badgeType}`;
+    return badges.find((b: Badge) => b.badgeType === backendBadgeType);
   };
 
   const getProgressForBadge = (badgeType: BadgeType): BadgeProgress | undefined => {
-    return progress.find((p: BadgeProgress) => p.badgeType === badgeType);
+    const backendBadgeType = `DOCTOR_${badgeType}`;
+    return progress.find((p: BadgeProgress) => p.badgeType === backendBadgeType);
   };
     
   return (

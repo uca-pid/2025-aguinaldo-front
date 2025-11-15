@@ -159,7 +159,6 @@ const DoctorDashboard: React.FC = () => {
           <BadgeShowcase
             badges={badgeContext?.badges || []}
             progress={badgeContext?.progress || []}
-            stats={badgeContext?.stats || null}
             isLoading={badgeContext?.isLoadingBadges || badgeContext?.isLoadingProgress}
             onViewAll={() => uiSend({ type: "NAVIGATE", to: "/doctor/badges" })}
           />
