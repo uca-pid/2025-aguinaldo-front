@@ -32,11 +32,12 @@ export const API_CONFIG = {
     SAVE_DOCTOR_AVAILABILITY: '/api/doctors/{doctorId}/availability',
     GET_DOCTOR_AVAILABLE_SLOTS: '/api/doctors/{doctorId}/available-slots',
 
-    GET_DOCTOR_BADGES: '/api/badges/doctor/{doctorId}',
-    GET_DOCTOR_BADGE_PROGRESS: '/api/badges/doctor/{doctorId}/progress',
-
-    GET_PATIENT_BADGES: '/api/badges/patient/{patientId}',
-    GET_PATIENT_BADGE_PROGRESS: '/api/badges/patient/{patientId}/progress',
+    GET_USER_BADGES: '/api/badges/{userId}',
+    GET_USER_BADGE_PROGRESS: '/api/badges/{userId}/progress',
+    GET_MY_BADGES: '/api/badges/my-badges',
+    GET_MY_BADGE_PROGRESS: '/api/badges/my-progress',
+    EVALUATE_USER_BADGES: '/api/badges/{userId}/evaluate',
+    EVALUATE_MY_BADGES: '/api/badges/evaluate',
 
     GET_PENDING_DOCTORS: '/api/admin/pending-doctors',
     APPROVE_DOCTOR: '/api/admin/approve-doctor/{doctorId}',

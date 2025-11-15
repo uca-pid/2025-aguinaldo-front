@@ -3,24 +3,21 @@ import { Box, CircularProgress, Typography } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import BadgeCard from './BadgeCard';
-import type { Badge, BadgeProgress, BadgeStats } from '#/models/Badge';
+import type { Badge, BadgeProgress, BadgeType, PatientBadgeType } from '#/models/Badge';
 import './BadgeStyles.css';
 import './BadgeShowcase.css';
 
 interface BadgeShowcaseProps {
   badges: Badge[];
   progress: BadgeProgress[];
-  stats: BadgeStats | null;
   isLoading?: boolean;
   onViewAll?: () => void;
-  userRole?: 'DOCTOR' | 'PATIENT';
 }
 
 const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
-  stats,
+  progress,
   isLoading = false,
-  onViewAll,
-  userRole = 'DOCTOR'
+  onViewAll
 }) => {
   if (isLoading) {
     return (
@@ -32,11 +29,38 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
     );
   }
 
-  if (!stats) {
+  if (!progress || progress.length === 0) {
     return null;
   }
 
-  const { totalEarned, totalAvailable, completionPercentage, recentlyEarned, closestToEarn } = stats;
+  // Calculate stats from progress data
+  const earnedBadges = progress.filter(p => p.earned);
+  const totalEarned = earnedBadges.length;
+  const totalAvailable = progress.length;
+  const completionPercentage = totalAvailable > 0
+    ? Math.round((totalEarned / totalAvailable) * 100)
+    : 0;
+
+  // Recently earned badges (earned badges sorted by earnedAt desc)
+  const recentlyEarned = earnedBadges
+    .filter(p => p.earnedAt)
+    .sort((a, b) => new Date(b.earnedAt!).getTime() - new Date(a.earnedAt!).getTime())
+    .slice(0, 4)
+    .map(p => ({
+      id: `earned-${p.badgeType}`,
+      doctorId: '', // Not needed for display
+      badgeType: p.badgeType as BadgeType,
+      earnedAt: p.earnedAt!,
+      isActive: p.isActive || true,
+      lastEvaluatedAt: p.lastEvaluatedAt || p.earnedAt!,
+      progress: p // Include the full progress data for metadata
+    } as Badge & { progress: BadgeProgress }));
+
+  // Closest to earn (not earned badges with progress > 50%, sorted by progress desc)
+  const closestToEarn = progress
+    .filter(p => !p.earned && p.progressPercentage > 50)
+    .sort((a, b) => b.progressPercentage - a.progressPercentage)
+    .slice(0, 3);
 
   return (
     <Box className="badge-showcase">
@@ -88,13 +112,13 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
               Recién Obtenidos
           </Box>
           <Box className="badge-showcase__recent-grid">
-            {recentlyEarned.slice(0, 4).map((badge) => (
+            {recentlyEarned.map((badge) => (
               <BadgeCard
                 key={badge.id}
                 badgeType={badge.badgeType}
                 badge={badge}
+                progress={badge.progress}
                 size="small"
-                userRole={userRole}
                 onClick={() => onViewAll?.()}
               />
             ))}
@@ -109,13 +133,12 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
               Próximos a Conseguir
           </Box>
           <Box className="badge-showcase__recent-grid">
-            {closestToEarn.slice(0, 3).map((prog) => (
+            {closestToEarn.map((prog) => (
               <BadgeCard
                 key={prog.badgeType}
-                badgeType={prog.badgeType}
+                badgeType={prog.badgeType as BadgeType | PatientBadgeType}
                 progress={prog}
                 size="small"
-                userRole={userRole}
                 onClick={() => onViewAll?.()}
               />
             ))}

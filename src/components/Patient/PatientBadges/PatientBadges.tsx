@@ -27,7 +27,7 @@ const PatientBadges: React.FC = () => {
   const stats = badgeContext?.stats || null;
 
   const allBadgeTypes = Object.values(PatientBadgeType);
-  const earnedBadgeTypes = new Set(badges.map((b: Badge) => b.badgeType));
+  const earnedBadgeTypes = new Set(badges.map((b: Badge) => b.badgeType.replace(/^PATIENT_/, '')));
 
   const sorted = [...allBadgeTypes];
   sorted.sort((a, b) => {
@@ -38,11 +38,13 @@ const PatientBadges: React.FC = () => {
   const lockedBadgesCount = sortedBadges.filter(type => !earnedBadgeTypes.has(type)).length;
 
   const getBadgeObject = (badgeType: PatientBadgeType): Badge | undefined => {
-    return badges.find((b: Badge) => (b.badgeType as any) === badgeType);
+    const backendBadgeType = `PATIENT_${badgeType}`;
+    return badges.find((b: Badge) => b.badgeType === backendBadgeType);
   };
 
   const getProgressForBadge = (badgeType: PatientBadgeType): BadgeProgress | undefined => {
-    return progress.find((p: BadgeProgress) => (p.badgeType as any) === badgeType);
+    const backendBadgeType = `PATIENT_${badgeType}`;
+    return progress.find((p: BadgeProgress) => p.badgeType === backendBadgeType);
   };
 
   return (
@@ -130,7 +132,6 @@ const PatientBadges: React.FC = () => {
                       badge={badge}
                       progress={prog}
                       size="medium"
-                      userRole="PATIENT"
                     />
                   );
                 })}

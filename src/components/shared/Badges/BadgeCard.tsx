@@ -2,7 +2,7 @@ import React from 'react';
 import { Tooltip, Box, Typography } from '@mui/material';
 import LockIcon from '@mui/icons-material/Lock';
 import type { Badge, BadgeType, BadgeProgress, PatientBadgeType } from '#/models/Badge';
-import { getBadgeMetadata, getRarityColor, getPatientBadgeMetadata, getRarityDisplayName } from '#/models/Badge';
+import { getRarityColor, getRarityDisplayName } from '#/models/Badge';
 import { BadgeService } from '#/service/badge-service.service';
 import './BadgeStyles.css';
 import './BadgeCard.css';
@@ -13,7 +13,6 @@ interface BadgeCardProps {
   progress?: BadgeProgress;
   onClick?: () => void;
   size?: 'small' | 'medium' | 'large';
-  userRole?: 'DOCTOR' | 'PATIENT';
 }
 
 const BadgeCard: React.FC<BadgeCardProps> = ({
@@ -21,14 +20,36 @@ const BadgeCard: React.FC<BadgeCardProps> = ({
   badge,
   progress,
   onClick,
-  size = 'medium',
-  userRole = 'DOCTOR'
+  size = 'medium'
 }) => {
-  const metadata = userRole === 'PATIENT' 
-    ? getPatientBadgeMetadata(badgeType as PatientBadgeType)
-    : getBadgeMetadata(badgeType as BadgeType);
+  // Use metadata from progress data if available, otherwise use fallback
+  const metadata = progress ? {
+    type: progress.badgeType,
+    category: progress.category,
+    rarity: progress.rarity,
+    name: progress.badgeName,
+    description: progress.description,
+    icon: progress.icon,
+    color: progress.color,
+    criteria: progress.criteria
+  } : null;
+  
+  // Fallback metadata for unknown badge types
+  const fallbackMetadata = {
+    type: badgeType,
+    category: 'ACHIEVEMENT' as any,
+    rarity: 'COMMON' as any,
+    name: badgeType.replace(/^(PATIENT_|DOCTOR_)/g, '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
+    description: 'Achievement unlocked',
+    icon: '🏆',
+    color: '#9C27B0',
+    criteria: 'Special achievement'
+  };
+  
+  const finalMetadata = metadata || fallbackMetadata;
+  
   const isEarned = !!badge;
-  const rarityColor = getRarityColor(metadata.rarity);
+  const rarityColor = getRarityColor(finalMetadata.rarity);
 
   const rawValue = progress && typeof progress.progressPercentage === 'number' && isFinite(progress.progressPercentage)
     ? progress.progressPercentage
@@ -47,7 +68,7 @@ const BadgeCard: React.FC<BadgeCardProps> = ({
       title={
         <Box className="badge-card-tooltip-title">
           <Typography className="badge-card-tooltip-text">
-            {metadata.criteria}
+            {finalMetadata.criteria}
           </Typography>
         </Box>
       }
@@ -68,8 +89,8 @@ const BadgeCard: React.FC<BadgeCardProps> = ({
           '--badge-rarity-color': rarityColor,
           '--badge-rarity-color-light': `${rarityColor}22`,
           '--badge-rarity-color-lighter': `${rarityColor}44`,
-          '--badge-color': metadata.color,
-          '--badge-color-light': `${metadata.color}88`
+          '--badge-color': finalMetadata.color,
+          '--badge-color-light': `${finalMetadata.color}88`
         } as React.CSSProperties}
       >
         {/* Glow effect for earned badges */}
@@ -79,7 +100,7 @@ const BadgeCard: React.FC<BadgeCardProps> = ({
 
         {/* Rarity indicator */}
         <Box className="badge-card__rarity-indicator">
-          {getRarityDisplayName(metadata.rarity)}
+          {getRarityDisplayName(finalMetadata.rarity)}
         </Box>
 
         {/* Lock icon for unearned badges */}
@@ -92,10 +113,10 @@ const BadgeCard: React.FC<BadgeCardProps> = ({
           <Box 
             className={`badge-card__icon-container ${isEarned ? 'badge-card__icon-container--earned' : 'badge-card__icon-container--locked'}`}
           >
-            <Typography component="span" className="badge-card__icon">{metadata.icon}</Typography>
+            <Typography component="span" className="badge-card__icon">{finalMetadata.icon}</Typography>
           </Box>
-          <Typography className="badge-card__name">{metadata.name}</Typography>
-          <Typography className="badge-card__description">{metadata.description}</Typography>
+          <Typography className="badge-card__name">{finalMetadata.name}</Typography>
+          <Typography className="badge-card__description">{finalMetadata.description}</Typography>
 
           {isEarned && badge && (
             <Typography className="badge-card__earned-date">
