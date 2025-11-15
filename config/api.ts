@@ -45,15 +45,15 @@ export const API_CONFIG = {
     GET_NOTIFICATIONS: '/api/notifications',
     DELETE_NOTIFICATION: '/api/notifications/{notificationId}',
     GET_DOCTOR_AVAILABILITY: '/api/doctors/{doctorId}/availability',
-    UPDATE_MEDICAL_HISTORY: '/api/doctors/{doctorId}/patients/medical-history',
     
-  
-    ADD_MEDICAL_HISTORY: '/api/doctors/{doctorId}/medical-history',
-    UPDATE_MEDICAL_HISTORY_ENTRY: '/api/doctors/{doctorId}/medical-history/{historyId}',
-    DELETE_MEDICAL_HISTORY: '/api/doctors/{doctorId}/medical-history/{historyId}',
-    GET_DOCTOR_MEDICAL_HISTORY: '/api/doctors/{doctorId}/medical-history',
+    // Medical History endpoints (consolidated under /api/medical-history)
+    UPDATE_MEDICAL_HISTORY: '/api/medical-history/doctor/{doctorId}/patients',
+    ADD_MEDICAL_HISTORY: '/api/medical-history/doctor/{doctorId}',
+    UPDATE_MEDICAL_HISTORY_ENTRY: '/api/medical-history/doctor/{doctorId}/{historyId}',
+    DELETE_MEDICAL_HISTORY: '/api/medical-history/doctor/{doctorId}/{historyId}',
+    GET_DOCTOR_MEDICAL_HISTORY: '/api/medical-history/doctor/{doctorId}',
     GET_PATIENT_MEDICAL_HISTORY: '/api/medical-history/patient/{patientId}',
-    GET_PATIENT_HISTORY_BY_DOCTOR: '/api/doctors/{doctorId}/patients/{patientId}/medical-history',
+    GET_PATIENT_HISTORY_BY_DOCTOR: '/api/medical-history/doctor/{doctorId}/patient/{patientId}',
     
     GET_PROFILE: '/api/profile/{profileId}',
     UPDATE_PROFILE: '/api/profile/{profileId}',
