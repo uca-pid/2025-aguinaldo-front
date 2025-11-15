@@ -1,0 +1,126 @@
+/* BadgeShowcase Component Styles */
+
+.badge-showcase-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.badge-showcase__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.badge-showcase__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.badge-showcase__title-icon {
+  color: #38a3a5;
+  font-size: 24px;
+}
+
+.badge-showcase__header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.badge-showcase__evaluate-button {
+  text-transform: none;
+  border-color: #FF9800;
+  color: #FF9800;
+}
+
+.badge-showcase__evaluate-button:hover {
+  border-color: #F57C00;
+  background-color: rgba(255, 152, 0, 0.04);
+}
+
+.badge-showcase__view-all {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #38a3a5;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.badge-showcase__view-all:hover {
+  color: #2d7a7b;
+}
+
+.badge-showcase__stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.badge-showcase__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.badge-showcase__stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #38a3a5;
+  margin-bottom: 4px;
+}
+
+.badge-showcase__stat-label {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.badge-showcase__recent {
+  margin-bottom: 20px;
+}
+
+.badge-showcase__recent--closest {
+  margin-top: 20px;
+}
+
+.badge-showcase__section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+  text-transform: none;
+}
+
+.badge-showcase__recent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.badge-showcase__empty-state {
+  text-align: center;
+  padding: 32px 16px;
+}
+
+.badge-showcase__empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #757575;
+  margin-bottom: 8px;
+}
+
+.badge-showcase__empty-subtitle {
+  font-size: 14px;
+  color: #999;
+}

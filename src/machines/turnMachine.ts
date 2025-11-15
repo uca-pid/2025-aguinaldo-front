@@ -50,7 +50,9 @@ export interface TurnMachineContext {
     dateSelected: Dayjs | null;
     timeSelected: Dayjs | null;
     scheduledAt: string | null;
-    reason: string;
+      motive: string;
+      // whether patient needs a health certificate (for General specialty)
+      needsHealthCertificate: boolean;
   };
 
   showTurns: {
@@ -65,7 +67,7 @@ export interface TurnMachineContext {
     selectedTime?: string | null;
     availableSlots?: string[];
     availableDates?: string[];
-    reason?: string;
+    motive?: string;
   };
 
   modifyError: string | null;
@@ -125,7 +127,9 @@ export const turnMachine = createMachine({
       dateSelected: null,
       timeSelected: null,
       scheduledAt: null,
-      reason: "",
+      motive: "",
+      // new fields for health certificate handling
+      needsHealthCertificate: false,
     },
     showTurns: {
       dateSelected: null,
@@ -138,7 +142,7 @@ export const turnMachine = createMachine({
       selectedTime: null,
       availableSlots: [],
       availableDates: [],
-      reason: "",
+      motive: "",
     },
     
     accessToken: null,
@@ -167,8 +171,9 @@ export const turnMachine = createMachine({
                   doctorId: "",
                   dateSelected: null,
                   timeSelected: null,
-                  scheduledAt: null,
-                  reason: "",
+                    scheduledAt: null,
+                    motive: "",
+                    needsHealthCertificate: false,
                 },
                 availableDates: [],
                 isLoadingAvailableDates: false,
@@ -204,15 +209,16 @@ export const turnMachine = createMachine({
             RESET_TAKE_TURN: {
               target: "step1",
               actions: assign({
-                takeTurn: {
-                  professionSelected: "",
-                  profesionalSelected: "",
-                  doctorId: "",
-                  dateSelected: null,
-                  timeSelected: null,
-                  scheduledAt: null,
-                  reason: "",
-                },
+                  takeTurn: {
+                    professionSelected: "",
+                    profesionalSelected: "",
+                    doctorId: "",
+                    dateSelected: null,
+                    timeSelected: null,
+                    scheduledAt: null,
+                    motive: "",
+                    needsHealthCertificate: false,
+                  },
                 availableDates: [],
                 isLoadingAvailableDates: false,
               }),
@@ -263,7 +269,7 @@ export const turnMachine = createMachine({
                       selectedTime: currentTurn?.scheduledAt || null,
                       availableSlots: [],
                       availableDates: [],
-                      reason: "",
+                      motive: "",
                     };
                   }
                   return {
@@ -273,7 +279,7 @@ export const turnMachine = createMachine({
                     selectedTime: null,
                     availableSlots: [],
                     availableDates: [],
-                    reason: "",
+                    motive: "",
                   };
                 }
               }),
@@ -348,7 +354,7 @@ export const turnMachine = createMachine({
                       selectedTime: currentTurn?.scheduledAt || null,
                       availableSlots: [],
                       availableDates: [],
-                      reason: "",
+                      motive: "",
                     };
                   }
                 }),
@@ -357,14 +363,14 @@ export const turnMachine = createMachine({
               {
                 target: "idle",
                 actions: assign({
-                  modifyTurn: {
+                    modifyTurn: {
                     turnId: null,
                     currentTurn: null,
                     selectedDate: null,
                     selectedTime: null,
                     availableSlots: [],
                     availableDates: [],
-                    reason: "",
+                    motive: "",
                   }
                 }),
               }
@@ -500,7 +506,8 @@ export const turnMachine = createMachine({
                 accessToken: context.accessToken!,
                 userId: context.userId!,
                 doctorId: context.takeTurn.doctorId,
-                scheduledAt: context.takeTurn.scheduledAt!
+                scheduledAt: context.takeTurn.scheduledAt!,
+                motive: context.takeTurn.motive || undefined,
               };
               
               return inputData;
@@ -521,7 +528,8 @@ export const turnMachine = createMachine({
                     dateSelected: null,
                     timeSelected: null,
                     scheduledAt: null,
-                    reason: "",
+                    motive: "",
+                    needsHealthCertificate: false,
                   },
                   availableDates: [],
                   isLoadingAvailableDates: false,

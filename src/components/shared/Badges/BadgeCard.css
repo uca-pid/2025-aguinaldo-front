@@ -1,0 +1,81 @@
+/* BadgeCard Component Styles */
+
+.badge-card-tooltip-title {
+  text-align: left;
+  max-width: 280px;
+}
+
+.badge-card-tooltip-text {
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.badge-card--earned {
+  border-color: var(--badge-rarity-color);
+}
+
+.badge-card__glow {
+  background: var(--badge-rarity-color);
+}
+
+.badge-card__rarity-indicator {
+  color: var(--badge-rarity-color);
+}
+
+.badge-card__icon-container--earned {
+  background: linear-gradient(135deg, var(--badge-rarity-color-light) 0%, var(--badge-rarity-color-lighter) 100%);
+}
+
+.badge-card__icon-container--locked {
+  background: #f5f5f5;
+}
+
+.badge-card-progress-container {
+  margin-top: 12px;
+  width: 100%;
+}
+
+.badge-card-progress-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.badge-card-progress-bar {
+  flex: 1;
+  height: 6px;
+  background-color: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.badge-card-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease-in-out;
+}
+
+.badge-card-progress-fill--high {
+  background: linear-gradient(90deg, #66bb6a 0%, #388e3c 100%);
+}
+
+.badge-card-progress-fill--normal {
+  background: linear-gradient(90deg, var(--badge-color-light) 0%, var(--badge-color) 100%);
+}
+
+.badge-card-progress-percentage {
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 32px;
+  text-align: right;
+}
+
+.badge-card-progress-percentage--high {
+  color: #388e3c;
+}
+
+.badge-card-progress-percentage--normal {
+  color: var(--badge-color);
+}

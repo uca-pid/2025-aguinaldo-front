@@ -6,6 +6,7 @@ import { useMachines } from "#/providers/MachineProvider";
 import { useDataMachine } from "#/providers/DataProvider";
 import dayjs from "#/utils/dayjs.config";
 import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
+import type { TurnResponse } from "#/models/Turn";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import EditIcon from "@mui/icons-material/Edit";
 import "./ViewTurns.css";
@@ -37,12 +38,12 @@ const ViewTurns: React.FC = () => {
   const showTurnsContext = turnContext.showTurns;
   const { cancellingTurnId, isCancellingTurn } = turnContext;
 
-  const allTurns = dataContext.myTurns || [];
-  const filteredTurns = filterTurns(allTurns, showTurnsContext.statusFilter);
+  const allTurns: TurnResponse[] = dataContext.myTurns || [];
+  const filteredTurns: TurnResponse[] = filterTurns(allTurns, showTurnsContext.statusFilter) as TurnResponse[];
   const pendingModifyRequests = dataContext.myModifyRequests?.filter((r: TurnModifyRequest) => r.status === "PENDING") || [];
 
   const handleCancelTurn = (turnId: string) => {
-    const turnData = allTurns.find((turn: any) => turn.id === turnId);
+    const turnData = allTurns.find((turn: TurnResponse) => turn.id === turnId);
     uiSend({ 
       type: "OPEN_CANCEL_TURN_DIALOG", 
       turnId,
@@ -79,7 +80,7 @@ const ViewTurns: React.FC = () => {
     return dayjs(scheduledAt).isBefore(dayjs());
   };
 
-  const canCancelTurn = (turn: any) => {
+  const canCancelTurn = (turn: TurnResponse) => {
     return turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt);
   };
 
@@ -87,20 +88,20 @@ const ViewTurns: React.FC = () => {
     return pendingModifyRequests.some((r: TurnModifyRequest) => r.turnId === turnId);
   };
 
-  const canModifyTurn = (turn: any) => {
+  const canModifyTurn = (turn: TurnResponse) => {
     return turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt) && !hasPendingModifyRequest(turn.id);
   };
 
-  const canUploadFile = (turn: any) => {
+  const canUploadFile = (turn: TurnResponse) => {
     return turn.status === 'SCHEDULED' && !isTurnPast(turn.scheduledAt);
   };
 
-  const canShowFileSection = (turn: any) => {
+  const canShowFileSection = (turn: TurnResponse) => {
     // Mostrar sección de archivos para turnos programados y completados
     return turn.status === 'SCHEDULED' || turn.status === 'COMPLETED';
   };
 
-  const canDeleteFile = (turn: any) => {
+  const canDeleteFile = (turn: TurnResponse) => {
     return turn.status !== 'COMPLETED';
   };
 
@@ -182,7 +183,7 @@ const ViewTurns: React.FC = () => {
                 </Typography>
               </Box>
             ) : filteredTurns.length > 0 ? (
-              filteredTurns.map((turn: any, index: number) => (
+              filteredTurns.map((turn: TurnResponse, index: number) => (
                 <Box key={turn.id || index} className="viewturns-turn-item">
                   <Box className="viewturns-turn-content">
                     <Box className="viewturns-turn-info">
@@ -229,6 +230,11 @@ const ViewTurns: React.FC = () => {
                           <Typography variant="body1" className="viewturns-specialty-text">
                             {turn.doctorSpecialty}
                           </Typography>
+                          {turn.motive && (
+                            <Typography variant="body2" className="viewturns-reason-text">
+                              Motivo: {turn.motive=="HEALTH CERTIFICATE"?"Certificado de apto físico":turn.motive}
+                            </Typography>
+                          )}
                         </Box>
                       </Box>
                       

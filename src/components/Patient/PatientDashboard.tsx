@@ -14,17 +14,19 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import DashboardCard from "../shared/DashboardCard/DashboardCard";
 import DashboardUpcomingCard from "../shared/DashboardUpcomingCard/DashboardUpcomingCard";
+import BadgeShowcase from "../shared/Badges/BadgeShowcase";
 import dayjs from "#/utils/dayjs.config";
 import "./PatientDashboard.css";
 import LoadingThreeDotsJumping from "../shared/PageLoadingScreen/LoadingThreeDots";
 import { useDataMachine } from "#/providers/DataProvider";
 
 const PatientDashboard: React.FC = () => {
-  const { uiSend, turnState } = useMachines();
+  const { uiSend, turnState, badgeState } = useMachines();
   const { authState } = useAuthMachine();
   const { dataState } = useDataMachine();
   const user: SignInResponse = authState?.context?.authResponse || {};
   const turnContext = turnState?.context || {};
+  const badgeContext = badgeState?.context;
   const dataContext = dataState.context;
 
   // Patient dashboard needs to wait for ALL patient-specific data to be loaded
@@ -106,6 +108,13 @@ const PatientDashboard: React.FC = () => {
               onClick={() => uiSend({ type: "NAVIGATE", to: "/patient/reservation-turns" })}
             />
           </Box>
+
+          <BadgeShowcase
+            badges={badgeContext?.badges || []}
+            progress={badgeContext?.progress || []}
+            isLoading={badgeContext?.isLoadingBadges || badgeContext?.isLoadingProgress}
+            onViewAll={() => uiSend({ type: "NAVIGATE", to: "/patient/badges" })}
+          />
         </Container>
       </Box>
     </LocalizationProvider>

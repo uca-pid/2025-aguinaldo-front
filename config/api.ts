@@ -18,7 +18,7 @@ export const API_CONFIG = {
     CANCEL_TURN: '/api/turns/{turnId}/cancel',
     CREATE_RATING: '/api/ratings/turns/{turnId}/rate',
     GET_RATING_SUBCATEGORIES: '/api/ratings/rating-subcategories',
-  GET_RATED_SUBCATEGORY_COUNTS: '/api/ratings/rated/{ratedId}/subcategories-counts',
+    GET_RATED_SUBCATEGORY_COUNTS: '/api/ratings/rated/{ratedId}/subcategories-counts',
     
     MODIFY_TURN_REQUEST: '/api/turns/modify-requests',
     GET_MY_MODIFY_REQUESTS: '/api/turns/modify-requests/my-requests',
@@ -31,6 +31,13 @@ export const API_CONFIG = {
     GET_DOCTOR_METRICS: '/api/doctors/{doctorId}/metrics',
     SAVE_DOCTOR_AVAILABILITY: '/api/doctors/{doctorId}/availability',
     GET_DOCTOR_AVAILABLE_SLOTS: '/api/doctors/{doctorId}/available-slots',
+
+    GET_USER_BADGES: '/api/badges/{userId}',
+    GET_USER_BADGE_PROGRESS: '/api/badges/{userId}/progress',
+    GET_MY_BADGES: '/api/badges/my-badges',
+    GET_MY_BADGE_PROGRESS: '/api/badges/my-progress',
+    EVALUATE_USER_BADGES: '/api/badges/{userId}/evaluate',
+    EVALUATE_MY_BADGES: '/api/badges/evaluate',
 
     GET_PENDING_DOCTORS: '/api/admin/pending-doctors',
     APPROVE_DOCTOR: '/api/admin/approve-doctor/{doctorId}',

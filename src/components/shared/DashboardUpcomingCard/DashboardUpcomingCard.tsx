@@ -17,6 +17,8 @@ interface Turn {
   doctorName?: string;
   doctorSpecialty?: string;
   patientName?: string;
+  motive?: string;
+  // legacy field
   reason?: string;
 }
 
@@ -63,9 +65,9 @@ const DashboardUpcomingCard: React.FC<DashboardUpcomingCardProps> = ({
           <Typography variant="body2" className="upcoming-card-secondary">
             Paciente: {turn.patientName || "Paciente"}
           </Typography>
-          {turn.reason && (
+          {turn.motive && (
             <Typography variant="body2" className="upcoming-card-reason">
-              Motivo: {turn.reason}
+              {turn.motive=="HEALTH CERTIFICATE"?"Certificado de apto físico":turn.motive}
             </Typography>
           )}
         </>

@@ -312,14 +312,14 @@ describe('turnMachine', () => {
       });
       actor.send({
         type: 'UPDATE_FORM',
-        path: ['takeTurn', 'reason'],
+        path: ['takeTurn', 'motive'],
         value: 'Annual checkup',
       });
 
       const takeTurn = actor.getSnapshot().context.takeTurn;
       expect(takeTurn.profesionalSelected).toBe('Dr. Smith');
       expect(takeTurn.doctorId).toBe('doctor-1');
-      expect(takeTurn.reason).toBe('Annual checkup');
+      expect(takeTurn.motive).toBe('Annual checkup');
     });
 
     it('should update showTurns fields', () => {
@@ -342,11 +342,11 @@ describe('turnMachine', () => {
 
       actor.send({
         type: 'UPDATE_FORM',
-        path: ['modifyTurn', 'reason'],
+        path: ['modifyTurn', 'motive'],
         value: 'Need to reschedule',
       });
 
-      expect(actor.getSnapshot().context.modifyTurn?.reason).toBe('Need to reschedule');
+      expect(actor.getSnapshot().context.modifyTurn?.motive).toBe('Need to reschedule');
     });
   });
 
@@ -689,7 +689,7 @@ describe('turnMachine', () => {
       actor.send({ type: 'DATA_LOADED' });
       actor.send({
         type: 'UPDATE_FORM',
-        path: ['modifyTurn', 'reason'],
+        path: ['modifyTurn', 'motive'],
         value: 'Test reason',
       });
 
@@ -698,7 +698,7 @@ describe('turnMachine', () => {
       const modifyTurn = actor.getSnapshot().context.modifyTurn;
       expect(modifyTurn?.turnId).toBeNull();
       expect(modifyTurn?.currentTurn).toBeNull();
-      expect(modifyTurn?.reason).toBe('');
+      expect(modifyTurn?.motive).toBe('');
     });
   });
 
@@ -866,7 +866,7 @@ describe('turnMachine', () => {
 
       actor.send({
         type: 'UPDATE_FORM',
-        path: ['takeTurn', 'reason'],
+        path: ['takeTurn', 'motive'],
         value: 'Reason 1',
       });
       actor.send({
@@ -876,14 +876,14 @@ describe('turnMachine', () => {
       });
       actor.send({
         type: 'UPDATE_FORM',
-        path: ['modifyTurn', 'reason'],
+        path: ['modifyTurn', 'motive'],
         value: 'Reason 2',
       });
 
       const context = actor.getSnapshot().context;
-      expect(context.takeTurn.reason).toBe('Reason 1');
+      expect(context.takeTurn.motive).toBe('Reason 1');
       expect(context.showTurns.statusFilter).toBe('COMPLETED');
-      expect(context.modifyTurn?.reason).toBe('Reason 2');
+      expect(context.modifyTurn?.motive).toBe('Reason 2');
     });
   });
 
@@ -927,7 +927,7 @@ describe('turnMachine', () => {
       });
       actor.send({
         type: 'UPDATE_FORM',
-        path: ['takeTurn', 'reason'],
+        path: ['takeTurn', 'motive'],
         value: 'Important reason',
       });
 
@@ -937,7 +937,7 @@ describe('turnMachine', () => {
         expect(actor.getSnapshot().value.takeTurn).toBe('step2');
       });
 
-      expect(actor.getSnapshot().context.takeTurn.reason).toBe('Important reason');
+      expect(actor.getSnapshot().context.takeTurn.motive).toBe('Important reason');
       expect(actor.getSnapshot().context.takeTurn.doctorId).toBe('doctor-1');
     });
   });

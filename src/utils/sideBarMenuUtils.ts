@@ -7,7 +7,8 @@ import {
   Notifications as NotificationsIcon,
   Person as PersonIcon,
   ExitToApp as ExitIcon,
-  BarChart as BarChartIcon
+  BarChart as BarChartIcon,
+  EmojiEvents as TrophyIcon
 } from '@mui/icons-material';
 
 export interface MenuItem {
@@ -28,6 +29,7 @@ export const iconMap = {
   Person: PersonIcon,
   ExitToApp: ExitIcon,
   BarChart: BarChartIcon,
+  Trophy: TrophyIcon,
 };
 
 export const getDoctorMenuItems = (handleLogout: () => void): MenuItem[] => [
@@ -68,6 +70,12 @@ export const getDoctorMenuItems = (handleLogout: () => void): MenuItem[] => [
     path: '/doctor/metrics'
   },
   {
+    id: 'badges',
+    title: 'Logros',
+    iconComponent: TrophyIcon,
+    path: '/doctor/badges'
+  },
+  {
     id: 'profile',
     title: 'Mi Perfil',
     iconComponent: PersonIcon,
@@ -100,6 +108,12 @@ export const getPatientMenuItems = (handleLogout: () => void): MenuItem[] => [
     title: 'Mis Turnos',
     iconComponent: CalendarIcon,
     path: '/patient/view-turns'
+  },
+  {
+    id: 'badges',
+    title: 'Logros',
+    iconComponent: TrophyIcon,
+    path: '/patient/badges'
   },
   {
     id: 'profile',
