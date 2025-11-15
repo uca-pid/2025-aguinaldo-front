@@ -245,9 +245,9 @@ const ViewTurns: React.FC = () => {
                                 </Box>
                               )}
                             </Box>
-                            {turn.reason && (
-                              <Typography variant="body1" className="doctor-viewturns-reason-text">
-                                Motivo: {turn.reason}
+                            {turn.motive && (
+                              <Typography variant="body2" className="doctor-viewturns-reason-text">
+                                Motivo: {turn.motive=="HEALTH CERTIFICATE"?"Certificado de apto físico":turn.motive}
                               </Typography>
                             )}
                           </Box>
