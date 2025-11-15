@@ -408,8 +408,15 @@ const ReservationTurns: React.FC = () => {
                 
                 {(() => {
                   const specialtyFromSelect = formValues.professionSelected || '';
-                  const selectedIsGeneral = (selectedDoctor?.specialty || specialtyFromSelect).toString().toLowerCase() === 'general';
-                  if (selectedIsGeneral) {
+                  const specialty = (selectedDoctor?.specialty || specialtyFromSelect).toString().toLowerCase();
+                  const canIssueHealthCertificate = 
+                    specialty === 'clinic' || 
+                    specialty === 'clínico' || 
+                    specialty === 'clinico' ||
+                    specialty === 'pediatrician' || 
+                    specialty === 'pediatra';
+                  
+                  if (canIssueHealthCertificate) {
                     return (
                       <FormControlLabel
                         control={
