@@ -8,31 +8,27 @@ vi.mock('./dayjs.config', () => {
   // Default current time: 2024-01-15 10:00 (middle of January 2024)
   let currentTime = '2024-01-15 10:00'
 
-  mockDayjs.mockImplementation((date?: any) => {
-    if (!date) {
-      // Return current time
-      return {
-        isBefore: vi.fn().mockReturnValue(false),
-        isAfter: vi.fn().mockReturnValue(false),
-        valueOf: vi.fn().mockReturnValue(new Date(currentTime).getTime()),
-        month: vi.fn().mockReturnValue(new Date(currentTime).getMonth()),
-        year: vi.fn().mockReturnValue(new Date(currentTime).getFullYear()),
-        date: vi.fn().mockReturnValue(new Date(currentTime).getDate())
-      }
-    }
+  const createMockInstance = (date?: any) => ({
+    isBefore: vi.fn((other) => {
+      if (!date) return false
+      return new Date(date) < new Date(other || currentTime)
+    }),
+    isAfter: vi.fn((other) => {
+      if (!date) return false
+      return new Date(date) > new Date(other || currentTime)
+    }),
+    valueOf: vi.fn(() => date ? new Date(date).getTime() : new Date(currentTime).getTime()),
+    month: vi.fn(() => date ? new Date(date).getMonth() : new Date(currentTime).getMonth()),
+    year: vi.fn(() => date ? new Date(date).getFullYear() : new Date(currentTime).getFullYear()),
+    date: vi.fn(() => date ? new Date(date).getDate() : new Date(currentTime).getDate()),
+    tz: vi.fn().mockImplementation(function(this: any) {
+      // Return the same instance to allow method chaining
+      return this
+    })
+  })
 
-    return {
-      isBefore: vi.fn((other) => {
-        return new Date(date) < new Date(other || currentTime)
-      }),
-      isAfter: vi.fn((other) => {
-        return new Date(date) > new Date(other || currentTime)
-      }),
-      valueOf: vi.fn(() => new Date(date).getTime()),
-      month: vi.fn(() => new Date(date).getMonth()),
-      year: vi.fn(() => new Date(date).getFullYear()),
-      date: vi.fn(() => new Date(date).getDate())
-    }
+  mockDayjs.mockImplementation((date?: any) => {
+    return createMockInstance(date)
   })
 
   // Allow setting current time for tests

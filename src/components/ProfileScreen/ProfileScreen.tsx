@@ -1,5 +1,5 @@
 
-import { Box, Button, Card, CardContent, Divider, List, ListItem, ListItemText, Typography } from "@mui/material";
+import { Box, Button, Card, CardContent, Divider, List, ListItem, ListItemText, Typography, CircularProgress } from "@mui/material";
 
 import { useAuthMachine } from "#/providers/AuthProvider";
 import { SignInResponse } from "#/models/Auth";
@@ -77,9 +77,10 @@ const ProfileScreen: React.FC = () => {
                         </Typography>
                     </Box>
                     {!profile ? (
-                    <Typography align="center" color="text.secondary">
-                    Cargando perfil...
-                    </Typography>
+                        <Box display="flex" justifyContent="center" alignItems="center" p={4}>
+                            <CircularProgress />
+                            <Typography sx={{ ml: 2 }}>Cargando perfil...</Typography>
+                        </Box>
                     ) : (
                         <List disablePadding>
                             <EditField  key="name" label="Nombre" value={profile.name} isEditing={name} toggleKey="editName" fieldKey="name" maxLength={50} onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "name", value: val })}/>

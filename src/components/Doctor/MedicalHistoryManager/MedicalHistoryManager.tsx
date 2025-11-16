@@ -4,8 +4,7 @@ import {Box,Typography,Paper,Button,Alert,CircularProgress,Dialog,DialogTitle,Di
 import {Delete,PersonOutlined,AccessTime,Warning} from '@mui/icons-material';
 import type { MedicalHistory } from '#/models/MedicalHistory';
 import { useMachines } from '#/providers/MachineProvider';
-import { formatDateTime } from '#/utils/dateTimeUtils';
-import dayjs from '#/utils/dayjs.config';
+import { formatDateTime, dayjsArgentina } from '#/utils/dateTimeUtils';
 import './MedicalHistoryManager.css';
 
 
@@ -28,7 +27,7 @@ const MedicalHistoryManager: React.FC<MedicalHistoryManagerProps> = ({patientId,
 
 
   const sortedHistories = [...histories].sort((a, b) => 
-    dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf()
+    dayjsArgentina(b.createdAt).valueOf() - dayjsArgentina(a.createdAt).valueOf()
   );
 
   const isDeleteDialogOpen = uiState.context.toggleStates.deleteMedicalHistoryDialog || false;

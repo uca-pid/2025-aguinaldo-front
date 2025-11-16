@@ -50,19 +50,22 @@
   gap: 16px !important;
 }
 
-/* Empty State - matching PendingScreen */
 .turnsmod-empty-state {
-  background: white !important;
-  border: 1px solid var(--tea-green) !important;
-  border-radius: 12px !important;
-  padding: 48px 32px !important;
-  text-align: center !important;
-  box-shadow: 0 2px 8px rgba(13, 34, 48, 0.08) !important;
+  text-align: center;
+  padding: 40px 20px;
+  color: #64748b;
 }
 
 .turnsmod-empty-emoji {
-  font-size: 4rem !important;
-  margin-bottom: 16px !important;
+  width: 80px !important;
+  height: 80px !important;
+  margin: 0 auto 16px auto !important;
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%) !important;
+}
+
+.turnsmod-empty-emoji .MuiSvgIcon-root {
+  color: white !important;
+  font-size: 40px !important;
 }
 
 .turnsmod-empty-title {

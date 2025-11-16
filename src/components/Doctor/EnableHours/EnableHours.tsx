@@ -9,7 +9,8 @@ import {
   TextField,
   Switch,
   Alert,
-  IconButton
+  IconButton,
+  CircularProgress
 } from "@mui/material"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
@@ -371,7 +372,7 @@ const EnableHours: React.FC = () => {
                             color="success"
                             onClick={saveAvailability}
                             size="large"
-                            startIcon={<CheckCircle />}
+                            startIcon={doctorContext.isSavingAvailability ? <CircularProgress size={16} /> : <CheckCircle />}
                             disabled={enabledDays === 0 || totalRanges === 0 || doctorContext.isSavingAvailability}
                             className="enablehours-save-button"
                         >

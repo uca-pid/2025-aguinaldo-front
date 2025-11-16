@@ -122,7 +122,7 @@ const DoctorBadges: React.FC = () => {
             <Box className="badges-section">
               <Box className="badges-section-header">
                 <Typography variant="h5" className="badges-section-title">
-                  🏆 Todos los Logros
+                  Todos los Logros
                 </Typography>
                 <Chip
                   label={`${sortedBadges.length} logros`}

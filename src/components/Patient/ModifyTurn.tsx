@@ -8,15 +8,22 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { DateCalendar } from "@mui/x-date-pickers";
-import dayjs from "#/utils/dayjs.config";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import EditIcon from "@mui/icons-material/Edit";
 import {
   formatDateTime,
-  shouldDisableDate
+  shouldDisableDate,
+  dayjsArgentina,
+  nowArgentina
 } from "#/utils/dateTimeUtils";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import EditIcon from "@mui/icons-material/Edit";
 import TimeSlotSelector from "#/components/shared/TimeSlotSelector/TimeSlotSelector";
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
+import { esES } from '@mui/x-date-pickers/locales';
 import "./ModifyTurn.css";
+
+// Set Spanish locale globally for dayjs
+dayjs.locale('es');
 
 const ModifyTurn: React.FC = () => {
   const { uiSend, turnState, turnSend } = useMachines();
@@ -117,11 +124,15 @@ const ModifyTurn: React.FC = () => {
           <Box className="reservation-step2-content">
             <Box className="reservation-calendar-section">
               <Box className="reservation-calendar-container">
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <LocalizationProvider 
+                  dateAdapter={AdapterDayjs} 
+                  adapterLocale="es"
+                  localeText={esES.components.MuiLocalizationProvider.defaultProps.localeText}
+                >
                   <DemoContainer components={['DateCalendar']} sx={{ width: '100%' }}>
                     <DemoItem>
                       <DateCalendar
-                        value={selectedDate ? dayjs(selectedDate) : null}
+                        value={selectedDate ? dayjsArgentina(selectedDate) : null}
                         onChange={(newValue) => {
                           turnSend({ type: "UPDATE_FORM", path: ["modifyTurn", "selectedDate"], value: newValue });
                           turnSend({ type: "UPDATE_FORM", path: ["modifyTurn", "selectedTime"], value: null });
@@ -133,8 +144,35 @@ const ModifyTurn: React.FC = () => {
                             });
                           }
                         }}
-                        minDate={dayjs()}
+                        minDate={nowArgentina()}
                         shouldDisableDate={(date) => shouldDisableDate(date, availableDates)}
+                        slotProps={{
+                          day: (props: any) => {
+                            const { day, ...other } = props;
+                            const dateString = day.format('YYYY-MM-DD');
+                            const hasAvailability = availableDates.includes(dateString);
+                            
+                            return {
+                              ...other,
+                              sx: {
+                                ...other.sx,
+                                position: 'relative',
+                                '&::after': hasAvailability ? {
+                                  content: '""',
+                                  position: 'absolute',
+                                  bottom: '2px',
+                                  left: '50%',
+                                  transform: 'translateX(-50%)',
+                                  width: '4px',
+                                  height: '4px',
+                                  borderRadius: '50%',
+                                  backgroundColor: '#1976d2',
+                                  opacity: 0.7,
+                                } : {},
+                              }
+                            };
+                          }
+                        }}
                       />
                     </DemoItem>
                   </DemoContainer>
@@ -147,7 +185,7 @@ const ModifyTurn: React.FC = () => {
             <Box className="reservation-time-section">
               <Box className="reservation-time-slots">
                 <TimeSlotSelector
-                  selectedDate={selectedDate ? dayjs(selectedDate) : null}
+                  selectedDate={selectedDate ? dayjsArgentina(selectedDate) : null}
                   availableSlots={availableTurns}
                   selectedTime={selectedTime}
                   onTimeSelect={(timeSlot) => turnSend({ type: "UPDATE_FORM", path: ["modifyTurn", "selectedTime"], value: timeSlot })}

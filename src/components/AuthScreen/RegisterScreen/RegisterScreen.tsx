@@ -24,6 +24,7 @@ import { useAuthMachine } from "#/providers/AuthProvider";
 import Logo from "#/assets/favicon.svg";
 import dayjs from '#/utils/dayjs.config';
 import 'dayjs/locale/es';
+import { dayjsArgentina, nowArgentina } from '#/utils/dateTimeUtils';
 import "./RegisterScreen.css";
 
 dayjs.locale('es');
@@ -223,9 +224,9 @@ function RegisterScreen() {
                       <DatePicker
                         label="Fecha de Nacimiento"
                         format="DD/MM/YYYY"
-                        value={authContext.formValues.birthdate ? dayjs(authContext.formValues.birthdate) : null}
-                        maxDate={dayjs().subtract(18, 'year')}
-                        minDate={dayjs().subtract(120, 'year')}
+                        value={authContext.formValues.birthdate ? dayjsArgentina(authContext.formValues.birthdate) : null}
+                        maxDate={nowArgentina().subtract(18, 'year')}
+                        minDate={nowArgentina().subtract(120, 'year')}
                         views={['year', 'month', 'day']}
                         openTo="year"
                         onChange={(date) => authSend({ 

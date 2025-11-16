@@ -12,7 +12,7 @@ import { SignInResponse } from '#/models/Auth';
 import { TurnService } from '#/service/turn-service.service';
 import { orchestrator } from '#/core/Orchestrator';
 import { UI_MACHINE_ID } from '#/machines/uiMachine';
-import dayjs from '#/utils/dayjs.config';
+import { formatDateTime } from '#/utils/dateTimeUtils';
 import './RatingModal.css';
 
 const RatingModal = () => {
@@ -148,7 +148,7 @@ const RatingModal = () => {
                 <Box className="rating-modal-appointment-details">
                   <AccessTimeIcon fontSize="small" color="action" />
                   <Typography variant="body2" color="text.secondary">
-                    {dayjs(turn.scheduledAt).format('DD/MM/YYYY [a las] HH:mm')}
+                    {formatDateTime(turn.scheduledAt, 'DD/MM/YYYY [a las] HH:mm')}
                   </Typography>
                 </Box>
               </Box>

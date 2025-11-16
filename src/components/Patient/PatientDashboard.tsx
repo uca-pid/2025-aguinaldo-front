@@ -15,7 +15,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import DashboardCard from "../shared/DashboardCard/DashboardCard";
 import DashboardUpcomingCard from "../shared/DashboardUpcomingCard/DashboardUpcomingCard";
 import BadgeShowcase from "../shared/Badges/BadgeShowcase";
-import dayjs from "#/utils/dayjs.config";
+import { dayjsArgentina, nowArgentina } from '#/utils/dateTimeUtils';
 import "./PatientDashboard.css";
 import LoadingThreeDotsJumping from "../shared/PageLoadingScreen/LoadingThreeDots";
 import { useDataMachine } from "#/providers/DataProvider";
@@ -30,21 +30,22 @@ const PatientDashboard: React.FC = () => {
   const dataContext = dataState.context;
 
   // Patient dashboard needs to wait for ALL patient-specific data to be loaded
-  const isLoading = dataContext.loading?.doctors || 
+  const isLoading = dataContext.loading?.initializing ||
+                   dataContext.loading?.doctors || 
                    dataContext.loading?.myTurns || 
                    dataContext.loading?.myModifyRequests ||
                    turnContext.isLoadingMyTurns;
   
   const upcomingTurns = (turnContext.myTurns || [])
     .filter((turn: any) => {
-      const turnDate = dayjs(turn.scheduledAt);
-      const now = dayjs();
+      const turnDate = dayjsArgentina(turn.scheduledAt);
+      const now = nowArgentina();
       const isUpcoming = turnDate.isAfter(now);
       
       return isUpcoming && turn.status === 'SCHEDULED';
     })
     .slice(0, 10)
-    .sort((a: any, b: any) => dayjs(a.scheduledAt).diff(dayjs(b.scheduledAt)));
+    .sort((a: any, b: any) => dayjsArgentina(a.scheduledAt).diff(dayjsArgentina(b.scheduledAt)));
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -77,7 +78,7 @@ const PatientDashboard: React.FC = () => {
               </Avatar>
               <Box>
                 <Typography variant="h4" component="h1" className="dashboard-header-title">
-                  Hola, {user.name || 'Paciente'}!
+                  Hola, {user.name || 'Paciente'}
                 </Typography>
                 <Typography variant="h6" className="dashboard-header-subtitle patient-header-subtitle">
                   Gestiona tus turnos médicos y citas

@@ -4,11 +4,12 @@ import {
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useDataMachine } from "#/providers/DataProvider";
-import dayjs from "#/utils/dayjs.config";
+import { dayjsArgentina, nowArgentina, formatDateTime, formatTime } from '#/utils/dateTimeUtils';
 import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
 import type { TurnResponse } from "#/models/Turn";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import EditIcon from "@mui/icons-material/Edit";
+import SearchOutlined from "@mui/icons-material/SearchOutlined";
 import "./ViewTurns.css";
 import { orchestrator } from "#/core/Orchestrator";
 import { filterTurns } from "#/utils/filterTurns";
@@ -77,7 +78,7 @@ const ViewTurns: React.FC = () => {
   };
 
   const isTurnPast = (scheduledAt: string) => {
-    return dayjs(scheduledAt).isBefore(dayjs());
+    return dayjsArgentina(scheduledAt).isBefore(nowArgentina());
   };
 
   const canCancelTurn = (turn: TurnResponse) => {
@@ -213,7 +214,7 @@ const ViewTurns: React.FC = () => {
                         )}
 
                         <Typography variant="body1" className="viewturns-turn-datetime viewturns-date-text">
-                          {dayjs(turn.scheduledAt).format("dddd, DD [de] MMMM [de] YYYY").replace(/^\w/, (c) => c.toUpperCase())}
+                          {formatDateTime(turn.scheduledAt, "dddd, DD [de] MMMM [de] YYYY").replace(/^\w/, (c) => c.toUpperCase())}
                         </Typography>
 
                       </Box>
@@ -221,7 +222,7 @@ const ViewTurns: React.FC = () => {
                       {/* Detalles del turno */}
                       <Box className="viewturns-turn-details">
                         <Typography variant="h5" className="viewturns-time-text">
-                          {dayjs(turn.scheduledAt).format("HH:mm")} hs
+                          {formatTime(turn.scheduledAt)} hs
                         </Typography>
                         <Box>
                           <Typography variant="h6" className="viewturns-doctor-text">
@@ -299,11 +300,13 @@ const ViewTurns: React.FC = () => {
               ))
             ) : (
               <Box className="viewturns-empty-state">
-                <Box className="viewturns-empty-emoji">📅</Box>
-                <Typography variant="h5" className="viewturns-empty-title">
+                <Avatar className="viewturns-empty-icon">
+                  <SearchOutlined />
+                </Avatar>
+                <Typography variant="h6" gutterBottom>
                   No hay turnos disponibles
                 </Typography>
-                <Typography variant="body1" className="viewturns-empty-subtitle">
+                <Typography variant="body2" color="textSecondary">
                   {showTurnsContext.dateSelected || showTurnsContext.statusFilter
                     ? 'No hay turnos que coincidan con los filtros seleccionados'
                     : 'No tenés turnos registrados'
