@@ -29,7 +29,6 @@ const ReservationTurns: React.FC = () => {
   const isProfessionSelected = !!formValues.professionSelected;
   const isDoctorSelected = !!formValues.doctorId;
 
-  // Set dayjs locale to Spanish
   dayjs.locale('es');
 
  
@@ -49,23 +48,18 @@ const ReservationTurns: React.FC = () => {
 
   const doctorSubcatMap = buildDoctorSubcatMap(ratedCountsSnapshot);
 
-  // derive the final filteredDoctors applying score and subcategory filters
   const minScore = formValues.filterMinScore ?? null;
   const selectedSubcats = formValues.filterSelectedSubcats ?? [];
   const filteredDoctors = buildFilteredDoctors(doctorsBySpecialty, doctorSubcatMap, minScore, selectedSubcats);
 
-  // use three palette variables from shared CSS so colors match the app theme
   const SUBCAT_COLOR_VARS = ['var(--lapis-lazuli)', 'var(--verdigris)', 'var(--emerald)'];
 
-  // color by top position (0 = top1, 1 = top2, 2 = top3)
   const getColorForTop = (index: number) => {
     return SUBCAT_COLOR_VARS[index % SUBCAT_COLOR_VARS.length];
   };
 
-  // Resolve CSS variable or rgb/hex value into a hex string like #rrggbb
   const resolveToHex = (value: string): string | null => {
     if (!value) return null;
-    // if it's a CSS var(...) reference, read the computed value
     const varMatch = value.match(/^var\((--[a-zA-Z0-9-_]+)\)$/);
     let resolved = value;
     if (varMatch && typeof window !== 'undefined') {
@@ -74,7 +68,6 @@ const ReservationTurns: React.FC = () => {
       if (computed) resolved = computed.trim();
     }
 
-    // if rgb(...) convert to hex
     const rgbMatch = resolved.match(/rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)/i);
     if (rgbMatch) {
       const r = parseInt(rgbMatch[1], 10);
@@ -84,11 +77,9 @@ const ReservationTurns: React.FC = () => {
       return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
     }
 
-    // already hex?
     const hexMatch = resolved.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
     if (hexMatch) {
       let h = hexMatch[0];
-      // expand short form #abc -> #aabbcc
       if (h.length === 4) {
         h = `#${h[1]}${h[1]}${h[2]}${h[2]}${h[3]}${h[3]}`;
       }
@@ -105,7 +96,6 @@ const ReservationTurns: React.FC = () => {
     const r = parseInt(c.substring(0, 2), 16);
     const g = parseInt(c.substring(2, 4), 16);
     const b = parseInt(c.substring(4, 6), 16);
-    // relative luminance
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance > 0.6 ? '#000' : '#fff';
   };
@@ -114,7 +104,6 @@ const ReservationTurns: React.FC = () => {
 
   const handleMotiveChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Limit to 500 characters for security
     if (value.length <= 500) {
       turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "motive"], value });
     }
@@ -124,12 +113,9 @@ const ReservationTurns: React.FC = () => {
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "professionSelected"], value: event.target.value });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "doctorId"], value: "" });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "profesionalSelected"], value: "" });
-    // Clear health certificate fields whenever the profession changes
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "needsHealthCertificate"], value: false });
-    // Clear motive when switching specialties
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "motive"], value: "" });
 
-    // Immediately request rated-subcategory counts for doctors of the newly selected profession
     const doctorsToFetch = turnContext.doctors.filter((doctor: any) => doctor.specialty.toLowerCase() === String(event.target.value).toLowerCase());
     if (doctorsToFetch.length) {
       requestRatedCountsForDoctors(doctorsToFetch);
@@ -142,12 +128,10 @@ const ReservationTurns: React.FC = () => {
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "doctorId"], value: event.target.value });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "profesionalSelected"], value: selectedDoctor ? `${selectedDoctor.name} ${selectedDoctor.surname}` : "" });
     
-    // Limpiar fecha y hora seleccionadas cuando cambia el doctor
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "dateSelected"], value: null });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "timeSelected"], value: null });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "scheduledAt"], value: null });
     
-    // Cargar fechas disponibles para el doctor seleccionado
     if (event.target.value) {
       orchestrator.sendToMachine(DATA_MACHINE_ID, { 
         type: "LOAD_AVAILABLE_DATES", 
@@ -157,16 +141,12 @@ const ReservationTurns: React.FC = () => {
   };
 
 
-  // Rated-subcategory counts are requested via machine events. When the profession changes
-  // we send doctor ids to the data machine (see handleProfessionChange). This avoids using
-  // useEffect/useState in the component and centralizes network logic in the machines.
 
   const handleDateChange = (newValue: Dayjs | null) => {
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "dateSelected"], value: newValue });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "timeSelected"], value: null });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "scheduledAt"], value: null });
     
-    // Cargar turnos disponibles para el doctor seleccionado en la fecha seleccionada
     if (newValue && formValues.doctorId) {
       orchestrator.sendToMachine(DATA_MACHINE_ID, { 
         type: "LOAD_AVAILABLE_TURNS", 
@@ -292,7 +272,6 @@ const ReservationTurns: React.FC = () => {
                         return (
                           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', maxWidth: 320 }}>
                             {items.map((it) => {
-                              // color by index within availableSubcats for determinism
                               const idx = availableSubcats.indexOf(it);
                               const bg = getColorForTop(idx >= 0 ? idx : 0);
                               return (
@@ -430,13 +409,10 @@ const ReservationTurns: React.FC = () => {
                             checked={!!formValues.needsHealthCertificate}
                             onChange={(e) => {
                               const checked = e.target.checked;
-                              // set checkbox state
                               turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "needsHealthCertificate"], value: checked });
-                              // if checked, force the motive to the required value
                               if (checked) {
                                 turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "motive"], value: "HEALTH CERTIFICATE" });
                               } else {
-                                // if unchecked, only clear motive if it was the auto-set value
                                 const currentMotive = (formValues.motive || "").toString();
                                 if (currentMotive.toUpperCase() === "HEALTH CERTIFICATE") {
                                   turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "motive"], value: "" });

@@ -33,7 +33,6 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
     return null;
   }
 
-  // Calculate stats from progress data
   const earnedBadges = progress.filter(p => p.earned);
   const totalEarned = earnedBadges.length;
   const totalAvailable = progress.length;
@@ -41,7 +40,6 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
     ? Math.round((totalEarned / totalAvailable) * 100)
     : 0;
 
-  // Recently earned badges (earned badges sorted by earnedAt desc)
   const recentlyEarned = earnedBadges
     .filter(p => p.earnedAt)
     .sort((a, b) => new Date(b.earnedAt!).getTime() - new Date(a.earnedAt!).getTime())
@@ -56,7 +54,6 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
       progress: p // Include the full progress data for metadata
     } as Badge & { progress: BadgeProgress }));
 
-  // Closest to earn (not earned badges with progress > 50%, sorted by progress desc)
   const closestToEarn = progress
     .filter(p => !p.earned && p.progressPercentage > 50)
     .sort((a, b) => b.progressPercentage - a.progressPercentage)

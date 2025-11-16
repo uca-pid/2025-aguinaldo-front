@@ -23,12 +23,10 @@ const EditField :React.FC<EditFieldProps>= ({label, value, isEditing, toggleKey,
     const { uiSend, profileState, profileSend } = useMachines();
     const profileContext = profileState?.context;
 
-    // Use machine's formValues instead of local state
     const currentValue = isEditing ? (profileContext?.formValues?.[fieldKey as keyof typeof profileContext.formValues] ?? value) : value;
     const isUpdating = profileContext?.updatingProfile;
 
     const handleChange = (newValue: string) => {
-      // Apply maxLength validation if provided
       if (maxLength && newValue.length > maxLength) {
         return; // Don't update if exceeds limit
       }
@@ -36,17 +34,12 @@ const EditField :React.FC<EditFieldProps>= ({label, value, isEditing, toggleKey,
     };
 
     const handleSave = () => {
-      // The value is already in machine's formValues from onChange calls
-      // Just call UPDATE_PROFILE to save
       profileSend({ type: "UPDATE_PROFILE" });
-      // Cerrar el modo de edición
       uiSend({type: "TOGGLE", key: toggleKey});
     };
 
     const handleCancel = () => {
-      // Revertir al valor original en la máquina
       profileSend({ type: "CANCEL_PROFILE_EDIT", key: fieldKey });
-      // Cerrar el modo de edición
       uiSend({type: "TOGGLE", key: toggleKey});
     };
     
