@@ -17,7 +17,7 @@ vi.mock('dayjs', () => {
     
     const parsedDate = date ? new Date(date) : new Date()
     
-    return {
+    const mockInstance = {
       isValid: isValidDate,
       subtract: vi.fn((amount: number, unit: string) => {
         const resultDate = new Date(parsedDate)
@@ -37,14 +37,19 @@ vi.mock('dayjs', () => {
         return parsedDate < otherDate
       }),
       toDate: () => parsedDate,
-      format: vi.fn(() => parsedDate.toISOString())
+      format: vi.fn(() => parsedDate.toISOString()),
+      tz: vi.fn().mockImplementation(function(this: any) {
+        // Return the same instance to allow method chaining
+        return this
+      })
     }
+    
+    return mockInstance
   })
   
   return {
     default: Object.assign(mockDayjs, {
-      extend: vi.fn(),
-      tz: undefined
+      extend: vi.fn()
     })
   }
 })

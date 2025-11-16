@@ -9,7 +9,7 @@ import { calculateAge, type SubcategoryCount } from "#/models/Doctor"
 import './PatientDetails.css'
 import { useDataMachine } from "#/providers/DataProvider"
 import { useAuthMachine } from "#/providers/AuthProvider"
-import dayjs from "#/utils/dayjs.config"
+import { dayjsArgentina, formatDateTime } from '#/utils/dateTimeUtils'
 import type { TurnResponse } from "#/models/Turn"
 import type { MedicalHistory } from "#/models/MedicalHistory"
 
@@ -160,7 +160,7 @@ const PatientDetails: React.FC = () => {
   const formatBirthdate = (birthdate: string | undefined) => {
     if (!birthdate) return 'No disponible';
     try {
-      return dayjs(birthdate).format('DD [de] MMMM [de] YYYY');
+      return formatDateTime(birthdate, 'DD [de] MMMM [de] YYYY');
     } catch {
       return birthdate;
     }
@@ -496,7 +496,7 @@ const PatientDetails: React.FC = () => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {patientTurns
                     .filter(turn => turn.status !== 'CANCELED' && turn.status !== 'CANCELLED')
-                    .sort((a, b) => dayjs(b.scheduledAt).valueOf() - dayjs(a.scheduledAt).valueOf())
+                    .sort((a, b) => dayjsArgentina(b.scheduledAt).valueOf() - dayjsArgentina(a.scheduledAt).valueOf())
                     .map((turn) => {
                       const currentHistory = getMedicalHistoryForTurn(turn.id);
                       const isEditing = medicalHistoryContext.selectedHistory?.turnId === turn.id;
@@ -508,7 +508,7 @@ const PatientDetails: React.FC = () => {
                           <Box sx={{ mb: 2 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                                {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
+                                {formatDateTime(turn.scheduledAt, "DD/MM/YYYY - HH:mm")}
                               </Typography>
                               <Chip
                                 label={getTurnStatusLabel(turn.status)}

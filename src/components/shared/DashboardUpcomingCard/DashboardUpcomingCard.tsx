@@ -5,7 +5,7 @@ import {
   Typography,
   CircularProgress
 } from "@mui/material";
-import dayjs from "#/utils/dayjs.config";
+import { formatDateTime } from '#/utils/dateTimeUtils';
 import "./DashboardUpcomingCard.css";
 
 type CardType = 'patient' | 'doctor';
@@ -47,7 +47,7 @@ const DashboardUpcomingCard: React.FC<DashboardUpcomingCardProps> = ({
       return (
         <>
           <Typography variant="body1" className="upcoming-card-date">
-            {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
+            {formatDateTime(turn.scheduledAt, "DD/MM/YYYY - HH:mm")}
           </Typography>
           <Typography variant="body2" className="upcoming-card-secondary">
             {turn.doctorName || "Doctor"} - {turn.doctorSpecialty || "Especialidad"}
@@ -59,7 +59,7 @@ const DashboardUpcomingCard: React.FC<DashboardUpcomingCardProps> = ({
         <>
           <Box className="upcoming-card-header-row">
             <Typography variant="body1" className="upcoming-card-date">
-              {dayjs(turn.scheduledAt).format("DD/MM/YYYY - HH:mm")}
+              {formatDateTime(turn.scheduledAt, "DD/MM/YYYY - HH:mm")}
             </Typography>
           </Box>
           <Typography variant="body2" className="upcoming-card-secondary">

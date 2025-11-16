@@ -125,7 +125,6 @@
   background: white !important;
   border: 1px solid var(--tea-green) !important;
   border-radius: 12px !important;
-  padding: 24px !important;
   box-shadow: 0 2px 8px rgba(13, 34, 48, 0.08) !important;
 }
 
@@ -133,6 +132,7 @@
   display: flex !important;
   flex-direction: column !important;
   gap: 16px !important;
+  padding: 24px !important;
 }
 
 /* Turn Items - styled as cards like PendingScreen doctor cards */
@@ -273,19 +273,22 @@
   color: var(--indigo-dye) !important;
 }
 
-/* Empty State - matching PendingScreen */
 .viewturns-empty-state {
-  background: white !important;
-  border: 1px solid var(--tea-green) !important;
-  border-radius: 12px !important;
-  padding: 48px 32px !important;
-  text-align: center !important;
-  box-shadow: 0 2px 8px rgba(13, 34, 48, 0.08) !important;
+  text-align: center;
+  padding: 16px 0;
+  color: #64748b;
 }
 
-.viewturns-empty-emoji {
-  font-size: 4rem !important;
-  margin-bottom: 16px !important;
+.viewturns-empty-icon {
+  width: 80px !important;
+  height: 80px !important;
+  margin: 0 auto 16px auto !important;
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%) !important;
+}
+
+.viewturns-empty-icon .MuiSvgIcon-root {
+  color: white !important;
+  font-size: 40px !important;
 }
 
 .viewturns-empty-title {

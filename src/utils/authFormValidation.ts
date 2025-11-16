@@ -1,4 +1,4 @@
-import dayjs from "./dayjs.config";
+import { dayjsArgentina, nowArgentina } from './dateTimeUtils';
 import type { AuthMachineContext } from "../machines/authMachine";
 
 
@@ -86,7 +86,7 @@ export const validateField = (key: string, value: any, context: AuthMachineConte
       return "Fecha de nacimiento requerida";
     }
     
-    const date = dayjs(value);
+    const date = dayjsArgentina(value);
     if (!date.isValid()) {
       return "Fecha inválida";
     }
@@ -97,7 +97,7 @@ export const validateField = (key: string, value: any, context: AuthMachineConte
       return "";
     }
     
-    const now = dayjs();
+    const now = nowArgentina();
     const eighteenYearsAgo = now.subtract(18, 'years');
     const maxAge = now.subtract(120, 'years');
     

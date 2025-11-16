@@ -71,6 +71,7 @@ export interface DataMachineContext {
     ratedSubcategoryCounts: boolean;
     userBadges: boolean;
     userBadgeProgress: boolean;
+    initializing: boolean;
   };
   
   errors: {
@@ -134,6 +135,7 @@ export const DataMachineDefaultContext: DataMachineContext = {
     ratedSubcategoryCounts: false,
     userBadges: false,
     userBadgeProgress: false,
+    initializing: false,
   },
   
   errors: {
@@ -194,6 +196,7 @@ export const dataMachine = createMachine({
               userRole: ({ event }) => event.userRole,
               userId: ({ event }) => event.userId,
               doctorId: ({ event }) => event.userRole === "DOCTOR" ? event.userId : null,
+              loading: ({ context }) => ({ ...context.loading, initializing: true }),
             }),
             () => {
               orchestrator.sendToMachine("notification", {
@@ -223,6 +226,7 @@ export const dataMachine = createMachine({
             adminRatings: null,
             userBadges: [],
             userBadgeProgress: [],
+            loading: ({ context }) => ({ ...context.loading, initializing: false }),
           }),
         },
         RELOAD_DOCTORS: {
@@ -273,17 +277,22 @@ export const dataMachine = createMachine({
     },
     
     ready: {
-      entry: ({ context }) => {
-        setTimeout(() => {
-          orchestrator.send({
-            type: "DATA_LOADED",
-            doctorAvailability: context.doctorAvailability,
-            userBadges: context.userBadges,
-            userBadgeProgress: context.userBadgeProgress
-          });
-          
-        }, 0);
-      },
+      entry: [
+        ({ context }) => {
+          setTimeout(() => {
+            orchestrator.send({
+              type: "DATA_LOADED",
+              doctorAvailability: context.doctorAvailability,
+              userBadges: context.userBadges,
+              userBadgeProgress: context.userBadgeProgress
+            });
+            
+          }, 0);
+        },
+        assign({
+          loading: ({ context }) => ({ ...context.loading, initializing: false }),
+        })
+      ],
       exit: () => {
         orchestrator.send({
           type: "LOADING"

@@ -6,63 +6,51 @@ import dayjs from './dayjs.config'
 vi.mock('./dayjs.config', () => {
   const mockDayjs = vi.fn()
 
-  // Create a mock "now" instance with timezone support
-  const createNowInstance = () => ({
+  // Create a mock instance with timezone support
+  const createMockInstance = (date?: any) => ({
+    date: date,
+    __isNow: !date,
     isSame: vi.fn((other, unit) => {
       if (unit === 'day') {
-        return other && typeof other === 'object' && other.__isNow
+        if (date && typeof other === 'object' && other.__isNow) {
+          // Check if this date is the same day as "now"
+          return date.startsWith && date.startsWith('2024-01-15')
+        }
+        return false
       }
       return false
     }),
-    isAfter: vi.fn().mockReturnValue(false),
-    tz: vi.fn().mockReturnThis(),
-    format: vi.fn().mockReturnValue('2024-01-15 10:00'),
-    day: vi.fn().mockReturnValue(1),
-    __isNow: true
-  })
-
-  mockDayjs.mockImplementation((date?: any) => {
-    // If no date provided, it's "now"
-    if (!date) {
-      return createNowInstance()
-    }
-
-    // For specific dates
-    const mockInstance = {
-      date: date,
-      __isNow: false,
-      isSame: vi.fn((other, unit) => {
-        if (unit === 'day') {
-          // Check if this date is the same day as "now"
-          return date.startsWith('2024-01-15') && other && typeof other === 'object' && other.__isNow
-        }
-        return false
-      }),
-      isAfter: vi.fn((_other, unit) => {
-        if (unit === 'day') {
-          // Future dates are after today (2024-01-15)
+    isAfter: vi.fn((_other, unit) => {
+      if (unit === 'day') {
+        // Future dates are after today (2024-01-15)
+        if (date && date.startsWith) {
           const datePart = date.split(' ')[0]
           return datePart > '2024-01-15'
         }
-        // For same day, check if time is after current time (10:00)
-        if (date.startsWith('2024-01-15')) {
-          const time = date.split(' ')[1]
-          return time > '10:00'
-        }
-        return true
-      }),
-      tz: vi.fn().mockReturnThis(),
-      format: vi.fn().mockImplementation((fmt) => {
-        if (fmt === 'YYYY-MM-DD') return date.split(' ')[0]
-        if (fmt === 'DD/MM/YYYY HH:mm') return '15/01/2024 10:00'
-        if (fmt === 'DD/MM/YYYY') return '15/01/2024'
-        if (fmt === 'HH:mm') return '10:00'
-        return date || 'mocked-date'
-      }),
-      day: vi.fn().mockReturnValue(1)
-    }
+      }
+      // For same day, check if time is after current time (10:00)
+      if (date && date.startsWith && date.startsWith('2024-01-15')) {
+        const time = date.split(' ')[1]
+        return time > '10:00'
+      }
+      return false
+    }),
+    tz: vi.fn().mockImplementation(function(this: any) {
+      // Return the same instance to allow method chaining
+      return this
+    }),
+    format: vi.fn().mockImplementation((fmt) => {
+      if (fmt === 'YYYY-MM-DD') return date && date.split ? date.split(' ')[0] : '2024-01-15'
+      if (fmt === 'DD/MM/YYYY HH:mm') return '15/01/2024 10:00'
+      if (fmt === 'DD/MM/YYYY') return '15/01/2024'
+      if (fmt === 'HH:mm') return '10:00'
+      return date || 'mocked-date'
+    }),
+    day: vi.fn().mockReturnValue(1)
+  })
 
-    return mockInstance
+  mockDayjs.mockImplementation((date?: any) => {
+    return createMockInstance(date)
   })
 
   return { default: mockDayjs, __esModule: true }

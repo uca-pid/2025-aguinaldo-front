@@ -1,4 +1,4 @@
-import dayjs from "./dayjs.config";
+import { dayjsArgentina, nowArgentina } from './dateTimeUtils';
 
 export function filterTurns (myTurns: any, statusFilter: any) {
     return myTurns.filter((turn: any) => {
@@ -10,7 +10,7 @@ export function filterTurns (myTurns: any, statusFilter: any) {
     })
     .sort((a: any, b: any) => {
       const getStatusPriority = (turn: any) => {
-        const isPast = dayjs(turn.scheduledAt).isBefore(dayjs());
+        const isPast = dayjsArgentina(turn.scheduledAt).isBefore(nowArgentina());
         
         if (turn.status === 'SCHEDULED') {
           return isPast ? 2 : 1;
@@ -25,19 +25,19 @@ export function filterTurns (myTurns: any, statusFilter: any) {
       if (statusComparison !== 0) {
         return statusComparison;
       }
-      return dayjs(a.scheduledAt).valueOf() - dayjs(b.scheduledAt).valueOf();
+      return dayjsArgentina(a.scheduledAt).valueOf() - dayjsArgentina(b.scheduledAt).valueOf();
     })
 }
 
 
 
 export function turnsOfTheMonth (myTurns: any) {
-    const currentMonth = dayjs().month();
-    const currentYear = dayjs().year();
-    const currentDay = dayjs().date();
+    const currentMonth = nowArgentina().month();
+    const currentYear = nowArgentina().year();
+    const currentDay = nowArgentina().date();
     
     return myTurns.filter((turn: any) => {
-      const turnDate = dayjs(turn.scheduledAt);
+      const turnDate = dayjsArgentina(turn.scheduledAt);
       const isCurrentMonth = turnDate.month() === currentMonth && turnDate.year() === currentYear;
       const isPast = turnDate.date() <= currentDay;
       
@@ -46,10 +46,10 @@ export function turnsOfTheMonth (myTurns: any) {
 }
 
 export function upComingTurns (myTurns: any) {
-    const now = dayjs();
+    const now = nowArgentina();
     
     return myTurns.filter((turn: any) => {
-      const turnDate = dayjs(turn.scheduledAt);
+      const turnDate = dayjsArgentina(turn.scheduledAt);
       const isUpcoming = turnDate.isAfter(now);
       const isScheduled = turn.status === 'SCHEDULED';
       
@@ -59,12 +59,12 @@ export function upComingTurns (myTurns: any) {
 
 
 export function allPastTurnsThisMonth (myTurns: any) {
-    const currentMonth = dayjs().month();
-    const currentYear = dayjs().year();
-    const currentDay = dayjs().date();
+    const currentMonth = nowArgentina().month();
+    const currentYear = nowArgentina().year();
+    const currentDay = nowArgentina().date();
     
     return myTurns.filter((turn: any) => {
-      const turnDate = dayjs(turn.scheduledAt);
+      const turnDate = dayjsArgentina(turn.scheduledAt);
       const isCurrentMonth = turnDate.month() === currentMonth && turnDate.year() === currentYear;
       const isPast = turnDate.date() <= currentDay;
       const isCompleted = turn.status != 'CANCELED';
