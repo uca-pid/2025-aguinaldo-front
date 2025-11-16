@@ -1,10 +1,11 @@
 import { 
-  Box, Typography, Avatar, Chip, Paper, CircularProgress
+  Box, Typography, Avatar, Chip, CircularProgress
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
-import dayjs from "#/utils/dayjs.config";
+import { dayjsArgentina, formatDateTime } from '#/utils/dateTimeUtils';
 import type { TurnModifyRequest } from "#/models/TurnModifyRequest";
 import ListAltIcon from "@mui/icons-material/ListAlt";
+import SearchOutlined from "@mui/icons-material/SearchOutlined";
 import { Patient } from "#/models/Doctor"
 import "./TurnsModifications.css";
 import { useDataMachine } from "#/providers/DataProvider"
@@ -77,8 +78,8 @@ const TurnsModifications: React.FC = () => {
 
             <Box className="pending-cards-container">
               {pendingModifyRequests.map((request, index) => {
-                const isDateChange = dayjs(request.currentScheduledAt).format("YYYY-MM-DD") !== dayjs(request.requestedScheduledAt).format("YYYY-MM-DD");
-                const isTimeChange = dayjs(request.currentScheduledAt).format("HH:mm") !== dayjs(request.requestedScheduledAt).format("HH:mm");
+                const isDateChange = dayjsArgentina(request.currentScheduledAt).format("YYYY-MM-DD") !== dayjsArgentina(request.requestedScheduledAt).format("YYYY-MM-DD");
+                const isTimeChange = dayjsArgentina(request.currentScheduledAt).format("HH:mm") !== dayjsArgentina(request.requestedScheduledAt).format("HH:mm");
 
                 return (
                   <PendingCard
@@ -107,10 +108,10 @@ const TurnsModifications: React.FC = () => {
                     isLoading={uiState.context.toggleStates.loadingApprove === request.id || uiState.context.toggleStates.loadingReject === request.id}
                   >
                     <Typography variant="body2" color="text.secondary">
-                      <strong>Fecha actual:</strong> {dayjs(request.currentScheduledAt).format("DD/MM/YYYY HH:mm")}
+                      <strong>Fecha actual:</strong> {formatDateTime(request.currentScheduledAt, "DD/MM/YYYY HH:mm")}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      <strong>Fecha solicitada:</strong> {dayjs(request.requestedScheduledAt).format("DD/MM/YYYY HH:mm")}
+                      <strong>Fecha solicitada:</strong> {formatDateTime(request.requestedScheduledAt, "DD/MM/YYYY HH:mm")}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       <strong>Cambio:</strong> {
@@ -125,15 +126,17 @@ const TurnsModifications: React.FC = () => {
             </Box>
           </Box>
         ) : (
-          <Paper elevation={2} className="pending-empty-state">
-            <Box className="pending-empty-emoji">📅</Box>
-            <Typography variant="h5" className="pending-empty-title">
+          <Box className="turnsmod-empty-state">
+            <Avatar className="turnsmod-empty-emoji">
+              <SearchOutlined />
+            </Avatar>
+            <Typography variant="h6" gutterBottom>
               No hay solicitudes pendientes
             </Typography>
-            <Typography variant="body1" className="pending-empty-subtitle">
+            <Typography variant="body2" color="textSecondary">
               Todas las solicitudes han sido procesadas
             </Typography>
-          </Paper>
+          </Box>
         )}
       </Box>
     </Box>

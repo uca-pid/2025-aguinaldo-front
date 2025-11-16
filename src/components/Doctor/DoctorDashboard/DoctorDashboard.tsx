@@ -22,7 +22,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import DashboardCard from "../../shared/DashboardCard/DashboardCard";
 import DashboardUpcomingCard from "../../shared/DashboardUpcomingCard/DashboardUpcomingCard";
-import dayjs from "#/utils/dayjs.config";
+import { dayjsArgentina, nowArgentina } from '#/utils/dateTimeUtils';
 import "./DoctorDashboard.css";
 import { useDataMachine } from "#/providers/DataProvider";
 
@@ -42,7 +42,8 @@ const DoctorDashboard: React.FC = () => {
   const pendingModifyRequests: TurnModifyRequest[] = dataContext.doctorModifyRequests?.filter((r: TurnModifyRequest) => r.status === "PENDING") || [];
 
 
-  const isLoading = dataContext.loading?.myTurns || 
+  const isLoading = dataContext.loading?.initializing ||
+                    dataContext.loading?.myTurns || 
                     dataContext.loading?.doctorPatients || 
                     dataContext.loading?.doctorAvailability || 
                     dataContext.loading?.doctorModifyRequests ||
@@ -50,14 +51,14 @@ const DoctorDashboard: React.FC = () => {
   
   const upcomingTurns = (turnContext?.myTurns || [])
     .filter((turn: any) => {
-      const turnDate = dayjs(turn.scheduledAt);
-      const now = dayjs();
+      const turnDate = dayjsArgentina(turn.scheduledAt);
+      const now = nowArgentina();
       const isUpcoming = turnDate.isAfter(now);
       
       return isUpcoming && turn.status === 'SCHEDULED';
     })
     .slice(0, 10)
-    .sort((a: any, b: any) => dayjs(a.scheduledAt).diff(dayjs(b.scheduledAt))); 
+    .sort((a: any, b: any) => dayjsArgentina(a.scheduledAt).diff(dayjsArgentina(b.scheduledAt))); 
     
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -76,7 +77,7 @@ const DoctorDashboard: React.FC = () => {
               </Avatar>
               <Box>
                 <Typography variant="h4" component="h1" className="dashboard-header-title">
-                  Hola, Dr. {user.name || 'Doctor'}
+                  Hola, Dr. {user.name|| 'Doctor'} {user.surname|| 'Apellido'}
                 </Typography>
                 <Typography variant="h6" className="dashboard-header-subtitle doctor-header-subtitle">
                   Gestiona tus turnos y pacientes

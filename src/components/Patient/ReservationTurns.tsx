@@ -8,10 +8,13 @@ import { orchestrator } from "#/core/Orchestrator";
 import { DATA_MACHINE_ID } from "#/machines/dataMachine";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { esES } from '@mui/x-date-pickers/locales';
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { DateCalendar } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
 import dayjs from "#/utils/dayjs.config";
+import 'dayjs/locale/es';
+import { formatTime, dayjsArgentina, nowArgentina } from '#/utils/dateTimeUtils';
 import Event from "@mui/icons-material/Event";
 import "./ReservationTurns.css";
 import { buildAvailableSubcats, buildDoctorSubcatMap, buildFilteredDoctors, requestRatedCountsForDoctors } from "#/utils/reservationUtils";
@@ -25,6 +28,9 @@ const ReservationTurns: React.FC = () => {
 
   const isProfessionSelected = !!formValues.professionSelected;
   const isDoctorSelected = !!formValues.doctorId;
+
+  // Set dayjs locale to Spanish
+  dayjs.locale('es');
 
  
 
@@ -171,7 +177,7 @@ const ReservationTurns: React.FC = () => {
   };
 
   const handleTimeSelect = (timeSlot: string) => {
-    const selectedDateTime = dayjs(timeSlot);
+    const selectedDateTime = dayjsArgentina(timeSlot);
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "timeSelected"], value: selectedDateTime });
     turnSend({ type: "UPDATE_FORM", path: ["takeTurn", "scheduledAt"], value: timeSlot });
   };
@@ -480,17 +486,44 @@ const ReservationTurns: React.FC = () => {
               <Box className="reservation-step2-content">
                 <Box className="reservation-calendar-section">
                   <Box className="reservation-calendar-container">
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es" localeText={esES.components.MuiLocalizationProvider.defaultProps.localeText}>
                       <DemoContainer components={['DateCalendar']}>
                         <DemoItem>
                           <DateCalendar
                             value={formValues.dateSelected}
                             onChange={handleDateChange}
-                            minDate={dayjs()}
+                            minDate={nowArgentina()}
                             shouldDisableDate={(date) => {
                               const dateString = date.format('YYYY-MM-DD');
                               const isDisabled = !turnContext.availableDates.includes(dateString);
                               return isDisabled;
+                            }}
+                            slotProps={{
+                              day: (props: any) => {
+                                const { day, ...other } = props;
+                                const dateString = day.format('YYYY-MM-DD');
+                                const hasAvailability = turnContext.availableDates.includes(dateString);
+                                
+                                return {
+                                  ...other,
+                                  sx: {
+                                    ...other.sx,
+                                    position: 'relative',
+                                    '&::after': hasAvailability ? {
+                                      content: '""',
+                                      position: 'absolute',
+                                      bottom: '2px',
+                                      left: '50%',
+                                      transform: 'translateX(-50%)',
+                                      width: '4px',
+                                      height: '4px',
+                                      borderRadius: '50%',
+                                      backgroundColor: '#1976d2',
+                                      opacity: 0.7,
+                                    } : {},
+                                  }
+                                };
+                              }
                             }}
                           />
                         </DemoItem>
@@ -534,8 +567,8 @@ const ReservationTurns: React.FC = () => {
                         {(() => {
                           return turnContext.availableTurns
                             .filter((timeSlot: string) => {
-                              const slotDateTime = dayjs(timeSlot);
-                              const now = dayjs();
+                              const slotDateTime = dayjsArgentina(timeSlot);
+                              const now = nowArgentina();
                               
                               if (slotDateTime.isSame(now, 'day')) {
                                 return slotDateTime.isAfter(now);
@@ -552,7 +585,7 @@ const ReservationTurns: React.FC = () => {
                                   variant={formValues.scheduledAt === timeSlot ? 'contained' : 'outlined'}
                                 >
                                   <Typography variant="body1" component="span" sx={{ fontWeight: 600 }}>
-                                    {dayjs(timeSlot).format('HH:mm')}
+                                    {formatTime(timeSlot)}
                                   </Typography>
                                 </Button>
                               );

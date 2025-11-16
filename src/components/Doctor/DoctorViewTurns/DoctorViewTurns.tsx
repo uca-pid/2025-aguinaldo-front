@@ -4,15 +4,16 @@ import {
 } from "@mui/material";
 import { useMachines } from "#/providers/MachineProvider";
 import { useAuthMachine } from "#/providers/AuthProvider";
-import dayjs from "#/utils/dayjs.config";
+import { dayjsArgentina, nowArgentina, formatDateTime, formatTime } from '#/utils/dateTimeUtils';
 import { SignInResponse } from "#/models/Auth";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { filterTurns } from "#/utils/filterTurns";
 import ListAltIcon from "@mui/icons-material/ListAlt";
+import SearchOutlined from "@mui/icons-material/SearchOutlined";
 import "./DoctorViewTurns.css";
 
-const ViewTurns: React.FC = () => {
+const DoctorViewTurns: React.FC = () => {
   
   const { turnState, turnSend, uiSend } = useMachines();
   const { authState } = useAuthMachine();
@@ -57,7 +58,7 @@ const ViewTurns: React.FC = () => {
   };
 
   const isTurnPast = (scheduledAt: string) => {
-    return dayjs(scheduledAt).isBefore(dayjs());
+    return dayjsArgentina(scheduledAt).isBefore(nowArgentina());
   };
 
   const canCancelTurn = (turn: any) => {
@@ -213,14 +214,14 @@ const ViewTurns: React.FC = () => {
                             />
                           )}
                           <Typography variant="body1" className="doctor-viewturns-turn-datetime doctor-viewturns-date-text">
-                            {dayjs(turn.scheduledAt).format("dddd, DD [de] MMMM [de] YYYY").replace(/^\w/, (c) => c.toUpperCase())}
+                            {formatDateTime(turn.scheduledAt, "dddd, DD [de] MMMM [de] YYYY").replace(/^\w/, (c) => c.toUpperCase())}
                           </Typography>
                         </Box>
 
                         {/* Detalles del turno */}
                         <Box className="doctor-viewturns-turn-details">
                           <Typography variant="h5" className="doctor-viewturns-time-text">
-                            {dayjs(turn.scheduledAt).format("HH:mm")} hs
+                            {formatTime(turn.scheduledAt)} hs
                           </Typography>
                           <Box>
                             <Box className="doctor-viewturns-patient-info">
@@ -327,11 +328,14 @@ const ViewTurns: React.FC = () => {
                 ))
               ) : (
                 <Box className="doctor-viewturns-empty-state">
-                  <Typography>
-                    {showTurnsContext.dateSelected || showTurnsContext.statusFilter
-                      ? 'No hay turnos que coincidan con los filtros seleccionados'
-                      : 'No tenés turnos registrados'
-                    }
+                  <Avatar className="doctor-viewturns-empty-icon">
+                    <SearchOutlined />
+                  </Avatar>
+                  <Typography variant="h6" gutterBottom>
+                    No hay turnos disponibles
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    No tenés turnos registrados
                   </Typography>
                 </Box>
               )}
@@ -343,4 +347,4 @@ const ViewTurns: React.FC = () => {
   );
 };
 
-export default ViewTurns;
+export default DoctorViewTurns;
