@@ -20,7 +20,8 @@ export default function AdminDashboard() {
 
   const stats = adminContext.adminStats;
   
-  const loading = adminContext.loading || 
+  const loading = dataContext.loading?.initializing ||
+                  adminContext.loading || 
                   dataContext.loading?.doctors || 
                   dataContext.loading?.pendingDoctors || 
                   dataContext.loading?.adminStats ||

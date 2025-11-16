@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Box, CircularProgress, Typography, Chip } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import BadgeCard from './BadgeCard';
@@ -66,10 +66,29 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
     <Box className="badge-showcase">
       {/* Header */}
       <Box className="badge-showcase__header">
-        <Box className="badge-showcase__title">
-          <EmojiEventsIcon className="badge-showcase__title-icon" />
-          Mis Logros
+        <Box className="badge-showcase__title-section">
+          <Box className="badge-showcase__title">
+            <EmojiEventsIcon className="badge-showcase__title-icon" />
+            Mis Logros
+          </Box>
+          
+          <Chip 
+            label={`${totalEarned} Obtenidos`}
+            className="badge-showcase__stat-chip"
+            size="small"
+          />
+          <Chip 
+            label={`${totalAvailable} Disponibles`}
+            className="badge-showcase__stat-chip"
+            size="small"
+          />
+          <Chip 
+            label={`${completionPercentage}% Completado`}
+            className="badge-showcase__stat-chip"
+            size="small"
+          />
         </Box>
+        
         <Box className="badge-showcase__header-actions">
           {onViewAll && (
             <Box 
@@ -86,22 +105,6 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
               Ver todos <ArrowForwardIcon style={{ fontSize: 16, marginLeft: 4, verticalAlign: 'middle' }} />
             </Box>
           )}
-        </Box>
-      </Box>
-
-      {/* Statistics */}
-      <Box className="badge-showcase__stats">
-        <Box className="badge-showcase__stat">
-          <Typography component="span" className="badge-showcase__stat-value">{totalEarned}</Typography>
-          <Typography component="span" className="badge-showcase__stat-label">Obtenidos</Typography>
-        </Box>
-        <Box className="badge-showcase__stat">
-          <Typography component="span" className="badge-showcase__stat-value">{totalAvailable}</Typography>
-          <Typography component="span" className="badge-showcase__stat-label">Disponibles</Typography>
-        </Box>
-        <Box className="badge-showcase__stat">
-          <Typography component="span" className="badge-showcase__stat-value">{completionPercentage}%</Typography>
-          <Typography component="span" className="badge-showcase__stat-label">Completado</Typography>
         </Box>
       </Box>
 
@@ -150,10 +153,10 @@ const BadgeShowcase: React.FC<BadgeShowcaseProps> = ({
       {totalEarned === 0 && closestToEarn.length === 0 && (
         <Box className="badge-showcase__empty-state">
           <Typography className="badge-showcase__empty-title" gutterBottom>
-            ¡Comienza tu colección de badges!
+            ¡Comienza tu colección de logros!
           </Typography>
           <Typography className="badge-showcase__empty-subtitle">
-            Completa consultas, documenta casos y brinda atención de calidad para obtener badges
+            Completa consultas, documenta casos y brinda atención de calidad para obtener logros
           </Typography>
         </Box>
       )}
