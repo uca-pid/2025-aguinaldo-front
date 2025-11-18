@@ -24,7 +24,6 @@ const ProfileScreen: React.FC = () => {
     const name= formContext["editName"] ?? false;
     const surname= formContext["editSurname"] ?? false;
     const phone= formContext["editNumberPhone"] ?? false;
-    const speciality= formContext["editSpeciality"]??false;
     const minutes= formContext["editMinutes"] ?? false;
     const gender= formContext["editGender"] ?? false;
     const birthdate= formContext["editBirthdate"] ?? false;
@@ -106,7 +105,10 @@ const ProfileScreen: React.FC = () => {
                                 <ListItemText primary={`Matrícula Nacional `}  secondary={profile.medicalLicense}/>
                                 </ListItem>
                                 <Divider component="li" />
-                                <EditField key="speciality" label="Especialidad" value={profile.specialty} isEditing={speciality} toggleKey="editSpeciality" fieldKey="specialty" maxLength={100} onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "specialty", value: val })}/>
+                                <ListItem>
+                                <ListItemText primary={`Especialidad `}  secondary={profile.specialty}/>
+                                </ListItem>
+                                <Divider component="li" />
                                 <EditField key="slotDurationMin"label="Minutos por turno" value={profile.slotDurationMin} isEditing={minutes} toggleKey="editMinutes" fieldKey="slotDurationMin" onChange={(val) => profileSend({ type: "UPDATE_FORM", key: "slotDurationMin", value: val })}/>
 
 

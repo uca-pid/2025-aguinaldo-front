@@ -177,7 +177,7 @@ describe('authFormValidation', () => {
     it('should validate slot duration format', () => {
       const context = createMockContext()
       expect(validateField('slotDurationMin', 'abc', context)).toBe('Debe ser un número')
-      expect(validateField('slotDurationMin', '4', context)).toBe('Mínimo 5 minutos')
+      expect(validateField('slotDurationMin', '4', context)).toBe('Mínimo 15 minutos')
       expect(validateField('slotDurationMin', '181', context)).toBe('Máximo 180 minutos')
       expect(validateField('slotDurationMin', '30', context)).toBe('')
     })
@@ -225,9 +225,9 @@ describe('authFormValidation', () => {
 
     it('should validate slot duration boundaries', () => {
       const context = createMockContext()
-      expect(validateField('slotDurationMin', '0', context)).toBe('Mínimo 5 minutos')
+      expect(validateField('slotDurationMin', '0', context)).toBe('Mínimo 15 minutos')
       expect(validateField('slotDurationMin', '200', context)).toBe('Máximo 180 minutos')
-      expect(validateField('slotDurationMin', '5', context)).toBe('')
+      expect(validateField('slotDurationMin', '15', context)).toBe('')
       expect(validateField('slotDurationMin', '180', context)).toBe('')
     })
   })

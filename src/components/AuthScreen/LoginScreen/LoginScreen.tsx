@@ -141,6 +141,7 @@ function LoginScreen() {
                     error={!!authContext.formErrors?.email}
                     helperText={authContext.formErrors?.email || " "}
                     className="auth-field"
+                    autoComplete="email"
                   />
 
                   <FormControl 
@@ -157,6 +158,7 @@ function LoginScreen() {
                       onChange={(e) => authSend({ type: "UPDATE_FORM", key: "password", value: e.target.value })}
                       error={!!authContext.formErrors?.password}
                       className="auth-password-field"
+                      autoComplete="current-password"
                       endAdornment={
                         <InputAdornment position="end">
                           <IconButton

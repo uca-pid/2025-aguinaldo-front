@@ -16,18 +16,79 @@ import {
   Card,
   CardContent,
   Chip,
+  Autocomplete,
 } from "@mui/material";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalHospital, Person } from "@mui/icons-material";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import Logo from "#/assets/favicon.svg";
 import dayjs from '#/utils/dayjs.config';
 import 'dayjs/locale/es';
-import { dayjsArgentina, nowArgentina } from '#/utils/dateTimeUtils';
 import "./RegisterScreen.css";
 
-dayjs.locale('es');
+const specialties = [
+  "ALERGIA E INMUNOLOGÍA",
+  "ANATOMÍA PATOLÓGICA",
+  "ANESTESIOLOGÍA",
+  "ANGIOLOGÍA GENERAL y HEMODINAMIA",
+  "CARDIOLOGÍA",
+  "CARDIÓLOGO INFANTIL",
+  "CIRUGÍA GENERAL",
+  "CIRUGÍA CARDIOVASCULAR",
+  "CIRUGÍA DE CABEZA Y CUELLO",
+  "CIRUGÍA DE TÓRAX (CIRUGÍA TORÁCICA)",
+  "CIRUGÍA INFANTIL (CIRUGÍA PEDIÁTRICA)",
+  "CIRUGÍA PLÁSTICA Y REPARADORA",
+  "CIRUGÍA VASCULAR PERIFÉRICA",
+  "CLÍNICA MÉDICA",
+  "COLOPROCTOLOGÍA",
+  "DERMATOLOGÍA",
+  "DIAGNOSTICO POR IMÁGENES",
+  "ENDOCRINOLOGÍA",
+  "ENDOCRINÓLOGO INFANTIL",
+  "FARMACOLOGÍA CLÍNICA",
+  "FISIATRÍA (MEDICINA FÍSICA Y REHABILITACIÓN)",
+  "GASTROENTEROLOGÍA",
+  "GASTROENTERÓLOGO INFANTIL",
+  "GENÉTICA MEDICA",
+  "GERIATRÍA",
+  "GINECOLOGÍA",
+  "HEMATOLOGÍA",
+  "HEMATÓLOGO INFANTIL",
+  "HEMOTERAPIA E INMUNOHEMATOLOGÍA",
+  "INFECTOLOGÍA",
+  "INFECTÓLOGO INFANTIL",
+  "MEDICINA DEL DEPORTE",
+  "MEDICINA GENERAL y/o MEDICINA DE FAMILIA",
+  "MEDICINA LEGAL",
+  "MEDICINA NUCLEAR",
+  "MEDICINA DEL TRABAJO",
+  "NEFROLOGÍA",
+  "NEFRÓLOGO INFANTIL",
+  "NEONATOLOGÍA",
+  "NEUMONOLOGÍA",
+  "NEUMONÓLOGO INFANTIL",
+  "NEUROCIRUGÍA",
+  "NEUROLOGÍA",
+  "NEURÓLOGO INFANTIL",
+  "NUTRICIÓN",
+  "OBSTETRICIA",
+  "OFTALMOLOGÍA",
+  "ONCOLOGÍA",
+  "ONCÓLOGO INFANTIL",
+  "ORTOPEDIA Y TRAUMATOLOGÍA",
+  "OTORRINOLARINGOLOGÍA",
+  "PEDIATRÍA",
+  "PSIQUIATRÍA",
+  "PSIQUIATRÍA INFANTO JUVENIL",
+  "RADIOTERAPIA O TERAPIA RADIANTE",
+  "REUMATOLOGÍA",
+  "REUMATÓLOGO INFANTIL",
+  "TERAPIA INTENSIVA",
+  "TERAPISTA INTENSIVO INFANTIL",
+  "TOCOGINECOLOGÍA",
+  "TOXICOLOGÍA",
+  "UROLOGÍA"
+];
 
 function RegisterScreen() {
   const { authState, authSend } = useAuthMachine();
@@ -220,36 +281,21 @@ function RegisterScreen() {
                   </Stack>
 
                   <Stack direction={isMobile ? "column" : "row"} spacing={2} className="register-form-row">
-                    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
-                      <DatePicker
-                        label="Fecha de Nacimiento"
-                        format="DD/MM/YYYY"
-                        value={authContext.formValues.birthdate ? dayjsArgentina(authContext.formValues.birthdate) : null}
-                        maxDate={nowArgentina().subtract(18, 'year')}
-                        minDate={nowArgentina().subtract(120, 'year')}
-                        views={['year', 'month', 'day']}
-                        openTo="year"
-                        onChange={(date) => authSend({ 
-                          type: "UPDATE_FORM", 
-                          key: "birthdate", 
-                          value: date ? date.toISOString() : null 
-                        })}
-                        slotProps={{
-                          textField: {
-                            required: true,
-                            fullWidth: true,
-                            name: "birthdate",
-                            error: !!authContext.formErrors?.birthdate,
-                            helperText: authContext.formErrors?.birthdate || " ",
-                            className: "auth-field",
-                            placeholder: "DD/MM/YYYY"
-                          },
-                          field: {
-                            clearable: true
-                          }
-                        }}
-                      />
-                    </LocalizationProvider>
+                    <TextField
+                      label="Fecha de Nacimiento"
+                      name="birthdate"
+                      type="date"
+                      fullWidth
+                      required
+                      value={authContext.formValues.birthdate ? authContext.formValues.birthdate.split('T')[0] : ""}
+                      onChange={(e) => authSend({ type: "UPDATE_FORM", key: "birthdate", value: e.target.value ? dayjs(e.target.value).tz('America/Argentina/Buenos_Aires').toISOString() : null })}
+                      error={!!authContext.formErrors?.birthdate}
+                      helperText={authContext.formErrors?.birthdate || " "}
+                      className="auth-field"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                    />
                     <TextField
                       label="Número de Teléfono"
                       name="phone"
@@ -275,6 +321,7 @@ function RegisterScreen() {
                     error={!!authContext.formErrors?.email}
                     helperText={authContext.formErrors?.email || " "}
                     className="auth-field"
+                    autoComplete="email"
                   />
 
                   <Stack direction={isMobile ? "column" : "row"} spacing={2} className="register-form-row">
@@ -289,6 +336,7 @@ function RegisterScreen() {
                       error={!!authContext.formErrors?.password}
                       helperText={authContext.formErrors?.password || " "}
                       className="auth-field"
+                      autoComplete="new-password"
                     />
                     <TextField
                       label="Confirmar Contraseña"
@@ -301,6 +349,7 @@ function RegisterScreen() {
                       error={!!authContext.formErrors?.password_confirm}
                       helperText={authContext.formErrors?.password_confirm || " "}
                       className="auth-field"
+                      autoComplete="new-password"
                     />
                   </Stack>
 
@@ -311,18 +360,25 @@ function RegisterScreen() {
                         Información Profesional
                       </Typography>
                       <Stack spacing={0}>
+                        <Autocomplete
+                          options={specialties}
+                          value={authContext.formValues.specialty || null}
+                          onChange={(_, newValue) => authSend({ type: "UPDATE_FORM", key: "specialty", value: newValue })}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Especialidad"
+                              name="specialty"
+                              fullWidth
+                              required
+                              error={!!authContext.formErrors?.specialty}
+                              helperText={authContext.formErrors?.specialty || " "}
+                              className="auth-field"
+                            />
+                          )}
+                          className="auth-field"
+                        />
                         <Stack direction={isMobile ? "column" : "row"} spacing={2} className="register-form-row">
-                          <TextField
-                            label="Especialidad"
-                            name="specialty"
-                            fullWidth
-                            required
-                            value={authContext.formValues.specialty || ""}
-                            onChange={(e) => authSend({ type: "UPDATE_FORM", key: "specialty", value: e.target.value })}
-                            error={!!authContext.formErrors?.specialty}
-                            helperText={authContext.formErrors?.specialty || " "}
-                            className="auth-field"
-                          />
                           <TextField
                             label="Matrícula Médica"
                             name="medicalLicense"
@@ -334,24 +390,24 @@ function RegisterScreen() {
                             helperText={authContext.formErrors?.medicalLicense || " "}
                             className="auth-field"
                           />
+                          <TextField
+                            label="Duración de turnos (mins)"
+                            name="slotDurationMin"
+                            type="number"
+                            fullWidth
+                            required
+                            value={authContext.formValues.slotDurationMin || ""}
+                            onChange={(e) => authSend({ type: "UPDATE_FORM", key: "slotDurationMin", value: parseInt(e.target.value) || null })}
+                            error={!!authContext.formErrors?.slotDurationMin}
+                            helperText={authContext.formErrors?.slotDurationMin || ""}
+                            className="auth-field"
+                            inputProps={{
+                              min: 15,
+                              max: 180,
+                              step: 15
+                            }}
+                          />
                         </Stack>
-                        <TextField
-                          label="Duración de los turnos (minutos)"
-                          name="slotDurationMin"
-                          type="number"
-                          fullWidth
-                          required
-                          value={authContext.formValues.slotDurationMin || ""}
-                          onChange={(e) => authSend({ type: "UPDATE_FORM", key: "slotDurationMin", value: parseInt(e.target.value) || null })}
-                          error={!!authContext.formErrors?.slotDurationMin}
-                          helperText={authContext.formErrors?.slotDurationMin || ""}
-                          className="auth-field"
-                          inputProps={{
-                            min: 15,
-                            max: 180,
-                            step: 15
-                          }}
-                        />
                       </Stack>
                     </Box>
                   )}

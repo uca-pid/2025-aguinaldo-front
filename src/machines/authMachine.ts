@@ -380,7 +380,7 @@ export const authMachine = createMachine({
                 },
                 authResponse: {
                   ...response,
-                  message: "!Registro exitoso!"
+                  message: "¡Registro exitoso!"
                 },
                 formErrors: {},
                 hasErrorsOrEmpty: false,
