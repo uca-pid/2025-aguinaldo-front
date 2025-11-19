@@ -395,11 +395,8 @@ const ReservationTurns: React.FC = () => {
                   const specialtyFromSelect = formValues.professionSelected || '';
                   const specialty = (selectedDoctor?.specialty || specialtyFromSelect).toString().toLowerCase();
                   const canIssueHealthCertificate = 
-                    specialty === 'clinic' || 
-                    specialty === 'clínico' || 
-                    specialty === 'clinico' ||
-                    specialty === 'pediatrician' || 
-                    specialty === 'pediatra';
+                    specialty === 'CLÍNICA MÉDICA' ||
+                    specialty === 'PEDIATRÍA';
                   
                   if (canIssueHealthCertificate) {
                     return (

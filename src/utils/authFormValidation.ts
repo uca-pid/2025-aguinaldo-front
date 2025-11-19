@@ -124,7 +124,7 @@ export const validateField = (key: string, value: any, context: AuthMachineConte
   if (key.includes("slotDurationMin")) {
     const duration = parseInt(value);
     if (isNaN(duration)) return "Debe ser un número";
-    if (duration < 5) return "Mínimo 5 minutos";
+    if (duration < 15) return "Mínimo 15 minutos";
     if (duration > 180) return "Máximo 180 minutos";
     return "";
   }
