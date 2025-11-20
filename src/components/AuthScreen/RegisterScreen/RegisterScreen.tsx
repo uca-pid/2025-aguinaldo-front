@@ -18,12 +18,17 @@ import {
   Chip,
   Autocomplete,
 } from "@mui/material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalHospital, Person } from "@mui/icons-material";
 import { useAuthMachine } from "#/providers/AuthProvider";
 import Logo from "#/assets/favicon.svg";
 import dayjs from '#/utils/dayjs.config';
 import 'dayjs/locale/es';
+import { dayjsArgentina, nowArgentina } from '#/utils/dateTimeUtils';
 import "./RegisterScreen.css";
+
+dayjs.locale('es');
 
 const specialties = [
   "ALERGIA E INMUNOLOGÍA",
@@ -281,21 +286,36 @@ function RegisterScreen() {
                   </Stack>
 
                   <Stack direction={isMobile ? "column" : "row"} spacing={2} className="register-form-row">
-                    <TextField
-                      label="Fecha de Nacimiento"
-                      name="birthdate"
-                      type="date"
-                      fullWidth
-                      required
-                      value={authContext.formValues.birthdate ? authContext.formValues.birthdate.split('T')[0] : ""}
-                      onChange={(e) => authSend({ type: "UPDATE_FORM", key: "birthdate", value: e.target.value ? dayjs(e.target.value).tz('America/Argentina/Buenos_Aires').toISOString() : null })}
-                      error={!!authContext.formErrors?.birthdate}
-                      helperText={authContext.formErrors?.birthdate || " "}
-                      className="auth-field"
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                    />
+                     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+                      <DatePicker
+                        label="Fecha de Nacimiento"
+                        format="DD/MM/YYYY"
+                        value={authContext.formValues.birthdate ? dayjsArgentina(authContext.formValues.birthdate) : null}
+                        maxDate={nowArgentina().subtract(18, 'year')}
+                        minDate={nowArgentina().subtract(120, 'year')}
+                        views={['year', 'month', 'day']}
+                        openTo="year"
+                        onChange={(date) => authSend({ 
+                          type: "UPDATE_FORM", 
+                          key: "birthdate", 
+                          value: date ? date.toISOString() : null 
+                        })}
+                        slotProps={{
+                          textField: {
+                            required: true,
+                            fullWidth: true,
+                            name: "birthdate",
+                            error: !!authContext.formErrors?.birthdate,
+                            helperText: authContext.formErrors?.birthdate || " ",
+                            className: "auth-field",
+                            placeholder: "DD/MM/YYYY"
+                          },
+                          field: {
+                            clearable: true
+                          }
+                        }}
+                      />
+                    </LocalizationProvider>
                     <TextField
                       label="Número de Teléfono"
                       name="phone"
